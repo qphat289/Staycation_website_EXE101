@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}
+Book {{ homestay.title }}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card">
+      <div class="card-header">
+        <h4>Book Homestay: {{ homestay.title }}</h4>
+      </div>
+      <div class="card-body">
+
+        <!-- Make sure this form's method is POST and it points to your booking route -->
+        <!-- If your route is: @renter_bp.route('/book/<int:id>', methods=['GET','POST']) -->
+        <!-- then it might be action="{{ url_for('renter.book_homestay', id=homestay.id) }}" -->
+        <form method="post" action="{{ url_for('renter.book_homestay', id=homestay.id) }}" id="booking-form">
+
+          <!-- Date Field -->
+          <div class="mb-3">
+            <label for="start_date" class="form-label">Date</label>
+            <input
+              type="date"
+              class="form-control"
+              id="start_date"
+              name="start_date"
+              required
+            >
+          </div>
+
+          <!-- Time Field -->
+          <div class="mb-3">
+            <label for="start_time" class="form-label">Time</label>
+            <input
+              type="time"
+              class="form-control"
+              id="start_time"
+              name="start_time"
+              required
+            >
+          </div>
+
+          <!-- Hours Field -->
+          <div class="mb-3">
+            <label for="hours" class="form-label">Number of Hours</label>
+            <input
+              type="number"
+              class="form-control"
+              id="hours"
+              name="hours"
+              min="1"
+              max="24"
+              value="1"
+              required
+            >
+          </div>
+
+          <!-- Booking Summary -->
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5>Booking Summary</h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td>Price per hour</td>
+                  <td class="text-end">${{ homestay.price_per_hour }}</td>
+                </tr>
+                <tr>
+                  <td>Hours</td>
+                  <td class="text-end" id="hours-display">1</td>
+                </tr>
+                <tr class="fw-bold">
+                  <td>Total</td>
+                  <td class="text-end" id="total-price">${{ homestay.price_per_hour }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Confirm Booking</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  // Initialize the date picker on #start_date
+//   flatpickr("#start_date", {
+//       minDate: "today",
+//       dateFormat: "Y-m-d"
+//   });
+
+  // If you want a time picker for #start_time, you could do:
+//   flatpickr("#start_time", {
+//   enableTime: true,
+//   noCalendar: true,
+//   dateFormat: "H:i"
+// });
+
+  // Price calculation
+  const hoursInput = document.getElementById('hours');
+  const hoursDisplay = document.getElementById('hours-display');
+  const totalPriceEl = document.getElementById('total-price');
+
+  // Convert the Jinja variable to a float in quotes
+  const pricePerHour = parseFloat('{{ homestay.price_per_hour }}') || 0;
+
+  hoursInput.addEventListener('input', function() {
+      const hours = parseInt(this.value) || 0;
+      const totalPrice = hours * pricePerHour;
+
+      hoursDisplay.textContent = hours;
+      totalPriceEl.textContent = '$' + totalPrice.toFixed(2);
+  });
+</script>
+{% endblock %}

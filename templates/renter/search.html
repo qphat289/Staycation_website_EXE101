@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Homestays - Homestay Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Search Filters -->
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Filter Options</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{{ url_for('renter.search') }}">
+                    <div class="mb-3">
+                        <label for="city" class="form-label">City</label>
+                        <select class="form-select" id="city" name="city">
+                            <option value="">All Cities</option>
+                            {% for city in cities %}
+                            <option value="{{ city }}" {% if search_params.city == city %}selected{% endif %}>{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="district" class="form-label">District</label>
+                        <select class="form-select" id="district" name="district">
+                            <option value="">All Districts</option>
+                            {% for district in districts %}
+                            <option value="{{ district }}" {% if search_params.district == district %}selected{% endif %}>{{ district }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="min_price" class="form-label">Min Price per Hour ($)</label>
+                        <input type="number" class="form-control" id="min_price" name="min_price" min="0" step="0.01" value="{{ search_params.min_price or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="max_price" class="form-label">Max Price per Hour ($)</label>
+                        <input type="number" class="form-control" id="max_price" name="max_price" min="0" step="0.01" value="{{ search_params.max_price or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="bedrooms" class="form-label">Minimum Bedrooms</label>
+                        <input type="number" class="form-control" id="bedrooms" name="bedrooms" min="1" value="{{ search_params.bedrooms or '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Homestay Results -->
+    <div class="col-md-9">
+        <h2 class="mb-4">Available Homestays</h2>
+        
+        {% if homestays %}
+            <div class="row">
+                {% for homestay in homestays %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        {% if homestay.image_path %}
+                        <img src="{{ url_for('static', filename=homestay.image_path) }}" class="card-img-top" alt="{{ homestay.title }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ homestay.title }}</h5>
+                            <p class="card-text">{{ homestay.description|truncate(100) }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt"></i> {{ homestay.city }}, {{ homestay.district }}
+                                </small>
+                            </p>
+                            <p class="card-text fw-bold">${{ homestay.price_per_hour }}/hour</p>
+                            <ul class="list-inline">
+                                <li class="list-inline-item"><i class="bi bi-person"></i> {{ homestay.max_guests }} guests</li>
+                                <li class="list-inline-item"><i class="bi bi-door-closed"></i> {{ homestay.bedrooms }} bedrooms</li>
+                                <li class="list-inline-item"><i class="bi bi-droplet"></i> {{ homestay.bathrooms }} bathrooms</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary">View Details</a>
+                            {% if current_user.is_authenticated and current_user.is_renter() %}
+                            <a href="{{ url_for('renter.book_homestay', id=homestay.id) }}" class="btn btn-outline-primary">Book Now</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                No homestays found matching your criteria. Try adjusting your filters.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

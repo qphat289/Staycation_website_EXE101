@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}View Bookings{% endblock %}
+
+{% block content %}
+<h2>All Bookings for Your Homestays</h2>
+<hr>
+
+{% if bookings %}
+<div class="table-responsive">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Booking ID</th>
+        <th>Homestay Title</th>
+        <th>Renter</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for booking in bookings %}
+      <tr>
+        <td>{{ booking.id }}</td>
+        <td>{{ booking.homestay.title }}</td>
+        <td>{{ booking.renter.username if booking.renter else '' }}</td>
+        <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else '' }}</td>
+        <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') if booking.end_time else '' }}</td>
+        <td>{{ booking.status }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p>No bookings found for your homestays.</p>
+{% endif %}
+{% endblock %}

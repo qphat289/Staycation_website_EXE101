@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Owner Dashboard{% endblock %}
+
+{% block content %}
+<h2>Owner Dashboard</h2>
+<hr>
+
+<p class="lead">Welcome to your owner dashboard. Below are your recently added homestays.</p>
+
+<a href="{{ url_for('owner.manage_homestays') }}" class="btn btn-primary mb-3">Manage Homestays</a>
+<a href="{{ url_for('owner.add_homestay') }}" class="btn btn-success mb-3">Add New Homestay</a>
+
+{% if homestays %}
+<div class="table-responsive">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>City</th>
+        <th>Price/Hour</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for homestay in homestays %}
+      <tr>
+        <td>{{ homestay.title }}</td>
+        <td>{{ homestay.city }}</td>
+        <td>${{ homestay.price_per_hour }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p>No homestays found.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,83 @@
+/* Custom styles for Homestay Booking website */
+
+/* Body and general styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Card hover effects */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: #4a6bdf;
+    border-color: #4a6bdf;
+}
+
+.btn-primary:hover {
+    background-color: #3451b2;
+    border-color: #3451b2;
+}
+
+.btn-outline-primary {
+    color: #4a6bdf;
+    border-color: #4a6bdf;
+}
+
+.btn-outline-primary:hover {
+    background-color: #4a6bdf;
+    border-color: #4a6bdf;
+}
+
+/* Navbar */
+.navbar-dark.bg-primary {
+    background-color: #4a6bdf !important;
+}
+
+/* Form controls */
+.form-control:focus {
+    border-color: #4a6bdf;
+    box-shadow: 0 0 0 0.25rem rgba(74, 107, 223, 0.25);
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Homestay cards */
+.homestay-card {
+    height: 100%;
+}
+
+.homestay-card img {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Price display */
+.price-display {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #4a6bdf;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .jumbotron {
+        padding: 2rem 1rem;
+    }
+}

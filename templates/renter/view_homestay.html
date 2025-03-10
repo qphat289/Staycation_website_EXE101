@@ -1,0 +1,49 @@
+<!-- templates/renter/view_homestay.html -->
+{% extends 'base.html' %}
+
+{% block title %}
+View Homestay - {{ homestay.title }}
+{% endblock %}
+
+{% block content %}
+<h2>{{ homestay.title }}</h2>
+<hr>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- If there's an image path stored -->
+        {% if homestay.image_path %}
+            <img src="{{ url_for('static', filename=homestay.image_path) }}"
+                 alt="{{ homestay.title }}"
+                 style="max-width: 100%; height: auto;" />
+        {% else %}
+            <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}"
+                 alt="Default Homestay Image"
+                 style="max-width: 100%; height: auto;" />
+        {% endif %}
+
+        <p><strong>Price per Hour:</strong> ${{ homestay.price_per_hour }}</p>
+        <p><strong>Description:</strong> {{ homestay.description }}</p>
+        <p><strong>Address:</strong> {{ homestay.address }}, {{ homestay.district }}, {{ homestay.city }}</p>
+
+        <p><strong>Max Guests:</strong> {{ homestay.max_guests }}</p>
+        <p><strong>Bedrooms:</strong> {{ homestay.bedrooms }}</p>
+        <p><strong>Bathrooms:</strong> {{ homestay.bathrooms }}</p>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Booking button if user is a renter -->
+        {% if current_user.is_authenticated and current_user.is_renter() %}
+            <a href="{{ url_for('renter.book_homestay', id=homestay.id) }}"
+               class="btn btn-primary btn-lg w-100 mb-2">
+                Book Now
+            </a>
+        {% elif not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.login') }}"
+               class="btn btn-primary btn-lg w-100 mb-2">
+                Login to Book
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Homestay Booking{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded">
+    <h1 class="display-4">Find Your Perfect Homestay</h1>
+    <p class="lead">Book unique accommodations or list your property to earn extra income.</p>
+    <hr class="my-4">
+    <p>Explore our selection of homestays or create an account to get started.</p>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('renter.search') }}" role="button">Find a Homestay</a>
+        {% if not current_user.is_authenticated %}
+            <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.register') }}" role="button">Sign Up Now</a>
+        {% elif current_user.is_owner() %}
+            <a class="btn btn-outline-primary btn-lg" href="{{ url_for('owner.add_homestay') }}" role="button">List Your Homestay</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Featured Homestays -->
+<section class="mt-5">
+    <h2 class="mb-4">Featured Homestays</h2>
+    <div class="row">
+        {% for homestay in homestays %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if homestay.image_path %}
+                <img src="{{ url_for('static', filename=homestay.image_path) }}" class="card-img-top" alt="{{ homestay.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ homestay.title }}</h5>
+                    <p class="card-text">{{ homestay.description|truncate(100) }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="bi bi-geo-alt"></i> {{ homestay.city }}, {{ homestay.district }}
+                        </small>
+                    </p>
+                    <p class="card-text fw-bold">${{ homestay.price_per_hour }}/hour</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
