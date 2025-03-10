@@ -5,10 +5,16 @@
 <h2>Booking Details</h2>
 <hr>
 
-<p><strong>Homestay:</strong> {{ booking.room.homestay.title }}</p>
-<p><strong>Room:</strong> {{ booking.room.room_name }}</p>
+{% if booking.room is not none %}
+  <p><strong>Homestay:</strong> {{ booking.room.homestay.title }}</p>
+  <p><strong>Room:</strong> Room {{ booking.room.room_number }}</p>
+{% else %}
+  <p><strong>Homestay:</strong> Not assigned</p>
+  <p><strong>Room:</strong> Not assigned</p>
+{% endif %}
+
 <p><strong>Status:</strong> {{ booking.status }}</p>
-<p><strong>Start Time:</strong> {{ booking.start_time }}</p>
-<p><strong>End Time:</strong> {{ booking.end_time }}</p>
+<p><strong>Start Time:</strong> {{ booking.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
+<p><strong>End Time:</strong> {{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}</p>
 <p><strong>Total Price:</strong> ${{ booking.total_price }}</p>
 {% endblock %}

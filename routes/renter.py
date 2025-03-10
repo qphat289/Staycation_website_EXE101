@@ -119,7 +119,7 @@ def book_homestay(id):
         return redirect(url_for('renter.dashboard'))
     
     return render_template('renter/book_homestay.html', homestay=homestay)
-    
+
 
 
 @renter_bp.route('/cancel-booking/<int:id>')
@@ -195,3 +195,104 @@ def booking_details(booking_id):
 
     return render_template('renter/booking_details.html', booking=booking)
 
+@renter_bp.route('/review-booking/<int:booking_id>', methods=['GET', 'POST'])
+@login_required
+def review_booking(booking_id):
+    """
+    Displays an existing review or allows the user to post one 
+    if they haven't already, for a completed booking.
+    """
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Ensure the current user owns this booking
+    if booking.renter_id != current_user.id:
+        flash("You don't have permission to review this booking.", "danger")
+        return redirect(url_for('renter.dashboard'))
+    
+    # Ensure the booking is completed
+    if booking.status != 'completed':
+        flash("You can only review a completed booking.", "danger")
+        return redirect(url_for('renter.dashboard'))
+
+    # If you store reviews in a separate table, check if there's already a review
+    existing_review = Review.query.filter_by(
+        homestay_id=booking.homestay_id,
+        user_id=current_user.id
+    ).first()
+
+    if request.method == 'POST':
+        # If user posts a new review
+        rating = int(request.form.get('rating', 5))
+        content = request.form.get('content', '')
+
+        if existing_review:
+            # Optionally update the existing review or show a message
+            existing_review.rating = rating
+            existing_review.content = content
+            flash("Your review has been updated!", "success")
+        else:
+            # Create a new review
+            new_review = Review(
+                rating=rating,
+                content=content,
+                homestay_id=booking.homestay_id,
+                user_id=current_user.id
+            )
+            db.session.add(new_review)
+            flash("Review submitted!", "success")
+
+        db.session.commit()
+        return redirect(url_for('renter.dashboard'))
+    
+    return render_template('renter/review_booking.html', booking=booking, existing_review=existing_review)
+
+@renter_bp.route('/reviews/<int:homestay_id>', methods=['GET', 'POST'])
+def view_reviews(homestay_id):
+    homestay = Homestay.query.get_or_404(homestay_id)
+    
+    # Fetch all reviews
+    reviews = Review.query.filter_by(homestay_id=homestay.id).order_by(Review.created_at.desc()).all()
+    
+    # Check if user can post (i.e. has a completed booking)
+    can_post = False
+    if current_user.is_authenticated and current_user.is_renter():
+        completed_booking = Booking.query.filter_by(
+            homestay_id=homestay.id,
+            renter_id=current_user.id,
+            status='completed'
+        ).first()
+        if completed_booking:
+            can_post = True
+
+    if request.method == 'POST':
+        if not can_post:
+            flash("You can only post a review if you have a completed booking.", "danger")
+            return redirect(url_for('renter.view_reviews', homestay_id=homestay.id))
+        
+        # proceed to create/update review
+        rating = int(request.form.get('rating', 5))
+        content = request.form.get('content', '')
+        
+        existing_review = Review.query.filter_by(
+            homestay_id=homestay.id,
+            user_id=current_user.id
+        ).first()
+        
+        if existing_review:
+            existing_review.rating = rating
+            existing_review.content = content
+            flash("Your review has been updated!", "success")
+        else:
+            new_review = Review(
+                rating=rating,
+                content=content,
+                homestay_id=homestay.id,
+                user_id=current_user.id
+            )
+            db.session.add(new_review)
+            flash("Review submitted!", "success")
+
+        db.session.commit()
+        return redirect(url_for('renter.view_reviews', homestay_id=homestay.id))
+
+    return render_template('renter/view_reviews.html', homestay=homestay, reviews=reviews, can_post=can_post)

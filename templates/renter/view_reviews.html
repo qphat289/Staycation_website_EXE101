@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Reviews for {{ homestay.title }}{% endblock %}
+
+{% block content %}
+<h2>Reviews for {{ homestay.title }}</h2>
+<hr>
+
+{% if reviews %}
+  {% for review in reviews %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <p><strong>Rating:</strong> {{ review.rating }} / 5</p>
+        <p>{{ review.content }}</p>
+        <p class="text-muted">By {{ review.author.username }} on {{ review.created_at.strftime('%Y-%m-%d') }}</p>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>No reviews yet for this homestay.</p>
+{% endif %}
+
+{% if can_post %}
+  <hr>
+  <h4>Leave or Update Your Review</h4>
+  <form method="post">
+    <div class="mb-3">
+      <label for="rating" class="form-label">Rating (1-5)</label>
+      <input type="number" class="form-control" name="rating" id="rating" min="1" max="5" value="5" required>
+    </div>
+    <div class="mb-3">
+      <label for="content" class="form-label">Your Review</label>
+      <textarea class="form-control" name="content" id="content" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Review</button>
+  </form>
+{% else %}
+  <p class="mt-3">You can only post a review if you have a completed booking.</p>
+{% endif %}
+{% endblock %}
