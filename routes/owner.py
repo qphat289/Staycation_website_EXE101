@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, Homestay
+from models import db, Homestay, Room, Booking
 import os
 from datetime import datetime
 
@@ -188,3 +188,32 @@ def view_bookings():
     # If you have a Booking model with fields like booking.id, booking.status, etc.,
     # you can pass them to a template to display
     return render_template('owner/view_bookings.html', bookings=bookings)
+
+# routes/owner.py
+
+@owner_bp.route('/add-room/<int:homestay_id>', methods=['GET', 'POST'])
+@owner_required
+def add_room(homestay_id):
+    homestay = Homestay.query.get_or_404(homestay_id)
+    if request.method == 'POST':
+        room_number = request.form.get('room_number')
+        bed_count = int(request.form.get('bed_count'))
+        bathroom_count = int(request.form.get('bathroom_count'))
+        max_guests = int(request.form.get('max_guests'))
+        
+        # Create the room object
+        new_room = Room(
+            room_number=room_number,
+            bed_count=bed_count,
+            bathroom_count=bathroom_count,
+            max_guests=max_guests,
+            homestay_id=homestay.id
+        )
+        db.session.add(new_room)
+        db.session.commit()
+        
+        flash('Room added successfully!', 'success')
+        return redirect(url_for('owner.dashboard'))
+    
+    return render_template('owner/add_room.html', homestay=homestay)
+

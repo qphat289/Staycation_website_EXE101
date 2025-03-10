@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Add Room for {{ homestay.title }}{% endblock %}
+
+{% block content %}
+<h2>Add Room for {{ homestay.title }}</h2>
+<form method="post">
+  <div class="mb-3">
+    <label for="room_number" class="form-label">Room Number</label>
+    <input type="text" class="form-control" id="room_number" name="room_number" required>
+  </div>
+  <div class="mb-3">
+    <label for="bed_count" class="form-label">Bed Count</label>
+    <input type="number" class="form-control" id="bed_count" name="bed_count" min="1" required>
+  </div>
+  <div class="mb-3">
+    <label for="bathroom_count" class="form-label">Bathroom Count</label>
+    <input type="number" class="form-control" id="bathroom_count" name="bathroom_count" min="1" required>
+  </div>
+  <div class="mb-3">
+    <label for="max_guests" class="form-label">Max Guests</label>
+    <input type="number" class="form-control" id="max_guests" name="max_guests" min="1" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Add Room</button>
+</form>
+{% endblock %}

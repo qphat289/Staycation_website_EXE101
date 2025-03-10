@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Booking Details{% endblock %}
+
+{% block content %}
+<h2>Booking Details</h2>
+<hr>
+
+<p><strong>Homestay:</strong> {{ booking.room.homestay.title }}</p>
+<p><strong>Room:</strong> {{ booking.room.room_name }}</p>
+<p><strong>Status:</strong> {{ booking.status }}</p>
+<p><strong>Start Time:</strong> {{ booking.start_time }}</p>
+<p><strong>End Time:</strong> {{ booking.end_time }}</p>
+<p><strong>Total Price:</strong> ${{ booking.total_price }}</p>
+{% endblock %}

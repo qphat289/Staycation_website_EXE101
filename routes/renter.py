@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
-from models import Homestay, Booking, db
+from models import Homestay, Booking, Review, db
 from datetime import datetime, timedelta
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
@@ -19,8 +19,15 @@ def renter_required(f):
 @renter_bp.route('/dashboard')
 @renter_required
 def dashboard():
-    bookings = Booking.query.filter_by(renter_id=current_user.id).all()
-    return render_template('renter/dashboard.html', bookings=bookings, now=datetime.utcnow)
+    """Display renter dashboard with their bookings, newest first."""
+    # Order by created_at descending (or booking.id desc if you prefer)
+    bookings = Booking.query \
+        .filter_by(renter_id=current_user.id) \
+        .order_by(Booking.created_at.desc()) \
+        .all()
+    
+    return render_template('renter/dashboard.html', bookings=bookings)
+
 
 @renter_bp.route('/search')
 def search():
@@ -61,54 +68,50 @@ def search():
 
 @renter_bp.route('/homestay/<int:id>')
 def view_homestay(id):
-    """View details of a specific homestay"""
     homestay = Homestay.query.get_or_404(id)
-    return render_template('renter/view_homestay.html', homestay=homestay)
+    # Get all rooms for the homestay (you might filter based on availability later)
+    rooms = homestay.rooms  # Assuming the relationship is set up in Homestay model
+    reviews = homestay.reviews.order_by(Review.created_at.desc()).all()
+    return render_template('renter/view_homestay.html', homestay=homestay, rooms=rooms, reviews=reviews)
+
+
 
 @renter_bp.route('/book/<int:id>', methods=['GET', 'POST'])
 @renter_required
 def book_homestay(id):
-    """Book a homestay"""
     homestay = Homestay.query.get_or_404(id)
     
     if request.method == 'POST':
-        # Get booking details
+        # Get selected room_id from the form
+        room_id = request.form.get('room_id')
         start_date = request.form.get('start_date')
         start_time = request.form.get('start_time')
-
         if not start_date or not start_time:
             flash('You must select both date and time', 'warning')
             return redirect(url_for('renter.book_homestay', id=homestay.id))
         
         hours = int(request.form.get('hours', 1))
-        
-        # Parse datetime
-        start_str = f"{start_date} {start_time}"  # e.g. "2025-03-12 13:30"
+        start_str = f"{start_date} {start_time}"
         start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
         end_datetime = start_datetime + timedelta(hours=hours)
-        
-        # Calculate total price
         total_price = homestay.price_per_hour * hours
-        
-        # Check if homestay is available for the requested time period
+
+        # Check for overlapping bookings (for this homestay, or even for this room if desired)
         existing_bookings = Booking.query.filter_by(homestay_id=homestay.id).all()
-        
         for booking in existing_bookings:
-            # Check if there's overlap with an existing booking
             if (start_datetime < booking.end_time and end_datetime > booking.start_time):
                 flash('This homestay is not available during the selected time period', 'danger')
                 return redirect(url_for('renter.book_homestay', id=homestay.id))
         
-        # Create new booking
         booking = Booking(
             homestay_id=homestay.id,
+            room_id=room_id,  # now we use the room_id from the form
             renter_id=current_user.id,
             start_time=start_datetime,
             end_time=end_datetime,
             total_price=total_price,
             status='pending'
         )
-        
         db.session.add(booking)
         db.session.commit()
         
@@ -116,6 +119,8 @@ def book_homestay(id):
         return redirect(url_for('renter.dashboard'))
     
     return render_template('renter/book_homestay.html', homestay=homestay)
+    
+
 
 @renter_bp.route('/cancel-booking/<int:id>')
 @renter_required
@@ -154,36 +159,39 @@ def profile():
 @renter_bp.route('/homestay/<int:homestay_id>/review', methods=['GET', 'POST'])
 @login_required
 def add_review(homestay_id):
-    """
-    Allow a renter to add a review for a homestay they've booked.
-    """
     homestay = Homestay.query.get_or_404(homestay_id)
 
-    # (Optional) Check if user actually booked & completed the stay:
-    from models import Booking
-    bookings = Booking.query.filter_by(renter_id=current_user.id,
-                                       homestay_id=homestay.id,
-                                       status='completed').all()
-    if not bookings:
-        flash('You can only review a homestay you have completed a stay in.', 'danger')
+    # Check if the user has already left a review for this homestay
+    existing_review = Review.query.filter_by(homestay_id=homestay.id, user_id=current_user.id).first()
+    if existing_review:
+        flash('You have already left a review for this homestay.', 'danger')
         return redirect(url_for('renter.view_homestay', id=homestay.id))
 
     if request.method == 'POST':
         rating = int(request.form.get('rating', 5))
         content = request.form.get('content', '')
-
-        # Create a Review object
+        
         review = Review(
             rating=rating,
             content=content,
             homestay_id=homestay.id,
             user_id=current_user.id
         )
-
         db.session.add(review)
         db.session.commit()
         flash('Review submitted!', 'success')
-
         return redirect(url_for('renter.view_homestay', id=homestay.id))
 
     return render_template('renter/add_review.html', homestay=homestay)
+
+@renter_bp.route('/booking/<int:booking_id>')
+@login_required
+def booking_details(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    # Optionally ensure the current_user owns this booking
+    if booking.renter_id != current_user.id:
+        flash("You don't have permission to view this booking.", "danger")
+        return redirect(url_for('renter.dashboard'))
+
+    return render_template('renter/booking_details.html', booking=booking)
+

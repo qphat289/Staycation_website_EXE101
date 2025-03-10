@@ -48,6 +48,8 @@ class User(UserMixin, db.Model):
         return f'<User {self.username}>'
 
 class Homestay(db.Model):
+    __tablename__ = 'homestay'  # or 'homestays' if you prefer
+
     """Homestay model for properties listed by owners"""
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -65,7 +67,8 @@ class Homestay(db.Model):
     
     # Foreign keys
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
+    # Relationship: one homestay has many rooms
+    rooms = db.relationship('Room', backref='homestay', lazy=True)
     # Relationships
     bookings = db.relationship('Booking', backref='homestay', lazy='dynamic')
     reviews = db.relationship('Review', backref='homestay', lazy='dynamic')
@@ -74,20 +77,24 @@ class Homestay(db.Model):
         return f'<Homestay {self.title}>'
 
 class Booking(db.Model):
-    """Booking model for homestay reservations"""
+    __tablename__ = 'booking'
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     total_price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), default='pending')  # pending, confirmed, cancelled, completed
+    status = db.Column(db.String(20), default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Foreign keys
     homestay_id = db.Column(db.Integer, db.ForeignKey('homestay.id'), nullable=False)
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)  # Allow NULL for now
     renter_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
-    def __repr__(self):
-        return f'<Booking {self.id}>'
+    room = db.relationship('Room', backref='bookings', lazy=True)
+
+
+
+
+
     
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -97,3 +104,19 @@ class Review(db.Model):
     
     homestay_id = db.Column(db.Integer, db.ForeignKey('homestay.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+class Room(db.Model):
+    __tablename__ = 'room'
+    id = db.Column(db.Integer, primary_key=True)
+    room_number = db.Column(db.String(20), nullable=False)  # This is the user-friendly room number
+    bed_count = db.Column(db.Integer, nullable=False)
+    bathroom_count = db.Column(db.Integer, nullable=False)
+    max_guests = db.Column(db.Integer, nullable=False)
+    # You can add other room-specific details as needed.
+
+    homestay_id = db.Column(db.Integer, db.ForeignKey('homestay.id'), nullable=False)
+
+    __table_args__ = (
+        # Ensure uniqueness within a homestay: no two rooms in the same homestay share the same room_number.
+        db.UniqueConstraint('homestay_id', 'room_number', name='uq_room_per_homestay'),
+    )
