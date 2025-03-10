@@ -20,12 +20,13 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(10), nullable=False)  # 'renter' or 'owner'
     full_name = db.Column(db.String(100))
-    phone = db.Column(db.String(20))
+    phone = db.Column(db.String(12))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    personal_id = db.Column(db.String(12))  # Add this new line
     # Relationships
     homestays = db.relationship('Homestay', backref='owner', lazy='dynamic')
     bookings = db.relationship('Booking', backref='renter', lazy='dynamic')
+    reviews = db.relationship('Review', backref='author', lazy='dynamic')
     
     def set_password(self, password):
         """Hash the password for security"""
@@ -67,6 +68,7 @@ class Homestay(db.Model):
     
     # Relationships
     bookings = db.relationship('Booking', backref='homestay', lazy='dynamic')
+    reviews = db.relationship('Review', backref='homestay', lazy='dynamic')
     
     def __repr__(self):
         return f'<Homestay {self.title}>'
@@ -86,3 +88,12 @@ class Booking(db.Model):
     
     def __repr__(self):
         return f'<Booking {self.id}>'
+    
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    homestay_id = db.Column(db.Integer, db.ForeignKey('homestay.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

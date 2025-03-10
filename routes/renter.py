@@ -138,3 +138,52 @@ def cancel_booking(id):
     
     flash('Booking cancelled successfully', 'success')
     return redirect(url_for('renter.dashboard'))
+
+@renter_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'POST':
+        current_user.full_name = request.form.get('full_name')
+        current_user.phone = request.form.get('phone')
+        db.session.commit()
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('renter.profile'))
+
+    return render_template("renter/profile.html")
+
+@renter_bp.route('/homestay/<int:homestay_id>/review', methods=['GET', 'POST'])
+@login_required
+def add_review(homestay_id):
+    """
+    Allow a renter to add a review for a homestay they've booked.
+    """
+    homestay = Homestay.query.get_or_404(homestay_id)
+
+    # (Optional) Check if user actually booked & completed the stay:
+    from models import Booking
+    bookings = Booking.query.filter_by(renter_id=current_user.id,
+                                       homestay_id=homestay.id,
+                                       status='completed').all()
+    if not bookings:
+        flash('You can only review a homestay you have completed a stay in.', 'danger')
+        return redirect(url_for('renter.view_homestay', id=homestay.id))
+
+    if request.method == 'POST':
+        rating = int(request.form.get('rating', 5))
+        content = request.form.get('content', '')
+
+        # Create a Review object
+        review = Review(
+            rating=rating,
+            content=content,
+            homestay_id=homestay.id,
+            user_id=current_user.id
+        )
+
+        db.session.add(review)
+        db.session.commit()
+        flash('Review submitted!', 'success')
+
+        return redirect(url_for('renter.view_homestay', id=homestay.id))
+
+    return render_template('renter/add_review.html', homestay=homestay)

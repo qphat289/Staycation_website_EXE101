@@ -45,6 +45,9 @@
                             </li>
                         {% endif %}
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('renter.profile') }}">My Profile</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout ({{ current_user.username }})</a>
                         </li>
                     {% else %}

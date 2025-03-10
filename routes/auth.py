@@ -1,12 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, current_user, login_required
-from models import db,User, ROLE_RENTER, ROLE_OWNER
+from models import db, User, ROLE_RENTER, ROLE_OWNER
 from urllib.parse import urlparse
 
-
-
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
-
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -21,13 +18,14 @@ def register():
         role = request.form.get('role')
         full_name = request.form.get('full_name')
         phone = request.form.get('phone')
-        
+        personal_id = request.form.get('personal_id')  # New field for personal ID
+
         # Validate form data
-        if not all([username, email, password, role, full_name, phone]):
+        if not all([username, email, password, role, full_name, phone, personal_id]):
             flash('All fields are required', 'danger')
             return render_template('auth/register.html')
             
-        # Check if username or email already exists
+        # Check if username, email, or personal_id already exists
         if User.query.filter_by(username=username).first():
             flash('Username already exists', 'danger')
             return render_template('auth/register.html')
@@ -36,13 +34,18 @@ def register():
             flash('Email already exists', 'danger')
             return render_template('auth/register.html')
             
+        if User.query.filter_by(personal_id=personal_id).first():
+            flash('Personal ID already exists', 'danger')
+            return render_template('auth/register.html')
+        
         # Create new user
         user = User(
             username=username,
             email=email,
             role=role,
             full_name=full_name,
-            phone=phone
+            phone=phone,
+            personal_id=personal_id
         )
         user.set_password(password)
         
@@ -56,7 +59,7 @@ def register():
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Handle user login"""
+    """Handle user login including personal ID"""
     if current_user.is_authenticated:
         return redirect(url_for('home'))
         
@@ -67,8 +70,9 @@ def login():
         
         user = User.query.filter_by(username=username).first()
         
+        # Validate username, password, and personal ID
         if not user or not user.check_password(password):
-            flash('Invalid username or password', 'danger')
+            flash('Invalid username, password!', 'danger')
             return render_template('auth/login.html')
             
         login_user(user, remember=remember)
