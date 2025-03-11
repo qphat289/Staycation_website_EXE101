@@ -155,12 +155,17 @@ def delete_homestay(id):
 @owner_bp.route('/view-bookings')
 @owner_required
 def view_bookings():
+    """View all bookings for the owner's homestays."""
     homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
+    
+    # Gather all bookings for these homestays
     bookings = []
     for h in homestays:
-        bookings.extend(h.bookings)
+        for b in h.bookings:
+            bookings.append(b)
     
     return render_template('owner/view_bookings.html', bookings=bookings)
+
 
 
 @owner_bp.route('/add-room/<int:homestay_id>', methods=['GET', 'POST'])
@@ -252,3 +257,20 @@ def add_room_images(room_id):
         return redirect(url_for('owner.dashboard'))
     
     return render_template('owner/add_room_images.html', room=room)
+
+@owner_bp.route('/confirm-booking/<int:booking_id>')
+@owner_required
+def confirm_booking(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Ensure this booking belongs to one of the current owner's homestays
+    if booking.homestay.owner_id != current_user.id:
+        flash('You do not have permission to confirm this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+
+    # Update the booking status
+    booking.status = 'confirmed'
+    db.session.commit()
+
+    flash('Booking confirmed successfully!', 'success')
+    return redirect(url_for('owner.view_bookings'))

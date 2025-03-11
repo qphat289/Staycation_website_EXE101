@@ -49,9 +49,10 @@
 
           <!-- Book Again: clickable if booking is completed or cancelled, only if room exists -->
           {% if booking.room is not none and booking.status in ['cancelled', 'completed'] %}
-            <a href="{{ url_for('renter.book_homestay', id=booking.room.homestay.id) }}" class="btn btn-primary btn-sm me-2">
-              Book Again
-            </a>
+          <a href="{{ url_for('renter.book_homestay', homestay_id=booking.room.homestay.id) }}" class="btn btn-primary btn-sm me-2">
+            Book Again
+          </a>
+          
           {% else %}
             <button class="btn btn-primary btn-sm me-2" disabled>Book Again</button>
           {% endif %}

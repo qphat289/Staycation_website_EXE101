@@ -4,6 +4,10 @@
 {% block content %}
 <h2>Owner Dashboard</h2>
 <hr>
+
+<!-- Button to see all bookings for the owner's homestays -->
+<a href="{{ url_for('owner.view_bookings') }}" class="btn btn-info mb-3">View All Bookings</a>
+
 {% if homestays %}
   <table class="table table-striped">
     <thead>
@@ -21,8 +25,14 @@
           <td>{{ home.address }}, {{ home.city }}</td>
           <td>{{ home.rooms|length }}</td>
           <td>
-            <a href="{{ url_for('owner.add_room', homestay_id=home.id) }}" class="btn btn-sm btn-primary">Add Room</a>
-            <a href="{{ url_for('owner.edit_homestay', id=home.id) }}" class="btn btn-sm btn-warning">Edit</a>
+            <!-- Link to add a new room to this homestay -->
+            <a href="{{ url_for('owner.add_room', homestay_id=home.id) }}" class="btn btn-sm btn-primary">
+              Add Room
+            </a>
+            <!-- Link to edit the homestay -->
+            <a href="{{ url_for('owner.edit_homestay', id=home.id) }}" class="btn btn-sm btn-warning">
+              Edit
+            </a>
           </td>
         </tr>
       {% endfor %}

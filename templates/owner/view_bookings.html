@@ -1,38 +1,59 @@
 {% extends 'base.html' %}
-{% block title %}View Bookings{% endblock %}
+{% block title %}All Bookings{% endblock %}
 
 {% block content %}
-<h2>All Bookings for Your Homestays</h2>
+<h2>All Bookings</h2>
 <hr>
-
 {% if bookings %}
-<div class="table-responsive">
-  <table class="table table-bordered">
+  <table class="table">
     <thead>
       <tr>
-        <th>Booking ID</th>
-        <th>Homestay Title</th>
-        <th>Renter</th>
+        <th>ID</th>
+        <th>Homestay</th>
+        <th>Room</th>
         <th>Start</th>
         <th>End</th>
         <th>Status</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-    {% for booking in bookings %}
-      <tr>
-        <td>{{ booking.id }}</td>
-        <td>{{ booking.homestay.title }}</td>
-        <td>{{ booking.renter.username if booking.renter else '' }}</td>
-        <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') if booking.start_time else '' }}</td>
-        <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') if booking.end_time else '' }}</td>
-        <td>{{ booking.status }}</td>
-      </tr>
-    {% endfor %}
+      {% for booking in bookings %}
+        <tr>
+          <td>{{ booking.id }}</td>
+          <td>{{ booking.homestay.title }}</td>
+          <td>{{ booking.room.room_number }}</td>
+          <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            {% if booking.status == 'pending' %}
+              <span class="badge bg-warning">Pending</span>
+            {% elif booking.status == 'confirmed' %}
+              <span class="badge bg-primary">Confirmed</span>
+            {% elif booking.status == 'active' %}
+              <span class="badge bg-info">Active</span>
+            {% elif booking.status == 'completed' %}
+              <span class="badge bg-success">Completed</span>
+            {% elif booking.status == 'cancelled' %}
+              <span class="badge bg-danger">Cancelled</span>
+            {% else %}
+              {{ booking.status }}
+            {% endif %}
+          </td>
+          <td>
+            {% if booking.status == 'pending' %}
+              <a href="{{ url_for('owner.confirm_booking', booking_id=booking.id) }}"
+                 class="btn btn-success btn-sm">
+                Confirm
+              </a>
+            {% endif %}
+            <!-- Possibly other actions like Cancel, etc. -->
+          </td>
+        </tr>
+      {% endfor %}
     </tbody>
   </table>
-</div>
 {% else %}
-<p>No bookings found for your homestays.</p>
+  <p>No bookings found.</p>
 {% endif %}
 {% endblock %}
