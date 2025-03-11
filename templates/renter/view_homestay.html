@@ -7,8 +7,7 @@
 
 <!-- Homestay details -->
 <p><strong>Address:</strong> {{ homestay.address }}, {{ homestay.district }}, {{ homestay.city }}</p>
-<!-- Removed the homestay price line -->
-{# <p><strong>Price per Hour:</strong> ${{ homestay.price_per_hour }}</p> #}
+{# The homestay price line is removed, as pricing is per room #}
 
 <!-- Rooms -->
 <h3>Available Rooms</h3>
@@ -25,29 +24,26 @@
             <strong>Price per hour:</strong> ${{ room.price_per_hour }}
           </p>
 
-          <!-- Example if you want a single featured image (thumbnail) -->
+          <!-- Display featured image or first image from room gallery -->
           {% if room.images and room.images|length > 0 %}
-          <!-- Show featured or first image as a thumbnail -->
-          {% set featured_img = room.images|selectattr("is_featured", "equalto", True)|list %}
-          {% if featured_img %}
-            <img src="{{ url_for('static', filename=featured_img[0].image_path) }}" 
-                 alt="Featured Image"
-                 style="max-width: 100px; height:auto;">
+            {% set featured_img = room.images|selectattr("is_featured", "equalto", True)|list %}
+            {% if featured_img %}
+              <img src="{{ url_for('static', filename=featured_img[0].image_path) }}" 
+                   alt="Featured Image"
+                   style="max-width: 100px; height:auto;">
+            {% else %}
+              <img src="{{ url_for('static', filename=room.images[0].image_path) }}"
+                   alt="Room Image"
+                   style="max-width: 100px; height:auto;">
+            {% endif %}
           {% else %}
-            <img src="{{ url_for('static', filename=room.images[0].image_path) }}"
-                 alt="Room Image"
+            <img src="{{ url_for('static', filename='images/default-room.jpg') }}" alt="No Image"
                  style="max-width: 100px; height:auto;">
           {% endif %}
-        {% else %}
-          <img src="{{ url_for('static', filename='images/default-room.jpg') }}" alt="No Image"
-               style="max-width: 100px; height:auto;">
-        {% endif %}
-
-          <!-- Button to book -->
-          <a href="{{ url_for('renter.book_homestay', id=homestay.id, room_id=room.id) }}" 
-             class="btn btn-primary btn-sm mt-2">
-            Book This Room
-          </a>
+          <a href="{{ url_for('renter.book_homestay', homestay_id=homestay.id) }}?room_id={{ room.id }}" 
+          class="btn btn-primary btn-sm mt-2">
+         Book This Room
+       </a>
 
           <!-- Optional: Button to view full room detail or gallery -->
           <a href="{{ url_for('renter.view_room_detail', room_id=room.id) }}" 
@@ -70,8 +66,7 @@
         <p><strong>Rating:</strong> {{ review.rating }} / 5</p>
         <p>{{ review.content }}</p>
         <p class="text-muted">
-          By {{ review.author.username }} 
-          on {{ review.created_at.strftime('%Y-%m-%d') }}
+          By {{ review.author.username }} on {{ review.created_at.strftime('%Y-%m-%d') }}
         </p>
       </div>
     </div>
@@ -80,7 +75,6 @@
   <p>No reviews yet.</p>
 {% endif %}
 
-<!-- Removed the “Write a Review” button (read-only reviews) -->
-{# <button class="btn btn-secondary">Write a Review</button> #}
+{# Removed the "Write a Review" button here since reviews are read-only on this page #}
 
 {% endblock %}

@@ -1,3 +1,4 @@
+<!-- templates/renter/book_homestay.html -->
 {% extends 'base.html' %}
 {% block title %}Book Homestay: {{ homestay.title }}{% endblock %}
 
@@ -9,63 +10,37 @@
         <h4>Book Homestay: {{ homestay.title }}</h4>
       </div>
       <div class="card-body">
-        <form method="post" action="{{ url_for('renter.book_homestay', id=homestay.id) }}" id="booking-form">
+        <!-- Notice: changed parameter from id=homestay.id to homestay_id=homestay.id -->
+        <form method="post" action="{{ url_for('renter.book_homestay', homestay_id=homestay.id) }}" id="booking-form">
 
           <!-- Room Selection Dropdown -->
           <div class="mb-3">
             <label for="room_id" class="form-label">Select Room</label>
             <select class="form-select" id="room_id" name="room_id" required>
               {% for room in homestay.rooms %}
-                <!-- Store the room's price in a data-price attribute -->
-                <option 
-                  value="{{ room.id }}" 
-                  data-price="{{ room.price_per_hour|default(0) }}">
-                  Room {{ room.room_number }} 
-                  - Beds: {{ room.bed_count }}, 
-                  Baths: {{ room.bathroom_count }}, 
-                  Capacity: {{ room.max_guests }}
+                <option value="{{ room.id }}" data-price="{{ room.price_per_hour|default(0) }}">
+                  Room {{ room.room_number }} - Beds: {{ room.bed_count }}, Baths: {{ room.bathroom_count }}, Capacity: {{ room.max_guests }}
                 </option>
               {% endfor %}
             </select>
           </div>
 
-          <!-- Date Field (with flatpickr or HTML date input) -->
+          <!-- Date Field (using Flatpickr) -->
           <div class="mb-3">
             <label for="start_date" class="form-label">Date</label>
-            <input
-              type="text"
-              class="form-control"
-              id="start_date"
-              name="start_date"
-              required
-            >
+            <input type="text" class="form-control" id="start_date" name="start_date" required>
           </div>
 
           <!-- Time Field -->
           <div class="mb-3">
             <label for="start_time" class="form-label">Time</label>
-            <input
-              type="time"
-              class="form-control"
-              id="start_time"
-              name="start_time"
-              required
-            >
+            <input type="time" class="form-control" id="start_time" name="start_time" required>
           </div>
 
-          <!-- Hours Field -->
+          <!-- Duration Field in Minutes -->
           <div class="mb-3">
-            <label for="hours" class="form-label">Number of Hours</label>
-            <input
-              type="number"
-              class="form-control"
-              id="hours"
-              name="hours"
-              min="1"
-              max="24"
-              value="1"
-              required
-            >
+            <label for="duration" class="form-label">Duration (in minutes)</label>
+            <input type="number" class="form-control" id="duration" name="duration" min="1" value="1" required>
           </div>
 
           <!-- Booking Summary -->
@@ -74,12 +49,12 @@
               <h5>Booking Summary</h5>
               <table class="table table-borderless">
                 <tr>
-                  <td>Price per hour</td>
+                  <td>Price per Hour</td>
                   <td class="text-end" id="price-per-hour">$0.00</td>
                 </tr>
                 <tr>
-                  <td>Hours</td>
-                  <td class="text-end" id="hours-display">1</td>
+                  <td>Duration (min)</td>
+                  <td class="text-end" id="duration-display">1</td>
                 </tr>
                 <tr class="fw-bold">
                   <td>Total</td>
@@ -104,42 +79,35 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-  // Initialize flatpickr for start_date
+  // Initialize flatpickr on the date input
   flatpickr("#start_date", {
     minDate: "today",
     dateFormat: "Y-m-d"
   });
 
-  // Grab elements
+  // Grab elements for summary calculation
   const roomSelect = document.getElementById('room_id');
-  const hoursInput = document.getElementById('hours');
-  const hoursDisplay = document.getElementById('hours-display');
+  const durationInput = document.getElementById('duration');
+  const durationDisplay = document.getElementById('duration-display');
   const pricePerHourEl = document.getElementById('price-per-hour');
   const totalPriceEl = document.getElementById('total-price');
 
-  // Function to compute total
+  // Function to update booking summary based on selected room's price and duration
   function updateSummary() {
-    // selected room's price
     const selectedOption = roomSelect.options[roomSelect.selectedIndex];
     const pricePerHour = parseFloat(selectedOption.dataset.price) || 0;
-
-    // hours
-    const hours = parseInt(hoursInput.value) || 0;
-
-    // set display
-    hoursDisplay.textContent = hours;
+    const duration = parseInt(durationInput.value) || 1;
+    
+    durationDisplay.textContent = duration;
     pricePerHourEl.textContent = '$' + pricePerHour.toFixed(2);
 
-    // compute total
-    const totalPrice = pricePerHour * hours;
+    // Convert minutes to hours for pricing calculation
+    const totalPrice = (duration / 60) * pricePerHour;
     totalPriceEl.textContent = '$' + totalPrice.toFixed(2);
   }
 
-  // Listen for changes
   roomSelect.addEventListener('change', updateSummary);
-  hoursInput.addEventListener('input', updateSummary);
-
-  // Initialize summary on page load
+  durationInput.addEventListener('input', updateSummary);
   updateSummary();
 </script>
 {% endblock %}
