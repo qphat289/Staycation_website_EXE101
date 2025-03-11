@@ -82,36 +82,53 @@ def view_homestay(id):
 
 
 
-@renter_bp.route('/book/<int:id>', methods=['GET', 'POST'])
+@renter_bp.route('/book/<int:homestay_id>', methods=['GET', 'POST'])
 @renter_required
-def book_homestay(id):
-    homestay = Homestay.query.get_or_404(id)
-    
+def book_homestay(homestay_id):
+    homestay = Homestay.query.get_or_404(homestay_id)
+
+    # If the user selected a room from a previous page or form:
+    # We try to get it from 'request.form', or fallback to 'request.args'.
+    # If there's no room_id, we can't compute a price, so you might show an error or redirect.
+    room_id = request.form.get('room_id') or request.args.get('room_id')
+    room = None
+    if room_id:
+        room = Room.query.get_or_404(room_id)
+
     if request.method == 'POST':
-        # Get selected room_id from the form
-        room_id = request.form.get('room_id')
+        # Basic validation to ensure we have a room
+        if not room:
+            flash('No room selected. Please choose a room.', 'danger')
+            return redirect(url_for('renter.book_homestay', homestay_id=homestay.id))
+
         start_date = request.form.get('start_date')
         start_time = request.form.get('start_time')
+        hours = int(request.form.get('hours', 1))
+
+        # Check date/time
         if not start_date or not start_time:
             flash('You must select both date and time', 'warning')
-            return redirect(url_for('renter.book_homestay', id=homestay.id))
-        
-        hours = int(request.form.get('hours', 1))
+            return redirect(url_for('renter.book_homestay', homestay_id=homestay.id, room_id=room_id))
+
+        # Parse datetime
         start_str = f"{start_date} {start_time}"
         start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
         end_datetime = start_datetime + timedelta(hours=hours)
-        total_price = homestay.price_per_hour * hours
 
-        # Check for overlapping bookings (for this homestay, or even for this room if desired)
-        existing_bookings = Booking.query.filter_by(homestay_id=homestay.id).all()
+        # Calculate total price using the room's price
+        total_price = room.price_per_hour * hours
+
+        # Check for overlapping bookings for that room (or entire homestay if desired)
+        existing_bookings = Booking.query.filter_by(room_id=room.id).all()
         for booking in existing_bookings:
-            if (start_datetime < booking.end_time and end_datetime > booking.start_time):
-                flash('This homestay is not available during the selected time period', 'danger')
-                return redirect(url_for('renter.book_homestay', id=homestay.id))
-        
+            if start_datetime < booking.end_time and end_datetime > booking.start_time:
+                flash('This room is not available during the selected time period', 'danger')
+                return redirect(url_for('renter.book_homestay', homestay_id=homestay.id, room_id=room_id))
+
+        # Create new booking
         booking = Booking(
-            homestay_id=homestay.id,
-            room_id=room_id,  # now we use the room_id from the form
+            homestay_id=homestay.id,   # If you want to store homestay as well
+            room_id=room.id,
             renter_id=current_user.id,
             start_time=start_datetime,
             end_time=end_datetime,
@@ -120,11 +137,14 @@ def book_homestay(id):
         )
         db.session.add(booking)
         db.session.commit()
-        
+
         flash('Booking request submitted successfully!', 'success')
         return redirect(url_for('renter.dashboard'))
-    
-    return render_template('renter/book_homestay.html', homestay=homestay)
+
+    # If GET request or form not submitted yet, render template.
+    # We can pass the room to the template if you want to show its info.
+    return render_template('renter/book_homestay.html', homestay=homestay, room=room)
+
 
 
 

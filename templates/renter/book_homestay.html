@@ -16,14 +16,20 @@
             <label for="room_id" class="form-label">Select Room</label>
             <select class="form-select" id="room_id" name="room_id" required>
               {% for room in homestay.rooms %}
-                <option value="{{ room.id }}">
-                  Room {{ room.room_number }} - Beds: {{ room.bed_count }}, Baths: {{ room.bathroom_count }}, Capacity: {{ room.max_guests }}
+                <!-- Store the room's price in a data-price attribute -->
+                <option 
+                  value="{{ room.id }}" 
+                  data-price="{{ room.price_per_hour|default(0) }}">
+                  Room {{ room.room_number }} 
+                  - Beds: {{ room.bed_count }}, 
+                  Baths: {{ room.bathroom_count }}, 
+                  Capacity: {{ room.max_guests }}
                 </option>
               {% endfor %}
             </select>
           </div>
 
-          <!-- Date Field (using Flatpickr) -->
+          <!-- Date Field (with flatpickr or HTML date input) -->
           <div class="mb-3">
             <label for="start_date" class="form-label">Date</label>
             <input
@@ -69,7 +75,7 @@
               <table class="table table-borderless">
                 <tr>
                   <td>Price per hour</td>
-                  <td class="text-end">${{ homestay.price_per_hour }}</td>
+                  <td class="text-end" id="price-per-hour">$0.00</td>
                 </tr>
                 <tr>
                   <td>Hours</td>
@@ -77,7 +83,7 @@
                 </tr>
                 <tr class="fw-bold">
                   <td>Total</td>
-                  <td class="text-end" id="total-price">${{ homestay.price_per_hour }}</td>
+                  <td class="text-end" id="total-price">$0.00</td>
                 </tr>
               </table>
             </div>
@@ -98,23 +104,42 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-  console.log("Flatpickr script loaded...");
+  // Initialize flatpickr for start_date
   flatpickr("#start_date", {
     minDate: "today",
     dateFormat: "Y-m-d"
   });
 
-  // Price calculation logic
+  // Grab elements
+  const roomSelect = document.getElementById('room_id');
   const hoursInput = document.getElementById('hours');
   const hoursDisplay = document.getElementById('hours-display');
+  const pricePerHourEl = document.getElementById('price-per-hour');
   const totalPriceEl = document.getElementById('total-price');
-  const pricePerHour = parseFloat('{{ homestay.price_per_hour }}') || 0;
 
-  hoursInput.addEventListener('input', function() {
-    const hours = parseInt(this.value) || 0;
-    const totalPrice = hours * pricePerHour;
+  // Function to compute total
+  function updateSummary() {
+    // selected room's price
+    const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+    const pricePerHour = parseFloat(selectedOption.dataset.price) || 0;
+
+    // hours
+    const hours = parseInt(hoursInput.value) || 0;
+
+    // set display
     hoursDisplay.textContent = hours;
+    pricePerHourEl.textContent = '$' + pricePerHour.toFixed(2);
+
+    // compute total
+    const totalPrice = pricePerHour * hours;
     totalPriceEl.textContent = '$' + totalPrice.toFixed(2);
-  });
+  }
+
+  // Listen for changes
+  roomSelect.addEventListener('change', updateSummary);
+  hoursInput.addEventListener('input', updateSummary);
+
+  // Initialize summary on page load
+  updateSummary();
 </script>
 {% endblock %}
