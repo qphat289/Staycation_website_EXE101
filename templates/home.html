@@ -38,7 +38,6 @@
                             <i class="bi bi-geo-alt"></i> {{ homestay.city }}, {{ homestay.district }}
                         </small>
                     </p>
-                    <p class="card-text fw-bold">${{ homestay.price_per_hour }}/hour</p>
                 </div>
                 <div class="card-footer">
                     <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary">View Details</a>

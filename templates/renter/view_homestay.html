@@ -5,66 +5,82 @@
 <h2>{{ homestay.title }}</h2>
 <hr>
 
+<!-- Homestay details -->
+<p><strong>Address:</strong> {{ homestay.address }}, {{ homestay.district }}, {{ homestay.city }}</p>
+<!-- Removed the homestay price line -->
+{# <p><strong>Price per Hour:</strong> ${{ homestay.price_per_hour }}</p> #}
+
+<!-- Rooms -->
+<h3>Available Rooms</h3>
 <div class="row">
-  <div class="col-md-8">
-    <!-- Homestay details here (image, description, address, etc.) -->
-    <p><strong>Address:</strong> {{ homestay.address }}, {{ homestay.district }}, {{ homestay.city }}</p>
-    <p><strong>Price per Hour:</strong> ${{ homestay.price_per_hour }}</p>
-  </div>
+  {% for room in rooms %}
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Room {{ room.room_number }}</h5>
+          <p class="card-text">
+            Beds: {{ room.bed_count }}<br>
+            Bathrooms: {{ room.bathroom_count }}<br>
+            Capacity: {{ room.max_guests }}<br>
+            <strong>Price per hour:</strong> ${{ room.price_per_hour }}
+          </p>
+
+          <!-- Example if you want a single featured image (thumbnail) -->
+          {% if room.images and room.images|length > 0 %}
+          <!-- Show featured or first image as a thumbnail -->
+          {% set featured_img = room.images|selectattr("is_featured", "equalto", True)|list %}
+          {% if featured_img %}
+            <img src="{{ url_for('static', filename=featured_img[0].image_path) }}" 
+                 alt="Featured Image"
+                 style="max-width: 100px; height:auto;">
+          {% else %}
+            <img src="{{ url_for('static', filename=room.images[0].image_path) }}"
+                 alt="Room Image"
+                 style="max-width: 100px; height:auto;">
+          {% endif %}
+        {% else %}
+          <img src="{{ url_for('static', filename='images/default-room.jpg') }}" alt="No Image"
+               style="max-width: 100px; height:auto;">
+        {% endif %}
+
+          <!-- Button to book -->
+          <a href="{{ url_for('renter.book_homestay', id=homestay.id, room_id=room.id) }}" 
+             class="btn btn-primary btn-sm mt-2">
+            Book This Room
+          </a>
+
+          <!-- Optional: Button to view full room detail or gallery -->
+          <a href="{{ url_for('renter.view_room_detail', room_id=room.id) }}" 
+             class="btn btn-info btn-sm mt-2">
+            View Detail
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
 </div>
 
 <hr>
-
-<h3>Available Rooms</h3>
-{% if rooms %}
-  <div class="row">
-    {% for room in rooms %}
-      <div class="col-md-4 mb-3">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Room {{ room.room_number }}</h5>
-            <p class="card-text">
-              Beds: {{ room.bed_count }}<br>
-              Bathrooms: {{ room.bathroom_count }}<br>
-              Capacity: {{ room.max_guests }} guests
-            </p>
-            <a href="{{ url_for('renter.book_homestay', id=homestay.id, room_id=room.id) }}" class="btn btn-primary btn-sm">
-              Book This Room
-            </a>
-          </div>
-        </div>
-      </div>
-    {% endfor %}
-  </div>
-{% else %}
-  <p>No rooms available for this homestay.</p>
-{% endif %}
-
-<hr>
-
-<!-- Reviews Section (if you have implemented reviews) -->
+<!-- Reviews Section (READ-ONLY) -->
 <h3>Reviews</h3>
-{% if reviews %}
+{% if homestay.reviews.count() > 0 %}
   {% for review in reviews %}
     <div class="card mb-3">
       <div class="card-body">
         <p><strong>Rating:</strong> {{ review.rating }} / 5</p>
         <p>{{ review.content }}</p>
-        <p class="text-muted">By {{ review.author.username }} on {{ review.created_at.strftime('%Y-%m-%d') }}</p>
+        <p class="text-muted">
+          By {{ review.author.username }} 
+          on {{ review.created_at.strftime('%Y-%m-%d') }}
+        </p>
       </div>
     </div>
   {% endfor %}
 {% else %}
-  <p>No reviews yet. Be the first to review!</p>
+  <p>No reviews yet.</p>
 {% endif %}
 
-<!-- Button to write a review (if booking completed) -->
-{% if current_user.is_authenticated and current_user.is_renter() %}
-  <a href="{{ url_for('renter.add_review', homestay_id=homestay.id) }}" class="btn btn-secondary">
-    Write a Review
-  </a>
-{% else %}
-  <p><a href="{{ url_for('auth.login') }}">Login</a> to write a review.</p>
-{% endif %}
+<!-- Removed the “Write a Review” button (read-only reviews) -->
+{# <button class="btn btn-secondary">Write a Review</button> #}
 
 {% endblock %}

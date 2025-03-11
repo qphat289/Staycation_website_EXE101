@@ -5,6 +5,7 @@
 <h2>Reviews for {{ homestay.title }}</h2>
 <hr>
 
+<!-- Show existing reviews -->
 {% if reviews %}
   {% for review in reviews %}
     <div class="card mb-3">
@@ -19,8 +20,14 @@
   <p>No reviews yet for this homestay.</p>
 {% endif %}
 
-{% if can_post %}
-  <hr>
+<hr>
+<!-- Always show the "Write a Review" button -->
+<a href="{{ url_for('renter.view_reviews', homestay_id=homestay.id, write=1) }}" class="btn btn-primary mb-3">
+  Write a Review
+</a>
+
+<!-- If user can post AND write_mode is set, show the form -->
+{% if can_post and write_mode %}
   <h4>Leave or Update Your Review</h4>
   <form method="post">
     <div class="mb-3">
@@ -34,6 +41,7 @@
     <button type="submit" class="btn btn-primary">Submit Review</button>
   </form>
 {% else %}
-  <p class="mt-3">You can only post a review if you have a completed booking.</p>
+  <!-- If user can't post or didn't click 'Write a Review', no form. 
+       If they can't post, the route already flashed a warning. -->
 {% endif %}
 {% endblock %}

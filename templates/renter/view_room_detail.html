@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Room {{ room.room_number }} Details{% endblock %}
+
+{% block content %}
+<h2>Room {{ room.room_number }} Details</h2>
+<p>Price per hour: ${{ room.price_per_hour }}</p>
+<p>Beds: {{ room.bed_count }}</p>
+<p>Bathrooms: {{ room.bathroom_count }}</p>
+<p>Max Guests: {{ room.max_guests }}</p>
+
+<!-- Gallery of images -->
+{% if room.images %}
+  <h3>Gallery</h3>
+  <div class="row">
+    {% for img in room.images %}
+      <div class="col-md-3 mb-3">
+        <img src="{{ url_for('static', filename=img.image_path) }}" 
+             alt="Room Image"
+             style="width: 100%; height: auto;">
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>No images for this room yet.</p>
+{% endif %}
+{% endblock %}

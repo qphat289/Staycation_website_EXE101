@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
-from models import Homestay, Booking, Review, db
+from models import Homestay, Booking, Review, db, Room, RoomImage
 from datetime import datetime, timedelta
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
@@ -69,10 +69,16 @@ def search():
 @renter_bp.route('/homestay/<int:id>')
 def view_homestay(id):
     homestay = Homestay.query.get_or_404(id)
-    # Get all rooms for the homestay (you might filter based on availability later)
-    rooms = homestay.rooms  # Assuming the relationship is set up in Homestay model
+    rooms = homestay.rooms  # or however you get rooms
+
+    # Sort reviews in Python:
     reviews = homestay.reviews.order_by(Review.created_at.desc()).all()
-    return render_template('renter/view_homestay.html', homestay=homestay, rooms=rooms, reviews=reviews)
+
+    return render_template('renter/view_homestay.html',
+                           homestay=homestay,
+                           rooms=rooms,
+                           reviews=reviews)
+
 
 
 
@@ -248,12 +254,15 @@ def review_booking(booking_id):
 
 @renter_bp.route('/reviews/<int:homestay_id>', methods=['GET', 'POST'])
 def view_reviews(homestay_id):
+    """
+    Displays reviews for homestay, optionally letting the user post a review if they have a completed booking.
+    """
     homestay = Homestay.query.get_or_404(homestay_id)
     
-    # Fetch all reviews
+    # Get existing reviews
     reviews = Review.query.filter_by(homestay_id=homestay.id).order_by(Review.created_at.desc()).all()
     
-    # Check if user can post (i.e. has a completed booking)
+    # Determine if user can post (i.e., they have a completed booking)
     can_post = False
     if current_user.is_authenticated and current_user.is_renter():
         completed_booking = Booking.query.filter_by(
@@ -264,12 +273,12 @@ def view_reviews(homestay_id):
         if completed_booking:
             can_post = True
 
+    # If user is trying to post a new or updated review
     if request.method == 'POST':
         if not can_post:
             flash("You can only post a review if you have a completed booking.", "danger")
             return redirect(url_for('renter.view_reviews', homestay_id=homestay.id))
         
-        # proceed to create/update review
         rating = int(request.form.get('rating', 5))
         content = request.form.get('content', '')
         
@@ -277,7 +286,6 @@ def view_reviews(homestay_id):
             homestay_id=homestay.id,
             user_id=current_user.id
         ).first()
-        
         if existing_review:
             existing_review.rating = rating
             existing_review.content = content
@@ -291,8 +299,26 @@ def view_reviews(homestay_id):
             )
             db.session.add(new_review)
             flash("Review submitted!", "success")
-
         db.session.commit()
         return redirect(url_for('renter.view_reviews', homestay_id=homestay.id))
+    
+    # 'write' param indicates user wants to open the form
+    write_mode = request.args.get('write')
+    
+    # If user tries to write but can't post, flash a warning
+    if write_mode and not can_post:
+        flash("You can only post a review if you have a completed booking.", "warning")
+    
+    return render_template(
+        'renter/view_reviews.html',
+        homestay=homestay,
+        reviews=reviews,
+        can_post=can_post,
+        write_mode=write_mode
+    )
 
-    return render_template('renter/view_reviews.html', homestay=homestay, reviews=reviews, can_post=can_post)
+@renter_bp.route('/room/<int:room_id>/detail')
+def view_room_detail(room_id):
+    room = Room.query.get_or_404(room_id)
+    # This page shows all images for the room
+    return render_template('renter/view_room_detail.html', room=room)
