@@ -5,8 +5,17 @@ from werkzeug.utils import secure_filename
 from models import db, Homestay, Room, Booking, RoomImage
 import os
 from datetime import datetime
+from PIL import Image
+import io
+import os
+
 
 owner_bp = Blueprint('owner', __name__, url_prefix='/owner')
+
+def allowed_file(filename):
+    """Check if the file extension is allowed"""
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Decorator to ensure user is an owner
 def owner_required(f):
@@ -53,10 +62,17 @@ def add_homestay():
                 filename = secure_filename(image.filename)
                 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
                 filename = f"{timestamp}_{filename}"
-                os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
                 
-                image_path = os.path.join('uploads', filename)
-                image.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                # Make sure uploads folder exists inside static
+                upload_folder = os.path.join('static', 'uploads')
+                os.makedirs(upload_folder, exist_ok=True)
+                
+                # Save image to static/uploads folder
+                save_path = os.path.join(upload_folder, filename)
+                image.save(save_path)
+                
+                # Store path relative to static folder for url_for
+                image_path = f"uploads/{filename}"
         
         homestay = Homestay(
             title=title,
@@ -108,17 +124,22 @@ def edit_homestay(id):
                 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
                 filename = f"{timestamp}_{filename}"
                 
-                os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
+                # Make sure uploads folder exists inside static
+                upload_folder = os.path.join('static', 'uploads')
+                os.makedirs(upload_folder, exist_ok=True)
                 
                 # Delete old image if it exists
                 if homestay.image_path:
-                    old_path = os.path.join(current_app.config['UPLOAD_FOLDER'],
-                                            os.path.basename(homestay.image_path))
+                    old_path = os.path.join('static', homestay.image_path)
                     if os.path.exists(old_path):
                         os.remove(old_path)
                 
-                homestay.image_path = os.path.join('uploads', filename)
-                image.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                # Save image to static/uploads folder
+                save_path = os.path.join(upload_folder, filename)
+                image.save(save_path)
+                
+                # Store path relative to static folder for url_for
+                homestay.image_path = f"uploads/{filename}"
         
         db.session.commit()
         
@@ -239,38 +260,144 @@ def add_room(homestay_id):
 @owner_required
 def add_room_images(room_id):
     room = Room.query.get_or_404(room_id)
+    
     if request.method == 'POST':
         images = request.files.getlist('images')
         for img_file in images:
             if img_file and img_file.filename:
-                filename = secure_filename(img_file.filename)
-                save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                img_file.save(save_path)
-
-                new_img = RoomImage(
-                    image_path=f"uploads/{filename}",
-                    room_id=room.id
-                )
-                db.session.add(new_img)
+                # Process image to improve quality and standardize size
+                try:
+                    # Open the image
+                    img = Image.open(img_file)
+                    
+                    # Convert to RGB if needed (for PNG with transparency)
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    
+                    # Resize to a standard size while maintaining aspect ratio
+                    max_size = (800, 600)
+                    img.thumbnail(max_size, Image.LANCZOS)
+                    
+                    # Create a filename
+                    filename = secure_filename(img_file.filename)
+                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                    filename = f"{timestamp}_{filename}"
+                    
+                    # Save path
+                    upload_folder = os.path.join('static', 'uploads')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    save_path = os.path.join(upload_folder, filename)
+                    
+                    # Save the processed image
+                    img.save(save_path, quality=85, optimize=True)
+                    
+                    # Create database record
+                    is_featured = not RoomImage.query.filter_by(room_id=room.id, is_featured=True).first()
+                    
+                    new_img = RoomImage(
+                        image_path=f"uploads/{filename}",
+                        room_id=room.id,
+                        is_featured=is_featured
+                    )
+                    db.session.add(new_img)
+                    
+                except Exception as e:
+                    # Log the error but continue processing other images
+                    print(f"Error processing image: {e}")
+                    continue
+                    
         db.session.commit()
-        flash("Images added successfully!", "success")
+        flash("Images added successfully to the room gallery!", "success")
+        return redirect(url_for('owner.add_room_images', room_id=room.id))
+    
+    # Get existing images for this room
+    existing_images = RoomImage.query.filter_by(room_id=room.id).all()
+    
+    return render_template('owner/add_room_images.html', room=room, existing_images=existing_images)
+
+@owner_bp.route('/room-image/<int:image_id>/set-featured')
+@owner_required
+def set_featured_image(image_id):
+    image = RoomImage.query.get_or_404(image_id)
+    room = Room.query.get_or_404(image.room_id)
+    homestay = room.homestay
+    
+    # Check if the current user owns this homestay
+    if homestay.owner_id != current_user.id:
+        flash('You do not have permission to modify this room', 'danger')
         return redirect(url_for('owner.dashboard'))
     
-    return render_template('owner/add_room_images.html', room=room)
-
-@owner_bp.route('/confirm-booking/<int:booking_id>')
-@owner_required
-def confirm_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
+    # Clear featured status from all images for this room
+    for img in RoomImage.query.filter_by(room_id=room.id).all():
+        img.is_featured = False
     
-    # Ensure this booking belongs to one of the current owner's homestays
-    if booking.homestay.owner_id != current_user.id:
-        flash('You do not have permission to confirm this booking.', 'danger')
-        return redirect(url_for('owner.view_bookings'))
-
-    # Update the booking status
-    booking.status = 'confirmed'
+    # Set this image as featured
+    image.is_featured = True
     db.session.commit()
+    
+    flash('Featured image updated successfully', 'success')
+    return redirect(url_for('owner.add_room_images', room_id=room.id))
 
-    flash('Booking confirmed successfully!', 'success')
-    return redirect(url_for('owner.view_bookings'))
+@owner_bp.route('/manage-rooms/<int:homestay_id>')
+@owner_required
+def manage_rooms(homestay_id):
+    homestay = Homestay.query.get_or_404(homestay_id)
+    
+    # Check if the current user owns this homestay
+    if homestay.owner_id != current_user.id:
+        flash('You do not have permission to manage rooms for this homestay', 'danger')
+        return redirect(url_for('owner.dashboard'))
+    
+    rooms = Room.query.filter_by(homestay_id=homestay_id).all()
+    
+    # For each room, get the featured image
+    for room in rooms:
+        room.featured_image = RoomImage.query.filter_by(room_id=room.id, is_featured=True).first()
+    
+    return render_template('owner/manage_rooms.html', homestay=homestay, rooms=rooms)
+
+@owner_bp.route('/room-image/<int:image_id>/set-featured')
+@owner_required
+def set_room_image_as_featured(image_id):
+    image = RoomImage.query.get_or_404(image_id)
+    room = Room.query.get_or_404(image.room_id)
+    
+    # Clear featured status from all images for this room
+    for img in RoomImage.query.filter_by(room_id=room.id).all():
+        img.is_featured = False
+    
+    # Set this image as featured
+    image.is_featured = True
+    db.session.commit()
+    
+    flash('Featured image updated successfully', 'success')
+    return redirect(url_for('owner.add_room_images', room_id=room.id))
+
+@owner_bp.route('/room-image/<int:image_id>/delete')
+@owner_required
+def delete_room_image(image_id):
+    image = RoomImage.query.get_or_404(image_id)
+    room_id = image.room_id
+    
+    # Delete the image file
+    if image.image_path:
+        file_path = os.path.join('static', image.image_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+    
+    # Check if this was the featured image
+    was_featured = image.is_featured
+    
+    # Delete the database record
+    db.session.delete(image)
+    db.session.commit()
+    
+    # If we deleted the featured image, set a new one if available
+    if was_featured:
+        next_image = RoomImage.query.filter_by(room_id=room_id).first()
+        if next_image:
+            next_image.is_featured = True
+            db.session.commit()
+    
+    flash('Image deleted successfully', 'success')
+    return redirect(url_for('owner.add_room_images', room_id=room_id))

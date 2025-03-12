@@ -7,11 +7,11 @@
 
 {% if bookings %}
   {% for booking in bookings %}
-    <div class="card mb-3">
-      <div class="card-body d-flex justify-content-between align-items-center">
-        
-        <!-- Left side: Homestay name + Room + Status + Times -->
-        <div>
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row">
+        <!-- Left side: Homestay info -->
+        <div class="col-md-8">
           {% if booking.room is not none %}
             <h5 class="card-title mb-1">
               {{ booking.room.homestay.title }} - Room {{ booking.room.room_number }}
@@ -34,45 +34,42 @@
           {% elif booking.status == 'pending' %}
             <span class="badge bg-warning">Pending</span>
           {% else %}
-            <span class="badge bg-secondary">{{ booking.status }}</span>
+            <span class="badge bg-secondary">{{ booking.status|capitalize }}</span>
           {% endif %}
         </div>
-
-        <!-- Right side: Buttons -->
-        <div>
-          <!-- Cancel Booking: only show if booking not cancelled or completed -->
+        
+        <!-- Right side: Actions -->
+        <div class="col-md-4 d-flex flex-column flex-md-row justify-content-md-end align-items-md-center mt-3 mt-md-0">
           {% if booking.status not in ['cancelled', 'completed'] %}
-            <a href="{{ url_for('renter.cancel_booking', id=booking.id) }}" class="btn btn-danger btn-sm me-2">
+            <a href="{{ url_for('renter.cancel_booking', id=booking.id) }}" class="btn btn-danger btn-sm me-md-2 mb-2 mb-md-0">
               Cancel
             </a>
           {% endif %}
-
-          <!-- Book Again: clickable if booking is completed or cancelled, only if room exists -->
+  
           {% if booking.room is not none and booking.status in ['cancelled', 'completed'] %}
-          <a href="{{ url_for('renter.book_homestay', homestay_id=booking.room.homestay.id) }}" class="btn btn-primary btn-sm me-2">
-            Book Again
-          </a>
-          
+            <a href="{{ url_for('renter.book_homestay', homestay_id=booking.room.homestay.id) }}" class="btn btn-primary btn-sm me-md-2 mb-2 mb-md-0">
+              Book Again
+            </a>
           {% else %}
-            <button class="btn btn-primary btn-sm me-2" disabled>Book Again</button>
+            <button class="btn btn-primary btn-sm me-md-2 mb-2 mb-md-0" disabled>Book Again</button>
           {% endif %}
-
-          <!-- Review Button: clickable if booking is completed, only if room exists -->
+  
           {% if booking.room is not none %}
-            <a href="{{ url_for('renter.view_reviews', homestay_id=booking.room.homestay.id) }}" class="btn btn-secondary btn-sm me-2">
+            <a href="{{ url_for('renter.view_reviews', homestay_id=booking.room.homestay.id) }}" class="btn btn-secondary btn-sm me-md-2 mb-2 mb-md-0">
               Review
             </a>
           {% else %}
-            <button class="btn btn-secondary btn-sm me-2" disabled>Review</button>
+            <button class="btn btn-secondary btn-sm me-md-2 mb-2 mb-md-0" disabled>Review</button>
           {% endif %}
-
-          <!-- Details button always visible -->
+  
           <a href="{{ url_for('renter.booking_details', booking_id=booking.id) }}" class="btn btn-info btn-sm">
             Details
           </a>
         </div>
       </div>
     </div>
+  </div>
+  
   {% endfor %}
 {% else %}
   <p>No bookings found.</p>

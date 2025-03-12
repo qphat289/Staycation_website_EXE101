@@ -49,7 +49,7 @@ class User(UserMixin, db.Model):
 
 class Homestay(db.Model):
     __tablename__ = 'homestay'
-
+    
     """Homestay model for properties listed by owners"""
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)

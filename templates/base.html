@@ -14,6 +14,14 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    {# Make the status_classes dictionary available to all child templates #}
+    {% set status_classes = {
+        'pending': 'badge bg-warning',
+        'confirmed': 'badge bg-primary',
+        'active': 'badge bg-info',
+        'completed': 'badge bg-success',
+        'cancelled': 'badge bg-danger'
+    } %}
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">

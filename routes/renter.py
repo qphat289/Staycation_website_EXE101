@@ -2,6 +2,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from models import Homestay, Booking, Review, db, Room, RoomImage
 from datetime import datetime, timedelta
+from PIL import Image
+import io
+import os
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
@@ -77,18 +80,22 @@ def search():
                           districts=[district[0] for district in districts],
                           search_params=request.args)
 
-@renter_bp.route('/homestay/<int:id>')
+@renter_bp.route('/view-homestay/<int:id>')
 def view_homestay(id):
     homestay = Homestay.query.get_or_404(id)
-    rooms = homestay.rooms  # or however you get rooms
+    rooms = Room.query.filter_by(homestay_id=id).all()
+    
+    # Load images for each room
+    for room in rooms:
+        room.images = RoomImage.query.filter_by(room_id=room.id).all()
+    
+    reviews = Review.query.filter_by(homestay_id=id).order_by(Review.created_at.desc()).all()
+    
+    return render_template('renter/view_homestay.html', 
+                          homestay=homestay, 
+                          rooms=rooms, 
+                          reviews=reviews)
 
-    # Sort reviews in Python:
-    reviews = homestay.reviews.order_by(Review.created_at.desc()).all()
-
-    return render_template('renter/view_homestay.html',
-                           homestay=homestay,
-                           rooms=rooms,
-                           reviews=reviews)
 
 @renter_bp.route('/book/<int:homestay_id>', methods=['GET', 'POST'])
 @renter_required

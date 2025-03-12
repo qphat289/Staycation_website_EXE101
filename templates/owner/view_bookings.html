@@ -41,6 +41,11 @@
             {% endif %}
           </td>
           <td>
+            <span class="{{ status_classes.get(booking.status, 'badge bg-secondary') }}">
+              {{ booking.status|capitalize }}
+            </span>
+          </td>
+          <td>
             {% if booking.status == 'pending' %}
               <a href="{{ url_for('owner.confirm_booking', booking_id=booking.id) }}"
                  class="btn btn-success btn-sm">
