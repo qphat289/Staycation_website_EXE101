@@ -94,59 +94,39 @@ def add_homestay():
     return render_template('owner/add_homestay.html')
 
 @owner_bp.route('/edit-homestay/<int:id>', methods=['GET', 'POST'])
-@owner_required
+@login_required
 def edit_homestay(id):
     homestay = Homestay.query.get_or_404(id)
-    
-    # Ensure the current user owns this homestay
-    if homestay.owner_id != current_user.id:
-        flash('You do not have permission to edit this homestay', 'danger')
-        return redirect(url_for('owner.dashboard'))
-    
+
     if request.method == 'POST':
+        # 1) Update basic fields
         homestay.title = request.form.get('title')
         homestay.description = request.form.get('description')
-        # If you removed price from Homestay, remove references here
-        # homestay.price_per_hour = float(request.form.get('price_per_hour'))
-        homestay.address = request.form.get('address')
         homestay.city = request.form.get('city')
         homestay.district = request.form.get('district')
-        homestay.max_guests = int(request.form.get('max_guests'))
-        homestay.bedrooms = int(request.form.get('bedrooms'))
-        homestay.bathrooms = int(request.form.get('bathrooms'))
-        homestay.updated_at = datetime.utcnow()
-        
-        # Handle image upload
-        if 'image' in request.files:
-            image = request.files['image']
-            if image.filename:
-                filename = secure_filename(image.filename)
-                timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-                filename = f"{timestamp}_{filename}"
-                
-                # Make sure uploads folder exists inside static
-                upload_folder = os.path.join('static', 'uploads')
-                os.makedirs(upload_folder, exist_ok=True)
-                
-                # Delete old image if it exists
-                if homestay.image_path:
-                    old_path = os.path.join('static', homestay.image_path)
-                    if os.path.exists(old_path):
-                        os.remove(old_path)
-                
-                # Save image to static/uploads folder
-                save_path = os.path.join(upload_folder, filename)
-                image.save(save_path)
-                
-                # Store path relative to static folder for url_for
-                homestay.image_path = f"uploads/{filename}"
-        
+        homestay.address = request.form.get('address')
+
+        # 2) Handle new image upload (if provided)
+        image_file = request.files.get('image')
+        if image_file and image_file.filename != '':
+            # OPTIONAL: remove old image from disk if you want to replace it
+
+            # e.g., save to uploads folder
+            filename = secure_filename(image_file.filename)
+            image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            image_file.save(image_path)
+
+            # update homestay's image field in DB
+            homestay.image = filename
+
+        # 3) Commit changes to DB
         db.session.commit()
-        
         flash('Homestay updated successfully!', 'success')
-        return redirect(url_for('owner.manage_homestays'))
-        
+        return redirect(url_for('owner.owner_dashboard'))
+    
+    # For GET requests, display the edit form with existing data
     return render_template('owner/edit_homestay.html', homestay=homestay)
+
 
 
 @owner_bp.route('/delete-homestay/<int:id>')
@@ -396,3 +376,34 @@ def edit_room(room_id):
 def owner_dashboard():
     homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
     return render_template('owner/dashboard.html', homestays=homestays)
+
+
+@owner_bp.route('/room-detail/<int:room_id>', methods=['GET', 'POST'])
+@login_required
+def owner_room_detail(room_id):
+    room = Room.query.get_or_404(room_id)
+    
+    # Optionally confirm that current_user is the owner of this homestay
+    # e.g., if your Homestay has an owner_id
+    # if room.homestay.owner_id != current_user.id:
+    #     flash("You do not have permission to edit this room.", "danger")
+    #     return redirect(url_for('owner.owner_dashboard'))
+
+    if request.method == 'POST':
+        # Handle form submission to edit
+        room.room_number = request.form.get('room_number', room.room_number)
+        room.bed_count = request.form.get('bed_count', room.bed_count)
+        room.bathroom_count = request.form.get('bathroom_count', room.bathroom_count)
+        room.max_guests = request.form.get('max_guests', room.max_guests)
+        room.price_per_hour = request.form.get('price_per_hour', room.price_per_hour)
+        room.description = request.form.get('description', room.description)
+        
+        # (Optional) handle images if you allow owners to upload more images
+        # image_files = request.files.getlist('gallery')
+        # ... logic to save them ...
+        
+        db.session.commit()
+        flash("Room updated successfully!", "success")
+        return redirect(url_for('owner.owner_room_detail', room_id=room.id))
+
+    return render_template('owner/room_detail_owner.html', room=room)

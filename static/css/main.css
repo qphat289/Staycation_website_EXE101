@@ -447,3 +447,28 @@ footer {
         height: 40px;
     }
 }
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .img-thumbnail {
+    border-radius: 50%;
+  }
+  
+  .badge {
+    font-size: 0.9rem;
+    padding: 0.4em 0.6em;
+  }
+  
+  .progress {
+    background-color: #e9ecef; /* or your brand color */
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .progress-bar {
+    font-weight: 600;
+  }
+  

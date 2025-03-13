@@ -3,7 +3,7 @@ from flask_login import LoginManager
 import os
 from models import db, User, Homestay, Booking
 from flask_migrate import Migrate
-
+from routes.renter import get_rank_info
 # Initialize Flask app
 app = Flask(__name__)
 app.config.from_object('config.Config')
@@ -34,8 +34,10 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(owner_bp)
 app.register_blueprint(renter_bp)
 
-
-
+@app.template_filter('rank_info')
+def rank_info_filter(xp):
+    """Wraps get_rank_info to make it a Jinja filter."""
+    return get_rank_info(xp)
 # Home route
 @app.route('/')
 def home():
@@ -45,3 +47,4 @@ def home():
 
 if __name__ == '__main__':
     app.run(debug=True)
+

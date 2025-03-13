@@ -21,6 +21,7 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(12))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     personal_id = db.Column(db.String(12))  # newly added
+    experience_points = db.Column(db.Integer, default=0)  # NEW column
 
     # Relationships
     homestays = db.relationship('Homestay', backref='owner', lazy='dynamic')

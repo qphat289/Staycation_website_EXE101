@@ -9,9 +9,9 @@
     <div class="floor-container">
       {% for room in rooms_on_floor %}
         <div class="room {% if room.is_booked %}booked{% else %}available{% endif %}">
-          <a href="{{ url_for('owner.edit_room', room_id=room.id) }}">
-            Room {{ room.room_number }}
-          </a>
+            <a href="{{ url_for('owner.owner_room_detail', room_id=room.id) }}">
+                Room {{ room.room_number }}
+            </a>
         </div>
       {% endfor %}
     </div>

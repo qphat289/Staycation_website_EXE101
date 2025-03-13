@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from PIL import Image
 import io
 import os
+from werkzeug.utils import secure_filename
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
@@ -190,18 +191,72 @@ def cancel_booking(id):
     flash('Booking cancelled successfully', 'success')
     return redirect(url_for('renter.dashboard'))
 
+def get_rank_info(xp):
+    """Returns (current_rank, current_rank_min_xp, next_rank, next_rank_min_xp)."""
+    # You can tweak these thresholds as you like:
+    thresholds = [
+        ("Bronze", 0),
+        ("Silver", 200),
+        ("Gold", 500),
+        ("Emerald", 1000),
+        ("Diamond", 2000),
+    ]
+
+    current_rank = "Diamond"
+    next_rank = None
+    current_rank_min_xp = 2000
+    next_rank_min_xp = 2000
+    
+    for i in range(len(thresholds)):
+        rank_name, rank_xp = thresholds[i]
+        
+        # If user XP is >= rank_xp but < the next threshold
+        # that means user is currently this rank
+        if xp >= rank_xp:
+            current_rank = rank_name
+            current_rank_min_xp = rank_xp
+            
+            # Check if there's a "next" rank in the list
+            if i + 1 < len(thresholds):
+                next_rank, next_rank_min_xp = thresholds[i + 1]
+            else:
+                # if user is Diamond already, no next rank
+                next_rank = None
+                next_rank_min_xp = rank_xp
+        else:
+            break
+
+    return current_rank, current_rank_min_xp, next_rank, next_rank_min_xp
+
 @renter_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
+    user = current_user  # or fetch from DB
     if request.method == 'POST':
-        current_user.full_name = request.form.get('full_name')
-        current_user.phone = request.form.get('phone')
+        user.full_name = request.form.get('full_name')
+        user.phone_number = request.form.get('phone_number')
+        user.email = request.form.get('email')
+        user.personal_id = request.form.get('personal_id')
+        
+        # Handle new avatar file (if uploaded)
+        avatar_file = request.files.get('avatar')
+        if avatar_file and avatar_file.filename:
+            # Save and update the user's avatar field
+            filename = secure_filename(avatar_file.filename)
+            avatar_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            avatar_file.save(avatar_path)
+            user.avatar = filename
+        
         db.session.commit()
         flash("Profile updated successfully!", "success")
-        return redirect(url_for('renter.profile'))
+        return render_template('user/profile.html', user=user, get_rank_info=get_rank_info)
 
-    return render_template("renter/profile.html")
-
+    
+    # Example: user.experience_points or user.rank could come from the DB
+    # We'll convert experience points into a rank string.
+    # Or if your DB just stores 'rank', skip the calculation.
+    
+    return render_template('user/profile.html', user=user)
 @renter_bp.route('/homestay/<int:homestay_id>/review', methods=['GET', 'POST'])
 @login_required
 def add_review(homestay_id):
