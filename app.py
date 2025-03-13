@@ -12,6 +12,8 @@ def create_app():
     db.init_app(app)
 
     with app.app_context():
+        db.create_all()  # First, create all tables.
+        print("Database tables created successfully.")
         existing_admin = User.query.filter_by(username='admin').first()
         if not existing_admin:
             admin_user = User(username='admin', email='admin@example.com')
@@ -30,10 +32,6 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
-
-    # Create database tables
-    with app.app_context():
-        db.create_all()
 
     # Register blueprints
     from routes.auth import auth_bp
