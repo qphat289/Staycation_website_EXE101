@@ -6,9 +6,6 @@ from models import db, Homestay, Room, Booking, RoomImage
 import os
 from datetime import datetime
 from PIL import Image
-import io
-import os
-
 
 owner_bp = Blueprint('owner', __name__, url_prefix='/owner')
 
@@ -401,3 +398,68 @@ def delete_room_image(image_id):
     
     flash('Image deleted successfully', 'success')
     return redirect(url_for('owner.add_room_images', room_id=room_id))
+
+@owner_bp.route('/confirm-booking/<int:id>')
+@owner_required
+def confirm_booking(id):
+    booking = Booking.query.get_or_404(id)
+    
+    # Ensure this booking belongs to one of the current owner's homestays
+    if booking.homestay.owner_id != current_user.id:
+        flash('You do not have permission to confirm this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+
+    # Update the booking status
+    booking.status = 'confirmed'
+    db.session.commit()
+
+    flash('Booking confirmed successfully!', 'success')
+    return redirect(url_for('owner.view_bookings'))
+
+@owner_bp.route('/reject-booking/<int:id>')
+@owner_required
+def reject_booking(id):
+    booking = Booking.query.get_or_404(id)
+    
+    # Ensure this booking belongs to one of the current owner's homestays
+    if booking.homestay.owner_id != current_user.id:
+        flash('You do not have permission to reject this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+
+    # Update the booking status
+    booking.status = 'rejected'
+    db.session.commit()
+
+    flash('Booking rejected.', 'warning')
+    return redirect(url_for('owner.view_bookings'))
+
+@owner_bp.route('/mark-completed/<int:id>')
+@owner_required
+def mark_completed(id):
+    booking = Booking.query.get_or_404(id)
+    
+    # Ensure this booking belongs to one of the current owner's homestays
+    if booking.homestay.owner_id != current_user.id:
+        flash('You do not have permission to update this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+
+    # Update the booking status
+    booking.status = 'completed'
+    db.session.commit()
+
+    flash('Booking marked as completed.', 'success')
+    return redirect(url_for('owner.view_bookings'))
+
+@owner_bp.route('/booking-details/<int:booking_id>')
+@owner_required
+def booking_details(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Ensure this booking belongs to one of the current owner's homestays
+    if booking.homestay.owner_id != current_user.id:
+        flash('You do not have permission to view this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+
+    return render_template('owner/booking_details.html', booking=booking)
+
+

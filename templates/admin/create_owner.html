@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Create Owner{% endblock %}
+{% block content %}
+<h2>Create Owner</h2>
+<form method="post" autocomplete="off">
+  <div class="mb-3">
+    <label>Full Name</label>
+    <input type="text" name="full_name" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Email</label>
+    <input type="email" name="email" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Username</label>
+    <input type="text" name="username" class="form-control" required autocomplete="off">
+  </div>
+  <div class="mb-3">
+    <label>Password</label>
+    <input type="password" name="password" class="form-control" required autocomplete="new-password">
+  </div>
+  <div class="mb-3">
+    <label>Phone</label>
+    <input type="text" name="phone" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label>Personal ID</label>
+    <input type="text" name="personal_id" class="form-control" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Create Owner</button>
+</form>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<a href="{{ url_for('admin.create_owner') }}" class="btn btn-primary">Create Owner</a>
+<hr>
+<p>This is admin-only area.</p>
+{% endblock %}
