@@ -56,6 +56,7 @@ class Homestay(db.Model):
     description = db.Column(db.Text)
     address = db.Column(db.String(200), nullable=False)
     city = db.Column(db.String(50), nullable=False)
+    floor_count = db.Column(db.Integer, nullable=False, default=1)
     district = db.Column(db.String(50), nullable=False)
     image_path = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -105,17 +106,16 @@ class Review(db.Model):
 
 
 class Room(db.Model):
-    __tablename__ = 'room'
     id = db.Column(db.Integer, primary_key=True)
-    room_number = db.Column(db.String(20), nullable=False)
+    homestay_id = db.Column(db.Integer, db.ForeignKey('homestay.id'), nullable=False)
+    room_number = db.Column(db.String(100), nullable=False)  # Existing
+    floor_number = db.Column(db.Integer, nullable=False, default=1)  # NEW COLUMN
     bed_count = db.Column(db.Integer, nullable=False)
     bathroom_count = db.Column(db.Integer, nullable=False)
     max_guests = db.Column(db.Integer, nullable=False)
     price_per_hour = db.Column(db.Float, nullable=False)
-    description = db.Column(db.Text)
-
-    # Link back to Homestay
-    homestay_id = db.Column(db.Integer, db.ForeignKey('homestay.id'), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    is_booked = db.Column(db.Boolean, default=False)
     # Do NOT define a second relationship with backref='homestay' here. One side is enough.
 
     # If you want a simple relationship w/o backref:

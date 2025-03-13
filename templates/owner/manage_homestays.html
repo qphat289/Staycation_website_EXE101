@@ -32,8 +32,12 @@
              class="btn btn-danger btn-sm"
              onclick="return confirm('Are you sure you want to delete this homestay?');">
              Delete
+          <a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}" class="btn btn-primary">Manage Rooms</a>
+
+          
           </a>
         </td>
+        
       </tr>
     {% endfor %}
     </tbody>

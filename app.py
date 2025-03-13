@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from flask_login import LoginManager
 import os
 from models import db, User, Homestay, Booking
+from flask_migrate import Migrate
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -9,6 +10,7 @@ app.config.from_object('config.Config')
 
 # Initialize database
 db.init_app(app)
+migrate = Migrate(app, db)
 
 # Initialize login manager
 login_manager = LoginManager()
