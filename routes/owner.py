@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, Homestay, Room, Booking, RoomImage
+from models import db, Homestay, Room, Booking, RoomImage, Owner
 import os
 from datetime import datetime
 from PIL import Image
@@ -29,7 +29,11 @@ def owner_required(f):
 @owner_bp.route('/dashboard')
 @owner_required
 def dashboard():
-    homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
+    owner = Owner.query.filter_by(username=current_user.username).first()
+    if owner:
+        homestays = owner.homestays
+    else:
+        homestays = []
     return render_template('owner/dashboard.html', homestays=homestays)
 
 
@@ -43,6 +47,7 @@ def manage_homestays():
 @owner_bp.route('/add-homestay', methods=['GET', 'POST'])
 @owner_required
 def add_homestay():
+    owner = Owner.query.filter_by(username=current_user.username).first()
     """Add a new homestay"""
     if request.method == 'POST':
         title = request.form.get('title')
@@ -78,7 +83,7 @@ def add_homestay():
             city=city,
             district=district,
             image_path=image_path,
-            owner_id=current_user.id
+            owner_id=owner.id
         )
         
         db.session.add(homestay)
@@ -96,7 +101,12 @@ def edit_homestay(id):
     homestay = Homestay.query.get_or_404(id)
     
     # Ensure the current user owns this homestay
-    if homestay.owner_id != current_user.id:
+    owner = Owner.query.filter_by(username=current_user.username).first()
+    if not owner:
+        flash("Cannot find corresponding owner record!", "danger")
+        return redirect(url_for('owner.dashboard'))
+    
+    if homestay.owner_id != owner.id:
         flash('You do not have permission to edit this homestay', 'danger')
         return redirect(url_for('owner.dashboard'))
     
