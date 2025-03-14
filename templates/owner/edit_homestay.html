@@ -1,91 +1,61 @@
 {% extends 'base.html' %}
-{% block title %}Edit Homestay{% endblock %}
-
 {% block content %}
-<h2>Edit Homestay</h2>
-<hr>
+<h2>Edit Homestay: {{ homestay.title }}</h2>
 
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        <div class="card">
-            <div class="card-header">
-                <h4>Edit Details</h4>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    <!-- Title -->
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="title" name="title"
-                               value="{{ homestay.title }}" required>
-                    </div>
+<form method="POST" enctype="multipart/form-data">
+  <!-- Name / Title -->
+  <div class="mb-3">
+    <label for="title" class="form-label">Name (Title)</label>
+    <input type="text" class="form-control" id="title" name="title" 
+           value="{{ homestay.title }}" required>
+  </div>
 
-                    <!-- Description -->
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="4" required>{{ homestay.description }}</textarea>
-                    </div>
+  <!-- Description -->
+  <div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea class="form-control" id="description" name="description" rows="4" required>
+      {{ homestay.description }}
+    </textarea>
+  </div>
 
-                    <!-- Price & Guests -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="price_per_hour" class="form-label">Price/Hour ($)</label>
-                            <input type="number" class="form-control" id="price_per_hour" name="price_per_hour"
-                                   min="1" step="0.01" value="{{ homestay.price_per_hour }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="max_guests" class="form-label">Max Guests</label>
-                            <input type="number" class="form-control" id="max_guests" name="max_guests"
-                                   min="1" value="{{ homestay.max_guests }}" required>
-                        </div>
-                    </div>
+  <!-- Address -->
+  <div class="mb-3">
+    <label for="address" class="form-label">Address</label>
+    <input type="text" class="form-control" id="address" name="address" 
+           value="{{ homestay.address }}" required>
+  </div>
 
-                    <!-- Bedrooms/Bathrooms -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="bedrooms" class="form-label">Bedrooms</label>
-                            <input type="number" class="form-control" id="bedrooms" name="bedrooms"
-                                   min="1" value="{{ homestay.bedrooms }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="bathrooms" class="form-label">Bathrooms</label>
-                            <input type="number" class="form-control" id="bathrooms" name="bathrooms"
-                                   min="1" value="{{ homestay.bathrooms }}" required>
-                        </div>
-                    </div>
-
-                    <!-- Address/City/District -->
-                    <div class="mb-3">
-                        <label for="address" class="form-label">Address</label>
-                        <input type="text" class="form-control" id="address" name="address"
-                               value="{{ homestay.address }}" required>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="city" name="city"
-                                   value="{{ homestay.city }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="district" class="form-label">District</label>
-                            <input type="text" class="form-control" id="district" name="district"
-                                   value="{{ homestay.district }}" required>
-                        </div>
-                    </div>
-
-                    <!-- Image -->
-                    <div class="mb-3">
-                        <label for="image" class="form-label">Update Image</label>
-                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                        {% if homestay.image_path %}
-                            <small>Current Image: {{ homestay.image_path }}</small>
-                        {% endif %}
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </form>
-            </div>
-        </div>
+  <div class="row">
+    <!-- City -->
+    <div class="col-md-6 mb-3">
+      <label for="city" class="form-label">City</label>
+      <input type="text" class="form-control" id="city" name="city" 
+             value="{{ homestay.city }}" required>
     </div>
-</div>
+
+    <!-- District -->
+    <div class="col-md-6 mb-3">
+      <label for="district" class="form-label">District</label>
+      <input type="text" class="form-control" id="district" name="district" 
+             value="{{ homestay.district }}" required>
+    </div>
+  </div>
+
+  <!-- Current Image Preview (optional) -->
+  {% if homestay.image %}
+    <div class="mb-3">
+      <p>Current Image:</p>
+      <img src="{{ url_for('static', filename='uploads/' ~ homestay.image) }}" 
+           alt="Current Image" style="max-width: 200px;">
+    </div>
+  {% endif %}
+
+  <!-- New Image Upload -->
+  <div class="mb-3">
+    <label for="image" class="form-label">Update Image</label>
+    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
 {% endblock %}

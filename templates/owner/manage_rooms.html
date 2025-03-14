@@ -1,0 +1,48 @@
+<!-- templates/owner/manage_rooms.html -->
+{% extends "base.html" %}
+{% block content %}
+<h2>Manage Rooms for Homestay: {{ homestay.title }}</h2>
+
+{% if rooms_by_floor %}
+  {% for floor_num, rooms_on_floor in rooms_by_floor.items() %}
+    <h3>Floor {{ floor_num }} ({{ rooms_on_floor|length }} rooms)</h3>
+    <div class="floor-container">
+      {% for room in rooms_on_floor %}
+        <div class="room {% if room.is_booked %}booked{% else %}available{% endif %}">
+            <a href="{{ url_for('owner.owner_room_detail', room_id=room.id) }}">
+                Room {{ room.room_number }}
+            </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+{% else %}
+  <p>No rooms found.</p>
+{% endif %}
+
+<a href="{{ url_for('owner.add_room', homestay_id=homestay.id) }}" class="btn btn-success">Add New Room</a>
+
+<style>
+  .floor-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+  }
+  .room {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: bold;
+      cursor: pointer;
+      background-color: #28a745; /* green */
+      color: white;
+  }
+  .room.booked {
+      background-color: red;
+  }
+</style>
+{% endblock %}

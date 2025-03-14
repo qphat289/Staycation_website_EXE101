@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from models import db, Owner, User
 from sqlalchemy.exc import IntegrityError
+from routes.renter import get_rank_info
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -11,7 +12,7 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 def dashboard():
     if not current_user.is_admin():
         flash("You are not authorized!", "danger")
-        return redirect(url_for('auth.admin_login'))
+        return redirect(url_for('auth.login'))
     owners = Owner.query.all()
     return render_template('admin/dashboard.html', owners=owners)
 

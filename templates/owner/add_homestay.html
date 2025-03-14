@@ -41,10 +41,30 @@
                         </div>
                     </div>
 
+                    <!-- Number of Floors -->
+                    <div class="mb-3">
+                        <label for="floor_count" class="form-label">Number of Floors</label>
+                        <input 
+                            type="number" 
+                            class="form-control" 
+                            id="floor_count" 
+                            name="floor_count" 
+                            value="1" 
+                            min="1" 
+                            required
+                        >
+                    </div>
+
                     <!-- Image -->
                     <div class="mb-3">
                         <label for="image" class="form-label">Upload Image</label>
-                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <input 
+                            type="file" 
+                            class="form-control" 
+                            id="image" 
+                            name="image" 
+                            accept="image/*"
+                        >
                     </div>
 
                     <button type="submit" class="btn btn-primary">Add Homestay</button>

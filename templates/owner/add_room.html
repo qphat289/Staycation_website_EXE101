@@ -1,11 +1,9 @@
-<!-- templates/owner/add_room.html (For creating a NEW room) -->
 {% extends 'base.html' %}
 {% block title %}Add Room to {{ homestay.title }}{% endblock %}
 
 {% block content %}
 <h2>Add Room for Homestay: {{ homestay.title }}</h2>
 
-<!-- IMPORTANT: enctype="multipart/form-data" for file uploads -->
 <form method="post" enctype="multipart/form-data">
   <div class="mb-3">
     <label for="room_number" class="form-label">Room Number</label>
@@ -14,17 +12,17 @@
 
   <div class="mb-3">
     <label for="bed_count" class="form-label">Bed Count</label>
-    <input type="number" class="form-control" id="bed_count" name="bed_count" required>
+    <input type="number" class="form-control" id="bed_count" name="bed_count" required min="1">
   </div>
 
   <div class="mb-3">
     <label for="bathroom_count" class="form-label">Bathroom Count</label>
-    <input type="number" class="form-control" id="bathroom_count" name="bathroom_count" required>
+    <input type="number" class="form-control" id="bathroom_count" name="bathroom_count" required min="1">
   </div>
 
   <div class="mb-3">
     <label for="max_guests" class="form-label">Max Guests</label>
-    <input type="number" class="form-control" id="max_guests" name="max_guests" required>
+    <input type="number" class="form-control" id="max_guests" name="max_guests" required min="1">
   </div>
 
   <div class="mb-3">
@@ -37,10 +35,17 @@
     <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
   </div>
 
-  <!-- Multiple images for the room's gallery -->
+  <!-- Floor Selection -->
+  <div class="mb-3">
+    <label for="floor_number" class="form-label">Floor Number</label>
+    <input type="number" name="floor_number" id="floor_number" class="form-control" value="1" required min="1">
+  </div>
+  
+
+  <!-- Multiple Room Images -->
   <div class="mb-3">
     <label for="gallery" class="form-label">Additional Gallery Images</label>
-    <input type="file" class="form-control" id="gallery" name="gallery" accept="image/*" multiple>
+    <input type="file" class="form-control" id="gallery" name="gallery[]" accept="image/*" multiple>
     <small class="text-muted">Select multiple images for the gallery.</small>
   </div>
 
