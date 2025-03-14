@@ -179,21 +179,28 @@ def delete_homestay(id):
     flash('Homestay deleted successfully', 'success')
     return redirect(url_for('owner.manage_homestays'))
 
-
 @owner_bp.route('/view-bookings')
 @owner_required
 def view_bookings():
     """View all bookings for the owner's homestays."""
-    homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
+    # Get the owner object based on the logged-in username
+    owner = Owner.query.filter_by(username=current_user.username).first()
+    if owner:
+        homestays = owner.homestays
+    else:
+        homestays = []
     
-    # Gather all bookings for these homestays
+    # Collect bookings from each homestay
     bookings = []
     for h in homestays:
-        for b in h.bookings:
+        # Because bookings is a dynamic relationship, call .all() to get the list
+        for b in h.bookings.all():
             bookings.append(b)
     
+    # Optional: Print debug info to verify
+    current_app.logger.debug(f"Owner: {owner}, Homestays: {[h.id for h in homestays]}, Bookings count: {len(bookings)}")
+    
     return render_template('owner/view_bookings.html', bookings=bookings)
-
 
 
 @owner_bp.route('/add-room/<int:homestay_id>', methods=['GET', 'POST'])
