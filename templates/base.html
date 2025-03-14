@@ -40,7 +40,11 @@
                 </ul>
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
-                        {% if current_user.is_owner() %}
+                        {% if current_user.role == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+                            </li>
+                        {% elif current_user.is_owner() %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('owner.dashboard') }}">Owner Dashboard</a>
                             </li>
@@ -66,7 +70,7 @@
                             <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
                         </li>
                     {% endif %}
-                </ul>
+                </ul>                
             </div>
         </div>
     </nav>

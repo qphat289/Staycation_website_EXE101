@@ -16,15 +16,15 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
-    role = db.Column(db.String(10), nullable=False)  # 'renter' or 'owner'
+    role = db.Column(db.String(50), nullable=False, default="renter") # 'renter' or 'owner'
     full_name = db.Column(db.String(100))
     phone = db.Column(db.String(12))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     personal_id = db.Column(db.String(12))  # newly added
     experience_points = db.Column(db.Integer, default=0)  # NEW column
-
+  
     # Relationships
-    homestays = db.relationship('Homestay', backref='owner', lazy='dynamic')
+    homestays = db.relationship('Homestay', backref='user', lazy='dynamic')
     bookings = db.relationship('Booking', backref='renter', lazy='dynamic')
     reviews = db.relationship('Review', backref='author', lazy='dynamic')
     
@@ -46,8 +46,59 @@ class User(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<User {self.username}>'
+    
+    def is_admin(self):
+        return self.role == 'admin'
 
+class Owner(db.Model):
+    __tablename__ = 'owner'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    full_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(12))
+    personal_id = db.Column(db.String(12), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Sử dụng back_populates thay vì backref
+    homestays = db.relationship('Homestay', backref='owner', lazy=True)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return f'<Owner {self.username}>'
+    
+
+class Renter(db.Model):
+    """
+    Lưu thông tin người thuê (Renter),
+    Tự đăng ký và đăng nhập.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    full_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(12))
+    personal_id = db.Column(db.String(12), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Bookings => relationship ở Booking (renter_id -> this.id)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+        
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return f'<Renter {self.username}>'
+    
 class Homestay(db.Model):
     __tablename__ = 'homestay'
     
@@ -62,9 +113,9 @@ class Homestay(db.Model):
     image_path = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     # Foreign Key
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
 
     # One homestay has many rooms, with a single backref on the Room side named 'homestay'
     rooms = db.relationship('Room', backref='homestay', lazy=True)

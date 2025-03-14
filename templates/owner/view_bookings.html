@@ -47,10 +47,9 @@
           </td>
           <td>
             {% if booking.status == 'pending' %}
-              <a href="{{ url_for('owner.confirm_booking', booking_id=booking.id) }}"
-                 class="btn btn-success btn-sm">
-                Confirm
-              </a>
+            <a href="{{ url_for('owner.confirm_booking', id=booking.id) }}" class="btn btn-success btn-sm">
+              Confirm
+            </a>
             {% endif %}
             <!-- Possibly other actions like Cancel, etc. -->
           </td>

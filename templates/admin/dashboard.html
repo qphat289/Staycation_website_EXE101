@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<h2>Admin Dashboard</h2>
+<!-- Button to create a new owner -->
+<a href="{{ url_for('admin.create_owner') }}" class="btn btn-primary mb-3">Create Owner</a>
+
+<hr>
+<p>This is an admin-only area.</p>
+
+<!-- Table of all owners -->
+<h3>All Owners</h3>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Owner ID</th>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Homestays</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for owner in owners %}
+    <tr>
+      <td>{{ owner.id }}</td>
+      <td>{{ owner.username }}</td>
+      <td>{{ owner.email }}</td>
+      <td>
+        {% if owner.homestays %}
+          <ul>
+            {% for homestay in owner.homestays %}
+              <li>
+                <strong>{{ homestay.title }}</strong>
+                <br>
+                <em>{{ homestay.address }}, {{ homestay.city }}, {{ homestay.district }}</em>
+                
+                <!-- If you want to display rooms within each homestay -->
+                {% if homestay.rooms %}
+                  <ul>
+                    {% for room in homestay.rooms %}
+                      <li>
+                        Room #{{ room.room_number }}:
+                        {{ room.bed_count }} beds, 
+                        {{ room.bathroom_count }} baths,
+                        Price: {{ room.price_per_hour }}/hr
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <em>No rooms yet.</em>
+                {% endif %}
+                
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <em>No homestays yet.</em>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

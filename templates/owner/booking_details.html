@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Booking Details{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('owner.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('owner.view_bookings') }}">All Bookings</a></li>
+            <li class="breadcrumb-item active">Booking Details</li>
+        </ol>
+    </nav>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Booking #{{ booking.id }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="mb-3">Booking Information</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if booking.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif booking.status == 'confirmed' %}
+                                    <span class="badge bg-primary">Confirmed</span>
+                                {% elif booking.status == 'active' %}
+                                    <span class="badge bg-info">Active</span>
+                                {% elif booking.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif booking.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                {% elif booking.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ booking.status|capitalize }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Created:</th>
+                            <td>{{ booking.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Start Time:</th>
+                            <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        <tr>
+                            <th>End Time:</th>
+                            <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Price:</th>
+                            <td>${{ booking.total_price }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h4 class="mb-3">Renter Information</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Renter ID:</th>
+                            <td>{{ booking.user_id }}</td>
+                        </tr>
+                        <!-- Remove the user-specific information -->
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h4 class="mb-3">Homestay Details</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Homestay:</th>
+                            <td>{{ booking.room.homestay.title }}</td>
+                        </tr>
+                        <tr>
+                            <th>Room:</th>
+                            <td>{{ booking.room.room_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Address:</th>
+                            <td>{{ booking.room.homestay.address }}, {{ booking.room.homestay.city }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h4 class="mb-3">Actions</h4>
+                    <div class="d-grid gap-2">
+                        {% if booking.status == 'pending' %}
+                            <a href="{{ url_for('owner.confirm_booking', id=booking.id) }}" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Confirm Booking
+                            </a>
+                            <a href="{{ url_for('owner.reject_booking', id=booking.id) }}" class="btn btn-danger">
+                                <i class="bi bi-x-circle"></i> Reject Booking
+                            </a>
+                        {% elif booking.status == 'confirmed' %}
+                            <a href="{{ url_for('owner.mark_completed', id=booking.id) }}" class="btn btn-primary">
+                                <i class="bi bi-check2-all"></i> Mark as Completed
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('owner.view_bookings') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to All Bookings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

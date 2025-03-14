@@ -81,7 +81,8 @@ def add_homestay():
             city=city,
             district=district,
             image_path=image_path,
-            owner_id=current_user.id
+            user_id=current_user.id,    # Must set this if it's NOT NULL
+            owner_id=current_user.id 
         )
         
         db.session.add(homestay)
@@ -195,8 +196,37 @@ def add_room(homestay_id):
 
         db.session.add(new_room)
         db.session.commit()
-        flash('Room added successfully!', 'success')
-        return redirect(url_for('owner.manage_rooms', homestay_id=homestay_id))
+        image_file = request.files.get('image')
+        if image_file and image_file.filename:
+            filename = secure_filename(image_file.filename)
+            image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            image_file.save(image_path)
+
+            featured_image = RoomImage(
+                image_path=f"uploads/{filename}",
+                is_featured=True,
+                room_id=new_room.id
+            )
+            db.session.add(featured_image)
+
+        # Multiple gallery images
+        gallery_files = request.files.getlist('gallery')
+        for g_file in gallery_files:
+            if g_file and g_file.filename:
+                g_filename = secure_filename(g_file.filename)
+                g_path = os.path.join(current_app.config['UPLOAD_FOLDER'], g_filename)
+                g_file.save(g_path)
+
+                gallery_image = RoomImage(
+                    image_path=f"uploads/{g_filename}",
+                    is_featured=False,
+                    room_id=new_room.id
+                )
+                db.session.add(gallery_image)
+
+        db.session.commit()
+        flash("Room added successfully with images!", "success")
+        return redirect(url_for('owner.dashboard'))
 
     return render_template('owner/add_room.html', homestay=homestay)
 
@@ -407,3 +437,66 @@ def owner_room_detail(room_id):
         return redirect(url_for('owner.owner_room_detail', room_id=room.id))
 
     return render_template('owner/room_detail_owner.html', room=room)
+
+@owner_bp.route('/confirm-booking/<int:id>')
+@owner_required
+def confirm_booking(id):
+    booking = Booking.query.get_or_404(id)
+    
+    # Ensure this booking belongs to one of the current owner's homestays
+    if booking.homestay.owner_id != current_user.id:
+        flash('You do not have permission to confirm this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+
+    # Update the booking status
+    booking.status = 'confirmed'
+    db.session.commit()
+
+    flash('Booking confirmed successfully!', 'success')
+    return redirect(url_for('owner.view_bookings'))
+
+@owner_bp.route('/reject-booking/<int:id>')
+@owner_required
+def reject_booking(id):
+    booking = Booking.query.get_or_404(id)
+    
+    # Ensure this booking belongs to one of the current owner's homestays
+    if booking.homestay.owner_id != current_user.id:
+        flash('You do not have permission to reject this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+
+    # Update the booking status
+    booking.status = 'rejected'
+    db.session.commit()
+
+    flash('Booking rejected.', 'warning')
+    return redirect(url_for('owner.view_bookings'))
+
+@owner_bp.route('/mark-completed/<int:id>')
+@owner_required
+def mark_completed(id):
+    booking = Booking.query.get_or_404(id)
+    
+    # Ensure this booking belongs to one of the current owner's homestays
+    if booking.homestay.owner_id != current_user.id:
+        flash('You do not have permission to update this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+
+    # Update the booking status
+    booking.status = 'completed'
+    db.session.commit()
+
+    flash('Booking marked as completed.', 'success')
+    return redirect(url_for('owner.view_bookings'))
+
+@owner_bp.route('/booking-details/<int:booking_id>')
+@owner_required
+def booking_details(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Ensure this booking belongs to one of the current owner's homestays
+    if booking.homestay.owner_id != current_user.id:
+        flash('You do not have permission to view this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+
+    return render_template('owner/booking_details.html', booking=booking)
