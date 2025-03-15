@@ -393,13 +393,26 @@ def edit_room(room_id):
         room.max_guests = request.form['max_guests']
         room.price_per_hour = request.form['price_per_hour']
         room.description = request.form['description']
-        
+        image_files = request.files.getlist('gallery')
+        for image_file in image_files:
+            if image_file and image_file.filename != '':
+                # Save to uploads folder
+                filename = secure_filename(image_file.filename)
+                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                image_file.save(file_path)
+
+                # Add to DB (assuming a RoomImage model)
+                new_image = RoomImage(
+                    room_id=room.id,
+                    image_path=f"uploads/{filename}"
+                )
+                db.session.add(new_image)
         db.session.commit()
         flash('Room updated successfully!', 'success')
-        return redirect(url_for('owner.manage_rooms', homestay_id=room.homestay_id))
+        return redirect(url_for('owner.owner_room_detail', room_id=room.id))
     
     # Render a form with existing room data
-    return render_template('owner/edit_room.html', room=room)
+    return render_template('owner/room_detail_owner.html', room=room)
 
 @owner_bp.route('/dashboard')
 @login_required
@@ -431,11 +444,26 @@ def owner_room_detail(room_id):
         # (Optional) handle images if you allow owners to upload more images
         # image_files = request.files.getlist('gallery')
         # ... logic to save them ...
-        
+        image_files = request.files.getlist('gallery')  # matches <input name="gallery" multiple>
+        for image_file in image_files:
+            if image_file and image_file.filename:
+                # Save file to uploads folder
+                filename = secure_filename(image_file.filename)
+                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                image_file.save(file_path)
+
+                # Create RoomImage record
+                new_image = RoomImage(
+                    room_id=room.id,
+                    image_path=f"uploads/{filename}"  # or however you store the path
+                )
+                db.session.add(new_image)
+
         db.session.commit()
         flash("Room updated successfully!", "success")
         return redirect(url_for('owner.owner_room_detail', room_id=room.id))
 
+    # For GET requests, display the edit form
     return render_template('owner/room_detail_owner.html', room=room)
 
 @owner_bp.route('/confirm-booking/<int:id>')

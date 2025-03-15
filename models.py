@@ -168,6 +168,7 @@ class Room(db.Model):
     price_per_hour = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text, nullable=True)
     is_booked = db.Column(db.Boolean, default=False)
+    images = db.relationship('RoomImage', backref='room', lazy=True)
     # Do NOT define a second relationship with backref='homestay' here. One side is enough.
 
     # If you want a simple relationship w/o backref:
@@ -175,8 +176,7 @@ class Room(db.Model):
 
 class RoomImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    image_path = db.Column(db.String(200))
+    image_path = db.Column(db.String(255), nullable=False)
     is_featured = db.Column(db.Boolean, default=False)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
 
-    room = db.relationship('Room', backref='images', lazy=True)
