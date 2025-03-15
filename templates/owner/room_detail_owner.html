@@ -6,29 +6,42 @@
     <h2>Room {{ room.room_number }} (Owner View)</h2>
     <hr>
 
-    <!-- REUSE the same gallery/room detail code you had for the renter -->
     <div class="row">
-        <!-- Left column: same image gallery as before -->
+        <!-- Left column: existing images + (optionally) the main image gallery -->
         <div class="col-lg-8 mb-4">
-            <!-- Put your card + image logic here (copy from renter template) -->
-            <!-- For brevity, I'm omitting the entire block, but you'd basically
-                 copy the <div class="card"> with the mainImage, etc. -->
+            <!-- Existing code for main image or gallery goes here if you have it -->
+
+            <!-- Gallery of existing images -->
+            <div class="mt-4">
+                {% if room.images and room.images|length > 0 %}
+                    <h5>Gallery</h5>
+                    <div class="d-flex flex-wrap">
+                        {% for img in room.images %}
+                            <div class="me-2 mb-2">
+                                <!-- Use url_for('static', filename=...) to load from static/uploads/ -->
+                                <img src="{{ url_for('static', filename=img.image_path) }}"
+                                     alt="Room image {{ loop.index }}"
+                                     style="width: 150px; height: 100px; object-fit: cover;">
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No images yet.</p>
+                {% endif %}
+            </div>
         </div>
 
-        <!-- Right column: same "Room Details" block but we might remove the "Book This Room" button,
-             or replace it with something else for the owner. -->
+        <!-- Right column: Room Details -->
         <div class="col-lg-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h4 class="card-title mb-0">Room Details</h4>
                 </div>
                 <div class="card-body">
-                    <!-- Show the same features (price, bed count, etc.) -->
                     <p><strong>Price/Hour:</strong> ${{ room.price_per_hour }}</p>
                     <p><strong>Max Guests:</strong> {{ room.max_guests }}</p>
                     <p><strong>Beds:</strong> {{ room.bed_count }}</p>
                     <p><strong>Bathrooms:</strong> {{ room.bathroom_count }}</p>
-                    
                     <hr>
                     <h5>Description</h5>
                     <p>{{ room.description }}</p>
@@ -37,7 +50,7 @@
         </div>
     </div>
 
-    <!-- EDIT FORM: Let the owner change details right below -->
+    <!-- Edit Form for Owner -->
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
             <h5 class="card-title mb-0">Edit Room Information</h5>
@@ -49,7 +62,7 @@
                     <input type="text" class="form-control" id="room_number" name="room_number"
                            value="{{ room.room_number }}" required>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="bed_count" class="form-label">Bed Count</label>
@@ -75,19 +88,19 @@
                                value="{{ room.price_per_hour }}" min="0" step="0.01" required>
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="description" class="form-label">Description</label>
                     <textarea class="form-control" id="description" name="description" rows="3" required>{{ room.description }}</textarea>
                 </div>
 
-                <!-- If you want to allow uploading new images for this room: -->
+                <!-- File input for new images -->
                 <div class="mb-3">
                     <label for="gallery" class="form-label">Additional Images</label>
                     <input type="file" class="form-control" id="gallery" name="gallery" multiple>
                     <small class="text-muted">Select multiple images to add more photos.</small>
                 </div>
-                
+
                 <button type="submit" class="btn btn-success">Save Changes</button>
                 <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}" class="btn btn-secondary">
                     Back to Manage Rooms
@@ -95,9 +108,5 @@
             </form>
         </div>
     </div>
-
 </div>
-
-<!-- If needed, copy the same <script> for the gallery logic from your renter template. -->
-
 {% endblock %}
