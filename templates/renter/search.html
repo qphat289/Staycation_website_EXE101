@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block title %}Search Homestays - Homestay Booking{% endblock %}
 
 {% block content %}
@@ -58,9 +57,13 @@
                 <div class="col-md-6 mb-4">
                     <div class="card h-100">
                         {% if homestay.image_path %}
-                        <img src="{{ url_for('static', filename=homestay.image_path) }}" class="card-img-top" alt="{{ homestay.title }}" style="height: 200px; object-fit: cover;">
+                        <img src="{{ url_for('static', filename=homestay.image_path) }}" 
+                             class="card-img-top" alt="{{ homestay.title }}" 
+                             style="height: 200px; object-fit: cover;">
                         {% else %}
-                        <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image" style="height: 200px; object-fit: cover;">
+                        <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" 
+                             class="card-img-top" alt="Default Image" 
+                             style="height: 200px; object-fit: cover;">
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ homestay.title }}</h5>
@@ -70,12 +73,14 @@
                                     <i class="bi bi-geo-alt"></i> {{ homestay.city }}, {{ homestay.district }}
                                 </small>
                             </p>
-                            <p class="card-text fw-bold">${{ homestay.price_per_hour }}/hour</p>
-                            <ul class="list-inline">
-                                <li class="list-inline-item"><i class="bi bi-person"></i> {{ homestay.max_guests }} guests</li>
-                                <li class="list-inline-item"><i class="bi bi-door-closed"></i> {{ homestay.bedrooms }} bedrooms</li>
-                                <li class="list-inline-item"><i class="bi bi-droplet"></i> {{ homestay.bathrooms }} bathrooms</li>
-                            </ul>
+                            {% set rooms = homestay.rooms|list %}
+                            {% if rooms|length > 0 %}
+                                {% set price_list = rooms|map(attribute='price_per_hour')|list %}
+                                {% set min_price = price_list|min %}
+                                <p class="card-text fw-bold">${{ min_price }}/hour</p>
+                            {% else %}
+                                <p class="card-text fw-bold">No rooms yet</p>
+                            {% endif %}
                         </div>
                         <div class="card-footer">
                             <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary">View Details</a>
