@@ -81,7 +81,6 @@ def add_homestay():
             city=city,
             district=district,
             image_path=image_path,
-            user_id=current_user.id,    # Must set this if it's NOT NULL
             owner_id=current_user.id 
         )
         

@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from PIL import Image
 import io
 import os
-from werkzeug.utils import secure_filename
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
@@ -191,79 +190,25 @@ def cancel_booking(id):
     flash('Booking cancelled successfully', 'success')
     return redirect(url_for('renter.dashboard'))
 
-def get_rank_info(xp):
-    """Returns (current_rank, current_rank_min_xp, next_rank, next_rank_min_xp)."""
-    # You can tweak these thresholds as you like:
-    thresholds = [
-        ("Bronze", 0),
-        ("Silver", 200),
-        ("Gold", 500),
-        ("Emerald", 1000),
-        ("Diamond", 2000),
-    ]
-
-    current_rank = "Diamond"
-    next_rank = None
-    current_rank_min_xp = 2000
-    next_rank_min_xp = 2000
-    
-    for i in range(len(thresholds)):
-        rank_name, rank_xp = thresholds[i]
-        
-        # If user XP is >= rank_xp but < the next threshold
-        # that means user is currently this rank
-        if xp >= rank_xp:
-            current_rank = rank_name
-            current_rank_min_xp = rank_xp
-            
-            # Check if there's a "next" rank in the list
-            if i + 1 < len(thresholds):
-                next_rank, next_rank_min_xp = thresholds[i + 1]
-            else:
-                # if user is Diamond already, no next rank
-                next_rank = None
-                next_rank_min_xp = rank_xp
-        else:
-            break
-
-    return current_rank, current_rank_min_xp, next_rank, next_rank_min_xp
-
 @renter_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    user = current_user  # or fetch from DB
     if request.method == 'POST':
-        user.full_name = request.form.get('full_name')
-        user.phone_number = request.form.get('phone_number')
-        user.email = request.form.get('email')
-        user.personal_id = request.form.get('personal_id')
-        
-        # Handle new avatar file (if uploaded)
-        avatar_file = request.files.get('avatar')
-        if avatar_file and avatar_file.filename:
-            # Save and update the user's avatar field
-            filename = secure_filename(avatar_file.filename)
-            avatar_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            avatar_file.save(avatar_path)
-            user.avatar = filename
-        
+        current_user.full_name = request.form.get('full_name')
+        current_user.phone = request.form.get('phone')
         db.session.commit()
         flash("Profile updated successfully!", "success")
-        return render_template('user/profile.html', user=user, get_rank_info=get_rank_info)
+        return redirect(url_for('renter.profile'))
 
-    
-    # Example: user.experience_points or user.rank could come from the DB
-    # We'll convert experience points into a rank string.
-    # Or if your DB just stores 'rank', skip the calculation.
-    
-    return render_template('user/profile.html', user=user)
+    return render_template("renter/profile.html")
+
 @renter_bp.route('/homestay/<int:homestay_id>/review', methods=['GET', 'POST'])
 @login_required
 def add_review(homestay_id):
     homestay = Homestay.query.get_or_404(homestay_id)
 
     # Check if the user has already left a review for this homestay
-    existing_review = Review.query.filter_by(homestay_id=homestay.id, user_id=current_user.id).first()
+    existing_review = Review.query.filter_by(homestay_id=homestay.id, renter_id=current_user.id).first()
     if existing_review:
         flash('You have already left a review for this homestay.', 'danger')
         return redirect(url_for('renter.view_homestay', id=homestay.id))
@@ -276,7 +221,7 @@ def add_review(homestay_id):
             rating=rating,
             content=content,
             homestay_id=homestay.id,
-            user_id=current_user.id
+            renter_id=current_user.id  # CHỖ NÀY ĐÃ ĐỔI user_id -> renter_id
         )
         db.session.add(review)
         db.session.commit()
@@ -315,29 +260,26 @@ def review_booking(booking_id):
         flash("You can only review a completed booking.", "danger")
         return redirect(url_for('renter.dashboard'))
 
-    # If you store reviews in a separate table, check if there's already a review
+    # Check if there's already a review
     existing_review = Review.query.filter_by(
         homestay_id=booking.homestay_id,
-        user_id=current_user.id
+        renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
     ).first()
 
     if request.method == 'POST':
-        # If user posts a new review
         rating = int(request.form.get('rating', 5))
         content = request.form.get('content', '')
 
         if existing_review:
-            # Optionally update the existing review or show a message
             existing_review.rating = rating
             existing_review.content = content
             flash("Your review has been updated!", "success")
         else:
-            # Create a new review
             new_review = Review(
                 rating=rating,
                 content=content,
                 homestay_id=booking.homestay_id,
-                user_id=current_user.id
+                renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
             )
             db.session.add(new_review)
             flash("Review submitted!", "success")
@@ -379,7 +321,7 @@ def view_reviews(homestay_id):
         
         existing_review = Review.query.filter_by(
             homestay_id=homestay.id,
-            user_id=current_user.id
+            renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
         ).first()
         if existing_review:
             existing_review.rating = rating
@@ -390,17 +332,15 @@ def view_reviews(homestay_id):
                 rating=rating,
                 content=content,
                 homestay_id=homestay.id,
-                user_id=current_user.id
+                renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
             )
             db.session.add(new_review)
             flash("Review submitted!", "success")
         db.session.commit()
         return redirect(url_for('renter.view_reviews', homestay_id=homestay.id))
     
-    # 'write' param indicates user wants to open the form
     write_mode = request.args.get('write')
     
-    # If user tries to write but can't post, flash a warning
     if write_mode and not can_post:
         flash("You can only post a review if you have a completed booking.", "warning")
     

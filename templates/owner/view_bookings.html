@@ -5,7 +5,7 @@
 <h2>All Bookings</h2>
 <hr>
 {% if bookings %}
-  <table class="table">
+  <table class="table table-striped">
     <thead>
       <tr>
         <th>ID</th>
@@ -22,9 +22,17 @@
         <tr>
           <td>{{ booking.id }}</td>
           <td>{{ booking.homestay.title }}</td>
-          <td>{{ booking.room.room_number }}</td>
+          <td>
+            {% if booking.room %}
+              Room #{{ booking.room.room_number }}
+            {% else %}
+              <em>No room assigned</em>
+            {% endif %}
+          </td>
           <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
           <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
+          
+          <!-- Cột hiển thị trạng thái bằng badge màu -->
           <td>
             {% if booking.status == 'pending' %}
               <span class="badge bg-warning">Pending</span>
@@ -36,22 +44,49 @@
               <span class="badge bg-success">Completed</span>
             {% elif booking.status == 'cancelled' %}
               <span class="badge bg-danger">Cancelled</span>
+            {% elif booking.status == 'rejected' %}
+              <span class="badge bg-danger">Rejected</span>
             {% else %}
-              {{ booking.status }}
+              <span class="badge bg-secondary">{{ booking.status|capitalize }}</span>
             {% endif %}
           </td>
-          <td>
-            <span class="{{ status_classes.get(booking.status, 'badge bg-secondary') }}">
-              {{ booking.status|capitalize }}
-            </span>
-          </td>
+          
+          <!-- Cột các nút hành động tùy theo trạng thái -->
           <td>
             {% if booking.status == 'pending' %}
-            <a href="{{ url_for('owner.confirm_booking', id=booking.id) }}" class="btn btn-success btn-sm">
-              Confirm
-            </a>
+              <!-- Nút Confirm -->
+              <a href="{{ url_for('owner.confirm_booking', id=booking.id) }}"
+                 class="btn btn-success btn-sm me-1">
+                Confirm
+              </a>
+              
+              <!-- Nút Reject -->
+              <a href="{{ url_for('owner.reject_booking', id=booking.id) }}"
+                 class="btn btn-danger btn-sm">
+                Reject
+              </a>
+              
+            {% elif booking.status == 'confirmed' %}
+              <!-- Nút Mark as Completed -->
+              <a href="{{ url_for('owner.mark_completed', id=booking.id) }}"
+                 class="btn btn-primary btn-sm">
+                Mark as Completed
+              </a>
+              
+            {% elif booking.status == 'active' %}
+              <!-- Bạn có thể chọn hiển thị Mark as Completed hoặc hành động khác -->
+              <a href="{{ url_for('owner.mark_completed', id=booking.id) }}"
+                 class="btn btn-primary btn-sm">
+                Mark as Completed
+              </a>
+              
             {% endif %}
-            <!-- Possibly other actions like Cancel, etc. -->
+            
+            <!-- Link chi tiết booking, nếu cần -->
+            <a href="{{ url_for('owner.booking_details', booking_id=booking.id) }}"
+               class="btn btn-info btn-sm ms-1">
+              Details
+            </a>
           </td>
         </tr>
       {% endfor %}
