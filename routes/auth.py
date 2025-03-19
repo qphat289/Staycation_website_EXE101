@@ -91,11 +91,11 @@ def login():
         
         # Redirect based on role
         if role == 'admin':
-            return redirect(url_for('admin.dashboard'))
+            return redirect(url_for('home'))
         elif role == 'owner':
-            return redirect(url_for('owner.dashboard'))
+            return redirect(url_for('home'))
         else:
-            return redirect(url_for('renter.dashboard'))
+            return redirect(url_for('home'))
         
     return render_template('auth/login.html')
 
