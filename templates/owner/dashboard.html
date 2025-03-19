@@ -1,44 +1,50 @@
-{% extends 'base.html' %}
-{% block title %}Owner Dashboard{% endblock %}
-
+<!-- templates/owner/dashboard.html -->
+{% extends "base.html" %}
 {% block content %}
 <h2>Owner Dashboard</h2>
-<hr>
 
-<!-- Button to see all bookings for the owner's homestays -->
 <a href="{{ url_for('owner.view_bookings') }}" class="btn btn-info mb-3">View All Bookings</a>
 
-{% if homestays %}
-  <table class="table table-striped">
+<table class="table table-striped">
     <thead>
-      <tr>
-        <th>Homestay Name</th>
-        <th>Address</th>
-        <th>Rooms</th>
-        <th>Actions</th>
-      </tr>
+        <tr>
+            <th>Homestay Name</th>
+            <th>Address</th>
+            <th>Rooms</th>
+            <th>Actions</th>
+        </tr>
     </thead>
     <tbody>
-      {% for home in homestays %}
+        {% for homestay in homestays %}
         <tr>
-          <td>{{ home.title }}</td>
-          <td>{{ home.address }}, {{ home.city }}</td>
-          <td>{{ home.rooms|length }}</td>
-          <td>
-            <!-- Link to add a new room to this homestay -->
-            <a href="{{ url_for('owner.add_room', homestay_id=home.id) }}" class="btn btn-sm btn-primary">
-              Add Room
-            </a>
-            <!-- Link to edit the homestay -->
-            <a href="{{ url_for('owner.edit_homestay', id=home.id) }}" class="btn btn-sm btn-warning">
-              Edit
-            </a>
-          </td>
+            <!-- Title -->
+            <td>{{ homestay.title }}</td>
+
+            <!-- Address, City (and possibly District) -->
+            <td>{{ homestay.address }}, {{ homestay.city }}</td>
+
+            <!-- Number of Rooms -->
+            <td>{{ homestay.rooms|length }}</td>
+
+            <!-- Actions -->
+            <td>
+                <!-- Manage Rooms Route -->
+                <a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}" 
+                   class="btn btn-primary">Manage Rooms</a>
+
+                <!-- Edit Homestay Route -->
+                <a href="{{ url_for('owner.edit_homestay', id=homestay.id) }}" 
+                   class="btn btn-warning">Edit</a>
+
+                <!-- Delete Homestay Route -->
+                <a href="{{ url_for('owner.delete_homestay', id=homestay.id) }}" 
+                   class="btn btn-danger"
+                   onclick="return confirm('Are you sure you want to delete this homestay?');">
+                   Delete
+                </a>
+            </td>
         </tr>
-      {% endfor %}
+        {% endfor %}
     </tbody>
-  </table>
-{% else %}
-  <p>No homestays added yet.</p>
-{% endif %}
+</table>
 {% endblock %}

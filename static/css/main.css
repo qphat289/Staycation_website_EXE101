@@ -266,13 +266,8 @@ footer {
 /* 4.3 Thumbnail Gallery */
 /* FIX: Duplicate selector - this appears twice in the file */
 .thumbnail-gallery {
-    display: flex;
-    overflow-x: auto;
-    padding: 0.5rem;
-    gap: 0.5rem;
-    scrollbar-width: thin;
-    scrollbar-color: #dee2e6 #f8f9fa;
-    background-color: #f8f9fa;
+    display: flex;         /* or d-flex in Bootstrap */
+    gap: 10px;             /* space between thumbnails */
 }
 
 .thumbnail-gallery::-webkit-scrollbar {
@@ -290,12 +285,17 @@ footer {
 
 /* FIX: Duplicate selector - this appears twice in the file with different dimensions */
 .thumbnail-img {
+    width: 80px;           /* set your preferred width */
+    height: 50px;          /* set your preferred height for a rectangle */
+    object-fit: cover;     /* crop image so it fills the rectangle */
     border: 2px solid transparent;
-    transition: all 0.2s ease;
-    width: 80px; /* FIX: Conflicts with earlier definition of 60px */
-    height: 60px;
-    object-fit: cover;
-    cursor: pointer;
+    border-radius: 0;      /* remove rounding to get perfect rectangles */
+    cursor: pointer;       /* optional: pointer cursor on hover */
+    transition: transform 0.2s ease;
+}
+.thumbnail-img:hover {
+    transform: scale(1.05);
+    border-color: #ccc;    /* optional subtle highlight on hover */
 }
 
 .thumbnail-img.active {
@@ -447,3 +447,66 @@ footer {
         height: 40px;
     }
 }
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .img-thumbnail {
+    border-radius: 0 !important; /* force sharp corners */
+  }
+  
+  .badge {
+    font-size: 0.9rem;
+    padding: 0.4em 0.6em;
+  }
+  
+  .progress {
+    background-color: #e9ecef; /* or your brand color */
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .progress-bar {
+    font-weight: 600;
+  }
+  
+  .arrow-left, .arrow-right {
+    width: 0;
+    height: 0;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;               /* ensure arrows are above the image */
+}
+
+.arrow-left {
+    /* Triangle pointing right -> for "previous" arrow we flip it horizontally. 
+       We'll do a left-facing arrow by reversing the borders. */
+
+    border-top: 25px solid transparent;    /* top side transparent */
+    border-bottom: 25px solid transparent; /* bottom side transparent */
+    border-right: 25px solid white;        /* actual arrow shape is white */
+    margin-left: 15px;                     /* push it slightly from the edge if desired */
+    transition: transform 0.2s ease;
+}
+
+.arrow-left:hover {
+    transform: scale(1.1);
+}
+
+.arrow-right {
+    /* Triangle pointing left */
+    border-top: 25px solid transparent;
+    border-bottom: 25px solid transparent;
+    border-left: 25px solid white;
+    margin-right: 15px;
+    transition: transform 0.2s ease;
+}
+
+.arrow-right:hover {
+    transform: scale(1.1);
+}
+
+
+  

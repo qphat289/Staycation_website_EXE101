@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Room {{ room.room_number }} - Owner View{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2>Room {{ room.room_number }} (Owner View)</h2>
+    <hr>
+
+    <div class="row">
+        <!-- Left column: existing images + (optionally) the main image gallery -->
+        <div class="col-lg-8 mb-4">
+            <!-- Existing code for main image or gallery goes here if you have it -->
+
+            <!-- Gallery of existing images -->
+            <div class="mt-4">
+                {% if room.images and room.images|length > 0 %}
+                    <h5>Gallery</h5>
+                    <div class="d-flex flex-wrap">
+                        {% for img in room.images %}
+                            <div class="me-2 mb-2">
+                                <!-- Use url_for('static', filename=...) to load from static/uploads/ -->
+                                <img src="{{ url_for('static', filename=img.image_path) }}"
+                                     alt="Room image {{ loop.index }}"
+                                     style="width: 150px; height: 100px; object-fit: cover;">
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No images yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right column: Room Details -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="card-title mb-0">Room Details</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Price/Hour:</strong> ${{ room.price_per_hour }}</p>
+                    <p><strong>Max Guests:</strong> {{ room.max_guests }}</p>
+                    <p><strong>Beds:</strong> {{ room.bed_count }}</p>
+                    <p><strong>Bathrooms:</strong> {{ room.bathroom_count }}</p>
+                    <hr>
+                    <h5>Description</h5>
+                    <p>{{ room.description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form for Owner -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Edit Room Information</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="room_number" class="form-label">Room Number</label>
+                    <input type="text" class="form-control" id="room_number" name="room_number"
+                           value="{{ room.room_number }}" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="bed_count" class="form-label">Bed Count</label>
+                        <input type="number" class="form-control" id="bed_count" name="bed_count"
+                               value="{{ room.bed_count }}" min="1" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="bathroom_count" class="form-label">Bathroom Count</label>
+                        <input type="number" class="form-control" id="bathroom_count" name="bathroom_count"
+                               value="{{ room.bathroom_count }}" min="1" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="max_guests" class="form-label">Max Guests</label>
+                        <input type="number" class="form-control" id="max_guests" name="max_guests"
+                               value="{{ room.max_guests }}" min="1" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="price_per_hour" class="form-label">Price per Hour</label>
+                        <input type="number" class="form-control" id="price_per_hour" name="price_per_hour"
+                               value="{{ room.price_per_hour }}" min="0" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required>{{ room.description }}</textarea>
+                </div>
+
+                <!-- File input for new images -->
+                <div class="mb-3">
+                    <label for="gallery" class="form-label">Additional Images</label>
+                    <input type="file" class="form-control" id="gallery" name="gallery" multiple>
+                    <small class="text-muted">Select multiple images to add more photos.</small>
+                </div>
+
+                <button type="submit" class="btn btn-success">Save Changes</button>
+                <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}" class="btn btn-secondary">
+                    Back to Manage Rooms
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

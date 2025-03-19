@@ -1,7 +1,7 @@
 # routes/admin.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import db, Owner, User
+from models import db, Owner, Admin
 from sqlalchemy.exc import IntegrityError
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -9,9 +9,9 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():
-    if not current_user.is_admin():
+    if not isinstance(current_user, Admin):
         flash("You are not authorized!", "danger")
-        return redirect(url_for('auth.admin_login'))
+        return redirect(url_for('auth.login'))
     owners = Owner.query.all()
     return render_template('admin/dashboard.html', owners=owners)
 
@@ -25,13 +25,12 @@ def create_owner():
         personal_id = request.form.get('personal_id')
         username = request.form.get('username')
         password = request.form.get('password')
-
+        
         if not all([full_name, email, personal_id, username, password]):
             flash("All required fields must be filled!", "danger")
             return render_template('admin/create_owner.html')
-
+        
         try:
-            # Tạo Owner
             new_owner = Owner(
                 full_name=full_name,
                 email=email,
@@ -42,26 +41,12 @@ def create_owner():
             new_owner.set_password(password)
             db.session.add(new_owner)
             db.session.commit()
-
-            # Tạo entry cho User với role 'owner'
-            new_user = User(
-                username=username,
-                email=email,
-                full_name=full_name,
-                phone=phone,
-                personal_id=personal_id,
-                role='owner'
-            )
-            new_user.set_password(password)
-            db.session.add(new_user)
-            db.session.commit()
-
-            flash("Owner created successfully in both Owner and User tables!", "success")
+            
+            flash("Owner created successfully!", "success")
             return redirect(url_for('admin.dashboard'))
-
-        except IntegrityError as e:
+        except IntegrityError:
             db.session.rollback()
-            flash("Error: The personal ID (or other unique field) already exists. Please use a different one.", "danger")
+            flash("Error: A unique field already exists. Please use different information.", "danger")
             return render_template('admin/create_owner.html')
-
+            
     return render_template('admin/create_owner.html')

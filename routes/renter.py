@@ -208,7 +208,7 @@ def add_review(homestay_id):
     homestay = Homestay.query.get_or_404(homestay_id)
 
     # Check if the user has already left a review for this homestay
-    existing_review = Review.query.filter_by(homestay_id=homestay.id, user_id=current_user.id).first()
+    existing_review = Review.query.filter_by(homestay_id=homestay.id, renter_id=current_user.id).first()
     if existing_review:
         flash('You have already left a review for this homestay.', 'danger')
         return redirect(url_for('renter.view_homestay', id=homestay.id))
@@ -221,7 +221,7 @@ def add_review(homestay_id):
             rating=rating,
             content=content,
             homestay_id=homestay.id,
-            user_id=current_user.id
+            renter_id=current_user.id  # CHỖ NÀY ĐÃ ĐỔI user_id -> renter_id
         )
         db.session.add(review)
         db.session.commit()
@@ -260,29 +260,26 @@ def review_booking(booking_id):
         flash("You can only review a completed booking.", "danger")
         return redirect(url_for('renter.dashboard'))
 
-    # If you store reviews in a separate table, check if there's already a review
+    # Check if there's already a review
     existing_review = Review.query.filter_by(
         homestay_id=booking.homestay_id,
-        user_id=current_user.id
+        renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
     ).first()
 
     if request.method == 'POST':
-        # If user posts a new review
         rating = int(request.form.get('rating', 5))
         content = request.form.get('content', '')
 
         if existing_review:
-            # Optionally update the existing review or show a message
             existing_review.rating = rating
             existing_review.content = content
             flash("Your review has been updated!", "success")
         else:
-            # Create a new review
             new_review = Review(
                 rating=rating,
                 content=content,
                 homestay_id=booking.homestay_id,
-                user_id=current_user.id
+                renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
             )
             db.session.add(new_review)
             flash("Review submitted!", "success")
@@ -324,7 +321,7 @@ def view_reviews(homestay_id):
         
         existing_review = Review.query.filter_by(
             homestay_id=homestay.id,
-            user_id=current_user.id
+            renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
         ).first()
         if existing_review:
             existing_review.rating = rating
@@ -335,17 +332,15 @@ def view_reviews(homestay_id):
                 rating=rating,
                 content=content,
                 homestay_id=homestay.id,
-                user_id=current_user.id
+                renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
             )
             db.session.add(new_review)
             flash("Review submitted!", "success")
         db.session.commit()
         return redirect(url_for('renter.view_reviews', homestay_id=homestay.id))
     
-    # 'write' param indicates user wants to open the form
     write_mode = request.args.get('write')
     
-    # If user tries to write but can't post, flash a warning
     if write_mode and not can_post:
         flash("You can only post a review if you have a completed booking.", "warning")
     
