@@ -32,7 +32,7 @@
           <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
           <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
           
-          <!-- Cột hiển thị trạng thái bằng badge màu -->
+          <!-- Hiển thị trạng thái với badge màu -->
           <td>
             {% if booking.status == 'pending' %}
               <span class="badge bg-warning">Pending</span>
@@ -51,7 +51,7 @@
             {% endif %}
           </td>
           
-          <!-- Cột các nút hành động tùy theo trạng thái -->
+          <!-- Các nút hành động -->
           <td>
             {% if booking.status == 'pending' %}
               <!-- Nút Confirm -->
@@ -59,30 +59,13 @@
                  class="btn btn-success btn-sm me-1">
                 Confirm
               </a>
-              
               <!-- Nút Reject -->
               <a href="{{ url_for('owner.reject_booking', id=booking.id) }}"
                  class="btn btn-danger btn-sm">
                 Reject
               </a>
-              
-            {% elif booking.status == 'confirmed' %}
-              <!-- Nút Mark as Completed -->
-              <a href="{{ url_for('owner.mark_completed', id=booking.id) }}"
-                 class="btn btn-primary btn-sm">
-                Mark as Completed
-              </a>
-              
-            {% elif booking.status == 'active' %}
-              <!-- Bạn có thể chọn hiển thị Mark as Completed hoặc hành động khác -->
-              <a href="{{ url_for('owner.mark_completed', id=booking.id) }}"
-                 class="btn btn-primary btn-sm">
-                Mark as Completed
-              </a>
-              
             {% endif %}
-            
-            <!-- Link chi tiết booking, nếu cần -->
+            <!-- Luôn hiển thị nút Details -->
             <a href="{{ url_for('owner.booking_details', booking_id=booking.id) }}"
                class="btn btn-info btn-sm ms-1">
               Details
