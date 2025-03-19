@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from PIL import Image
 import io
 import os
+from werkzeug.utils import secure_filename
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
@@ -159,12 +160,17 @@ def book_homestay(homestay_id):
         )
         db.session.add(new_booking)
         db.session.commit()
+        current_user.xp += total_price * 10  # Update user XP based on total price
         
+        db.session.add(new_booking)
+        db.session.commit()
+
         flash('Booking request submitted successfully!', 'success')
         return redirect(url_for('renter.dashboard'))
-    
-    # For GET requests, render the booking form. You can also pass the room to display details.
+
     return render_template('renter/book_homestay.html', homestay=homestay, room=room)
+  
+
 
 
 
@@ -190,17 +196,38 @@ def cancel_booking(id):
     flash('Booking cancelled successfully', 'success')
     return redirect(url_for('renter.dashboard'))
 
+def allowed_file(filename):
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 @renter_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     if request.method == 'POST':
+        # Update full name and phone number
         current_user.full_name = request.form.get('full_name')
         current_user.phone = request.form.get('phone')
+
+        # Handle avatar upload
+        avatar = request.files.get('avatar')
+        if avatar and allowed_file(avatar.filename):
+            filename = secure_filename(avatar.filename)
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            avatar.save(filepath)
+
+            # Update the avatar field in the user's profile
+            current_user.avatar = filename
+
+    
+    # Debugging: Check the file path
+        print(f"Saving avatar to: {filepath}")
+        avatar.save(filepath)
+        # Commit changes to the database
         db.session.commit()
+
         flash("Profile updated successfully!", "success")
         return redirect(url_for('renter.profile'))
 
-    return render_template("renter/profile.html")
+    return render_template("user/profile.html")  # <-- Correct path after moving the template
 
 @renter_bp.route('/homestay/<int:homestay_id>/review', methods=['GET', 'POST'])
 @login_required
