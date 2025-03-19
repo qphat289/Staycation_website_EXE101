@@ -63,9 +63,12 @@
                     <table class="table">
                         <tr>
                             <th>Renter ID:</th>
-                            <td>{{ booking.user_id }}</td>
+                            <td>{{ booking.renter.id }}</td>
                         </tr>
-                        <!-- Remove the user-specific information -->
+                        <tr>
+                            <th>Renter Name:</th>
+                            <td>{{ booking.renter.full_name }}</td>
+                        </tr>
                     </table>
                 </div>
             </div>
@@ -98,11 +101,8 @@
                             <a href="{{ url_for('owner.reject_booking', id=booking.id) }}" class="btn btn-danger">
                                 <i class="bi bi-x-circle"></i> Reject Booking
                             </a>
-                        {% elif booking.status == 'confirmed' %}
-                            <a href="{{ url_for('owner.mark_completed', id=booking.id) }}" class="btn btn-primary">
-                                <i class="bi bi-check2-all"></i> Mark as Completed
-                            </a>
                         {% endif %}
+                        {# Đã loại bỏ nút "Mark as Completed" vì không muốn dùng chức năng này #}
                         <a href="{{ url_for('owner.view_bookings') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Back to All Bookings
                         </a>
