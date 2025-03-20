@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
 import os
 from config import Config
@@ -12,7 +12,6 @@ def create_app():
 
     # Khởi tạo database, migrations, login manager
     db.init_app(app)
-    migrate = Migrate(app, db)
     login_manager = LoginManager(app)
     login_manager.login_view = 'auth.login'
 
@@ -32,7 +31,6 @@ def create_app():
         db.create_all()
         print("Database tables created successfully.")
 
-        # Thay vì User, ta dùng Admin để kiểm tra admin
         existing_admin = Admin.query.filter_by(username='admin').first()
         if existing_admin:
             print("Admin user already exists and is an admin.")
@@ -57,8 +55,12 @@ def create_app():
     # Home route
     @app.route('/')
     def home():
-        # Lấy một số homestay nổi bật để hiển thị trên trang chủ
-        homestays = Homestay.query.limit(6).all()
+        # Nếu người dùng đã đăng nhập và là owner thì chỉ hiển thị các homestay của họ
+        if current_user.is_authenticated and current_user.is_owner():
+            homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
+        else:
+            # Hiển thị một số homestay nổi bật (ví dụ: 6 homestay)
+            homestays = Homestay.query.limit(6).all()
         return render_template('home.html', homestays=homestays)
 
     return app
