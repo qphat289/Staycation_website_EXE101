@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
-{% block title %}Room {{ room.room_number }} Details{% endblock %}
+{% block title %}<span data-translate="room">Room</span> {{ room.room_number }} <span data-translate="description">Details</span>{% endblock %}
 
 {% block content %}
 <div class="container my-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('home') }}" data-translate="home">Home</a></li>
             <li class="breadcrumb-item"><a href="{{ url_for('renter.view_homestay', id=room.homestay.id) }}">{{ room.homestay.title }}</a></li>
-            <li class="breadcrumb-item active">Room {{ room.room_number }}</li>
+            <li class="breadcrumb-item active"><span data-translate="room">Room</span> {{ room.room_number }}</li>
         </ol>
     </nav>
 
@@ -16,7 +16,7 @@
         <div class="col-lg-8 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0">Room {{ room.room_number }}</h3>
+                    <h3 class="card-title mb-0"><span data-translate="room">Room</span> {{ room.room_number }}</h3>
                 </div>
                 
                 <!-- Main Gallery Display -->
@@ -37,12 +37,12 @@
                             <!-- Fullscreen button -->
                             <div class="position-absolute bottom-0 end-0 m-3">
                                 <button class="btn btn-sm btn-light d-flex align-items-center" onclick="openFullscreen()">
-                                    <i class="bi bi-fullscreen me-1"></i> Gallery
+                                    <i class="bi bi-fullscreen me-1"></i> <span data-translate="photos">Gallery</span>
                                 </button>
                             </div>
                         {% else %}
                             <div class="d-flex justify-content-center align-items-center bg-light empty-gallery">
-                                <p class="text-muted">No images available for this room</p>
+                                <p class="text-muted" data-translate="no-images">No images available for this room</p>
                             </div>
                         {% endif %}
                     </div>
@@ -68,24 +68,24 @@
         <div class="col-lg-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-secondary text-white">
-                    <h4 class="card-title mb-0">Room Details</h4>
+                    <h4 class="card-title mb-0" data-translate="room-details">Room Details</h4>
                 </div>
                 <div class="card-body">
-                    <h5>${{ room.price_per_hour }} per hour</h5>
-                    <p>{{ room.max_guests }} Guests</p>
-                    <p>{{ room.bed_count }} Bed(s)</p>
-                    <p>{{ room.bathroom_count }} Bathroom(s)</p>
+                    <h5><span data-translate="price-per-hour">${{ room.price_per_hour }} per hour</span></h5>
+                    <p><span>{{ room.max_guests }}</span> <span data-translate="capacity">Guests</span></p>
+                    <p><span>{{ room.bed_count }}</span> <span data-translate="beds">Bed(s)</span></p>
+                    <p><span>{{ room.bathroom_count }}</span> <span data-translate="bathrooms">Bathroom(s)</span></p>
                     
                     <hr>
-                    <h5>Description</h5>
+                    <h5 data-translate="description">Description</h5>
                     <p>{{ room.description }}</p>
                     
                     <div class="d-grid gap-2 mt-4">
                         <a href="{{ url_for('renter.book_homestay', homestay_id=room.homestay.id) }}" class="btn btn-lg btn-primary">
-                            <i class="bi bi-calendar-check"></i> Book This Room
+                            <i class="bi bi-calendar-check"></i> <span data-translate="book-room">Book This Room</span>
                         </a>
                         <a href="{{ url_for('renter.view_homestay', id=room.homestay.id) }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to Homestay
+                            <i class="bi bi-arrow-left"></i> <span data-translate="back-to-homestay">Back to Homestay</span>
                         </a>
                     </div>
                 </div>

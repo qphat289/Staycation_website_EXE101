@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+<!-- {% extends 'base.html' %}
 
 {% block title %}Login - Homestay Booking{% endblock %}
 
@@ -25,6 +25,16 @@
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Login</button>
                 </form>
+                
+                <!-- Google login button -->
+                <div class="text-center mt-3">
+                    <div class="separator my-3">
+                        <span class="px-2 text-muted">OR</span>
+                    </div>
+                    <a href="{{ url_for('auth.login_google') }}" class="btn btn-outline-danger w-100">
+                        <i class="fab fa-google me-2"></i> Sign in with Google
+                    </a>
+                </div>
             </div>
             <div class="card-footer text-center">
                 Don't have an account? <a href="{{ url_for('auth.register') }}">Register now</a>
@@ -32,4 +42,19 @@
         </div>
     </div>
 </div>
-{% endblock %}
+
+<style>
+.separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+
+.separator::before,
+.separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #dee2e6;
+}
+</style>
+{% endblock %} -->
