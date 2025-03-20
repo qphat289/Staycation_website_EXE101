@@ -2,7 +2,6 @@
    0. NEW COLOR SCHEME
    ========================= */
    :root {
-    /* Bạn có thể chỉnh sửa các giá trị này cho phù hợp */
     --primary-color: #e2c27d;       /* Màu chủ đạo */
     --primary-light: #e6cf90;       /* Màu nhạt hơn */
     --primary-dark: #c2993a;        /* Màu đậm hơn */
