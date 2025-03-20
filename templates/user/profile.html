@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container py-4">
-    <h2 class="mb-4">My Profile</h2>
+    <h2 class="mb-4" data-translate="my-profile">My Profile</h2>
     
     <div class="row">
         <!-- LEFT COLUMN: Avatar + Rank -->
@@ -10,7 +10,7 @@
                 <div class="card-body text-center">
                     <!-- Avatar -->
                     {% if current_user.avatar %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                        <img src="{{ url_for('uploaded_file', filename=current_user.avatar) }}"
                             alt="Avatar"
                             class="avatar-circle"
                             style="width: 150px; height: 150px; object-fit: cover;">
@@ -23,13 +23,14 @@
                     
                     <h5 class="card-title">{{ current_user.full_name or "Unnamed User" }}</h5>
 
-                    <!-- 1) Calculate rank info from user.experience_points -->
+                    <!-- Calculate rank info -->
                     {% set xp_current = current_user.experience_points if current_user.experience_points is defined else 0 %}
+                    {% set xp_formatted = "%.2f"|format(xp_current) %}
                     
                     {# get_rank_info filter returns (current_rank, current_min, next_rank, next_min) #}
                     {% set current_rank, current_min, next_rank, next_min = xp_current|rank_info %}
 
-                    <!-- 2) Show the CURRENT rank as a badge -->
+                    <!-- Show current rank as a badge -->
                     <span class="badge
                         {% if current_rank == 'Bronze' %} bg-secondary
                         {% elif current_rank == 'Silver' %} bg-light text-dark
@@ -38,21 +39,21 @@
                         {% elif current_rank == 'Diamond' %} bg-info text-dark
                         {% else %} bg-primary
                         {% endif %}
-                    ">
+                    " data-translate="{{ current_rank|lower }}">
                       {{ current_rank }}
                     </span>
                     
-                    <!-- 3) Optional: XP progress bar -->
+                    <!-- XP progress bar -->
                     <div class="mt-3">
                         <div class="progress" style="height: 20px;">
-                            {# If the user is already Diamond, next_rank_min_xp might equal current_rank_min_xp #}
                             {% if next_rank != None and next_min > xp_current %}
                                 {% set xp_needed = next_min - xp_current %}
                                 {% set percentage = (xp_current / next_min) * 100 %}
+                                {% set next_min_formatted = "%.1f"|format(next_min) %}
                             {% else %}
-                                {# Means user is Diamond (or beyond) #}
                                 {% set xp_needed = 0 %}
                                 {% set percentage = 100 %}
+                                {% set next_min_formatted = xp_formatted %}
                             {% endif %}
                             
                             <div class="progress-bar 
@@ -63,17 +64,19 @@
                                 {% endif %}
                             " role="progressbar"
                               style="width: {{ percentage|round(0, 'floor') }}%;">
-                                {{ xp_current }} XP
+                                {{ xp_formatted }} XP
                             </div>
                         </div>
                         
-                        <!-- 4) Level-up Text -->
+                        <!-- Level-up Text -->
                         <small class="text-muted">
-                          {% if next_rank %}
-                            Leveling to {{ next_rank }} ({{ xp_current }}/{{ next_min }} XP)
-                          {% else %}
-                            Already at Diamond Rank!
-                          {% endif %}
+                            {% if next_rank %}
+                                <span data-translate="leveling-to">Leveling to</span> 
+                                <span data-translate="{{ next_rank|lower }}">{{ next_rank }}</span>
+                                (<span data-translate="xp-progress" data-xp="{{ xp_formatted }}" data-next-min="{{ next_min_formatted }}">{{ xp_formatted }}/{{ next_min_formatted }} XP</span>)
+                            {% else %}
+                                <span data-translate="max-rank">Already at Diamond Rank!</span>
+                            {% endif %}
                         </small>
                     </div>
                     
@@ -88,7 +91,7 @@
                     <form method="POST" enctype="multipart/form-data">
                         <!-- Full Name -->
                         <div class="mb-3">
-                            <label for="full_name" class="form-label">Full Name</label>
+                            <label for="full_name" class="form-label" data-translate="full-name">Full Name</label>
                             <input type="text" 
                                    class="form-control" 
                                    id="full_name" 
@@ -98,17 +101,17 @@
                         
                         <!-- Phone Number -->
                         <div class="mb-3">
-                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <label for="phone" class="form-label" data-translate="phone-number">Phone Number</label>
                             <input type="text" 
                                    class="form-control" 
-                                   id="phone_number" 
-                                   name="phone_number" 
-                                   value="{{ current_user.phone_number }}">
+                                   id="phone" 
+                                   name="phone" 
+                                   value="{{ current_user.phone }}">
                         </div>
                         
                         <!-- Email -->
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label" data-translate="email">Email</label>
                             <input type="email" 
                                    class="form-control" 
                                    id="email" 
@@ -118,7 +121,7 @@
                         
                         <!-- Personal ID -->
                         <div class="mb-3">
-                            <label for="personal_id" class="form-label">Personal ID</label>
+                            <label for="personal_id" class="form-label" data-translate="personal-id">Personal ID</label>
                             <input type="text" 
                                    class="form-control" 
                                    id="personal_id" 
@@ -128,7 +131,7 @@
                         
                         <!-- Avatar Upload -->
                         <div class="mb-3">
-                            <label for="avatar" class="form-label">Change Avatar</label>
+                            <label for="avatar" class="form-label" data-translate="change-avatar">Change Avatar</label>
                             <input type="file" 
                                    class="form-control" 
                                    id="avatar" 
@@ -136,11 +139,11 @@
                                    accept="image/*">
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <button type="submit" class="btn btn-primary" data-translate="update-profile">Update Profile</button>
                     </form>
-                </div> <!-- card-body -->
-            </div> <!-- card -->
-        </div> <!-- col-md-8 -->
-    </div> <!-- row -->
-</div> <!-- container -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

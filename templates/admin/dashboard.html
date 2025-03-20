@@ -2,22 +2,22 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<h2>Admin Dashboard</h2>
+<h2 data-translate="admin-dashboard">Admin Dashboard</h2>
 <!-- Button to create a new owner -->
-<a href="{{ url_for('admin.create_owner') }}" class="btn btn-primary mb-3">Create Owner</a>
+<a href="{{ url_for('admin.create_owner') }}" class="btn btn-primary mb-3" data-translate="create-owner">Create Owner</a>
 
 <hr>
-<p>This is an admin-only area.</p>
+<p data-translate="admin-only-area">This is an admin-only area.</p>
 
 <!-- Table of all owners -->
-<h3>All Owners</h3>
+<h3 data-translate="all-owners">All Owners</h3>
 <table class="table table-bordered">
   <thead>
     <tr>
-      <th>Owner ID</th>
-      <th>Username</th>
-      <th>Email</th>
-      <th>Homestays</th>
+      <th data-translate="owner-id">Owner ID</th>
+      <th data-translate="username">Username</th>
+      <th data-translate="email">Email</th>
+      <th data-translate="homestays">Homestays</th>
     </tr>
   </thead>
   <tbody>
@@ -40,22 +40,22 @@
                   <ul>
                     {% for room in homestay.rooms %}
                       <li>
-                        Room #{{ room.room_number }}:
-                        {{ room.bed_count }} beds, 
-                        {{ room.bathroom_count }} baths,
-                        Price: {{ room.price_per_hour }}/hr
+                        <span data-translate="room-number">Room #</span>{{ room.room_number }}:
+                        {{ room.bed_count }} <span data-translate="beds">beds</span>, 
+                        {{ room.bathroom_count }} <span data-translate="baths">baths</span>,
+                        <span data-translate="price">Price</span>: {{ room.price_per_hour }}/hr
                       </li>
                     {% endfor %}
                   </ul>
                 {% else %}
-                  <em>No rooms yet.</em>
+                  <em data-translate="no-rooms">No rooms yet.</em>
                 {% endif %}
                 
               </li>
             {% endfor %}
           </ul>
         {% else %}
-          <em>No homestays yet.</em>
+          <em data-translate="no-homestays">No homestays yet.</em>
         {% endif %}
       </td>
     </tr>

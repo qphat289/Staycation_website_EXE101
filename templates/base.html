@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Homestay Booking{% endblock %}</title>
+    <title>{% block title %}<span data-translate="homestay-booking">Homestay Booking</span>{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,51 +25,54 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('home') }}">Homestay Booking</a>
+            <a class="navbar-brand" href="{{ url_for('home') }}" data-translate="homestay-booking">Homestay Booking</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                        <a class="nav-link" href="{{ url_for('home') }}" data-translate="home">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('renter.search') }}">Search</a>
+                        <a class="nav-link" href="{{ url_for('renter.search') }}" data-translate="search">Search</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
                         {% if current_user.role == 'admin' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+                                <a class="nav-link" href="{{ url_for('admin.dashboard') }}" data-translate="admin-dashboard">Admin Dashboard</a>
                             </li>
                         {% elif current_user.is_owner() %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('owner.dashboard') }}">Owner Dashboard</a>
+                                <a class="nav-link" href="{{ url_for('owner.dashboard') }}" data-translate="owner-dashboard">Owner Dashboard</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('owner.add_homestay') }}">Add Homestay</a>
+                                <a class="nav-link" href="{{ url_for('owner.add_homestay') }}" data-translate="add-homestay">Add Homestay</a>
                             </li>
                         {% else %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('renter.dashboard') }}">Renter Dashboard</a>
+                                <a class="nav-link" href="{{ url_for('renter.dashboard') }}" data-translate="renter-dashboard">Renter Dashboard</a>
                             </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('renter.profile') }}">My Profile</a>
+                            <a class="nav-link" href="{{ url_for('renter.profile') }}" data-translate="my-profile">My Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout ({{ current_user.username }})</a>
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}"><span data-translate="logout">Logout</span> ({{ current_user.username }})</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                            <a class="nav-link" href="{{ url_for('auth.login') }}" data-translate="login">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+                            <a class="nav-link" href="{{ url_for('auth.register') }}" data-translate="register">Register</a>
                         </li>
                     {% endif %}
+                    <li class="nav-item">
+                        <button id="languageToggle" class="btn btn-outline-light ms-2" onclick="toggleLanguage()">EN</button>
+                    </li>
                 </ul>                
             </div>
         </div>
@@ -88,7 +91,14 @@
     
     <!-- Main content -->
     <main class="container mt-4">
-        {% block content %}{% endblock %}
+        {% block content %}
+        <h1 data-translate="find-perfect-homestay">Find Your Perfect Homestay</h1>
+        <p data-translate="book-description">Book unique accommodations or list your property to earn extra income.</p>
+        <p data-translate="explore-description">Explore our selection of homestays or create an account to get started.</p>
+        <a href="{{ url_for('renter.search') }}" class="btn btn-primary" data-translate="find-homestay-btn">Find a Homestay</a>
+        
+        <h2 class="mt-5" data-translate="featured-homestays">Featured Homestays</h2>
+        {% endblock %}
     </main>
     
     <!-- Footer -->
@@ -96,28 +106,28 @@
         <div class="container p-4">
             <div class="row">
                 <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
-                    <h5>About Homestay Booking</h5>
-                    <p>
+                    <h5 data-translate="about-homestay">About Homestay Booking</h5>
+                    <p data-translate="platform-desc">
                         A platform connecting homestay owners with travelers looking for unique accommodations.
                     </p>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5>Links</h5>
+                    <h5 data-translate="links">Links</h5>
                     <ul class="list-unstyled mb-0">
-                        <li><a href="{{ url_for('home') }}" class="text-dark">Home</a></li>
-                        <li><a href="{{ url_for('renter.search') }}" class="text-dark">Search</a></li>
+                        <li><a href="{{ url_for('home') }}" class="text-dark" data-translate="home">Home</a></li>
+                        <li><a href="{{ url_for('renter.search') }}" class="text-dark" data-translate="search">Search</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5>Contact</h5>
+                    <h5 data-translate="contact">Contact</h5>
                     <ul class="list-unstyled">
-                        <li>Email: contact@example.com</li>
-                        <li>Phone: +1 234 567 8901</li>
+                        <li><span data-translate="email">Email</span>: contact@example.com</li>
+                        <li><span data-translate="phone">Phone</span>: +1 234 567 8901</li>
                     </ul>
                 </div>
             </div>
         </div>
-        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);" data-translate="copyright">
             © 2025 Homestay Booking - School Project
         </div>
     </footer>
@@ -127,6 +137,7 @@
     
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/translation.js') }}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>

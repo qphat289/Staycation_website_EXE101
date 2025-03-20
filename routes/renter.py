@@ -199,35 +199,78 @@ def cancel_booking(id):
 def allowed_file(filename):
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
 @renter_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     if request.method == 'POST':
-        # Update full name and phone number
-        current_user.full_name = request.form.get('full_name')
-        current_user.phone = request.form.get('phone')
+        try:
+            # Update user info
+            current_user.full_name = request.form.get('full_name')
+            current_user.phone = request.form.get('phone')
+            current_user.email = request.form.get('email')
+            current_user.personal_id = request.form.get('personal_id')
 
-        # Handle avatar upload
-        avatar = request.files.get('avatar')
-        if avatar and allowed_file(avatar.filename):
-            filename = secure_filename(avatar.filename)
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            avatar.save(filepath)
+            # Handle avatar upload
+            if 'avatar' in request.files:
+                avatar = request.files['avatar']
+                print(f"Received file: {avatar.filename}")
+                
+                if avatar and avatar.filename != '':
+                    if not allowed_file(avatar.filename):
+                        flash("File type not allowed. Please use: png, jpg, jpeg, or gif", "danger")
+                        return redirect(url_for('renter.profile'))
+                    
+                    try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        print(f"Upload folder path: {upload_folder}")
+                        
+                        if not os.path.exists(upload_folder):
+                            print(f"Creating upload folder: {upload_folder}")
+                            os.makedirs(upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(avatar.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        print(f"Saving file to: {filepath}")
+                        
+                        # Save file
+                        avatar.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
+                        print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
+                        
+                        # Delete old avatar if exists
+                        if current_user.avatar:
+                            old_avatar_path = os.path.join(upload_folder, current_user.avatar)
+                            if os.path.exists(old_avatar_path):
+                                os.remove(old_avatar_path)
+                                print(f"Deleted old avatar: {old_avatar_path}")
+                        
+                        # Update the avatar field in the user's profile
+                        current_user.avatar = filename
+                        print(f"Updated user avatar in database: {filename}")
+                        
+                    except Exception as e:
+                        print(f"Error during file operations: {str(e)}")
+                        flash(f"Error saving avatar: {str(e)}", "danger")
+                        return redirect(url_for('renter.profile'))
 
-            # Update the avatar field in the user's profile
-            current_user.avatar = filename
-
-    
-    # Debugging: Check the file path
-        print(f"Saving avatar to: {filepath}")
-        avatar.save(filepath)
-        # Commit changes to the database
-        db.session.commit()
-
-        flash("Profile updated successfully!", "success")
+            # Commit changes to the database
+            db.session.commit()
+            flash("Profile updated successfully!", "success")
+            
+        except Exception as e:
+            print(f"Error updating profile: {str(e)}")
+            db.session.rollback()
+            flash(f"Error updating profile: {str(e)}", "danger")
+            
         return redirect(url_for('renter.profile'))
 
-    return render_template("user/profile.html")  # <-- Correct path after moving the template
+    return render_template("user/profile.html")
 
 @renter_bp.route('/homestay/<int:homestay_id>/review', methods=['GET', 'POST'])
 @login_required
