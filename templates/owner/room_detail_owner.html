@@ -1,41 +1,111 @@
 {% extends 'base.html' %}
-{% block title %}Room {{ room.room_number }} - Owner View{% endblock %}
+{% block title %}Room {{ room.room_number }} (Owner View){% endblock %}
 
 {% block content %}
 <div class="container my-4">
-    <h2>Room {{ room.room_number }} (Owner View)</h2>
-    <hr>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('owner.dashboard') }}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}">
+                    {{ room.homestay.title }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                Room {{ room.room_number }}
+            </li>
+        </ol>
+    </nav>
 
+    <h2 class="mb-3">Room {{ room.room_number }} (Owner View)</h2>
+    
+    <!-- Row: Gallery Preview (left) và Room Details (right) -->
     <div class="row">
-        <!-- Left column: existing images + (optionally) the main image gallery -->
+        <!-- GALLERY (LEFT) -->
         <div class="col-lg-8 mb-4">
-            <!-- Existing code for main image or gallery goes here if you have it -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Gallery Preview</h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="main-image-container position-relative">
+                        {% if room.images and room.images|length > 0 %}
+                            {# Chọn featured (nếu có), nếu không thì ảnh đầu #}
+                            {% set featured = room.images|selectattr('is_featured','equalto',True)|list|first %}
+                            {% set main_img = featured if featured else room.images[0] %}
 
-            <!-- Gallery of existing images -->
-            <div class="mt-4">
-                {% if room.images and room.images|length > 0 %}
-                    <h5>Gallery</h5>
-                    <div class="d-flex flex-wrap">
-                        {% for img in room.images %}
-                            <div class="me-2 mb-2">
-                                <!-- Use url_for('static', filename=...) to load from static/uploads/ -->
-                                <img src="{{ url_for('static', filename=img.image_path) }}"
-                                     alt="Room image {{ loop.index }}"
-                                     style="width: 150px; height: 100px; object-fit: cover;">
+                            <!-- Ảnh chính -->
+                            <img 
+                              id="mainImage"
+                              src="{{ url_for('static', filename=main_img.image_path) }}"
+                              class="img-fluid w-100"
+                              alt="Room {{ room.room_number }}">
+
+                            <!-- Mũi tên chuyển ảnh (nếu có nhiều hơn 1 ảnh) -->
+                            {% if room.images|length > 1 %}
+                            <div class="position-absolute top-50 start-0 translate-middle-y arrow-left"
+                                 style="cursor:pointer; width:40px; height:40px; background:rgba(0,0,0,0.3);"
+                                 onclick="prevImage()">
+                                <i class="bi bi-chevron-left text-white" 
+                                   style="position:absolute; left:10px; top:8px;"></i>
                             </div>
+                            <div class="position-absolute top-50 end-0 translate-middle-y arrow-right"
+                                 style="cursor:pointer; width:40px; height:40px; background:rgba(0,0,0,0.3);"
+                                 onclick="nextImage()">
+                                <i class="bi bi-chevron-right text-white"
+                                   style="position:absolute; right:10px; top:8px;"></i>
+                            </div>
+                            {% endif %}
+
+                            <!-- Nút Fullscreen -->
+                            <div class="position-absolute bottom-0 end-0 m-2">
+                                <button class="btn btn-sm btn-light" onclick="openFullscreen()">
+                                    <i class="bi bi-fullscreen me-1"></i>Gallery
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="d-flex justify-content-center align-items-center bg-light"
+                                 style="height:300px;">
+                                <p class="text-muted">No images available for this room</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {% if room.images and room.images|length > 1 %}
+                    <!-- Thumbnails -->
+                    <div class="thumbnail-gallery d-flex overflow-auto p-2 gap-2">
+                        {% for img in room.images %}
+                        <div class="thumbnail-container text-center" data-index="{{ loop.index0 }}">
+                            <img 
+                              src="{{ url_for('static', filename=img.image_path) }}"
+                              class="img-thumbnail thumbnail-img {% if img == main_img %}active{% endif %}"
+                              alt="Room Image #{{ loop.index }}"
+                              style="width:120px; height:80px; object-fit:cover;"
+                              onclick="showImage({{ loop.index0 }})">
+
+                            <!-- Nút xóa ảnh -->
+                            <div class="mt-1">
+                                <a href="{{ url_for('owner.delete_room_image', image_id=img.id) }}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to delete this image?');">
+                                   Delete
+                                </a>
+                            </div>
+                        </div>
                         {% endfor %}
                     </div>
-                {% else %}
-                    <p>No images yet.</p>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
         </div>
-
-        <!-- Right column: Room Details -->
+        
+        <!-- ROOM DETAILS (RIGHT) -->
         <div class="col-lg-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-secondary text-white">
-                    <h4 class="card-title mb-0">Room Details</h4>
+                    <h5 class="card-title mb-0">Room Details</h5>
                 </div>
                 <div class="card-body">
                     <p><strong>Price/Hour:</strong> ${{ room.price_per_hour }}</p>
@@ -46,12 +116,18 @@
                     <h5>Description</h5>
                     <p>{{ room.description }}</p>
                 </div>
+                <!-- Nút Edit Room nằm ngay dưới Room Details (card-footer) -->
+                <div class="card-footer text-end">
+                    <button id="toggleEditFormBtn" class="btn btn-primary">
+                        <i class="bi bi-pencil-square"></i> Edit Room Information
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </div>  <!-- end row -->
 
-    <!-- Edit Form for Owner -->
-    <div class="card shadow-sm">
+    <!-- Form Edit Room (ẩn mặc định) -->
+    <div class="card shadow-sm" id="editForm" style="display:none;">
         <div class="card-header bg-primary text-white">
             <h5 class="card-title mb-0">Edit Room Information</h5>
         </div>
@@ -59,54 +135,204 @@
             <form method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label for="room_number" class="form-label">Room Number</label>
-                    <input type="text" class="form-control" id="room_number" name="room_number"
-                           value="{{ room.room_number }}" required>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      id="room_number" 
+                      name="room_number"
+                      value="{{ room.room_number }}" 
+                      required>
                 </div>
-
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="bed_count" class="form-label">Bed Count</label>
-                        <input type="number" class="form-control" id="bed_count" name="bed_count"
-                               value="{{ room.bed_count }}" min="1" required>
+                        <input 
+                          type="number" 
+                          class="form-control" 
+                          id="bed_count" 
+                          name="bed_count"
+                          value="{{ room.bed_count }}" 
+                          min="1" 
+                          required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="bathroom_count" class="form-label">Bathroom Count</label>
-                        <input type="number" class="form-control" id="bathroom_count" name="bathroom_count"
-                               value="{{ room.bathroom_count }}" min="1" required>
+                        <input 
+                          type="number" 
+                          class="form-control" 
+                          id="bathroom_count" 
+                          name="bathroom_count"
+                          value="{{ room.bathroom_count }}" 
+                          min="1" 
+                          required>
                     </div>
                 </div>
-
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="max_guests" class="form-label">Max Guests</label>
-                        <input type="number" class="form-control" id="max_guests" name="max_guests"
-                               value="{{ room.max_guests }}" min="1" required>
+                        <input 
+                          type="number" 
+                          class="form-control" 
+                          id="max_guests" 
+                          name="max_guests"
+                          value="{{ room.max_guests }}" 
+                          min="1" 
+                          required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="price_per_hour" class="form-label">Price per Hour</label>
-                        <input type="number" class="form-control" id="price_per_hour" name="price_per_hour"
-                               value="{{ room.price_per_hour }}" min="0" step="0.01" required>
+                        <input 
+                          type="number" 
+                          class="form-control" 
+                          id="price_per_hour" 
+                          name="price_per_hour"
+                          value="{{ room.price_per_hour }}" 
+                          min="0" 
+                          step="0.01" 
+                          required>
                     </div>
                 </div>
-
                 <div class="mb-3">
                     <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="3" required>{{ room.description }}</textarea>
+                    <textarea 
+                      class="form-control" 
+                      id="description" 
+                      name="description"
+                      rows="3" 
+                      required>{{ room.description }}</textarea>
                 </div>
 
                 <!-- File input for new images -->
                 <div class="mb-3">
                     <label for="gallery" class="form-label">Additional Images</label>
-                    <input type="file" class="form-control" id="gallery" name="gallery" multiple>
-                    <small class="text-muted">Select multiple images to add more photos.</small>
+                    <input 
+                      type="file" 
+                      class="form-control" 
+                      id="gallery" 
+                      name="gallery" 
+                      multiple>
+                    <small class="text-muted">
+                        Select multiple images to add more photos.
+                    </small>
                 </div>
-
+                
                 <button type="submit" class="btn btn-success">Save Changes</button>
-                <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}" class="btn btn-secondary">
-                    Back to Manage Rooms
+                <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}" 
+                   class="btn btn-secondary">
+                   Back to Manage Rooms
                 </a>
             </form>
         </div>
     </div>
 </div>
+
+<!-- Modal Fullscreen Gallery (nếu có ảnh) -->
+{% if room.images and room.images|length > 0 %}
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Room {{ room.room_number }} Gallery</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" 
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex align-items-center justify-content-center bg-dark p-0">
+                <img id="fullscreenImage" src="" class="img-fluid" 
+                     alt="Room image fullscreen view">
+                
+                {% if room.images|length > 1 %}
+                <div class="position-absolute top-50 start-0 translate-middle-y">
+                    <button class="btn btn-light rounded-circle ms-3 fs-modal-nav"
+                            onclick="prevFullscreenImage()">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                </div>
+                <div class="position-absolute top-50 end-0 translate-middle-y">
+                    <button class="btn btn-light rounded-circle me-3 fs-modal-nav"
+                            onclick="nextFullscreenImage()">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+{% if room.images and room.images|length > 0 %}
+<script>
+  var galleryImages = [
+    {% for img in room.images %}
+      "{{ img.image_path }}"{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ];
+  var currentIndex = 0;
+
+  const mainImage = document.getElementById("mainImage");
+  const thumbnails = document.querySelectorAll(".thumbnail-img");
+
+  function showImage(index) {
+    currentIndex = index;
+    mainImage.src = "{{ url_for('static', filename='') }}" + galleryImages[index];
+
+    // Xóa active cũ, set mới
+    thumbnails.forEach(thumb => thumb.classList.remove("active"));
+    thumbnails[index].classList.add("active");
+  }
+  window.showImage = showImage;
+
+  function nextImage() {
+    currentIndex = (currentIndex + 1) % galleryImages.length;
+    showImage(currentIndex);
+  }
+  window.nextImage = nextImage;
+
+  function prevImage() {
+    currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+    showImage(currentIndex);
+  }
+  window.prevImage = prevImage;
+
+  function openFullscreen() {
+    let fsImg = document.getElementById("fullscreenImage");
+    fsImg.src = "{{ url_for('static', filename='') }}" + galleryImages[currentIndex];
+
+    let modalEl = document.getElementById("imageModal");
+    let modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  }
+  window.openFullscreen = openFullscreen;
+
+  function nextFullscreenImage() {
+    nextImage();
+    document.getElementById("fullscreenImage").src =
+      "{{ url_for('static', filename='') }}" + galleryImages[currentIndex];
+  }
+  window.nextFullscreenImage = nextFullscreenImage;
+
+  function prevFullscreenImage() {
+    prevImage();
+    document.getElementById("fullscreenImage").src =
+      "{{ url_for('static', filename='') }}" + galleryImages[currentIndex];
+  }
+  window.prevFullscreenImage = prevFullscreenImage;
+</script>
+{% endif %}
+
+<script>
+  // Toggle form
+  const toggleBtn = document.getElementById('toggleEditFormBtn');
+  const editForm = document.getElementById('editForm');
+
+  toggleBtn.addEventListener('click', () => {
+    if (editForm.style.display === 'none') {
+      editForm.style.display = 'block';
+    } else {
+      editForm.style.display = 'none';
+    }
+  });
+</script>
+{% endblock %}
 {% endblock %}
