@@ -6,6 +6,10 @@ from flask_migrate import Migrate
 from config import Config
 from models import db, Admin, Owner, Renter, Homestay
 from utils import get_rank_info
+from dotenv import load_dotenv
+
+# Load environment variables from .env file for google login
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)
