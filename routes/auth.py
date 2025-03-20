@@ -240,32 +240,40 @@ def complete_google_signup():
     # Pre-populate form with Google data
     form_data = {
         'email': session.get('google_email', ''),
-        'full_name': session.get('google_name', '')
+        'google_name': session.get('google_name', ''),
+        'full_name': ''  # Empty by default so user can enter their own full name
     }
     
     if request.method == 'POST':
         # Get form data
-        username = request.form.get('username')
         full_name = request.form.get('full_name')
         phone = request.form.get('phone')
         personal_id = request.form.get('personal_id')
         
         # Validate required fields
-        if not all([username, full_name, phone, personal_id]):
+        if not all([full_name, phone, personal_id]):
             flash("All fields are required", "danger")
             form_data = {
-                'username': username,
                 'full_name': full_name,
                 'phone': phone,
                 'personal_id': personal_id,
-                'email': session.get('google_email', '')
+                'email': session.get('google_email', ''),
+                'google_name': session.get('google_name', '')
             }
             return render_template('auth/complete_google_signup.html', form_data=form_data)
         
-        # Check if username exists
-        if Renter.query.filter_by(username=username).first() or Owner.query.filter_by(username=username).first() or Admin.query.filter_by(username=username).first():
-            flash("Username already exists", "danger")
-            return render_template('auth/complete_google_signup.html', form_data=form_data)
+        # Generate a username from Google email (before the @)
+        # This ensures uniqueness while providing something recognizable
+        base_username = session['google_email'].split('@')[0]
+        username = base_username
+        
+        # Check if username exists and add a number suffix if needed
+        counter = 1
+        while (Renter.query.filter_by(username=username).first() or 
+               Owner.query.filter_by(username=username).first() or 
+               Admin.query.filter_by(username=username).first()):
+            username = f"{base_username}{counter}"
+            counter += 1
         
         # Check if phone exists
         if Renter.query.filter_by(phone=phone).first() or Owner.query.filter_by(phone=phone).first():
@@ -279,9 +287,9 @@ def complete_google_signup():
         
         # Create new renter with Google data
         new_renter = Renter(
-            username=username,
+            username=username,  # Automatically generated unique username
             email=session['google_email'],
-            full_name=full_name,
+            full_name=full_name,  # Use the user-provided full name
             phone=phone,
             personal_id=personal_id,
             google_id=session['google_id'],
@@ -303,7 +311,7 @@ def complete_google_signup():
         session.pop('google_email', None)
         session.pop('google_name', None)
         
-        flash("Your account has been created successfully!", "success")
+        flash(f"Your account has been created successfully! Your username is: {username}", "success")
         return redirect(url_for('home'))
     
     # GET request - render the form
