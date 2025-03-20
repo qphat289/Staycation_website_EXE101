@@ -79,6 +79,7 @@ class Renter(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     experience_points = db.Column(db.Integer, default=0)
     avatar = db.Column(db.String(200))
+    google_id = db.Column(db.String(120), unique=True, nullable=True)
     # Một renter có nhiều booking và reviews
     bookings = db.relationship('Booking', backref='renter', lazy=True)
     reviews = db.relationship('Review', backref='renter', lazy=True)
