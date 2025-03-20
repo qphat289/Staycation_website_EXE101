@@ -17,6 +17,7 @@ class Admin(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     full_name = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    avatar = db.Column(db.String(200))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -77,6 +78,7 @@ class Renter(UserMixin, db.Model):
     personal_id = db.Column(db.String(12), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     experience_points = db.Column(db.Integer, default=0)
+    avatar = db.Column(db.String(200))
     # Một renter có nhiều booking và reviews
     bookings = db.relationship('Booking', backref='renter', lazy=True)
     reviews = db.relationship('Review', backref='renter', lazy=True)

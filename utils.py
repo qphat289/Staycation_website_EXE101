@@ -21,7 +21,7 @@ def get_rank_info(xp_current):
     # Calculate how much more xp the user needs for the next rank
     if current_rank_index + 1 < len(rank_values):
         next_rank = list(rank_thresholds.keys())[current_rank_index + 1]
-        next_min = rank_values[current_rank_index + 1] - xp_current
+        next_min = rank_values[current_rank_index + 1]
     else:
         next_rank = 'Diamond'
         next_min = 0
