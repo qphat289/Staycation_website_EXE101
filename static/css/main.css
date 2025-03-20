@@ -2,6 +2,7 @@
    0. NEW COLOR SCHEME
    ========================= */
    :root {
+    /* Bạn có thể chỉnh sửa các giá trị này cho phù hợp */
     --primary-color: #e2c27d;       /* Màu chủ đạo */
     --primary-light: #e6cf90;       /* Màu nhạt hơn */
     --primary-dark: #c2993a;        /* Màu đậm hơn */
@@ -62,8 +63,6 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    color: var(--text-primary);
-    background-color: var(--background-light);
 }
 
 main {
@@ -85,41 +84,34 @@ main {
 
 /* 1.3 Button Styling */
 .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: var(--white);
+    background-color: #4a6bdf; /* BRAND COLOR: Primary blue */
+    border-color: #4a6bdf;
 }
+
 .btn-primary:hover {
-    background-color: var(--primary-dark);
-    border-color: var(--primary-dark);
-    color: var(--white);
+    background-color: #3451b2; /* BRAND COLOR: Darker blue for hover */
+    border-color: #3451b2;
 }
 
 .btn-outline-primary {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+    color: #4a6bdf;
+    border-color: #4a6bdf;
 }
+
 .btn-outline-primary:hover {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: var(--white);
+    background-color: #4a6bdf;
+    border-color: #4a6bdf;
 }
 
 /* 1.4 Navbar */
-/* Nếu bạn dùng .navbar-dark.bg-primary => đổi sang var(--primary-color) */
 .navbar-dark.bg-primary {
-    background-color: var(--primary-color) !important;
+    background-color: #4a6bdf !important; /* BRAND COLOR: Override Bootstrap's primary */
 }
 
 /* 1.5 Form Controls */
-.form-control {
-    color: var(--text-primary);
-    background-color: var(--white);
-}
 .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(230,187,94, 0.25);
-    /* Màu shadow = primary-color + opacity 0.25 */
+    border-color: #4a6bdf;
+    box-shadow: 0 0 0 0.25rem rgba(74, 107, 223, 0.25);
 }
 
 /* 1.6 Footer */
@@ -135,6 +127,7 @@ footer {
 .homestay-card {
     height: 100%;
 }
+
 .homestay-card img {
     height: 200px;
     object-fit: cover;
@@ -144,7 +137,7 @@ footer {
 .price-display {
     font-size: 1.25rem;
     font-weight: bold;
-    color: var(--primary-dark);
+    color: #4a6bdf;
 }
 
 /* =======================================================================
@@ -152,13 +145,15 @@ footer {
    ======================================================================= */
 
 /* 3.1 Room Card Base */
+/* FIX: Potential duplicate with general card styles */
 .room-card {
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     margin-bottom: 20px;
 }
+
 .room-card .card-header {
-    background-color: var(--primary-color);
-    color: var(--white);
+    background-color: #4a6bdf;
+    color: white;
     font-weight: 600;
     padding: 10px 15px;
     border-bottom: none;
@@ -170,14 +165,16 @@ footer {
     height: 220px;
     overflow: hidden;
 }
-.room-image-container img,
-.room-thumbnail {
+
+/* FIX: More specific selector to avoid conflicts */
+.room-image-container img, .room-thumbnail {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center top;
+    object-position: center top; /* Focus on top part of the image */
     transition: transform 0.5s ease;
 }
+
 .room-card:hover .room-image-container img {
     transform: scale(1.08);
 }
@@ -185,7 +182,7 @@ footer {
 /* 3.3 Room Details Layout */
 .room-details {
     padding: 15px;
-    background-color: var(--white);
+    background-color: white;
 }
 
 /* 3.4 Room Specs Grid */
@@ -195,37 +192,42 @@ footer {
     gap: 10px;
     margin-bottom: 15px;
 }
+
 .spec-item {
     display: flex;
     flex-direction: column;
-    background-color: var(--background-light);
+    background-color: #f8f9fa;
     padding: 8px 10px;
     border-radius: 6px;
     text-align: center;
 }
+
 .spec-label {
     font-size: 0.8rem;
-    color: var(--text-secondary);
+    color: #6c757d;
     margin-bottom: 2px;
 }
+
 .spec-value {
     font-weight: 600;
-    color: var(--text-primary);
+    color: #212529;
 }
 
 /* 3.5 Price Styling */
 .price-item {
     grid-column: span 2;
-    background-color: #faf2e2; /* or a slight lighten of var(--primary-color) */
-    color: var(--primary-color);
+    background-color: #eef2ff;
+    color: #4a6bdf;
     margin-top: 5px;
 }
+
 .price-item .spec-label {
-    color: var(--primary-dark);
+    color: #4a6bdf;
 }
+
 .price-item .spec-value {
     font-size: 1.2rem;
-    color: var(--primary-color);
+    color: #4a6bdf;
 }
 
 /* 3.6 Room Action Buttons */
@@ -235,6 +237,7 @@ footer {
     gap: 10px;
     padding: 0 15px 15px 15px;
 }
+
 .room-actions .btn {
     padding: 8px 0;
     font-weight: 500;
@@ -249,10 +252,11 @@ footer {
     position: relative;
     height: 400px;
     overflow: hidden;
-    background-color: var(--background-light);
+    background-color: #f8f9fa;
 }
 
 /* 4.2 Main Image Styling */
+/* FIX: ID selectors should be used sparingly - consider using classes instead */
 #mainImage {
     width: 100%;
     height: 400px;
@@ -260,48 +264,57 @@ footer {
     object-position: center;
     transition: transform 0.3s ease, opacity 0.3s ease;
 }
+
 #mainImage.loading {
     opacity: 0.7;
 }
+
+/* FIX: This selector may be too broad and affect other cards */
 .card:hover #mainImage {
     transform: scale(1.02);
 }
+
 .empty-gallery {
     height: 400px;
 }
 
 /* 4.3 Thumbnail Gallery */
+/* FIX: Duplicate selector - this appears twice in the file */
 .thumbnail-gallery {
-    display: flex;
-    gap: 10px;
-    padding: 10px;
-    overflow-x: auto;
+    display: flex;         /* or d-flex in Bootstrap */
+    gap: 10px;             /* space between thumbnails */
 }
+
 .thumbnail-gallery::-webkit-scrollbar {
     height: 6px;
 }
+
 .thumbnail-gallery::-webkit-scrollbar-track {
-    background: var(--background-light);
+    background: #f8f9fa;
 }
+
 .thumbnail-gallery::-webkit-scrollbar-thumb {
     background-color: #dee2e6;
     border-radius: 20px;
 }
+
+/* FIX: Duplicate selector - this appears twice in the file with different dimensions */
 .thumbnail-img {
-    width: 80px;
-    height: 50px;
-    object-fit: cover;
+    width: 80px;           /* set your preferred width */
+    height: 50px;          /* set your preferred height for a rectangle */
+    object-fit: cover;     /* crop image so it fills the rectangle */
     border: 2px solid transparent;
-    border-radius: 0;
-    cursor: pointer;
+    border-radius: 0;      /* remove rounding to get perfect rectangles */
+    cursor: pointer;       /* optional: pointer cursor on hover */
     transition: transform 0.2s ease;
 }
 .thumbnail-img:hover {
     transform: scale(1.05);
-    border-color: #ccc;
+    border-color: #ccc;    /* optional subtle highlight on hover */
 }
+
 .thumbnail-img.active {
-    border-color: var(--primary-color);
+    border-color: #4a6bdf;
 }
 
 /* 4.4 Gallery Navigation */
@@ -310,13 +323,16 @@ footer {
     transition: opacity 0.2s ease;
     z-index: 2;
 }
+
 .gallery-nav:hover {
     opacity: 1;
 }
+
 .fs-modal-nav {
     opacity: 0.8;
     transition: opacity 0.2s ease;
 }
+
 .fs-modal-nav:hover {
     opacity: 1;
 }
@@ -327,19 +343,22 @@ footer {
     align-items: center;
     margin-bottom: 1rem;
 }
+
 .feature-icon {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 50px;
     height: 50px;
-    background-color: rgba(230, 187, 94, 0.15); /* var(--primary-color) + opacity */
+    background-color: rgba(74, 107, 223, 0.1);
     border-radius: 50%;
     margin-right: 1rem;
 }
+
 .feature-icon i {
-    color: var(--primary-dark);
+    color: #4a6bdf;
 }
+
 .feature-text h5 {
     margin-bottom: 0.25rem;
     font-weight: 600;
@@ -347,11 +366,12 @@ footer {
 
 /* 4.6 Room Description */
 .room-description h5 {
-    color: var(--primary-color);
+    color: #4a6bdf;
     margin-bottom: 0.75rem;
 }
+
 .room-description p {
-    color: var(--text-secondary);
+    color: #6c757d;
     line-height: 1.6;
 }
 
@@ -360,6 +380,7 @@ footer {
    ======================================================================= */
 
 /* 5.1 Modal Base */
+/* FIX: ID selectors should be used sparingly */
 #imageModal .modal-body {
     background-color: #000;
     padding: 0;
@@ -372,15 +393,17 @@ footer {
 }
 
 /* 5.3 Navigation Buttons */
+/* FIX: Duplicate with .fullscreen-nav-btn - consider consolidating */
 .modal-fullscreen .modal-body {
     padding: 0;
-    background-color: rgba(0,0,0,0.9);
+    background-color: rgba(0, 0, 0, 0.9);
 }
+
 .fullscreen-nav-btn {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(255,255,255,0.7);
+    background-color: rgba(255, 255, 255, 0.7);
     color: #000;
     border-radius: 50%;
     width: 40px;
@@ -391,12 +414,15 @@ footer {
     cursor: pointer;
     transition: all 0.2s ease;
 }
+
 .fullscreen-nav-btn:hover {
-    background-color: rgba(255,255,255,0.9);
+    background-color: rgba(255, 255, 255, 0.9);
 }
+
 .fullscreen-nav-btn.prev {
     left: 20px;
 }
+
 .fullscreen-nav-btn.next {
     right: 20px;
 }
@@ -410,80 +436,95 @@ footer {
     .jumbotron {
         padding: 2rem 1rem;
     }
+    
     .room-specs {
         grid-template-columns: 1fr 1fr;
     }
+    
     .price-item {
         grid-column: span 2;
     }
+    
     .room-actions {
         grid-template-columns: 1fr;
     }
-    .main-image-container,
-    #mainImage,
-    .empty-gallery {
+    
+    .main-image-container, #mainImage, .empty-gallery {
         height: 300px;
     }
+    
     .feature-item {
         margin-bottom: 0.75rem;
     }
+    
     .feature-icon {
         width: 40px;
         height: 40px;
     }
 }
 
-/* 6.2 Medium Screens */
-/* Add more as needed */
-
-/* Additional custom styles */
 .card {
     border-radius: 10px;
     overflow: hidden;
-}
-.img-thumbnail {
+  }
+  
+  .img-thumbnail {
     border-radius: 0 !important; /* force sharp corners */
-}
-.badge {
+  }
+  
+  .badge {
     font-size: 0.9rem;
     padding: 0.4em 0.6em;
-}
-.progress {
-    background-color: #e9ecef;
+  }
+  
+  .progress {
+    background-color: #e9ecef; /* or your brand color */
     border-radius: 10px;
     overflow: hidden;
-}
-.progress-bar {
+  }
+  
+  .progress-bar {
     font-weight: 600;
-}
-.arrow-left,
-.arrow-right {
+  }
+  
+  .arrow-left, .arrow-right {
     width: 0;
     height: 0;
     cursor: pointer;
     position: relative;
-    z-index: 2;
+    z-index: 2;               /* ensure arrows are above the image */
 }
+
 .arrow-left {
-    border-top: 25px solid transparent;
-    border-bottom: 25px solid transparent;
-    border-right: 25px solid #fff;
-    margin-left: 15px;
+    /* Triangle pointing right -> for "previous" arrow we flip it horizontally. 
+       We'll do a left-facing arrow by reversing the borders. */
+
+    border-top: 25px solid transparent;    /* top side transparent */
+    border-bottom: 25px solid transparent; /* bottom side transparent */
+    border-right: 25px solid white;        /* actual arrow shape is white */
+    margin-left: 15px;                     /* push it slightly from the edge if desired */
     transition: transform 0.2s ease;
 }
+
 .arrow-left:hover {
     transform: scale(1.1);
 }
+
 .arrow-right {
+    /* Triangle pointing left */
     border-top: 25px solid transparent;
     border-bottom: 25px solid transparent;
-    border-left: 25px solid #fff;
+    border-left: 25px solid white;
     margin-right: 15px;
     transition: transform 0.2s ease;
 }
+
 .arrow-right:hover {
     transform: scale(1.1);
 }
+
 .avatar-circle {
     border-radius: 50% !important;
-}
+  }
+  
+

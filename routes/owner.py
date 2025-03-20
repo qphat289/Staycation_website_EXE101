@@ -386,7 +386,7 @@ def delete_room_image(image_id):
             db.session.commit()
     
     flash('Image deleted successfully', 'success')
-    return redirect(url_for('owner.owner_room_detail', room_id=room_id))
+    return redirect(url_for('owner.add_room_images', room_id=room_id))
 
 
 @owner_bp.route('/edit-room/<int:room_id>', methods=['GET', 'POST'])
@@ -510,7 +510,6 @@ def reject_booking(id):
 
     flash('Booking rejected.', 'warning')
     return redirect(url_for('owner.view_bookings'))
-
 
 # @owner_bp.route('/mark-completed/<int:id>')
 # @owner_required
