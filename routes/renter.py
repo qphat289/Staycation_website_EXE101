@@ -160,7 +160,7 @@ def book_homestay(homestay_id):
         )
         db.session.add(new_booking)
         db.session.commit()
-        current_user.xp += total_price * 10  # Update user XP based on total price
+        current_user.experience_points += total_price * 10  # Update user XP based on total price
         
         db.session.add(new_booking)
         db.session.commit()

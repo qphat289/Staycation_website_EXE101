@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
 from config import Config
 from models import db, Admin, Owner, Renter, Homestay
@@ -13,7 +13,6 @@ def create_app():
 
     # Initialize database, migrations, login manager
     db.init_app(app)
-    migrate = Migrate(app, db)
     login_manager = LoginManager(app)
     login_manager.login_view = 'auth.login'
     app.jinja_env.filters['rank_info'] = get_rank_info
@@ -59,8 +58,12 @@ def create_app():
     # Home route
     @app.route('/')
     def home():
-        # Retrieve featured homestays to display on the homepage
-        homestays = Homestay.query.limit(6).all()
+        # Nếu người dùng đã đăng nhập và là owner thì chỉ hiển thị các homestay của họ
+        if current_user.is_authenticated and current_user.is_owner():
+            homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
+        else:
+            # Retrieve featured homestays to display on the homepage
+            homestays = Homestay.query.limit(6).all()
         return render_template('home.html', homestays=homestays)
 
     # Route to handle image uploads
