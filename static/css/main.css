@@ -508,5 +508,8 @@ footer {
     transform: scale(1.1);
 }
 
-
+.avatar-circle {
+    border-radius: 50% !important;
+  }
   
+

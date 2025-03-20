@@ -9,22 +9,22 @@
             <div class="card mb-4">
                 <div class="card-body text-center">
                     <!-- Avatar -->
-                    {% if user.avatar %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ user.avatar) }}"
-                             alt="Avatar" 
-                             class="rounded-circle img-thumbnail mb-3"
-                             style="width: 150px; height: 150px; object-fit: cover;">
+                    {% if current_user.avatar %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                            alt="Avatar"
+                            class="avatar-circle"
+                            style="width: 150px; height: 150px; object-fit: cover;">
                     {% else %}
                         <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
-                             alt="Avatar" 
-                             class="rounded-circle img-thumbnail mb-3"
-                             style="width: 150px; height: 150px; object-fit: cover;">
+                            alt="Avatar"
+                            class="avatar-circle"
+                            style="width: 150px; height: 150px; object-fit: cover;">
                     {% endif %}
                     
-                    <h5 class="card-title">{{ user.full_name or "Unnamed User" }}</h5>
+                    <h5 class="card-title">{{ current_user.full_name or "Unnamed User" }}</h5>
 
                     <!-- 1) Calculate rank info from user.experience_points -->
-                    {% set xp_current = user.experience_points if user.experience_points is defined else 0 %}
+                    {% set xp_current = current_user.experience_points if current_user.experience_points is defined else 0 %}
                     
                     {# get_rank_info filter returns (current_rank, current_min, next_rank, next_min) #}
                     {% set current_rank, current_min, next_rank, next_min = xp_current|rank_info %}
@@ -93,7 +93,7 @@
                                    class="form-control" 
                                    id="full_name" 
                                    name="full_name" 
-                                   value="{{ user.full_name }}">
+                                   value="{{ current_user.full_name }}">
                         </div>
                         
                         <!-- Phone Number -->
@@ -103,7 +103,7 @@
                                    class="form-control" 
                                    id="phone_number" 
                                    name="phone_number" 
-                                   value="{{ user.phone_number }}">
+                                   value="{{ current_user.phone_number }}">
                         </div>
                         
                         <!-- Email -->
@@ -113,7 +113,7 @@
                                    class="form-control" 
                                    id="email" 
                                    name="email" 
-                                   value="{{ user.email }}">
+                                   value="{{ current_user.email }}">
                         </div>
                         
                         <!-- Personal ID -->
@@ -123,7 +123,7 @@
                                    class="form-control" 
                                    id="personal_id" 
                                    name="personal_id" 
-                                   value="{{ user.personal_id }}">
+                                   value="{{ current_user.personal_id }}">
                         </div>
                         
                         <!-- Avatar Upload -->

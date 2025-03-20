@@ -1,19 +1,21 @@
-from flask import Flask, render_template, session
+import os
+from flask import Flask, render_template, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
-import os
 from config import Config
 from models import db, Admin, Owner, Renter, Homestay
+from utils import get_rank_info
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Khởi tạo database, migrations, login manager
+    # Initialize database, migrations, login manager
     db.init_app(app)
     login_manager = LoginManager(app)
     login_manager.login_view = 'auth.login'
+    app.jinja_env.filters['rank_info'] = get_rank_info
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -26,11 +28,15 @@ def create_app():
             return Renter.query.get(int(user_id))
         return None
 
-    # Tạo bảng và thêm admin nếu cần
+    # Create tables and add admin if not exist
     with app.app_context():
         db.create_all()
         print("Database tables created successfully.")
 
+<<<<<<< HEAD
+=======
+        # Check if admin exists and create one if not
+>>>>>>> main
         existing_admin = Admin.query.filter_by(username='admin').first()
         if existing_admin:
             print("Admin user already exists and is an admin.")
@@ -41,7 +47,7 @@ def create_app():
             db.session.commit()
             print("Admin user created.")
 
-    # Import và đăng ký các blueprint
+    # Import and register blueprints
     from routes.auth import auth_bp
     from routes.owner import owner_bp
     from routes.renter import renter_bp
@@ -55,13 +61,23 @@ def create_app():
     # Home route
     @app.route('/')
     def home():
+<<<<<<< HEAD
         # Nếu người dùng đã đăng nhập và là owner thì chỉ hiển thị các homestay của họ
         if current_user.is_authenticated and current_user.is_owner():
             homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
         else:
             # Hiển thị một số homestay nổi bật (ví dụ: 6 homestay)
             homestays = Homestay.query.limit(6).all()
+=======
+        # Retrieve featured homestays to display on the homepage
+        homestays = Homestay.query.limit(6).all()
+>>>>>>> main
         return render_template('home.html', homestays=homestays)
+
+    # Route to handle image uploads
+    @app.route('/static/uploads/<filename>')
+    def uploaded_file(filename):
+        return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER']), filename)
 
     return app
 
