@@ -9,9 +9,9 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Google OAuth config
-    # GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')  # Remove the hardcoded value
-    # GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')  # Remove the hardcoded value
-    # GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')  # Remove the hardcoded value
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')  # Remove the hardcoded value
+    GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
     #GOOGLE_REDIRECT_URI = "/auth/callback"
     
     # Upload folder for homestay images
