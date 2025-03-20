@@ -116,13 +116,14 @@ class Homestay(db.Model):
     # Liên kết với Owner
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
     
-    # Quan hệ
-    rooms = db.relationship('Room', backref='homestay', lazy=True)
-    bookings = db.relationship('Booking', backref='homestay', lazy=True)
-    reviews = db.relationship('Review', backref='homestay', lazy=True)
+    # Quan hệ với cascade delete:
+    rooms = db.relationship('Room', backref='homestay', lazy=True, cascade="all, delete-orphan")
+    bookings = db.relationship('Booking', backref='homestay', lazy=True, cascade="all, delete-orphan")
+    reviews = db.relationship('Review', backref='homestay', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f'<Homestay {self.title}>'
+
 
 class Room(db.Model):
     __tablename__ = 'room'
@@ -137,8 +138,8 @@ class Room(db.Model):
     description = db.Column(db.Text, nullable=True)
     is_booked = db.Column(db.Boolean, default=False)
     
-    # Quan hệ với RoomImage
-    images = db.relationship('RoomImage', backref='room', lazy=True)
+    # Quan hệ với cascade delete cho RoomImage:
+    images = db.relationship('RoomImage', backref='room', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f'<Room {self.room_number} in {self.homestay.title}>'

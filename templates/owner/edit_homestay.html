@@ -13,9 +13,7 @@
   <!-- Description -->
   <div class="mb-3">
     <label for="description" class="form-label">Description</label>
-    <textarea class="form-control" id="description" name="description" rows="4" required>
-      {{ homestay.description }}
-    </textarea>
+    <textarea class="form-control" id="description" name="description" rows="4" required>{{ homestay.description }}</textarea>
   </div>
 
   <!-- Address -->
@@ -41,11 +39,11 @@
     </div>
   </div>
 
-  <!-- Current Image Preview (optional) -->
-  {% if homestay.image %}
+  <!-- Current Image Preview -->
+  {% if homestay.image_path %}
     <div class="mb-3">
       <p>Current Image:</p>
-      <img src="{{ url_for('static', filename='uploads/' ~ homestay.image) }}" 
+      <img src="{{ url_for('static', filename=homestay.image_path) }}" 
            alt="Current Image" style="max-width: 200px;">
     </div>
   {% endif %}

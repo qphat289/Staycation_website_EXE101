@@ -33,10 +33,7 @@ def create_app():
         db.create_all()
         print("Database tables created successfully.")
 
-<<<<<<< HEAD
-=======
         # Check if admin exists and create one if not
->>>>>>> main
         existing_admin = Admin.query.filter_by(username='admin').first()
         if existing_admin:
             print("Admin user already exists and is an admin.")
@@ -61,17 +58,12 @@ def create_app():
     # Home route
     @app.route('/')
     def home():
-<<<<<<< HEAD
         # Nếu người dùng đã đăng nhập và là owner thì chỉ hiển thị các homestay của họ
         if current_user.is_authenticated and current_user.is_owner():
             homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
         else:
-            # Hiển thị một số homestay nổi bật (ví dụ: 6 homestay)
+            # Retrieve featured homestays to display on the homepage
             homestays = Homestay.query.limit(6).all()
-=======
-        # Retrieve featured homestays to display on the homepage
-        homestays = Homestay.query.limit(6).all()
->>>>>>> main
         return render_template('home.html', homestays=homestays)
 
     # Route to handle image uploads

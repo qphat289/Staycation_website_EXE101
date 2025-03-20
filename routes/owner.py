@@ -109,15 +109,29 @@ def edit_homestay(id):
         # 2) Handle new image upload (if provided)
         image_file = request.files.get('image')
         if image_file and image_file.filename != '':
-            # OPTIONAL: remove old image from disk if you want to replace it
+            # Tuỳ chọn: xoá ảnh cũ nếu muốn
+            if homestay.image_path:
+                old_path = os.path.join(
+                    current_app.config['UPLOAD_FOLDER'],
+                    os.path.basename(homestay.image_path)
+                )
+                if os.path.exists(old_path):
+                    os.remove(old_path)
 
-            # e.g., save to uploads folder
+            # Lưu file mới
             filename = secure_filename(image_file.filename)
-            image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            image_file.save(image_path)
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+            filename = f"{timestamp}_{filename}"
 
-            # update homestay's image field in DB
-            homestay.image = filename
+            # Tạo đường dẫn lưu file trong 'static/uploads'
+            save_path = os.path.join(
+                current_app.config['UPLOAD_FOLDER'], 
+                filename
+            )
+            image_file.save(save_path)
+
+            # **QUAN TRỌNG**: Gán vào `image_path`, không phải `image`
+            homestay.image_path = f"uploads/{filename}"
 
         # 3) Commit changes to DB
         db.session.commit()
@@ -126,8 +140,6 @@ def edit_homestay(id):
     
     # For GET requests, display the edit form with existing data
     return render_template('owner/edit_homestay.html', homestay=homestay)
-
-
 
 @owner_bp.route('/delete-homestay/<int:id>')
 @owner_required
