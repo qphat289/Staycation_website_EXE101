@@ -136,175 +136,175 @@ def logout():
 def get_google_provider_cfg():
     return requests.get(current_app.config['GOOGLE_DISCOVERY_URL']).json()
 
-# @auth_bp.route('/login/google')
-# def login_google():
-#     # Find out what URL to hit for Google login
-#     google_provider_cfg = get_google_provider_cfg()
-#     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
+@auth_bp.route('/login/google')
+def login_google():
+    # Find out what URL to hit for Google login
+    google_provider_cfg = get_google_provider_cfg()
+    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
 
-#     # Generate random state for CSRF protection
-#     session["google_state"] = secrets.token_urlsafe(16)
+    # Generate random state for CSRF protection
+    session["google_state"] = secrets.token_urlsafe(16)
 
-#     # Use hardcoded callback URL (must match exactly what's in Google Cloud Console)
-#     callback_url = "http://127.0.0.1:5000/auth/callback/google"
+    # Use hardcoded callback URL (must match exactly what's in Google Cloud Console)
+    callback_url = "http://127.0.0.1:5000/auth/callback/google"
     
-#     # Debug: Print the callback URL
-#     print(f"Using callback URL: {callback_url}")
+    # Debug: Print the callback URL
+    print(f"Using callback URL: {callback_url}")
     
-#     request_uri = authorization_endpoint + "?" + urlencode({
-#         'client_id': current_app.config['GOOGLE_CLIENT_ID'],
-#         'redirect_uri': callback_url,
-#         'scope': 'openid email profile',
-#         'response_type': 'code',
-#         'state': session["google_state"],
-#         'prompt': 'select_account'
-#     })
+    request_uri = authorization_endpoint + "?" + urlencode({
+        'client_id': current_app.config['GOOGLE_CLIENT_ID'],
+        'redirect_uri': callback_url,
+        'scope': 'openid email profile',
+        'response_type': 'code',
+        'state': session["google_state"],
+        'prompt': 'select_account'
+    })
     
-#     return redirect(request_uri)
+    return redirect(request_uri)
 
-# @auth_bp.route('/callback/google')  # This becomes /auth/callback/google with prefix
-# def callback_google():
-#     # Verify state parameter
-#     if request.args.get('state') != session.get("google_state"):
-#         flash("Authentication failed: Invalid state parameter", "danger")
-#         return redirect(url_for('auth.login'))
+@auth_bp.route('/callback/google')  # This becomes /auth/callback/google with prefix
+def callback_google():
+    # Verify state parameter
+    if request.args.get('state') != session.get("google_state"):
+        flash("Authentication failed: Invalid state parameter", "danger")
+        return redirect(url_for('auth.login'))
     
-#     code = request.args.get("code")
+    code = request.args.get("code")
     
-#     google_provider_cfg = get_google_provider_cfg()
-#     token_endpoint = google_provider_cfg["token_endpoint"]
+    google_provider_cfg = get_google_provider_cfg()
+    token_endpoint = google_provider_cfg["token_endpoint"]
     
-#     # Use the same hardcoded callback URL
-#     callback_url = "http://127.0.0.1:5000/auth/callback/google"
+    # Use the same hardcoded callback URL
+    callback_url = "http://127.0.0.1:5000/auth/callback/google"
     
-#     # Debug: Print the callback URL
-#     print(f"Token exchange using callback URL: {callback_url}")
+    # Debug: Print the callback URL
+    print(f"Token exchange using callback URL: {callback_url}")
     
-#     # Exchange code for tokens
-#     token_response = requests.post(
-#         token_endpoint,
-#         data={
-#             'client_id': current_app.config['GOOGLE_CLIENT_ID'],
-#             'client_secret': current_app.config['GOOGLE_CLIENT_SECRET'],
-#             'code': code,
-#             'grant_type': 'authorization_code',
-#             'redirect_uri': callback_url
-#         }
-#     )
+    # Exchange code for tokens
+    token_response = requests.post(
+        token_endpoint,
+        data={
+            'client_id': current_app.config['GOOGLE_CLIENT_ID'],
+            'client_secret': current_app.config['GOOGLE_CLIENT_SECRET'],
+            'code': code,
+            'grant_type': 'authorization_code',
+            'redirect_uri': callback_url
+        }
+    )
     
-#     # Parse the tokens
-#     token_json = token_response.json()
+    # Parse the tokens
+    token_json = token_response.json()
     
-#     # Get the ID token from Google
-#     id_token = token_json['id_token']
-#     access_token = token_json['access_token']
+    # Get the ID token from Google
+    id_token = token_json['id_token']
+    access_token = token_json['access_token']
     
-#     # Get user info from Google
-#     userinfo_endpoint = google_provider_cfg['userinfo_endpoint']
-#     userinfo_response = requests.get(
-#         userinfo_endpoint, 
-#         headers={'Authorization': f'Bearer {access_token}'}
-#     )
+    # Get user info from Google
+    userinfo_endpoint = google_provider_cfg['userinfo_endpoint']
+    userinfo_response = requests.get(
+        userinfo_endpoint, 
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
     
-#     # Process the user information
-#     userinfo = userinfo_response.json()
+    # Process the user information
+    userinfo = userinfo_response.json()
     
-#     # Get the user's Google Account email
-#     google_id = userinfo['sub']
-#     google_email = userinfo['email']
-#     google_name = userinfo.get('name', '')
+    # Get the user's Google Account email
+    google_id = userinfo['sub']
+    google_email = userinfo['email']
+    google_name = userinfo.get('name', '')
     
-#     # Check if this Google account is already linked to a user
-#     existing_renter = Renter.query.filter_by(google_id=google_id).first()
+    # Check if this Google account is already linked to a user
+    existing_renter = Renter.query.filter_by(google_id=google_id).first()
     
-#     if existing_renter:
-#         # User exists, log them in
-#         login_user(existing_renter)
-#         session['user_role'] = 'renter'
-#         flash("Successfully logged in with Google!", "success")
-#         return redirect(url_for('home'))
-#     else:
-#         # User doesn't exist, store info in session and redirect to complete profile
-#         session['google_id'] = google_id
-#         session['google_email'] = google_email
-#         session['google_name'] = google_name
-#         return redirect(url_for('auth.complete_google_signup'))
+    if existing_renter:
+        # User exists, log them in
+        login_user(existing_renter)
+        session['user_role'] = 'renter'
+        flash("Successfully logged in with Google!", "success")
+        return redirect(url_for('home'))
+    else:
+        # User doesn't exist, store info in session and redirect to complete profile
+        session['google_id'] = google_id
+        session['google_email'] = google_email
+        session['google_name'] = google_name
+        return redirect(url_for('auth.complete_google_signup'))
 
-# @auth_bp.route('/complete-google-signup', methods=['GET', 'POST'])
-# def complete_google_signup():
-#     # Check if we have Google data in session
-#     if not session.get('google_id') or not session.get('google_email'):
-#         flash("Google authentication data missing", "danger")
-#         return redirect(url_for('auth.login'))
+@auth_bp.route('/complete-google-signup', methods=['GET', 'POST'])
+def complete_google_signup():
+    # Check if we have Google data in session
+    if not session.get('google_id') or not session.get('google_email'):
+        flash("Google authentication data missing", "danger")
+        return redirect(url_for('auth.login'))
     
-#     # Pre-populate form with Google data
-#     form_data = {
-#         'email': session.get('google_email', ''),
-#         'full_name': session.get('google_name', '')
-#     }
+    # Pre-populate form with Google data
+    form_data = {
+        'email': session.get('google_email', ''),
+        'full_name': session.get('google_name', '')
+    }
     
-#     if request.method == 'POST':
-#         # Get form data
-#         username = request.form.get('username')
-#         full_name = request.form.get('full_name')
-#         phone = request.form.get('phone')
-#         personal_id = request.form.get('personal_id')
+    if request.method == 'POST':
+        # Get form data
+        username = request.form.get('username')
+        full_name = request.form.get('full_name')
+        phone = request.form.get('phone')
+        personal_id = request.form.get('personal_id')
         
-#         # Validate required fields
-#         if not all([username, full_name, phone, personal_id]):
-#             flash("All fields are required", "danger")
-#             form_data = {
-#                 'username': username,
-#                 'full_name': full_name,
-#                 'phone': phone,
-#                 'personal_id': personal_id,
-#                 'email': session.get('google_email', '')
-#             }
-#             return render_template('auth/complete_google_signup.html', form_data=form_data)
+        # Validate required fields
+        if not all([username, full_name, phone, personal_id]):
+            flash("All fields are required", "danger")
+            form_data = {
+                'username': username,
+                'full_name': full_name,
+                'phone': phone,
+                'personal_id': personal_id,
+                'email': session.get('google_email', '')
+            }
+            return render_template('auth/complete_google_signup.html', form_data=form_data)
         
-#         # Check if username exists
-#         if Renter.query.filter_by(username=username).first() or Owner.query.filter_by(username=username).first() or Admin.query.filter_by(username=username).first():
-#             flash("Username already exists", "danger")
-#             return render_template('auth/complete_google_signup.html', form_data=form_data)
+        # Check if username exists
+        if Renter.query.filter_by(username=username).first() or Owner.query.filter_by(username=username).first() or Admin.query.filter_by(username=username).first():
+            flash("Username already exists", "danger")
+            return render_template('auth/complete_google_signup.html', form_data=form_data)
         
-#         # Check if phone exists
-#         if Renter.query.filter_by(phone=phone).first() or Owner.query.filter_by(phone=phone).first():
-#             flash("Phone number already exists", "danger")
-#             return render_template('auth/complete_google_signup.html', form_data=form_data)
+        # Check if phone exists
+        if Renter.query.filter_by(phone=phone).first() or Owner.query.filter_by(phone=phone).first():
+            flash("Phone number already exists", "danger")
+            return render_template('auth/complete_google_signup.html', form_data=form_data)
         
-#         # Check if personal_id exists
-#         if Renter.query.filter_by(personal_id=personal_id).first() or Owner.query.filter_by(personal_id=personal_id).first():
-#             flash("Personal ID already exists", "danger")
-#             return render_template('auth/complete_google_signup.html', form_data=form_data)
+        # Check if personal_id exists
+        if Renter.query.filter_by(personal_id=personal_id).first() or Owner.query.filter_by(personal_id=personal_id).first():
+            flash("Personal ID already exists", "danger")
+            return render_template('auth/complete_google_signup.html', form_data=form_data)
         
-#         # Create new renter with Google data
-#         new_renter = Renter(
-#             username=username,
-#             email=session['google_email'],
-#             full_name=full_name,
-#             phone=phone,
-#             personal_id=personal_id,
-#             google_id=session['google_id'],
-#         )
+        # Create new renter with Google data
+        new_renter = Renter(
+            username=username,
+            email=session['google_email'],
+            full_name=full_name,
+            phone=phone,
+            personal_id=personal_id,
+            google_id=session['google_id'],
+        )
         
-#         # Generate a random password for Google users - they'll use Google to login
-#         random_password = secrets.token_urlsafe(16)
-#         new_renter.set_password(random_password)
+        # Generate a random password for Google users - they'll use Google to login
+        random_password = secrets.token_urlsafe(16)
+        new_renter.set_password(random_password)
         
-#         db.session.add(new_renter)
-#         db.session.commit()
+        db.session.add(new_renter)
+        db.session.commit()
         
-#         # Log in the new user
-#         login_user(new_renter)
-#         session['user_role'] = 'renter'
+        # Log in the new user
+        login_user(new_renter)
+        session['user_role'] = 'renter'
         
-#         # Clear Google session data
-#         session.pop('google_id', None)
-#         session.pop('google_email', None)
-#         session.pop('google_name', None)
+        # Clear Google session data
+        session.pop('google_id', None)
+        session.pop('google_email', None)
+        session.pop('google_name', None)
         
-#         flash("Your account has been created successfully!", "success")
-#         return redirect(url_for('home'))
+        flash("Your account has been created successfully!", "success")
+        return redirect(url_for('home'))
     
-#     # GET request - render the form
-#     return render_template('auth/complete_google_signup.html', form_data=form_data)
+    # GET request - render the form
+    return render_template('auth/complete_google_signup.html', form_data=form_data)
