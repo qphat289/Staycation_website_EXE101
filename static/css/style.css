@@ -1,0 +1,92 @@
+:root {
+    --primary-color: #e6bb5e;     /* Màu chủ đạo mới */
+    --primary-light: #e4995346;   /* Màu nhạt hơn */
+    --primary-dark: #c2993a;      /* Màu đậm hơn */
+    --text-primary: #333333;      /* Màu chữ chính */
+    --text-secondary: #666666;    /* Màu chữ phụ */
+    --border-color: #e0e0e0;      /* Màu viền */
+    --background-light: #f8f9fa;  /* Màu nền sáng */
+    --white: #ffffff;             /* Màu trắng */
+}
+
+/* Light mode (default) styles */
+body {
+    color: #000000;
+    background-color: #ffffff;
+}
+
+.navbar {
+    background-color: var(--primary-color) !important;
+}
+
+.navbar-brand,
+.nav-link {
+    color: #000000 !important;
+}
+
+.nav-link:hover {
+    color: var(--primary-dark) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-dark);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.card {
+    border-color: var(--border-color);
+}
+
+.card-title,
+h1, h2, h3, h4, h5, h6 {
+    color: #000000;
+}
+
+.form-control,
+.form-select {
+    color: #000000;
+    background-color: #ffffff;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem var(--primary-light);
+}
+
+.dropdown-menu {
+    border-color: var(--border-color);
+}
+
+.dropdown-item {
+    color: var(--text-primary);
+}
+
+.dropdown-item:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+.table {
+    color: var(--text-primary);
+}
+
+.table thead th {
+    border-bottom-color: var(--border-color);
+}
+
+.table td,
+.table th {
+    border-color: var(--border-color);
+}
+
+.text-muted,
+.settings-label {
+    color: #4a4a4a !important;
+}
+
+/* Các style khác giữ nguyên */ 
