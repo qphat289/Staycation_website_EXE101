@@ -48,7 +48,7 @@ class Owner(UserMixin, db.Model):
     phone = db.Column(db.String(12))
     personal_id = db.Column(db.String(12), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    avatar = db.Column(db.String(200))
     # Một owner có nhiều homestays
     homestays = db.relationship('Homestay', backref='owner', lazy=True)
 
@@ -70,7 +70,7 @@ class Owner(UserMixin, db.Model):
 class Renter(UserMixin, db.Model):
     __tablename__ = 'renter'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=False)
+    username = db.Column(db.String(64), unique=True, nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     full_name = db.Column(db.String(100), nullable=False)
@@ -79,7 +79,13 @@ class Renter(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     experience_points = db.Column(db.Integer, default=0)
     avatar = db.Column(db.String(200))
+    
     google_id = db.Column(db.String(120), unique=True, nullable=True)
+    google_username = db.Column(db.String(100), unique=True, nullable=True)
+
+    facebook_id = db.Column(db.String(100), unique=True, nullable=True)
+    facebook_username = db.Column(db.String(100), nullable=True)
+
     # Một renter có nhiều booking và reviews
     bookings = db.relationship('Booking', backref='renter', lazy=True)
     reviews = db.relationship('Review', backref='renter', lazy=True)
