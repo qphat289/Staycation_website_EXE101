@@ -2,8 +2,8 @@
    0. NEW COLOR SCHEME
    ========================= */
    :root {
-    /* Bạn có thể chỉnh sửa các giá trị này cho phù hợp */
-    --primary-color: #e9c77f;       /* Màu chủ đạo */
+    /* Tông màu be + nâu nhạt */
+    --primary-color: #e9c77f;       /* Màu chủ đạo (be nâu nhạt) */
     --primary-light: #e6cb90;       /* Màu nhạt hơn */
     --primary-dark: #a88f54;        /* Màu đậm hơn */
     --text-primary: #333333;        /* Màu chữ chính */
@@ -90,6 +90,7 @@ main {
     border-color: var(--primary-color);
     color: var(--white);
 }
+
 .btn-primary:hover {
     background-color: var(--primary-dark);
     border-color: var(--primary-dark);
@@ -100,6 +101,7 @@ main {
     color: var(--primary-color);
     border-color: var(--primary-color);
 }
+
 .btn-outline-primary:hover {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
@@ -117,9 +119,11 @@ main {
     color: var(--text-primary);
     background-color: var(--white);
 }
+
 .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(230,187,94, 0.25);
+    /* Tạo lớp mờ xung quanh field khi focus */
+    box-shadow: 0 0 0 0.25rem rgba(233, 199, 127, 0.25);
     /* Màu shadow = primary-color + opacity 0.25 */
 }
 
@@ -136,6 +140,7 @@ footer {
 .homestay-card {
     height: 100%;
 }
+
 .homestay-card img {
     height: 200px;
     object-fit: cover;
@@ -157,6 +162,7 @@ footer {
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     margin-bottom: 20px;
 }
+
 .room-card .card-header {
     background-color: var(--primary-color);
     color: var(--white);
@@ -171,6 +177,7 @@ footer {
     height: 220px;
     overflow: hidden;
 }
+
 .room-image-container img,
 .room-thumbnail {
     width: 100%;
@@ -179,6 +186,7 @@ footer {
     object-position: center top;
     transition: transform 0.5s ease;
 }
+
 .room-card:hover .room-image-container img {
     transform: scale(1.08);
 }
@@ -196,6 +204,7 @@ footer {
     gap: 10px;
     margin-bottom: 15px;
 }
+
 .spec-item {
     display: flex;
     flex-direction: column;
@@ -204,11 +213,13 @@ footer {
     border-radius: 6px;
     text-align: center;
 }
+
 .spec-label {
     font-size: 0.8rem;
     color: var(--text-secondary);
     margin-bottom: 2px;
 }
+
 .spec-value {
     font-weight: 600;
     color: var(--text-primary);
@@ -217,13 +228,15 @@ footer {
 /* 3.5 Price Styling */
 .price-item {
     grid-column: span 2;
-    background-color: #faf2e2; /* or a slight lighten of var(--primary-color) */
+    background-color: #faf2e2; /* hoặc màu be nhạt hơn */
     color: var(--primary-color);
     margin-top: 5px;
 }
+
 .price-item .spec-label {
     color: var(--primary-dark);
 }
+
 .price-item .spec-value {
     font-size: 1.2rem;
     color: var(--primary-color);
@@ -236,6 +249,7 @@ footer {
     gap: 10px;
     padding: 0 15px 15px 15px;
 }
+
 .room-actions .btn {
     padding: 8px 0;
     font-weight: 500;
@@ -248,7 +262,6 @@ footer {
 /* 4.1 Main Gallery Container */
 .main-image-container {
     position: relative;
-    height: 400px;
     overflow: hidden;
     background-color: var(--background-light);
 }
@@ -256,17 +269,22 @@ footer {
 /* 4.2 Main Image Styling */
 #mainImage {
     width: 100%;
-    height: 400px;
+    /* height: 400px;  BỎ: tránh bóp méo ảnh */
+    height: auto;
+    max-height: 400px;   /* Giới hạn tối đa */
     object-fit: cover;
     object-position: center;
-    transition: transform 0.3s ease, opacity 0.3s ease;
 }
+
 #mainImage.loading {
     opacity: 0.7;
 }
+
+/* Bỏ transform scale(1.02) khi hover card nếu muốn ảnh không phóng to */
 .card:hover #mainImage {
     transform: scale(1.02);
 }
+
 .empty-gallery {
     height: 400px;
 }
@@ -278,16 +296,20 @@ footer {
     padding: 10px;
     overflow-x: auto;
 }
+
 .thumbnail-gallery::-webkit-scrollbar {
     height: 6px;
 }
+
 .thumbnail-gallery::-webkit-scrollbar-track {
     background: var(--background-light);
 }
+
 .thumbnail-gallery::-webkit-scrollbar-thumb {
     background-color: #dee2e6;
     border-radius: 20px;
 }
+
 .thumbnail-img {
     width: 80px;
     height: 50px;
@@ -297,10 +319,12 @@ footer {
     cursor: pointer;
     transition: transform 0.2s ease;
 }
+
 .thumbnail-img:hover {
     transform: scale(1.05);
     border-color: #ccc;
 }
+
 .thumbnail-img.active {
     border-color: var(--primary-color);
 }
@@ -311,13 +335,16 @@ footer {
     transition: opacity 0.2s ease;
     z-index: 2;
 }
+
 .gallery-nav:hover {
     opacity: 1;
 }
+
 .fs-modal-nav {
     opacity: 0.8;
     transition: opacity 0.2s ease;
 }
+
 .fs-modal-nav:hover {
     opacity: 1;
 }
@@ -328,19 +355,22 @@ footer {
     align-items: center;
     margin-bottom: 1rem;
 }
+
 .feature-icon {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 50px;
     height: 50px;
-    background-color: rgba(230, 187, 94, 0.15); /* var(--primary-color) + opacity */
+    background-color: rgba(233, 199, 127, 0.15); 
     border-radius: 50%;
     margin-right: 1rem;
 }
+
 .feature-icon i {
     color: var(--primary-dark);
 }
+
 .feature-text h5 {
     margin-bottom: 0.25rem;
     font-weight: 600;
@@ -351,6 +381,7 @@ footer {
     color: var(--primary-color);
     margin-bottom: 0.75rem;
 }
+
 .room-description p {
     color: var(--text-secondary);
     line-height: 1.6;
@@ -377,6 +408,7 @@ footer {
     padding: 0;
     background-color: rgba(0,0,0,0.9);
 }
+
 .fullscreen-nav-btn {
     position: absolute;
     top: 50%;
@@ -392,12 +424,15 @@ footer {
     cursor: pointer;
     transition: all 0.2s ease;
 }
+
 .fullscreen-nav-btn:hover {
     background-color: rgba(255,255,255,0.9);
 }
+
 .fullscreen-nav-btn.prev {
     left: 20px;
 }
+
 .fullscreen-nav-btn.next {
     right: 20px;
 }
@@ -420,11 +455,14 @@ footer {
     .room-actions {
         grid-template-columns: 1fr;
     }
+
+    /* Giảm chiều cao ảnh trên mobile để fit màn hình */
     .main-image-container,
     #mainImage,
     .empty-gallery {
-        height: 300px;
+        max-height: 300px;
     }
+
     .feature-item {
         margin-bottom: 0.75rem;
     }
@@ -435,28 +473,33 @@ footer {
 }
 
 /* 6.2 Medium Screens */
-/* Add more as needed */
+/* ... (nếu cần bổ sung) */
 
 /* Additional custom styles */
 .card {
     border-radius: 10px;
     overflow: hidden;
 }
+
 .img-thumbnail {
     border-radius: 0 !important; /* force sharp corners */
 }
+
 .badge {
     font-size: 0.9rem;
     padding: 0.4em 0.6em;
 }
+
 .progress {
     background-color: #e9ecef;
     border-radius: 10px;
     overflow: hidden;
 }
+
 .progress-bar {
     font-weight: 600;
 }
+
 .arrow-left,
 .arrow-right {
     width: 0;
@@ -465,6 +508,7 @@ footer {
     position: relative;
     z-index: 2;
 }
+
 .arrow-left {
     border-top: 25px solid transparent;
     border-bottom: 25px solid transparent;
@@ -472,9 +516,11 @@ footer {
     margin-left: 15px;
     transition: transform 0.2s ease;
 }
+
 .arrow-left:hover {
     transform: scale(1.1);
 }
+
 .arrow-right {
     border-top: 25px solid transparent;
     border-bottom: 25px solid transparent;
@@ -482,9 +528,11 @@ footer {
     margin-right: 15px;
     transition: transform 0.2s ease;
 }
+
 .arrow-right:hover {
     transform: scale(1.1);
 }
+
 .avatar-circle {
     border-radius: 50% !important;
 }

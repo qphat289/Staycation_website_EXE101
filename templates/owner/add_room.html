@@ -4,7 +4,7 @@
 {% block content %}
 <h2>Add Room for Homestay: {{ homestay.title }}</h2>
 
-<form method="post" enctype="multipart/form-data">
+<form method="post">  <!-- Bỏ enctype="multipart/form-data" nếu không còn upload hình -->
   <div class="mb-3">
     <label for="room_number" class="form-label">Room Number</label>
     <input type="text" class="form-control" id="room_number" name="room_number" required>
@@ -41,18 +41,7 @@
     <input type="number" name="floor_number" id="floor_number" class="form-control" value="1" required min="1">
   </div>
 
-  <!-- Featured Image Input -->
-  <div class="mb-3">
-    <label for="image" class="form-label">Featured Image</label>
-    <input type="file" class="form-control" id="image" name="image" accept="image/*">
-  </div>
-
-  <!-- Multiple Room Images (Gallery) -->
-  <div class="mb-3">
-    <label for="gallery" class="form-label">Additional Gallery Images</label>
-    <input type="file" class="form-control" id="gallery" name="gallery[]" accept="image/*" multiple>
-    <small class="text-muted">Select multiple images for the gallery.</small>
-  </div>
+  <!-- Xóa phần Featured Image & Additional Gallery Images -->
 
   <button type="submit" class="btn btn-primary">Add Room</button>
 </form>
