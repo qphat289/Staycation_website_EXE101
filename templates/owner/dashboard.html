@@ -1,17 +1,17 @@
 <!-- templates/owner/dashboard.html -->
 {% extends "base.html" %}
 {% block content %}
-<h2>Owner Dashboard</h2>
+<h2 data-translate="owner-dashboard">Owner Dashboard</h2>
 
-<a href="{{ url_for('owner.view_bookings') }}" class="btn btn-info mb-3">View All Bookings</a>
+<a href="{{ url_for('owner.view_bookings') }}" class="btn btn-info mb-3" data-translate="view-all-bookings">View All Bookings</a>
 
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Homestay Name</th>
-            <th>Address</th>
-            <th>Rooms</th>
-            <th>Actions</th>
+            <th data-translate="homestay-name">Homestay Name</th>
+            <th data-translate="address">Address</th>
+            <th data-translate="rooms">Rooms</th>
+            <th data-translate="actions">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -30,18 +30,17 @@
             <td>
                 <!-- Manage Rooms Route -->
                 <a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}" 
-                   class="btn btn-primary">Manage Rooms</a>
+                   class="btn btn-primary" data-translate="manage-rooms">Manage Rooms</a>
 
                 <!-- Edit Homestay Route -->
                 <a href="{{ url_for('owner.edit_homestay', id=homestay.id) }}" 
-                   class="btn btn-warning">Edit</a>
+                   class="btn btn-warning" data-translate="edit">Edit</a>
 
                 <!-- Delete Homestay Route -->
                 <a href="{{ url_for('owner.delete_homestay', id=homestay.id) }}" 
                    class="btn btn-danger"
-                   onclick="return confirm('Are you sure you want to delete this homestay?');">
-                   Delete
-                </a>
+                   onclick="return confirm('Are you sure you want to delete this homestay?');"
+                   data-translate="delete">Delete</a>
             </td>
         </tr>
         {% endfor %}

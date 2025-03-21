@@ -104,7 +104,12 @@ const translations = {
         'room-number': 'Room #',
         'baths': 'baths',
         'price': 'Price',
-        'no-homestays': 'No homestays yet'
+        'no-homestays': 'No homestays yet',
+        'view-all-bookings': 'View All Bookings',
+        'homestay-name': 'Homestay Name',
+        'manage-rooms': 'Manage Rooms',
+        'edit': 'Edit',
+        'delete': 'Delete'
     },
     vi: {
         'home': 'Trang chủ',
@@ -211,7 +216,12 @@ const translations = {
         'room-number': 'Phòng số',
         'baths': 'phòng tắm',
         'price': 'Giá',
-        'no-homestays': 'Chưa có homestay'
+        'no-homestays': 'Chưa có homestay',
+        'view-all-bookings': 'Xem Tất Cả Đặt Phòng',
+        'homestay-name': 'Tên Homestay',
+        'manage-rooms': 'Quản Lý Phòng',
+        'edit': 'Sửa',
+        'delete': 'Xóa'
     }
 };
 
