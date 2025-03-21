@@ -8,7 +8,11 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('owner.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay_id) }}">Manage Rooms</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay_id) }}">
+                            Manage Rooms
+                        </a>
+                    </li>
                     <li class="breadcrumb-item active">Upload Gallery</li>
                 </ol>
             </nav>
@@ -25,12 +29,21 @@
                     <form action="{{ url_for('owner.add_room_images', room_id=room.id) }}" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="images" class="form-label">Select Images</label>
-                            <input type="file" class="form-control" id="images" name="images" multiple accept="image/*" required>
+                            <input 
+                                type="file" 
+                                class="form-control" 
+                                id="images" 
+                                name="images" 
+                                multiple 
+                                accept="image/*"
+                                required
+                            >
                             <div class="form-text">
                                 You can select multiple images at once. Supported formats: JPG, PNG, GIF, WEBP.
                             </div>
                         </div>
                         
+                        <!-- Preview Container -->
                         <div class="image-preview-container mb-3" id="imagePreviewContainer" style="display: none;">
                             <h6>Selected Images Preview:</h6>
                             <div class="d-flex flex-wrap gap-2" id="imagePreview"></div>
@@ -95,9 +108,14 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+
+<!-- Nút Quay lại / Hoàn thành, canh phải -->
+<div class="mt-3 d-flex justify-content-end">
+    <a href="{{ url_for('owner.owner_room_detail', room_id=room.id) }}" 
+       class="btn btn-success">
+       Finished / Back to Room
+    </a>
+  </div>
 
 <script>
     // Image preview functionality
@@ -129,7 +147,7 @@
                     
                     imgContainer.appendChild(img);
                     preview.appendChild(imgContainer);
-                }
+                };
                 
                 reader.readAsDataURL(file);
             }
