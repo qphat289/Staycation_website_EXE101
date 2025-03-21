@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, session, send_from_directory
+from flask import Flask, render_template, session, send_from_directory, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
@@ -20,6 +20,8 @@ def create_app():
     login_manager = LoginManager(app)
     login_manager.login_view = 'auth.login'
     app.jinja_env.filters['rank_info'] = get_rank_info
+
+    # The force_https function has been removed to prevent redirect loops
 
     @login_manager.user_loader
     def load_user(user_id):
