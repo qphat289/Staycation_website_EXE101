@@ -1,4 +1,4 @@
-<!-- {% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Register - Homestay Booking{% endblock %}
 
 {% block content %}
@@ -99,13 +99,16 @@
           <button type="submit" class="btn btn-primary w-100">Register</button>
         </form>
         
-        <!-- Google signup button -->
+        <!-- Social signup buttons -->
         <div class="text-center mt-3">
           <div class="separator my-3">
             <span class="px-2 text-muted">OR</span>
           </div>
-          <a href="{{ url_for('auth.login_google') }}" class="btn btn-outline-danger w-100">
+          <a href="{{ url_for('auth.login_google') }}" class="btn btn-outline-danger w-100 mb-2">
             <i class="fab fa-google me-2"></i> Sign up with Google
+          </a>
+          <a href="{{ url_for('auth.login_facebook') }}" class="btn btn-outline-primary w-100">
+            <i class="fab fa-facebook-f me-2"></i> Sign up with Facebook
           </a>
         </div>
       </div>
@@ -130,5 +133,4 @@
   border-bottom: 1px solid #dee2e6;
 }
 </style>
-{% endblock %} -->
-
+{% endblock %}
