@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, logout_user
 from models import Homestay, Booking, Review, db, Room, RoomImage
 from datetime import datetime, timedelta
 from PIL import Image
@@ -427,3 +427,84 @@ def view_room_detail(room_id):
     room = Room.query.get_or_404(room_id)
     # This page shows all images for the room
     return render_template('renter/view_room_detail.html', room=room)
+
+@renter_bp.route('/switch-to-renter')
+@login_required
+def switch_to_renter():
+    if current_user.role != 'owner':
+        flash('Bạn không phải là chủ nhà để thực hiện chuyển đổi này', 'danger')
+        return redirect(url_for('home'))
+    
+    current_user.temp_role = 'renter'
+    db.session.commit()
+    flash('Đã chuyển sang vai trò người thuê', 'success')
+    return redirect(url_for('renter.dashboard'))
+
+@renter_bp.route('/booking-history')
+@login_required
+def booking_history():
+    bookings = Booking.query.filter_by(renter_id=current_user.id).order_by(Booking.created_at.desc()).all()
+    return render_template('renter/booking_history.html', bookings=bookings)
+
+@renter_bp.route('/settings')
+@login_required
+def settings():
+    return render_template('renter/settings.html')
+
+@renter_bp.route('/update-settings', methods=['POST'])
+@login_required
+def update_settings():
+    email_notifications = request.form.get('email_notifications') == 'on'
+    booking_reminders = request.form.get('booking_reminders') == 'on'
+    
+    current_user.email_notifications = email_notifications
+    current_user.booking_reminders = booking_reminders
+    db.session.commit()
+    
+    flash('Cài đặt thông báo đã được cập nhật', 'success')
+    return redirect(url_for('renter.settings'))
+
+@renter_bp.route('/update-privacy', methods=['POST'])
+@login_required
+def update_privacy():
+    show_profile = request.form.get('show_profile') == 'on'
+    show_booking_history = request.form.get('show_booking_history') == 'on'
+    
+    current_user.show_profile = show_profile
+    current_user.show_booking_history = show_booking_history
+    db.session.commit()
+    
+    flash('Cài đặt quyền riêng tư đã được cập nhật', 'success')
+    return redirect(url_for('renter.settings'))
+
+@renter_bp.route('/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+    password = request.form.get('password')
+    
+    if not current_user.check_password(password):
+        flash('Mật khẩu không chính xác', 'danger')
+        return redirect(url_for('renter.settings'))
+    
+    # Xóa tất cả bookings và reviews của user
+    Booking.query.filter_by(renter_id=current_user.id).delete()
+    Review.query.filter_by(renter_id=current_user.id).delete()
+    
+    # Xóa user
+    db.session.delete(current_user)
+    db.session.commit()
+    
+    logout_user()
+    flash('Tài khoản của bạn đã được xóa', 'success')
+    return redirect(url_for('home'))
+
+@renter_bp.route('/update-appearance', methods=['POST'])
+@login_required
+def update_appearance():
+    dark_mode = request.form.get('dark_mode') == 'on'
+    
+    current_user.dark_mode = dark_mode
+    db.session.commit()
+    
+    flash('Cài đặt giao diện đã được cập nhật', 'success')
+    return redirect(url_for('renter.settings'))

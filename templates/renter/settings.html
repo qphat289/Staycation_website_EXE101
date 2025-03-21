@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4" data-translate="settings">Settings</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" data-translate="notification-settings">Notification Settings</h5>
+                    <form method="POST" action="{{ url_for('renter.update_settings') }}">
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="emailNotifications" name="email_notifications" {% if current_user.email_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="emailNotifications" data-translate="email-notifications">Email Notifications</label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="bookingReminders" name="booking_reminders" {% if current_user.booking_reminders %}checked{% endif %}>
+                            <label class="form-check-label" for="bookingReminders" data-translate="booking-reminders">Booking Reminders</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-translate="save-changes">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" data-translate="privacy-settings">Privacy Settings</h5>
+                    <form method="POST" action="{{ url_for('renter.update_privacy') }}">
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="showProfile" name="show_profile" {% if current_user.show_profile %}checked{% endif %}>
+                            <label class="form-check-label" for="showProfile" data-translate="show-profile">Show Profile to Other Users</label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="showBookingHistory" name="show_booking_history" {% if current_user.show_booking_history %}checked{% endif %}>
+                            <label class="form-check-label" for="showBookingHistory" data-translate="show-booking-history">Show Booking History</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-translate="save-changes">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" data-translate="appearance-settings">Appearance Settings</h5>
+                    <form method="POST" action="{{ url_for('renter.update_appearance') }}">
+                        <div class="mb-3">
+                            <label class="form-label" data-translate="color-theme">Color Theme</label>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="darkMode" name="dark_mode" {% if current_user.dark_mode %}checked{% endif %}>
+                                <label class="form-check-label" for="darkMode" data-translate="dark-mode">Dark Mode</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-translate="save-changes">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" data-translate="language-settings">Language Settings</h5>
+                    <div class="mb-3">
+                        <label class="form-label" data-translate="preferred-language">Preferred Language</label>
+                        <select class="form-select" id="languageSelect" onchange="toggleLanguage()">
+                            <option value="en" {% if current_lang == 'en' %}selected{% endif %}>English</option>
+                            <option value="vi" {% if current_lang == 'vi' %}selected{% endif %}>Tiếng Việt</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-danger" data-translate="danger-zone">Danger Zone</h5>
+                    <p class="text-muted" data-translate="danger-zone-desc">These actions cannot be undone.</p>
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal" data-translate="delete-account">Delete Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" data-translate="confirm-delete-account">Confirm Account Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p data-translate="delete-account-warning">Warning: This action cannot be undone. All your data will be permanently deleted.</p>
+                <form method="POST" action="{{ url_for('renter.delete_account') }}">
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label" data-translate="confirm-password">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger" data-translate="confirm-delete">Confirm Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

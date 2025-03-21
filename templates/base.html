@@ -6,14 +6,17 @@
     <title>{% block title %}<span data-translate="homestay-booking">Homestay Booking</span>{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body {% if current_user.is_authenticated and current_user.dark_mode %}class="dark-mode"{% endif %}>
     {# Make the status_classes dictionary available to all child templates #}
     {% set status_classes = {
         'pending': 'badge bg-warning',
@@ -38,7 +41,7 @@
                         <a class="nav-link" href="{{ url_for('renter.search') }}" data-translate="search">Search</a>
                     </li>
                 </ul>
-                <ul class="navbar-nav">
+                <ul class="navbar-nav align-items-center">
                     {% if current_user.is_authenticated %}
                         {% if current_user.role == 'admin' %}
                             <li class="nav-item">
@@ -56,11 +59,58 @@
                                 <a class="nav-link" href="{{ url_for('renter.dashboard') }}" data-translate="renter-dashboard">Renter Dashboard</a>
                             </li>
                         {% endif %}
+                        
+                        <!-- Language Toggle Button -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('renter.profile') }}" data-translate="my-profile">My Profile</a>
+                            <button id="languageToggle" class="btn btn-outline-light ms-2" onclick="toggleLanguage()">EN</button>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.logout') }}"><span data-translate="logout">Logout</span> ({{ current_user.username }})</a>
+
+                        <!-- User Dropdown -->
+                        <li class="nav-item dropdown ms-3">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user.avatar %}
+                                    <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/default-avatar.jpg') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                {% endif %}
+                                <span>{{ current_user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('renter.profile') }}">
+                                        <i class="bi bi-person"></i> <span data-translate="my-profile">My Profile</span>
+                                    </a>
+                                </li>
+                                {% if current_user.is_owner() %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('renter.switch_to_renter') }}">
+                                        <i class="bi bi-arrow-repeat"></i> <span data-translate="switch-to-renter">Switch to Renter</span>
+                                    </a>
+                                </li>
+                                {% elif current_user.role == 'renter' %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('owner.switch_to_owner') }}">
+                                        <i class="bi bi-arrow-repeat"></i> <span data-translate="switch-to-owner">Switch to Owner</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('renter.booking_history') }}">
+                                        <i class="bi bi-clock-history"></i> <span data-translate="booking-history">Booking History</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('renter.settings') }}">
+                                        <i class="bi bi-gear"></i> <span data-translate="settings">Settings</span>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                        <i class="bi bi-box-arrow-right"></i> <span data-translate="logout">Logout</span>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
@@ -69,10 +119,10 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('auth.register') }}" data-translate="register">Register</a>
                         </li>
+                        <li class="nav-item">
+                            <button id="languageToggle" class="btn btn-outline-light ms-2" onclick="toggleLanguage()">EN</button>
+                        </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <button id="languageToggle" class="btn btn-outline-light ms-2" onclick="toggleLanguage()">EN</button>
-                    </li>
                 </ul>                
             </div>
         </div>
@@ -133,11 +183,12 @@
     </footer>
     
     <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/translation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>
