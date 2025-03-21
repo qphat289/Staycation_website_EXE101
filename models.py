@@ -48,7 +48,7 @@ class Owner(UserMixin, db.Model):
     phone = db.Column(db.String(12))
     personal_id = db.Column(db.String(12), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    avatar = db.Column(db.String(200))
     # Một owner có nhiều homestays
     homestays = db.relationship('Homestay', backref='owner', lazy=True)
 
