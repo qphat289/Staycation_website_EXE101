@@ -8,7 +8,7 @@ import json
 from flask import current_app
 from urllib.parse import urlencode
 import secrets
-
+from urllib.parse import urlparse
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -93,38 +93,47 @@ def register():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
+    
+    # Initialize empty form_data
+    form_data = {}
         
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        remember = 'remember' in request.form
         
-        # Tìm user theo thứ tự: Admin -> Owner -> Renter
-        user = Admin.query.filter_by(username=username).first()
-        role = None
+        # Store username for form repopulation if login fails
+        form_data = {'username': username}
+        
+        # Try to find the user by username (only regular users, not Google users)
+        admin = Admin.query.filter_by(username=username).first()
+        owner = Owner.query.filter_by(username=username).first()
+        renter = Renter.query.filter_by(username=username).first()  # Only finds regular users, not Google users
+        
+        user = admin or owner or renter
+        
         if user and user.check_password(password):
-            role = 'admin'
-        else:
-            user = Owner.query.filter_by(username=username).first()
-            if user and user.check_password(password):
-                role = 'owner'
-            else:
-                user = Renter.query.filter_by(username=username).first()
-                if user and user.check_password(password):
-                    role = 'renter'
-        
-        if not user:
-            flash('Invalid username or password!', 'danger')
-            return render_template('auth/login.html')
+            # Valid credentials, log in the user
+            login_user(user)
             
-        # Đăng nhập user
-        login_user(user, remember=remember)
-        session['user_role'] = role  # Lưu role vào session
-        
-        # Tạm thời, chuyển hướng về home
-        return redirect(url_for('home'))
-        
-    return render_template('auth/login.html')
+            # Set the user role in session
+            if admin:
+                session['user_role'] = 'admin'
+            elif owner:
+                session['user_role'] = 'owner'
+            elif renter:
+                session['user_role'] = 'renter'
+                
+            # Redirect to the appropriate page
+            next_page = request.args.get('next')
+            if not next_page or urlparse(next_page).netloc != '':
+                next_page = url_for('home')
+                
+            return redirect(next_page)
+        else:
+            # Invalid credentials
+            flash("Invalid username or password. Please try again.", "danger")
+                
+    return render_template('auth/login.html', form_data=form_data)
 
 @auth_bp.route('/logout')
 @login_required
@@ -240,31 +249,26 @@ def complete_google_signup():
     # Pre-populate form with Google data
     form_data = {
         'email': session.get('google_email', ''),
-        'full_name': session.get('google_name', '')
+        'google_name': session.get('google_name', ''),
+        'full_name': ''  # Empty by default so user can enter their own full name
     }
     
     if request.method == 'POST':
         # Get form data
-        username = request.form.get('username')
         full_name = request.form.get('full_name')
         phone = request.form.get('phone')
         personal_id = request.form.get('personal_id')
         
         # Validate required fields
-        if not all([username, full_name, phone, personal_id]):
+        if not all([full_name, phone, personal_id]):
             flash("All fields are required", "danger")
             form_data = {
-                'username': username,
                 'full_name': full_name,
                 'phone': phone,
                 'personal_id': personal_id,
-                'email': session.get('google_email', '')
+                'email': session.get('google_email', ''),
+                'google_name': session.get('google_name', '')
             }
-            return render_template('auth/complete_google_signup.html', form_data=form_data)
-        
-        # Check if username exists
-        if Renter.query.filter_by(username=username).first() or Owner.query.filter_by(username=username).first() or Admin.query.filter_by(username=username).first():
-            flash("Username already exists", "danger")
             return render_template('auth/complete_google_signup.html', form_data=form_data)
         
         # Check if phone exists
@@ -278,10 +282,12 @@ def complete_google_signup():
             return render_template('auth/complete_google_signup.html', form_data=form_data)
         
         # Create new renter with Google data
+        # Note: username field can be NULL for Google users
         new_renter = Renter(
-            username=username,
+            username=None,  # No regular username for Google users
+            google_username=session.get('google_name', 'Google User'),  # Use Google name as google_username
             email=session['google_email'],
-            full_name=full_name,
+            full_name=full_name,  # User-provided full name
             phone=phone,
             personal_id=personal_id,
             google_id=session['google_id'],
@@ -303,8 +309,186 @@ def complete_google_signup():
         session.pop('google_email', None)
         session.pop('google_name', None)
         
-        flash("Your account has been created successfully!", "success")
+        flash(f"Your account has been created successfully!", "success")
         return redirect(url_for('home'))
     
     # GET request - render the form
     return render_template('auth/complete_google_signup.html', form_data=form_data)
+
+# Add Facebook login route
+@auth_bp.route('/login/facebook')
+def login_facebook():
+    # Generate random state for CSRF protection
+    session["facebook_state"] = secrets.token_urlsafe(16)
+    
+    # Define Facebook OAuth parameters
+    callback_url = current_app.config['FACEBOOK_CALLBACK_URL']
+    
+    # Facebook authorization URL
+    facebook_auth_url = "https://www.facebook.com/v16.0/dialog/oauth"
+    
+    # Create authorization URL
+    request_uri = facebook_auth_url + "?" + urlencode({
+        'client_id': current_app.config['FACEBOOK_CLIENT_ID'],
+        'redirect_uri': callback_url,
+        'state': session["facebook_state"],
+        'scope': 'email,public_profile',
+        'response_type': 'code'
+    })
+    
+    return redirect(request_uri)
+
+# Add Facebook callback route
+@auth_bp.route('/callback/facebook')
+def callback_facebook():
+    # Verify state parameter
+    if request.args.get('state') != session.get("facebook_state"):
+        flash("Authentication failed: Invalid state parameter", "danger")
+        return redirect(url_for('auth.login'))
+    
+    # Check for error response
+    if request.args.get('error'):
+        flash(f"Facebook authorization error: {request.args.get('error_description', 'Unknown error')}", "danger")
+        return redirect(url_for('auth.login'))
+    
+    # Get authorization code
+    code = request.args.get("code")
+    
+    # Prepare for token exchange
+    callback_url = current_app.config['FACEBOOK_CALLBACK_URL']
+    token_url = "https://graph.facebook.com/v16.0/oauth/access_token"
+    
+    # Exchange code for access token
+    token_response = requests.get(token_url, params={
+        'client_id': current_app.config['FACEBOOK_CLIENT_ID'],
+        'client_secret': current_app.config['FACEBOOK_CLIENT_SECRET'],
+        'code': code,
+        'redirect_uri': callback_url
+    })
+    
+    # Parse token response
+    token_data = token_response.json()
+    
+    if 'error' in token_data:
+        flash(f"Error getting access token: {token_data.get('error_description', 'Unknown error')}", "danger")
+        return redirect(url_for('auth.login'))
+    
+    # Get access token
+    access_token = token_data['access_token']
+    
+    # Get user info from Facebook Graph API
+    user_info_url = "https://graph.facebook.com/me"
+    user_response = requests.get(user_info_url, params={
+        'fields': 'id,name,email',
+        'access_token': access_token
+    })
+    
+    user_info = user_response.json()
+    
+    # Extract user data
+    facebook_id = user_info['id']
+    facebook_email = user_info.get('email')  # May be None if user hasn't shared their email
+    facebook_name = user_info.get('name', '')
+    
+    # Check if this Facebook account is already linked to a user
+    existing_renter = Renter.query.filter_by(facebook_id=facebook_id).first()
+    
+    if existing_renter:
+        # User exists, log them in
+        login_user(existing_renter)
+        session['user_role'] = 'renter'
+        flash("Successfully logged in with Facebook!", "success")
+        return redirect(url_for('home'))
+    else:
+        # User doesn't exist, store info in session and redirect to complete profile
+        session['facebook_id'] = facebook_id
+        session['facebook_email'] = facebook_email
+        session['facebook_name'] = facebook_name
+        return redirect(url_for('auth.complete_facebook_signup'))
+
+# Add Facebook signup completion route
+@auth_bp.route('/complete-facebook-signup', methods=['GET', 'POST'])
+def complete_facebook_signup():
+    # Check if we have Facebook data in session
+    if not session.get('facebook_id'):
+        flash("Facebook authentication data missing", "danger")
+        return redirect(url_for('auth.login'))
+    
+    # Pre-populate form with Facebook data
+    form_data = {
+        'email': session.get('facebook_email', ''),
+        'facebook_name': session.get('facebook_name', ''),
+        'full_name': session.get('facebook_name', '')  # Suggest using Facebook name as a starting point
+    }
+    
+    if request.method == 'POST':
+        # Get form data
+        full_name = request.form.get('full_name')
+        phone = request.form.get('phone')
+        personal_id = request.form.get('personal_id')
+        email = request.form.get('email')  # Allow them to provide email if not from Facebook
+        
+        # Validate required fields
+        if not all([full_name, phone, personal_id]) or (not session.get('facebook_email') and not email):
+            flash("All fields are required", "danger")
+            form_data = {
+                'full_name': full_name,
+                'phone': phone,
+                'personal_id': personal_id,
+                'email': email or session.get('facebook_email', ''),
+                'facebook_name': session.get('facebook_name', '')
+            }
+            return render_template('auth/complete_facebook_signup.html', form_data=form_data)
+        
+        # Check if phone exists
+        if Renter.query.filter_by(phone=phone).first() or Owner.query.filter_by(phone=phone).first():
+            flash("Phone number already exists", "danger")
+            return render_template('auth/complete_facebook_signup.html', form_data=form_data)
+        
+        # Check if personal_id exists
+        if Renter.query.filter_by(personal_id=personal_id).first() or Owner.query.filter_by(personal_id=personal_id).first():
+            flash("Personal ID already exists", "danger")
+            return render_template('auth/complete_facebook_signup.html', form_data=form_data)
+        
+        # Use email from form if Facebook didn't provide one
+        final_email = session.get('facebook_email') or email
+        
+        # Check if email exists
+        if final_email and (Renter.query.filter_by(email=final_email).first() or 
+                          Owner.query.filter_by(email=final_email).first() or 
+                          Admin.query.filter_by(email=final_email).first()):
+            flash("Email already exists", "danger")
+            return render_template('auth/complete_facebook_signup.html', form_data=form_data)
+        
+        # Create new renter with Facebook data
+        new_renter = Renter(
+            username=None,  # No regular username for Facebook users
+            facebook_username=session.get('facebook_name', 'Facebook User'),
+            email=final_email,
+            full_name=full_name,
+            phone=phone,
+            personal_id=personal_id,
+            facebook_id=session['facebook_id'],
+        )
+        
+        # Generate a random password for Facebook users
+        random_password = secrets.token_urlsafe(16)
+        new_renter.set_password(random_password)
+        
+        db.session.add(new_renter)
+        db.session.commit()
+        
+        # Log in the new user
+        login_user(new_renter)
+        session['user_role'] = 'renter'
+        
+        # Clear Facebook session data
+        session.pop('facebook_id', None)
+        session.pop('facebook_email', None)
+        session.pop('facebook_name', None)
+        
+        flash(f"Your account has been created successfully!", "success")
+        return redirect(url_for('home'))
+    
+    # GET request - render the form
+    return render_template('auth/complete_facebook_signup.html', form_data=form_data)

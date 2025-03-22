@@ -48,7 +48,8 @@ class Owner(UserMixin, db.Model):
     phone = db.Column(db.String(12))
     personal_id = db.Column(db.String(12), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    avatar = db.Column(db.String(200))
+    temp_role = db.Column(db.String(20))
     # Một owner có nhiều homestays
     homestays = db.relationship('Homestay', backref='owner', lazy=True)
 
@@ -58,11 +59,15 @@ class Owner(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+    @property
+    def role(self):
+        return 'renter' if self.temp_role == 'renter' else 'owner'
+    
     def is_owner(self):
-        return True
+        return self.temp_role != 'renter'
     
     def is_renter(self):
-        return False
+        return self.temp_role == 'renter'
         
     def __repr__(self):
         return f'<Owner {self.username}>'
@@ -70,7 +75,7 @@ class Owner(UserMixin, db.Model):
 class Renter(UserMixin, db.Model):
     __tablename__ = 'renter'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=False)
+    username = db.Column(db.String(64), unique=True, nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     full_name = db.Column(db.String(100), nullable=False)
@@ -79,7 +84,25 @@ class Renter(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     experience_points = db.Column(db.Integer, default=0)
     avatar = db.Column(db.String(200))
+    temp_role = db.Column(db.String(20))
+    
+    # Cài đặt thông báo
+    email_notifications = db.Column(db.Boolean, default=True)
+    booking_reminders = db.Column(db.Boolean, default=True)
+    
+    # Cài đặt quyền riêng tư
+    show_profile = db.Column(db.Boolean, default=True)
+    show_booking_history = db.Column(db.Boolean, default=True)
+    
+    # Cài đặt giao diện
+    dark_mode = db.Column(db.Boolean, default=False)
+    
     google_id = db.Column(db.String(120), unique=True, nullable=True)
+    google_username = db.Column(db.String(100), unique=True, nullable=True)
+
+    facebook_id = db.Column(db.String(100), unique=True, nullable=True)
+    facebook_username = db.Column(db.String(100), nullable=True)
+
     # Một renter có nhiều booking và reviews
     bookings = db.relationship('Booking', backref='renter', lazy=True)
     reviews = db.relationship('Review', backref='renter', lazy=True)
@@ -87,11 +110,15 @@ class Renter(UserMixin, db.Model):
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
+    @property
+    def role(self):
+        return 'owner' if self.temp_role == 'owner' else 'renter'
+    
     def is_renter(self):
-        return True
+        return self.temp_role != 'owner'
     
     def is_owner(self):
-        return False
+        return self.temp_role == 'owner'
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)

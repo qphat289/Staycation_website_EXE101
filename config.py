@@ -9,11 +9,16 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Google OAuth config
-    # GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')  # Remove the hardcoded value
-    # GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')  # Remove the hardcoded value
-    # GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')  # Remove the hardcoded value
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')  # Remove the hardcoded value
+    GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
     #GOOGLE_REDIRECT_URI = "/auth/callback"
-    
+
+    # Facebook OAuth settings
+    FACEBOOK_CLIENT_ID = os.environ.get('FACEBOOK_CLIENT_ID')
+    FACEBOOK_CLIENT_SECRET = os.environ.get('FACEBOOK_CLIENT_SECRET')
+    FACEBOOK_CALLBACK_URL = os.environ.get('FACEBOOK_CALLBACK_URL', 'https://23c2-2405-4802-a176-8df0-ade8-7cc2-8228-a7f2.ngrok-free.app/auth/callback/facebook')
+
     # Upload folder for homestay images
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/uploads')
     if not os.path.exists(UPLOAD_FOLDER):

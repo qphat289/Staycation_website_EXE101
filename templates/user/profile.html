@@ -10,7 +10,7 @@
                 <div class="card-body text-center">
                     <!-- Avatar -->
                     {% if current_user.avatar %}
-                        <img src="{{ url_for('uploaded_file', filename=current_user.avatar) }}"
+                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
                             alt="Avatar"
                             class="avatar-circle"
                             style="width: 150px; height: 150px; object-fit: cover;">

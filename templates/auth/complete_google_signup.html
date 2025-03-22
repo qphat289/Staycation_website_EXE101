@@ -33,27 +33,26 @@
             <small class="text-muted">Your Google email cannot be changed</small>
           </div>
           
-          <!-- Username -->
+          <!-- Display Google name as information -->
           <div class="mb-3">
-            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+            <label class="form-label">Google Account Name</label>
             <input type="text" 
                    class="form-control" 
-                   id="username" 
-                   name="username" 
-                   value="{{ form_data.username or '' }}" 
-                   required>
-            <small class="text-muted">Choose a unique username for this website</small>
+                   value="{{ form_data.google_name or '' }}" 
+                   disabled>
+            <small class="text-muted">This is the name from your Google account</small>
           </div>
           
           <!-- Full Name -->
           <div class="mb-3">
-            <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+            <label for="full_name" class="form-label">Your Full Name <span class="text-danger">*</span></label>
             <input type="text" 
                    class="form-control" 
                    id="full_name" 
                    name="full_name" 
                    value="{{ form_data.full_name or '' }}" 
                    required>
+            <small class="text-muted">Please enter your full name as you want it to appear</small>
           </div>
           
           <!-- Phone Number -->

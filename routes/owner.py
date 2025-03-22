@@ -539,3 +539,15 @@ def booking_details(booking_id):
         return redirect(url_for('owner.view_bookings'))
 
     return render_template('owner/booking_details.html', booking=booking)
+
+@owner_bp.route('/switch-to-owner')
+@login_required
+def switch_to_owner():
+    if current_user.role != 'renter':
+        flash('Bạn không phải là người thuê để thực hiện chuyển đổi này', 'danger')
+        return redirect(url_for('home'))
+    
+    current_user.temp_role = 'owner'
+    db.session.commit()
+    flash('Đã chuyển sang vai trò chủ nhà', 'success')
+    return redirect(url_for('owner.dashboard'))

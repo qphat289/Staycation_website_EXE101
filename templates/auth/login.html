@@ -1,60 +1,85 @@
-<!-- {% extends 'base.html' %}
-
+{% extends 'base.html' %}
 {% block title %}Login - Homestay Booking{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0">Login to Your Account</h4>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" name="username" class="form-control" required autocomplete="off">
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" required autocomplete="new-password">
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                        <label class="form-check-label" for="remember">Remember me</label>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
-                </form>
-                
-                <!-- Google login button -->
-                <div class="text-center mt-3">
-                    <div class="separator my-3">
-                        <span class="px-2 text-muted">OR</span>
-                    </div>
-                    <a href="{{ url_for('auth.login_google') }}" class="btn btn-outline-danger w-100">
-                        <i class="fab fa-google me-2"></i> Sign in with Google
-                    </a>
-                </div>
-            </div>
-            <div class="card-footer text-center">
-                Don't have an account? <a href="{{ url_for('auth.register') }}">Register now</a>
-            </div>
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">
+        <h4>Login to Your Account</h4>
+      </div>
+      <div class="card-body">
+        <!-- Thêm autocomplete="off" vào form -->
+        <form method="post" autocomplete="off">
+          
+          <!-- Username/Email -->
+          <div class="mb-3">
+            <label for="username" class="form-label">Username or Email</label>
+            <input type="text" 
+                   name="username" 
+                   id="username" 
+                   class="form-control" 
+                   required 
+                   autocomplete="off"
+                   value="{{ form_data.username|default('') }}">
+          </div>
+          
+          <!-- Password -->
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" 
+                   name="password" 
+                   id="password" 
+                   class="form-control" 
+                   required 
+                   autocomplete="new-password">
+          </div>
+          
+          <!-- Remember Me -->
+          <div class="mb-3 form-check">
+            <input type="checkbox" 
+                   name="remember" 
+                   id="remember" 
+                   class="form-check-input">
+            <label for="remember" class="form-check-label">Remember me</label>
+          </div>
+          
+          <!-- Submit -->
+          <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+        
+        <!-- Social login buttons -->
+        <div class="text-center mt-3">
+          <div class="separator my-3">
+            <span class="px-2 text-muted">OR</span>
+          </div>
+          <a href="{{ url_for('auth.login_google') }}" class="btn btn-outline-danger w-100 mb-2">
+            <i class="fab fa-google me-2"></i> Sign in with Google
+          </a>
+          <a href="{{ url_for('auth.login_facebook') }}" class="btn btn-outline-primary w-100">
+            <i class="fab fa-facebook-f me-2"></i> Sign in with Facebook
+          </a>
         </div>
+      </div>
+      <div class="card-footer text-center">
+        Don't have an account? 
+        <a href="{{ url_for('auth.register') }}">Register</a>
+      </div>
     </div>
+  </div>
 </div>
 
 <style>
-.separator {
+  .separator {
     display: flex;
     align-items: center;
     text-align: center;
-}
-
-.separator::before,
-.separator::after {
+  }
+  .separator::before,
+  .separator::after {
     content: '';
     flex: 1;
     border-bottom: 1px solid #dee2e6;
-}
+  }
 </style>
-{% endblock %} -->
+{% endblock %}

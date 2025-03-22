@@ -262,8 +262,6 @@ footer {
 /* 4.1 Main Gallery Container */
 .main-image-container {
     position: relative;
-    /* Thay vì fix height = 400px, ta dùng max-height để tránh vỡ ảnh */
-    max-height: 400px;
     overflow: hidden;
     background-color: var(--background-light);
 }
@@ -276,7 +274,6 @@ footer {
     max-height: 400px;   /* Giới hạn tối đa */
     object-fit: cover;
     object-position: center;
-    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 #mainImage.loading {
