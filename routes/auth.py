@@ -338,73 +338,77 @@ def login_facebook():
     
     return redirect(request_uri)
 
-# Add Facebook callback route
-@auth_bp.route('/callback/facebook')
-def callback_facebook():
-    # Verify state parameter
-    if request.args.get('state') != session.get("facebook_state"):
-        flash("Authentication failed: Invalid state parameter", "danger")
+@auth_bp.route('/facebook/callback')
+def facebook_callback():
+    # Get the authorization code from the request
+    code = request.args.get('code')
+    error = request.args.get('error')
+    
+    if error:
+        flash(f"Facebook authorization error: {error}", "danger")
         return redirect(url_for('auth.login'))
     
-    # Check for error response
-    if request.args.get('error'):
-        flash(f"Facebook authorization error: {request.args.get('error_description', 'Unknown error')}", "danger")
+    if not code:
+        flash("Authorization failed: No code provided", "danger")
         return redirect(url_for('auth.login'))
     
-    # Get authorization code
-    code = request.args.get("code")
-    
-    # Prepare for token exchange
+    # Exchange the code for an access token
+    facebook_client_id = current_app.config['FACEBOOK_CLIENT_ID']
+    facebook_client_secret = current_app.config['FACEBOOK_CLIENT_SECRET']
     callback_url = current_app.config['FACEBOOK_CALLBACK_URL']
-    token_url = "https://graph.facebook.com/v16.0/oauth/access_token"
     
-    # Exchange code for access token
-    token_response = requests.get(token_url, params={
-        'client_id': current_app.config['FACEBOOK_CLIENT_ID'],
-        'client_secret': current_app.config['FACEBOOK_CLIENT_SECRET'],
+    token_url = 'https://graph.facebook.com/v18.0/oauth/access_token'
+    token_payload = {
+        'client_id': facebook_client_id,
+        'client_secret': facebook_client_secret,
         'code': code,
         'redirect_uri': callback_url
-    })
+    }
     
-    # Parse token response
-    token_data = token_response.json()
-    
-    if 'error' in token_data:
-        flash(f"Error getting access token: {token_data.get('error_description', 'Unknown error')}", "danger")
+    try:
+        token_response = requests.get(token_url, params=token_payload)
+        token_response.raise_for_status()  # Raise exception for HTTP errors
+        token_data = token_response.json()
+        access_token = token_data.get('access_token')
+        
+        # Get user information using the access token
+        user_info_url = 'https://graph.facebook.com/me'
+        user_info_payload = {
+            'fields': 'id,name,email',
+            'access_token': access_token
+        }
+        
+        user_info_response = requests.get(user_info_url, params=user_info_payload)
+        user_info_response.raise_for_status()
+        user_info = user_info_response.json()
+        
+        # Get the user's Facebook ID, name, and email
+        facebook_id = user_info.get('id')
+        name = user_info.get('name')
+        email = user_info.get('email')
+        
+        if not facebook_id:
+            flash("Facebook login failed: Could not retrieve user ID", "danger")
+            return redirect(url_for('auth.login'))
+        
+        existing_renter = Renter.query.filter_by(facebook_id=facebook_id).first()
+        
+        if existing_renter:
+            # User exists, log them in
+            login_user(existing_renter)
+            session['user_role'] = 'renter'
+            flash(f"Welcome back, {name}! You've successfully logged in with Facebook.", "success")
+            return redirect(url_for('home'))
+        else:
+            # User doesn't exist, store info in session and redirect to complete profile
+            session['facebook_id'] = facebook_id
+            session['facebook_email'] = email
+            session['facebook_name'] = name
+            return redirect(url_for('auth.complete_facebook_signup'))
+        
+    except requests.exceptions.RequestException as e:
+        flash(f"Error during Facebook authentication: {str(e)}", "danger")
         return redirect(url_for('auth.login'))
-    
-    # Get access token
-    access_token = token_data['access_token']
-    
-    # Get user info from Facebook Graph API
-    user_info_url = "https://graph.facebook.com/me"
-    user_response = requests.get(user_info_url, params={
-        'fields': 'id,name,email',
-        'access_token': access_token
-    })
-    
-    user_info = user_response.json()
-    
-    # Extract user data
-    facebook_id = user_info['id']
-    facebook_email = user_info.get('email')  # May be None if user hasn't shared their email
-    facebook_name = user_info.get('name', '')
-    
-    # Check if this Facebook account is already linked to a user
-    existing_renter = Renter.query.filter_by(facebook_id=facebook_id).first()
-    
-    if existing_renter:
-        # User exists, log them in
-        login_user(existing_renter)
-        session['user_role'] = 'renter'
-        flash("Successfully logged in with Facebook!", "success")
-        return redirect(url_for('home'))
-    else:
-        # User doesn't exist, store info in session and redirect to complete profile
-        session['facebook_id'] = facebook_id
-        session['facebook_email'] = facebook_email
-        session['facebook_name'] = facebook_name
-        return redirect(url_for('auth.complete_facebook_signup'))
 
 # Add Facebook signup completion route
 @auth_bp.route('/complete-facebook-signup', methods=['GET', 'POST'])

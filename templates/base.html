@@ -73,7 +73,7 @@
                                 {% else %}
                                     <img src="{{ url_for('static', filename='images/default-avatar.jpg') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
                                 {% endif %}
-                                <span>{{ current_user.username }}</span>
+                                <span>{{ current_user.display_name }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                 <li>

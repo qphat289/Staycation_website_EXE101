@@ -17,7 +17,7 @@ class Config:
     # Facebook OAuth settings
     FACEBOOK_CLIENT_ID = os.environ.get('FACEBOOK_CLIENT_ID')
     FACEBOOK_CLIENT_SECRET = os.environ.get('FACEBOOK_CLIENT_SECRET')
-    FACEBOOK_CALLBACK_URL = os.environ.get('FACEBOOK_CALLBACK_URL', 'https://23c2-2405-4802-a176-8df0-ade8-7cc2-8228-a7f2.ngrok-free.app/auth/callback/facebook')
+    FACEBOOK_CALLBACK_URL = os.environ.get('FACEBOOK_CALLBACK_URL', 'http://localhost:5000/auth/facebook/callback')
 
     # Upload folder for homestay images
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/uploads')
