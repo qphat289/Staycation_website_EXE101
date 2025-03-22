@@ -60,7 +60,7 @@
                             <a class="nav-link" href="{{ url_for('renter.profile') }}" data-translate="my-profile">My Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.logout') }}"><span data-translate="logout">Logout</span> ({{ current_user.username }})</a>
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}"><span data-translate="logout">Logout</span> ({{ current_user.display_name }})</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
