@@ -9,7 +9,9 @@
         <h4>Login to Your Account</h4>
       </div>
       <div class="card-body">
-        <form method="post">
+        <!-- Thêm autocomplete="off" vào form -->
+        <form method="post" autocomplete="off">
+          
           <!-- Username/Email -->
           <div class="mb-3">
             <label for="username" class="form-label">Username or Email</label>
@@ -18,9 +20,8 @@
                    id="username" 
                    class="form-control" 
                    required 
-                   autocomplete="username"
-                   value="{{ form_data.username|default('') }}"
-            >
+                   autocomplete="off"
+                   value="{{ form_data.username|default('') }}">
           </div>
           
           <!-- Password -->
@@ -31,8 +32,7 @@
                    id="password" 
                    class="form-control" 
                    required 
-                   autocomplete="current-password"
-            >
+                   autocomplete="new-password">
           </div>
           
           <!-- Remember Me -->
@@ -40,8 +40,7 @@
             <input type="checkbox" 
                    name="remember" 
                    id="remember" 
-                   class="form-check-input"
-            >
+                   class="form-check-input">
             <label for="remember" class="form-check-label">Remember me</label>
           </div>
           
@@ -63,24 +62,24 @@
         </div>
       </div>
       <div class="card-footer text-center">
-        Don't have an account? <a href="{{ url_for('auth.register') }}">Register</a>
+        Don't have an account? 
+        <a href="{{ url_for('auth.register') }}">Register</a>
       </div>
     </div>
   </div>
 </div>
 
 <style>
-.separator {
-  display: flex;
-  align-items: center;
-  text-align: center;
-}
-
-.separator::before,
-.separator::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #dee2e6;
-}
+  .separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+  }
+  .separator::before,
+  .separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #dee2e6;
+  }
 </style>
 {% endblock %}
