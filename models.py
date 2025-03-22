@@ -98,10 +98,10 @@ class Renter(UserMixin, db.Model):
     dark_mode = db.Column(db.Boolean, default=False)
     
     google_id = db.Column(db.String(120), unique=True, nullable=True)
-    google_username = db.Column(db.String(100), unique=True, nullable=True)
+    google_username = db.Column(db.String(100), unique=False, nullable=True)
 
     facebook_id = db.Column(db.String(100), unique=True, nullable=True)
-    facebook_username = db.Column(db.String(100), nullable=True)
+    facebook_username = db.Column(db.String(100), unique=False, nullable=True)
 
     # Một renter có nhiều booking và reviews
     bookings = db.relationship('Booking', backref='renter', lazy=True)
@@ -119,7 +119,12 @@ class Renter(UserMixin, db.Model):
     
     def is_owner(self):
         return self.temp_role == 'owner'
-
+    
+    @property
+    def display_name(self):
+        """Return the appropriate username for display regardless of login method"""
+        return self.username or self.google_username or self.facebook_username or "User"
+    
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
         
