@@ -37,11 +37,14 @@
                             {% set main_img = featured if featured else room.images[0] %}
 
                             <!-- Ảnh chính -->
-                            <img 
-                              id="mainImage"
-                              src="{{ url_for('static', filename=main_img.image_path) }}"
-                              class="img-fluid w-100"
-                              alt="Room {{ room.room_number }}">
+                            <div style="position: relative; width: 100%; padding-bottom: 56.25%; background-color: #f8f9fa;">
+                                <img 
+                                  id="mainImage"
+                                  src="{{ url_for('static', filename=main_img.image_path) }}"
+                                  class="img-fluid"
+                                  alt="Room {{ room.room_number }}"
+                                  style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+                            </div>
 
                             <!-- Mũi tên chuyển ảnh (nếu có nhiều hơn 1 ảnh) -->
                             {% if room.images|length > 1 %}

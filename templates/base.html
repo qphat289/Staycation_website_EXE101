@@ -82,7 +82,7 @@
                                 {% if current_user.avatar %}
                                     <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
                                 {% else %}
-                                    <img src="{{ url_for('static', filename='images/default-avatar.jpg') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                    <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
                                 {% endif %}
                                 <span>{{ current_user.display_name }}</span>
                             </a>
