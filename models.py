@@ -49,6 +49,8 @@ class Owner(UserMixin, db.Model):
     personal_id = db.Column(db.String(12), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     avatar = db.Column(db.String(200))
+    cccd_front_image = db.Column(db.String(200))
+    cccd_back_image = db.Column(db.String(200))
     temp_role = db.Column(db.String(20))
     # Một owner có nhiều homestays
     homestays = db.relationship('Homestay', backref='owner', lazy=True)
@@ -84,6 +86,8 @@ class Renter(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     experience_points = db.Column(db.Integer, default=0)
     avatar = db.Column(db.String(200))
+    cccd_front_image = db.Column(db.String(200))
+    cccd_back_image = db.Column(db.String(200))
     temp_role = db.Column(db.String(20))
     
     # Cài đặt thông báo
