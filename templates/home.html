@@ -4,23 +4,34 @@
 
 {% block content %}
 <div class="jumbotron bg-light p-5 rounded">
-    <h1 class="display-4" data-translate="find-perfect-homestay">Find Your Perfect Homestay</h1>
-    <p class="lead" data-translate="book-description">Book unique accommodations or list your property to earn extra income.</p>
-    <hr class="my-4">
-    <p data-translate="explore-description">Explore our selection of homestays or create an account to get started.</p>
-    <div class="d-flex gap-2">
-        <a class="btn btn-primary btn-lg" href="{{ url_for('renter.search') }}" role="button" data-translate="find-homestay-btn">Find a Homestay</a>
-        {% if not current_user.is_authenticated %}
-            <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.register') }}" role="button" data-translate="register">Sign Up Now</a>
-        {% elif current_user.is_owner() %}
-            <a class="btn btn-outline-primary btn-lg" href="{{ url_for('owner.add_homestay') }}" role="button" data-translate="add-homestay">List Your Homestay</a>
-        {% endif %}
-    </div>
+    {% if current_user.is_authenticated and current_user.is_owner() %}
+        <h1 class="display-4" data-translate="your-homestays">Your Homestays</h1>
+        <p class="lead" data-translate="manage-homestays-desc">Manage your homestays and view their status.</p>
+        <hr class="my-4">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('owner.add_homestay') }}" role="button" data-translate="add-homestay">Add New Homestay</a>
+    {% else %}
+        <h1 class="display-4" data-translate="find-perfect-homestay">Find Your Perfect Homestay</h1>
+        <p class="lead" data-translate="book-description">Book unique accommodations or list your property to earn extra income.</p>
+        <hr class="my-4">
+        <p data-translate="explore-description">Explore our selection of homestays or create an account to get started.</p>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary btn-lg" href="{{ url_for('renter.search') }}" role="button" data-translate="find-homestay-btn">Find a Homestay</a>
+            {% if not current_user.is_authenticated %}
+                <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.register') }}" role="button" data-translate="register">Sign Up Now</a>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 
-<!-- Featured Homestays -->
+<!-- Homestays Section -->
 <section class="mt-5">
-    <h2 class="mb-4" data-translate="featured-homestays">Featured Homestays</h2>
+    <h2 class="mb-4">
+        {% if current_user.is_authenticated and current_user.is_owner() %}
+            <span data-translate="your-homestays">Your Homestays</span>
+        {% else %}
+            <span data-translate="featured-homestays">Featured Homestays</span>
+        {% endif %}
+    </h2>
     <div class="row">
         {% for homestay in homestays %}
         <div class="col-md-4 mb-4">
@@ -40,7 +51,12 @@
                     </p>
                 </div>
                 <div class="card-footer">
-                    <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary" data-translate="view-details">View Details</a>
+                    {% if current_user.is_authenticated and current_user.is_owner() %}
+                        <a href="{{ url_for('owner.edit_homestay', id=homestay.id) }}" class="btn btn-primary" data-translate="edit">Edit</a>
+                        <a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}" class="btn btn-info" data-translate="manage-rooms">Manage Rooms</a>
+                    {% else %}
+                        <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary" data-translate="view-details">View Details</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

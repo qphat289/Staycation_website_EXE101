@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, session, send_from_directory, request, redirect
+from flask import Flask, render_template, session, send_from_directory, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
@@ -64,12 +64,12 @@ def create_app():
     # Home route
     @app.route('/')
     def home():
-        # Nếu người dùng đã đăng nhập và là owner thì chỉ hiển thị các homestay của họ
+        # Nếu người dùng đã đăng nhập và là owner thì hiển thị homestay của họ
         if current_user.is_authenticated and current_user.is_owner():
             homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
-        else:
-            # Retrieve featured homestays to display on the homepage
-            homestays = Homestay.query.limit(6).all()
+            return render_template('home.html', homestays=homestays)
+        # Retrieve featured homestays to display on the homepage
+        homestays = Homestay.query.limit(6).all()
         return render_template('home.html', homestays=homestays)
 
     # Route to handle image uploads
