@@ -62,7 +62,36 @@
                     {% endif %}
                 </div>
             </div>
+            
+            <!-- Location Card - Below Gallery -->
+            {% if room.homestay.address %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0" data-translate="location">Location</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-geo-alt-fill text-primary me-2" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <h5 class="mb-1">{{ room.homestay.title }}</h5>
+                            <p class="mb-0">{{ room.homestay.address }}, {{ room.homestay.district }}, {{ room.homestay.city }}</p>
+                        </div>
+                    </div>
+                    
+                    {% set map_address = room.homestay.address + ', ' + room.homestay.district + ', ' + room.homestay.city + ', Vietnam' %}
+                    {% set encoded_map_address = map_address|urlencode %}
+                    {% set directions_url = 'https://www.google.com/maps/search/?api=1&query=' + encoded_map_address %}
+                    
+                    <a href="{{ directions_url }}" 
+                    class="btn btn-primary d-block" 
+                    target="_blank"
+                    data-translate="view-on-map">
+                        <i class="bi bi-map me-2"></i> View on Google Maps
+                    </a>
+                </div>
+            </div>
         </div>
+        {% endif %}
 
         <!-- Right column: Room details -->
         <div class="col-lg-4">
@@ -94,7 +123,35 @@
     </div>
 </div>
 
-<!-- ✅ Khối JavaScript đã tách Jinja -->
+<!-- Fullscreen Modal for Gallery -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white">{{ room.homestay.title }} - <span data-translate="room">Room</span> {{ room.room_number }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex align-items-center justify-content-center p-0">
+                <img id="fullscreenImage" class="img-fluid" style="max-height: 90vh;" src="" alt="{{ room.homestay.title }} - Room {{ room.room_number }}">
+                
+                {% if room.images and room.images|length > 1 %}
+                <div class="position-absolute start-0 top-50 translate-middle-y p-3">
+                    <button class="btn btn-light rounded-circle" onclick="prevFullscreenImage()">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                </div>
+                <div class="position-absolute end-0 top-50 translate-middle-y p-3">
+                    <button class="btn btn-light rounded-circle" onclick="nextFullscreenImage()">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Gallery -->
 {% if room.images and room.images|length > 0 %}
 <script>
     var galleryImages = {{ room.images | map(attribute='image_path') | list | tojson }};
@@ -103,12 +160,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         var mainImage = document.getElementById('mainImage');
         var thumbnails = document.querySelectorAll('.thumbnail-img');
+        var fullscreenImage = document.getElementById('fullscreenImage');
 
         window.showImage = function(index) {
             currentImageIndex = index;
             mainImage.src = "{{ url_for('static', filename='') }}" + galleryImages[index];
 
-            // Cập nhật class "active" cho thumbnail
+            // Update "active" class for thumbnail
             thumbnails.forEach(thumb => thumb.classList.remove('active'));
             thumbnails[index].classList.add('active');
         };
@@ -124,13 +182,37 @@
         };
 
         window.openFullscreen = function() {
-            var fullscreenImage = document.getElementById('fullscreenImage');
             if (fullscreenImage) {
                 fullscreenImage.src = "{{ url_for('static', filename='') }}" + galleryImages[currentImageIndex];
             }
             var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
             imageModal.show();
         };
+        
+        // Add fullscreen navigation
+        window.nextFullscreenImage = function() {
+            currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
+            fullscreenImage.src = "{{ url_for('static', filename='') }}" + galleryImages[currentImageIndex];
+        };
+        
+        window.prevFullscreenImage = function() {
+            currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+            fullscreenImage.src = "{{ url_for('static', filename='') }}" + galleryImages[currentImageIndex];
+        };
+        
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (document.querySelector('.modal.show')) {
+                // Modal is open
+                if (e.key === 'ArrowRight') {
+                    nextFullscreenImage();
+                } else if (e.key === 'ArrowLeft') {
+                    prevFullscreenImage();
+                } else if (e.key === 'Escape') {
+                    document.querySelector('.modal.show .btn-close').click();
+                }
+            }
+        });
     });
 </script>
 {% endif %}
