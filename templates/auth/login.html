@@ -9,29 +9,33 @@
         <h4>Login to Your Account</h4>
       </div>
       <div class="card-body">
-        <form method="post">
+        <form method="post" autocomplete="off">
+          <!-- Trường ẩn để đánh lừa trình duyệt -->
+          <input type="text" style="display:none" name="fakeusernameremembered">
+          <input type="password" style="display:none" name="fakepasswordremembered">
+          
           <!-- Username/Email -->
           <div class="mb-3">
-            <label for="username" class="form-label">Username or Email</label>
+            <label for="login_username" class="form-label">Username or Email</label>
             <input type="text" 
                    name="username" 
-                   id="username" 
+                   id="login_username" 
                    class="form-control" 
                    required 
-                   autocomplete="username"
+                   autocomplete="new-username"
                    value="{{ form_data.username|default('') }}"
             >
           </div>
           
           <!-- Password -->
           <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
+            <label for="login_password" class="form-label">Password</label>
             <input type="password" 
                    name="password" 
-                   id="password" 
+                   id="login_password" 
                    class="form-control" 
                    required 
-                   autocomplete="current-password"
+                   autocomplete="new-password"
             >
           </div>
           
