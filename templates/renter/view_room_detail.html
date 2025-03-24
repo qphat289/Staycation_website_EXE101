@@ -166,7 +166,8 @@
         window.showImage = function(index) {
             currentImageIndex = index;
             mainImage.src = "{{ url_for('static', filename='') }}" + galleryImages[index];
-
+            
+            // Cập nhật class "active" cho thumbnail
             // Update "active" class for thumbnail
             thumbnails.forEach(thumb => thumb.classList.remove('active'));
             thumbnails[index].classList.add('active');
@@ -183,6 +184,7 @@
         };
 
         window.openFullscreen = function() {
+            var fullscreenImage = document.getElementById('fullscreenImage');
             if (fullscreenImage) {
                 fullscreenImage.src = "{{ url_for('static', filename='') }}" + galleryImages[currentImageIndex];
             }
