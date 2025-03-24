@@ -551,3 +551,156 @@ def switch_to_owner():
     db.session.commit()
     flash('Đã chuyển sang vai trò chủ nhà', 'success')
     return redirect(url_for('owner.dashboard'))
+
+@owner_bp.route('/profile', methods=['GET', 'POST'])
+@owner_required
+def profile():
+    if request.method == 'POST':
+        try:
+            # Update user info
+            current_user.full_name = request.form.get('full_name')
+            current_user.phone = request.form.get('phone')
+            current_user.email = request.form.get('email')
+            current_user.personal_id = request.form.get('personal_id')
+
+            # Handle avatar upload
+            if 'avatar' in request.files:
+                avatar = request.files['avatar']
+                print(f"Received file: {avatar.filename}")
+                
+                if avatar and avatar.filename != '':
+                    if not allowed_file(avatar.filename):
+                        flash("File type not allowed. Please use: png, jpg, jpeg, or gif", "danger")
+                        return redirect(url_for('owner.profile'))
+                    
+                    try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        print(f"Upload folder path: {upload_folder}")
+                        
+                        if not os.path.exists(upload_folder):
+                            print(f"Creating upload folder: {upload_folder}")
+                            os.makedirs(upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(avatar.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        print(f"Saving file to: {filepath}")
+                        
+                        # Save file
+                        avatar.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
+                        print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
+                        
+                        # Delete old avatar if exists
+                        if current_user.avatar:
+                            old_avatar_path = os.path.join(upload_folder, current_user.avatar)
+                            if os.path.exists(old_avatar_path):
+                                os.remove(old_avatar_path)
+                                print(f"Deleted old avatar: {old_avatar_path}")
+                        
+                        # Update the avatar field in the user's profile
+                        current_user.avatar = filename
+                        print(f"Updated user avatar in database: {filename}")
+                        
+                    except Exception as e:
+                        print(f"Error during file operations: {str(e)}")
+                        flash(f"Error saving avatar: {str(e)}", "danger")
+                        return redirect(url_for('owner.profile'))
+
+            # Handle CCCD upload
+            if 'cccd_front' in request.files:
+                cccd_front = request.files['cccd_front']
+                print(f"Received CCCD front file: {cccd_front.filename}")
+                
+                if cccd_front and cccd_front.filename != '':
+                    if not allowed_file(cccd_front.filename):
+                        flash("File type not allowed. Please use: png, jpg, jpeg, or gif", "danger")
+                        return redirect(url_for('owner.profile'))
+                    
+                    try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        
+                        if not os.path.exists(upload_folder):
+                            os.makedirs(upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(cccd_front.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        
+                        # Save file
+                        cccd_front.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
+                        # Delete old CCCD front if exists
+                        if current_user.cccd_front_image:
+                            old_cccd_path = os.path.join(upload_folder, current_user.cccd_front_image)
+                            if os.path.exists(old_cccd_path):
+                                os.remove(old_cccd_path)
+                        
+                        # Update the CCCD front field in the user's profile
+                        current_user.cccd_front_image = filename
+                        
+                    except Exception as e:
+                        print(f"Error during CCCD front file operations: {str(e)}")
+                        flash(f"Error saving CCCD front: {str(e)}", "danger")
+                        return redirect(url_for('owner.profile'))
+
+            if 'cccd_back' in request.files:
+                cccd_back = request.files['cccd_back']
+                print(f"Received CCCD back file: {cccd_back.filename}")
+                
+                if cccd_back and cccd_back.filename != '':
+                    if not allowed_file(cccd_back.filename):
+                        flash("File type not allowed. Please use: png, jpg, jpeg, or gif", "danger")
+                        return redirect(url_for('owner.profile'))
+                    
+                    try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        
+                        if not os.path.exists(upload_folder):
+                            os.makedirs(upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(cccd_back.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        
+                        # Save file
+                        cccd_back.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
+                        # Delete old CCCD back if exists
+                        if current_user.cccd_back_image:
+                            old_cccd_path = os.path.join(upload_folder, current_user.cccd_back_image)
+                            if os.path.exists(old_cccd_path):
+                                os.remove(old_cccd_path)
+                        
+                        # Update the CCCD back field in the user's profile
+                        current_user.cccd_back_image = filename
+                        
+                    except Exception as e:
+                        print(f"Error during CCCD back file operations: {str(e)}")
+                        flash(f"Error saving CCCD back: {str(e)}", "danger")
+                        return redirect(url_for('owner.profile'))
+
+            # Commit changes to the database
+            db.session.commit()
+            flash("Profile updated successfully!", "success")
+            
+        except Exception as e:
+            print(f"Error updating profile: {str(e)}")
+            db.session.rollback()
+            flash(f"Error updating profile: {str(e)}", "danger")
+            
+        return redirect(url_for('owner.profile'))
+
+    return render_template("user/profile.html")

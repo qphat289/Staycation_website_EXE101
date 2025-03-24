@@ -129,6 +129,48 @@
                                    value="{{ current_user.personal_id }}">
                         </div>
                         
+                        <!-- CCCD Upload -->
+                        <div class="mb-3">
+                            <label class="form-label" data-translate="cccd-upload">Upload CCCD</label>
+                            
+                            <!-- Mặt trước CCCD -->
+                            <div class="mb-3">
+                                <label for="cccd_front" class="form-label" data-translate="cccd-front">Mặt trước CCCD</label>
+                                {% if current_user.cccd_front_image %}
+                                    <div class="mb-2">
+                                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.cccd_front_image) }}" 
+                                             alt="CCCD Mặt trước" 
+                                             class="img-thumbnail" 
+                                             style="max-width: 200px;">
+                                    </div>
+                                {% endif %}
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="cccd_front" 
+                                       name="cccd_front" 
+                                       accept="image/*">
+                            </div>
+
+                            <!-- Mặt sau CCCD -->
+                            <div class="mb-3">
+                                <label for="cccd_back" class="form-label" data-translate="cccd-back">Mặt sau CCCD</label>
+                                {% if current_user.cccd_back_image %}
+                                    <div class="mb-2">
+                                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.cccd_back_image) }}" 
+                                             alt="CCCD Mặt sau" 
+                                             class="img-thumbnail" 
+                                             style="max-width: 200px;">
+                                    </div>
+                                {% endif %}
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="cccd_back" 
+                                       name="cccd_back" 
+                                       accept="image/*">
+                            </div>
+                            <small class="text-muted" data-translate="cccd-upload-help">Vui lòng upload ảnh rõ ràng cả mặt trước và mặt sau của CCCD</small>
+                        </div>
+                        
                         <!-- Avatar Upload -->
                         <div class="mb-3">
                             <label for="avatar" class="form-label" data-translate="change-avatar">Change Avatar</label>

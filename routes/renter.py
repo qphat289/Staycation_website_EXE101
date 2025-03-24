@@ -259,6 +259,87 @@ def profile():
                         flash(f"Error saving avatar: {str(e)}", "danger")
                         return redirect(url_for('renter.profile'))
 
+            # Handle CCCD upload
+            if 'cccd_front' in request.files:
+                cccd_front = request.files['cccd_front']
+                print(f"Received CCCD front file: {cccd_front.filename}")
+                
+                if cccd_front and cccd_front.filename != '':
+                    if not allowed_file(cccd_front.filename):
+                        flash("File type not allowed. Please use: png, jpg, jpeg, or gif", "danger")
+                        return redirect(url_for('renter.profile'))
+                    
+                    try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        
+                        if not os.path.exists(upload_folder):
+                            os.makedirs(upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(cccd_front.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        
+                        # Save file
+                        cccd_front.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
+                        # Delete old CCCD front if exists
+                        if current_user.cccd_front_image:
+                            old_cccd_path = os.path.join(upload_folder, current_user.cccd_front_image)
+                            if os.path.exists(old_cccd_path):
+                                os.remove(old_cccd_path)
+                        
+                        # Update the CCCD front field in the user's profile
+                        current_user.cccd_front_image = filename
+                        
+                    except Exception as e:
+                        print(f"Error during CCCD front file operations: {str(e)}")
+                        flash(f"Error saving CCCD front: {str(e)}", "danger")
+                        return redirect(url_for('renter.profile'))
+
+            if 'cccd_back' in request.files:
+                cccd_back = request.files['cccd_back']
+                print(f"Received CCCD back file: {cccd_back.filename}")
+                
+                if cccd_back and cccd_back.filename != '':
+                    if not allowed_file(cccd_back.filename):
+                        flash("File type not allowed. Please use: png, jpg, jpeg, or gif", "danger")
+                        return redirect(url_for('renter.profile'))
+                    
+                    try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        
+                        if not os.path.exists(upload_folder):
+                            os.makedirs(upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(cccd_back.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        
+                        # Save file
+                        cccd_back.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
+                        # Delete old CCCD back if exists
+                        if current_user.cccd_back_image:
+                            old_cccd_path = os.path.join(upload_folder, current_user.cccd_back_image)
+                            if os.path.exists(old_cccd_path):
+                                os.remove(old_cccd_path)
+                        
+                        # Update the CCCD back field in the user's profile
+                        current_user.cccd_back_image = filename
+                        
+                    except Exception as e:
+                        print(f"Error during CCCD back file operations: {str(e)}")
+                        flash(f"Error saving CCCD back: {str(e)}", "danger")
+                        return redirect(url_for('renter.profile'))
+
             # Commit changes to the database
             db.session.commit()
             flash("Profile updated successfully!", "success")
