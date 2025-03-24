@@ -34,12 +34,24 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('home') }}" data-translate="home">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('renter.search') }}" data-translate="search">Search</a>
-                    </li>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_owner() %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('owner.dashboard') }}" data-translate="owner-dashboard">Owner Dashboard</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('home') }}" data-translate="home">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('renter.search') }}" data-translate="search">Search</a>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('home') }}" data-translate="home">Home</a>
+                        </li>
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav align-items-center">
                     {% if current_user.is_authenticated %}
@@ -49,7 +61,9 @@
                             </li>
                         {% elif current_user.is_owner() %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('owner.dashboard') }}" data-translate="owner-dashboard">Owner Dashboard</a>
+                                <a class="nav-link" href="{{ url_for('renter.switch_to_renter') }}">
+                                    <i class="bi bi-arrow-repeat"></i> <span data-translate="switch-to-renter">Switch to Renter</span>
+                                </a>
                             </li>
                         {% else %}
                             <li class="nav-item">
