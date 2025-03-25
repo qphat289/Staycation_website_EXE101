@@ -2,10 +2,10 @@
    0. NEW COLOR SCHEME
    ========================= */
    :root {
-    /* Tông màu be + nâu nhạt */
-    --primary-color: #e9c77f;       /* Màu chủ đạo (be nâu nhạt) */
-    --primary-light: #e6cb90;       /* Màu nhạt hơn */
-    --primary-dark: #a88f54;        /* Màu đậm hơn */
+    /* Thay đổi sang bảng màu vàng */
+    --primary-color: #e6bb5e;       /* Màu chủ đạo (vàng) */
+    --primary-light: #f0d08a;       /* Màu nhạt hơn */
+    --primary-dark: #c2993a;        /* Màu đậm hơn */
     --text-primary: #333333;        /* Màu chữ chính */
     --text-secondary: #666666;      /* Màu chữ phụ */
     --border-color: #e0e0e0;        /* Màu viền */
@@ -65,6 +65,7 @@ body {
     flex-direction: column;
     color: var(--text-primary);
     background-color: var(--background-light);
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 }
 
 main {
@@ -74,44 +75,52 @@ main {
 /* 1.2 Card Effects */
 .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
 }
 
 /* 1.3 Button Styling */
 .btn-primary {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    color: var(--white);
+    color: #000000;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
 }
 
 .btn-primary:hover {
     background-color: var(--primary-dark);
     border-color: var(--primary-dark);
-    color: var(--white);
+    color: #000000;
 }
 
 .btn-outline-primary {
     color: var(--primary-color);
     border-color: var(--primary-color);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
 }
 
 .btn-outline-primary:hover {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    color: var(--white);
+    color: #000000;
 }
 
 /* 1.4 Navbar */
 /* Nếu bạn dùng .navbar-dark.bg-primary => đổi sang var(--primary-color) */
 .navbar-dark.bg-primary {
     background-color: var(--primary-color) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 /* 1.5 Form Controls */
@@ -535,4 +544,86 @@ footer {
 
 .avatar-circle {
     border-radius: 50% !important;
+}
+
+/* Flag Image Styles - Improved */
+.flag-img {
+    width: 28px;
+    height: 20px;
+    border-radius: 2px;
+    object-fit: cover;
+    vertical-align: middle;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    display: inline-block;
+}
+
+#languageToggle .flag-img {
+    margin-right: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.language-option .flag-img {
+    margin-right: 10px;
+}
+
+/* Language Button Improved Styles */
+#languageToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 6px 14px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#languageToggle:hover {
+    transform: scale(1.05);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+#languageToggle:active {
+    transform: scale(0.98);
+}
+
+#languageToggle span {
+    font-weight: 500;
+}
+
+/* Language Dropdown Enhanced */
+.language-dropdown-menu {
+    min-width: 200px;
+    max-width: 250px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    border: none;
+    padding: 15px;
+    background-color: white;
+    z-index: 1050;
+}
+
+.language-option {
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.language-option:last-child {
+    margin-bottom: 0;
+}
+
+.language-option:hover {
+    background-color: #f8f9fa;
+    transform: translateX(3px);
+}
+
+.language-option.active {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    pointer-events: none;
 }

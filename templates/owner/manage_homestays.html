@@ -15,7 +15,6 @@
       <tr>
         <th>Title</th>
         <th>City</th>
-        <th>Price / Hour</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -24,20 +23,21 @@
       <tr>
         <td>{{ homestay.title }}</td>
         <td>{{ homestay.city }}</td>
-        <td>${{ homestay.price_per_hour }}</td>
         <td>
-          <a href="{{ url_for('owner.edit_homestay', id=homestay.id) }}"
-             class="btn btn-warning btn-sm">Edit</a>
-          <a href="{{ url_for('owner.delete_homestay', id=homestay.id) }}"
-             class="btn btn-danger btn-sm"
-             onclick="return confirm('Are you sure you want to delete this homestay?');">
-             Delete
-          <a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}" class="btn btn-primary">Manage Rooms</a>
-
-          
-          </a>
+          <div class="btn-group" role="group">
+            <a href="{{ url_for('owner.edit_homestay', id=homestay.id) }}"
+               class="btn btn-warning btn-sm">Edit</a>
+            <a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}" 
+               class="btn btn-primary btn-sm">Manage Rooms</a>
+            <a href="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" 
+               class="btn btn-success btn-sm">Đặt phòng</a>
+            <a href="{{ url_for('owner.delete_homestay', id=homestay.id) }}"
+               class="btn btn-danger btn-sm"
+               onclick="return confirm('Are you sure you want to delete this homestay?');">
+               Delete
+            </a>
+          </div>
         </td>
-        
       </tr>
     {% endfor %}
     </tbody>

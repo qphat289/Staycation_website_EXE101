@@ -2,80 +2,138 @@
 {% block title %}All Bookings{% endblock %}
 
 {% block content %}
-<h2>All Bookings</h2>
-<hr>
-{% if bookings %}
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Homestay</th>
-        <th>Room</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for booking in bookings %}
-        <tr>
-          <td>{{ booking.id }}</td>
-          <td>{{ booking.homestay.title }}</td>
-          <td>
-            {% if booking.room %}
-              Room #{{ booking.room.room_number }}
-            {% else %}
-              <em>No room assigned</em>
-            {% endif %}
-          </td>
-          <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
-          <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
-          
-          <!-- Hiển thị trạng thái với badge màu -->
-          <td>
-            {% if booking.status == 'pending' %}
-              <span class="badge bg-warning">Pending</span>
-            {% elif booking.status == 'confirmed' %}
-              <span class="badge bg-primary">Confirmed</span>
-            {% elif booking.status == 'active' %}
-              <span class="badge bg-info">Active</span>
-            {% elif booking.status == 'completed' %}
-              <span class="badge bg-success">Completed</span>
-            {% elif booking.status == 'cancelled' %}
-              <span class="badge bg-danger">Cancelled</span>
-            {% elif booking.status == 'rejected' %}
-              <span class="badge bg-danger">Rejected</span>
-            {% else %}
-              <span class="badge bg-secondary">{{ booking.status|capitalize }}</span>
-            {% endif %}
-          </td>
-          
-          <!-- Các nút hành động -->
-          <td>
-            {% if booking.status == 'pending' %}
-              <!-- Nút Confirm -->
-              <a href="{{ url_for('owner.confirm_booking', id=booking.id) }}"
-                 class="btn btn-success btn-sm me-1">
-                Confirm
-              </a>
-              <!-- Nút Reject -->
-              <a href="{{ url_for('owner.reject_booking', id=booking.id) }}"
-                 class="btn btn-danger btn-sm">
-                Reject
-              </a>
-            {% endif %}
-            <!-- Luôn hiển thị nút Details -->
-            <a href="{{ url_for('owner.booking_details', booking_id=booking.id) }}"
-               class="btn btn-info btn-sm ms-1">
-              Details
-            </a>
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-{% else %}
-  <p>No bookings found.</p>
-{% endif %}
+<div class="container-fluid mt-4">
+  <h2 class="mb-3">All Bookings</h2>
+  <hr>
+  {% if bookings %}
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Homestay Bookings</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-dark">
+              <tr>
+                <th class="align-middle" style="width: 3%">ID</th>
+                <th class="align-middle" style="width: 15%">Người đặt</th>
+                <th class="align-middle" style="width: 15%">Homestay</th>
+                <th class="align-middle" style="width: 8%">Room</th>
+                <th class="align-middle" style="width: 10%">Ngày Check-in</th>
+                <th class="align-middle" style="width: 7%">Giờ Check-in</th>
+                <th class="align-middle" style="width: 10%">Ngày Check-out</th>
+                <th class="align-middle" style="width: 7%">Giờ Check-out</th>
+                <th class="align-middle" style="width: 10%">Status</th>
+                <th class="align-middle" style="width: 15%">Actions</th>
+              </tr>
+            </thead>
+            <tbody style="white-space: nowrap;">
+              {% for booking in bookings %}
+                <tr>
+                  <td class="align-middle">{{ booking.id }}</td>
+                  <td class="align-middle">{{ booking.renter.full_name }}</td>
+                  <td class="align-middle">{{ booking.homestay.title }}</td>
+                  <td class="align-middle">
+                    {% if booking.room %}
+                      Room {{ booking.room.room_number }}
+                    {% else %}
+                      <em>No room assigned</em>
+                    {% endif %}
+                  </td>
+                  <td class="align-middle">{{ booking.start_time.strftime('%d-%m-%Y') }}</td>
+                  <td class="align-middle">{{ booking.start_time.strftime('%H:%M') }}</td>
+                  <td class="align-middle">{{ booking.end_time.strftime('%d-%m-%Y') }}</td>
+                  <td class="align-middle">{{ booking.end_time.strftime('%H:%M') }}</td>
+                  
+                  <!-- Hiển thị trạng thái với badge màu -->
+                  <td class="align-middle">
+                    {% if booking.status == 'pending' %}
+                      <span class="badge bg-warning fs-6 w-100 py-2">Pending</span>
+                    {% elif booking.status == 'confirmed' %}
+                      <span class="badge bg-primary fs-6 w-100 py-2">Confirmed</span>
+                    {% elif booking.status == 'active' %}
+                      <span class="badge bg-info fs-6 w-100 py-2">Active</span>
+                    {% elif booking.status == 'completed' %}
+                      <span class="badge bg-success fs-6 w-100 py-2">Completed</span>
+                    {% elif booking.status == 'cancelled' %}
+                      <span class="badge bg-danger fs-6 w-100 py-2">Cancelled</span>
+                    {% elif booking.status == 'rejected' %}
+                      <span class="badge bg-danger fs-6 w-100 py-2">Rejected</span>
+                    {% else %}
+                      <span class="badge bg-secondary fs-6 w-100 py-2">{{ booking.status|capitalize }}</span>
+                    {% endif %}
+                  </td>
+                  
+                  <!-- Các nút hành động -->
+                  <td class="align-middle">
+                    {% if booking.status == 'pending' %}
+                      <div class="d-flex flex-column align-items-center gap-2">
+                        <div class="d-flex justify-content-center w-100 gap-1">
+                          <!-- Nút Confirm -->
+                          <a href="{{ url_for('owner.confirm_booking', id=booking.id) }}"
+                            class="btn btn-success btn-sm" style="width: 90px;">
+                            <i class="bi bi-check-circle"></i> Confirm
+                          </a>
+                          <!-- Nút Reject -->
+                          <a href="{{ url_for('owner.reject_booking', id=booking.id) }}"
+                            class="btn btn-danger btn-sm" style="width: 90px;">
+                            <i class="bi bi-x-circle"></i> Reject
+                          </a>
+                        </div>
+                        <!-- Nút Details -->
+                        <a href="{{ url_for('owner.booking_details', booking_id=booking.id) }}"
+                          class="btn btn-info btn-sm" style="width: 90px;">
+                          <i class="bi bi-info-circle"></i> Details
+                        </a>
+                      </div>
+                    {% else %}
+                      <!-- Chỉ hiển thị nút Details -->
+                      <a href="{{ url_for('owner.booking_details', booking_id=booking.id) }}"
+                        class="btn btn-info btn-sm" style="width: 90px;">
+                        <i class="bi bi-info-circle"></i> Details
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <p class="mb-0">Chưa có booking nào.</p>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  .table th, .table td {
+    vertical-align: middle !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  /* Đảm bảo bảng đủ rộng */
+  @media (min-width: 992px) {
+    .container-fluid {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+  
+  /* Định dạng nút chung */
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+  }
+</style>
 {% endblock %}

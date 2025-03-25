@@ -20,7 +20,14 @@
   <p>No rooms found.</p>
 {% endif %}
 
-<a href="{{ url_for('owner.add_room', homestay_id=homestay.id) }}" class="btn btn-success">Add New Room</a>
+<div class="d-flex gap-2 mt-3">
+  <a href="{{ url_for('owner.add_room', homestay_id=homestay.id) }}" class="btn btn-success">
+    <i class="bi bi-plus-circle"></i> Add New Room
+  </a>
+  <a href="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" class="btn btn-primary">
+    <i class="bi bi-calendar-plus"></i> Đặt phòng cho khách
+  </a>
+</div>
 
 <style>
   .floor-container {

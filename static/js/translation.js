@@ -21,6 +21,9 @@ const translations = {
         'find-homestay-btn': 'Find a Homestay',
         'featured-homestays': 'Featured Homestays',
         'view-details': 'View Details',
+        'your-homestays': 'Your Homestays',
+        'manage-homestays-desc': 'Manage your homestays and view their status.',
+        'view-all': 'View All',
         'email': 'Email',
         'phone': 'Phone',
         'copyright': '© 2025 Homestay Booking - School Project',
@@ -134,7 +137,15 @@ const translations = {
         'no-bookings': 'You don\'t have any bookings yet.',
         'appearance-settings': 'Appearance Settings',
         'color-theme': 'Color Theme',
-        'dark-mode': 'Dark Mode'
+        'dark-mode': 'Dark Mode',
+        'login-to-account': 'Login to Your Account',
+        'username-or-email': 'Username or Email',
+        'password': 'Password',
+        'remember-me': 'Remember me',
+        'or': 'OR',
+        'login-with-facebook': 'Login with Facebook',
+        'login-with-google': 'Login with Google',
+        'no-account': 'Don\'t have an account?'
     },
     vi: {
         'home': 'Trang chủ',
@@ -158,6 +169,9 @@ const translations = {
         'find-homestay-btn': 'Tìm Homestay',
         'featured-homestays': 'Homestay Nổi Bật',
         'view-details': 'Xem Chi Tiết',
+        'your-homestays': 'Homestay Của Bạn',
+        'manage-homestays-desc': 'Quản lý homestay và xem trạng thái của chúng.',
+        'view-all': 'Xem Tất Cả',
         'email': 'Email',
         'phone': 'Điện thoại',
         'copyright': '© 2025 Đặt Phòng Homestay - Dự Án Học Tập',
@@ -271,26 +285,159 @@ const translations = {
         'no-bookings': 'Bạn chưa có đặt phòng nào.',
         'appearance-settings': 'Cài đặt giao diện',
         'color-theme': 'Chủ đề màu',
-        'dark-mode': 'Chế độ tối'
+        'dark-mode': 'Chế độ tối',
+        'login-to-account': 'Đăng nhập vào tài khoản của bạn',
+        'username-or-email': 'Tên đăng nhập hoặc Email',
+        'password': 'Mật khẩu',
+        'remember-me': 'Ghi nhớ đăng nhập',
+        'or': 'HOẶC',
+        'login-with-facebook': 'Đăng nhập bằng Facebook',
+        'login-with-google': 'Đăng nhập bằng Google',
+        'no-account': 'Bạn chưa có tài khoản?'
     }
 };
 
-let currentLang = localStorage.getItem('language') || 'en';
+// Thiết lập ngôn ngữ mặc định
+let currentLang = localStorage.getItem('language') || 'vi';
 
-function toggleLanguage() {
-    currentLang = currentLang === 'en' ? 'vi' : 'en';
-    localStorage.setItem('language', currentLang);
-    updateContent();
-}
-
+// Hàm định dạng số
 function formatNumber(number, decimals = 2) {
     return Number(parseFloat(number)).toFixed(decimals);
 }
 
+// Thêm các tùy chọn ngôn ngữ
+const languages = [
+    { 
+        code: 'vi', 
+        name: 'Việt Nam', 
+        flag: '<img src="/static/images/flags/vn.svg" alt="VN" class="flag-img">' 
+    },
+    { 
+        code: 'en', 
+        name: 'Global (English)', 
+        flag: '<img src="/static/images/flags/world.svg" alt="Global" class="flag-img">' 
+    }
+];
+
+// Thêm hàm để hiển thị menu ngôn ngữ
+function showLanguageMenu() {
+    // Kiểm tra xem menu đã tồn tại chưa
+    let existingMenu = document.getElementById('languageDropdownMenu');
+    if (existingMenu) {
+        existingMenu.remove();
+        return;
+    }
+
+    // Tạo menu dropdown
+    const menu = document.createElement('div');
+    menu.id = 'languageDropdownMenu';
+    menu.className = 'language-dropdown-menu';
+    menu.style.position = 'absolute';
+    menu.style.backgroundColor = 'white';
+    menu.style.border = '1px solid #ddd';
+    menu.style.borderRadius = '10px';
+    menu.style.padding = '15px';
+    menu.style.zIndex = '1050';
+    menu.style.boxShadow = '0 5px 20px rgba(0,0,0,0.15)';
+
+    languages.forEach(lang => {
+        const option = document.createElement('div');
+        option.className = 'language-option';
+        option.style.padding = '12px 15px';
+        option.style.cursor = 'pointer';
+        option.style.borderRadius = '8px';
+        option.style.display = 'flex';
+        option.style.alignItems = 'center';
+        option.style.marginBottom = '8px';
+        
+        // Highlight the current language
+        if (currentLang === lang.code) {
+            option.classList.add('active');
+            option.style.backgroundColor = '#f0f0f0';
+            option.style.fontWeight = 'bold';
+        }
+        
+        option.innerHTML = `${lang.flag} ${lang.name}`;
+        
+        option.addEventListener('mouseover', () => {
+            if (currentLang !== lang.code) {
+                option.style.backgroundColor = '#f8f9fa';
+                option.style.transform = 'translateX(3px)';
+            }
+        });
+        
+        option.addEventListener('mouseout', () => {
+            if (currentLang !== lang.code) {
+                option.style.backgroundColor = 'transparent';
+                option.style.transform = 'translateX(0)';
+            }
+        });
+        
+        option.addEventListener('click', () => {
+            setLanguage(lang.code);
+            menu.remove();
+        });
+        
+        menu.appendChild(option);
+    });
+
+    // Định vị menu dưới nút
+    const langBtn = document.getElementById('languageToggle');
+    if (!langBtn) return;
+    
+    const rect = langBtn.getBoundingClientRect();
+    menu.style.top = (rect.bottom + window.scrollY) + 'px';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+
+    // Thêm vào body
+    document.body.appendChild(menu);
+
+    // Thêm sự kiện đóng menu khi click ra ngoài
+    document.addEventListener('click', function closeMenu(e) {
+        if (!menu.contains(e.target) && e.target !== langBtn) {
+            menu.remove();
+            document.removeEventListener('click', closeMenu);
+        }
+    });
+}
+
+// Hàm đặt ngôn ngữ
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('language', lang);
+    updateContent();
+    updateLanguageButton();
+}
+
+// Hàm cập nhật nút chuyển đổi ngôn ngữ
+function updateLanguageButton() {
+    const langBtn = document.getElementById('languageToggle');
+    if (!langBtn) return;
+    
+    const lang = languages.find(l => l.code === currentLang);
+    if (lang) {
+        if (currentLang === 'en') {
+            langBtn.innerHTML = `<img src="/static/images/flags/world.svg" alt="Global" class="flag-img"><span>EN</span>`;
+        } else {
+            langBtn.innerHTML = `${lang.flag} <span>${currentLang.toUpperCase()}</span>`;
+        }
+    }
+}
+
+// Cập nhật hàm toggleLanguage để hiển thị menu
+function toggleLanguage(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    showLanguageMenu();
+}
+
+// Hàm cập nhật nội dung dựa trên ngôn ngữ
 function updateContent() {
     document.querySelectorAll('[data-translate]').forEach(element => {
         const key = element.getAttribute('data-translate');
-        if (translations[currentLang][key]) {
+        if (translations[currentLang] && translations[currentLang][key]) {
             let text = translations[currentLang][key];
             
             if (element.hasAttribute('data-xp')) {
@@ -303,13 +450,29 @@ function updateContent() {
         }
     });
     
-    const langBtn = document.getElementById('languageToggle');
-    if (langBtn) {
-        langBtn.textContent = currentLang === 'en' ? 'VI' : 'EN';
+    // Cập nhật thuộc tính lang của HTML
+    const htmlRoot = document.getElementById('htmlRoot');
+    if (htmlRoot) {
+        htmlRoot.setAttribute('lang', currentLang);
     }
+    
+    // Cập nhật nút ngôn ngữ
+    updateLanguageButton();
 }
 
-// Initialize translation on page load
+// Khởi tạo ngôn ngữ khi trang được tải
 document.addEventListener('DOMContentLoaded', () => {
+    // Đảm bảo ngôn ngữ mặc định là tiếng Việt khi tải trang đầu tiên
+    if (!localStorage.getItem('language')) {
+        localStorage.setItem('language', 'vi');
+        currentLang = 'vi';
+    }
     updateContent();
-}); 
+});
+
+// Gọi updateContent ngay khi có thể
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateContent);
+} else {
+    updateContent();
+}

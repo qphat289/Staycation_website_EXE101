@@ -2,9 +2,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, Homestay, Room, Booking, RoomImage
+from models import db, Homestay, Room, Booking, RoomImage, Renter
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from PIL import Image
 import io
 import os
@@ -17,7 +17,7 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Decorator to ensure user is an owner
+# Custom decorator to ensure user is an owner
 def owner_required(f):
     @login_required
     def decorated_function(*args, **kwargs):
@@ -148,7 +148,7 @@ def delete_homestay(id):
     
     # Ensure the current user owns this homestay
     if homestay.owner_id != current_user.id:
-        flash('You do not have permission to delete this homestay', 'danger')
+        flash('Bạn không có quyền xóa homestay này', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     # Delete image file if it exists
@@ -161,7 +161,7 @@ def delete_homestay(id):
     db.session.delete(homestay)
     db.session.commit()
     
-    flash('Homestay deleted successfully', 'success')
+    flash('Đã xóa homestay thành công!', 'success')
     return redirect(url_for('owner.dashboard'))
 
 
@@ -169,13 +169,14 @@ def delete_homestay(id):
 @owner_required
 def view_bookings():
     """View all bookings for the owner's homestays."""
+    # Lấy tất cả homestay của owner hiện tại
     homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
     
-    # Gather all bookings for these homestays
-    bookings = []
-    for h in homestays:
-        for b in h.bookings:
-            bookings.append(b)
+    # Lấy ID của tất cả homestay thuộc về owner
+    homestay_ids = [h.id for h in homestays]
+    
+    # Query booking dựa trên homestay_id để đảm bảo chỉ lấy booking của owner
+    bookings = Booking.query.filter(Booking.homestay_id.in_(homestay_ids)).all()
     
     return render_template('owner/view_bookings.html', bookings=bookings)
 
@@ -185,6 +186,12 @@ def view_bookings():
 @login_required
 def add_room(homestay_id):
     homestay = Homestay.query.get_or_404(homestay_id)
+    
+    # Kiểm tra quyền sở hữu
+    if homestay.owner_id != current_user.id:
+        flash('Bạn không có quyền thêm phòng vào homestay này.', 'danger')
+        return redirect(url_for('owner.dashboard'))
+    
     if request.method == 'POST':
         room_number = request.form['room_number']
         floor_number = request.form['floor_number']  # Get Floor Number
@@ -236,7 +243,7 @@ def add_room(homestay_id):
                 db.session.add(gallery_image)
 
         db.session.commit()
-        flash("Room added successfully with images!", "success")
+        flash("Đã thêm phòng thành công!", "success")
         return redirect(url_for('owner.dashboard'))
 
     return render_template('owner/add_room.html', homestay=homestay)
@@ -246,6 +253,11 @@ def add_room(homestay_id):
 @owner_required
 def add_room_images(room_id):
     room = Room.query.get_or_404(room_id)
+    
+    # Kiểm tra quyền sở hữu
+    if room.homestay.owner_id != current_user.id:
+        flash('Bạn không có quyền thêm ảnh cho phòng này.', 'danger')
+        return redirect(url_for('owner.dashboard'))
     
     if request.method == 'POST':
         images = request.files.getlist('images')
@@ -293,7 +305,7 @@ def add_room_images(room_id):
                     continue
                     
         db.session.commit()
-        flash("Images added successfully to the room gallery!", "success")
+        flash("Ảnh đã được thêm thành công vào thư viện phòng!", "success")
         return redirect(url_for('owner.add_room_images', room_id=room.id))
     
     # Get existing images for this room
@@ -303,14 +315,13 @@ def add_room_images(room_id):
 
 @owner_bp.route('/room-image/<int:image_id>/set-featured')
 @owner_required
-def set_featured_image(image_id):
+def set_room_image_as_featured(image_id):
     image = RoomImage.query.get_or_404(image_id)
     room = Room.query.get_or_404(image.room_id)
-    homestay = room.homestay
     
-    # Check if the current user owns this homestay
-    if homestay.owner_id != current_user.id:
-        flash('You do not have permission to modify this room', 'danger')
+    # Kiểm tra quyền sở hữu
+    if room.homestay.owner_id != current_user.id:
+        flash('Bạn không có quyền chỉnh sửa ảnh của phòng này.', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     # Clear featured status from all images for this room
@@ -321,42 +332,7 @@ def set_featured_image(image_id):
     image.is_featured = True
     db.session.commit()
     
-    flash('Featured image updated successfully', 'success')
-    return redirect(url_for('owner.add_room_images', room_id=room.id))
-
-@owner_bp.route('/manage-rooms/<int:homestay_id>')
-@login_required
-def manage_rooms(homestay_id):
-    homestay = Homestay.query.get_or_404(homestay_id)
-    rooms = Room.query.filter_by(homestay_id=homestay_id).order_by(Room.floor_number, Room.room_number).all()
-
-    # Group rooms by floor
-    rooms_by_floor = {}
-    for room in rooms:
-        floor = room.floor_number
-        if floor not in rooms_by_floor:
-            rooms_by_floor[floor] = []
-        rooms_by_floor[floor].append(room)
-
-    # Pass the dictionary to the template
-    return render_template('owner/manage_rooms.html', homestay=homestay, rooms_by_floor=rooms_by_floor)
-
-
-@owner_bp.route('/room-image/<int:image_id>/set-featured')
-@owner_required
-def set_room_image_as_featured(image_id):
-    image = RoomImage.query.get_or_404(image_id)
-    room = Room.query.get_or_404(image.room_id)
-    
-    # Clear featured status from all images for this room
-    for img in RoomImage.query.filter_by(room_id=room.id).all():
-        img.is_featured = False
-    
-    # Set this image as featured
-    image.is_featured = True
-    db.session.commit()
-    
-    flash('Featured image updated successfully', 'success')
+    flash('Đã cập nhật ảnh đại diện thành công!', 'success')
     return redirect(url_for('owner.add_room_images', room_id=room.id))
 
 @owner_bp.route('/room-image/<int:image_id>/delete')
@@ -364,6 +340,14 @@ def set_room_image_as_featured(image_id):
 def delete_room_image(image_id):
     image = RoomImage.query.get_or_404(image_id)
     room_id = image.room_id
+    
+    # Lấy thông tin phòng để kiểm tra quyền sở hữu
+    room = Room.query.get_or_404(room_id)
+    
+    # Kiểm tra quyền sở hữu
+    if room.homestay.owner_id != current_user.id:
+        flash('Bạn không có quyền xóa ảnh của phòng này.', 'danger')
+        return redirect(url_for('owner.dashboard'))
     
     # Delete the image file
     if image.image_path:
@@ -385,7 +369,7 @@ def delete_room_image(image_id):
             next_image.is_featured = True
             db.session.commit()
     
-    flash('Image deleted successfully', 'success')
+    flash('Đã xóa ảnh thành công!', 'success')
     return redirect(url_for('owner.add_room_images', room_id=room_id))
 
 
@@ -394,6 +378,11 @@ def delete_room_image(image_id):
 def edit_room(room_id):
     # 1) Fetch the room by ID
     room = Room.query.get_or_404(room_id)
+    
+    # Kiểm tra quyền sở hữu phòng
+    if room.homestay.owner_id != current_user.id:
+        flash("Bạn không có quyền chỉnh sửa phòng này.", "danger")
+        return redirect(url_for('owner.dashboard'))
     
     if request.method == 'POST':
         # 2) Update fields from form
@@ -419,7 +408,7 @@ def edit_room(room_id):
                 )
                 db.session.add(new_image)
         db.session.commit()
-        flash('Room updated successfully!', 'success')
+        flash('Phòng đã được cập nhật thành công!', 'success')
         return redirect(url_for('owner.owner_room_detail', room_id=room.id))
     
     # Render a form with existing room data
@@ -437,11 +426,10 @@ def owner_dashboard():
 def owner_room_detail(room_id):
     room = Room.query.get_or_404(room_id)
     
-    # Optionally confirm that current_user is the owner of this homestay
-    # e.g., if your Homestay has an owner_id
-    # if room.homestay.owner_id != current_user.id:
-    #     flash("You do not have permission to edit this room.", "danger")
-    #     return redirect(url_for('owner.owner_dashboard'))
+    # Kiểm tra quyền sở hữu - Owner chỉ xem được phòng của mình
+    if room.homestay.owner_id != current_user.id:
+        flash("Bạn không có quyền xem hoặc chỉnh sửa phòng này.", "danger")
+        return redirect(url_for('owner.dashboard'))
 
     if request.method == 'POST':
         # Handle form submission to edit
@@ -471,7 +459,7 @@ def owner_room_detail(room_id):
                 db.session.add(new_image)
 
         db.session.commit()
-        flash("Room updated successfully!", "success")
+        flash("Phòng đã được cập nhật thành công!", "success")
         return redirect(url_for('owner.owner_room_detail', room_id=room.id))
 
     # For GET requests, display the edit form
@@ -484,14 +472,14 @@ def confirm_booking(id):
     
     # Ensure this booking belongs to one of the current owner's homestays
     if booking.homestay.owner_id != current_user.id:
-        flash('You do not have permission to confirm this booking.', 'danger')
-        return redirect(url_for('owner.view_bookings'))
+        flash('Bạn không có quyền xác nhận đặt phòng này.', 'danger')
+        return redirect(url_for('owner.dashboard'))
 
     # Update the booking status
     booking.status = 'confirmed'
     db.session.commit()
 
-    flash('Booking confirmed successfully!', 'success')
+    flash('Đặt phòng đã được xác nhận thành công!', 'success')
     return redirect(url_for('owner.view_bookings'))
 
 @owner_bp.route('/reject-booking/<int:id>')
@@ -501,14 +489,14 @@ def reject_booking(id):
     
     # Ensure this booking belongs to one of the current owner's homestays
     if booking.homestay.owner_id != current_user.id:
-        flash('You do not have permission to reject this booking.', 'danger')
-        return redirect(url_for('owner.view_bookings'))
+        flash('Bạn không có quyền từ chối đặt phòng này.', 'danger')
+        return redirect(url_for('owner.dashboard'))
 
     # Update the booking status
     booking.status = 'rejected'
     db.session.commit()
 
-    flash('Booking rejected.', 'warning')
+    flash('Đã từ chối đặt phòng.', 'warning')
     return redirect(url_for('owner.view_bookings'))
 
 # @owner_bp.route('/mark-completed/<int:id>')
@@ -535,8 +523,8 @@ def booking_details(booking_id):
     
     # Ensure this booking belongs to one of the current owner's homestays
     if booking.homestay.owner_id != current_user.id:
-        flash('You do not have permission to view this booking.', 'danger')
-        return redirect(url_for('owner.view_bookings'))
+        flash('Bạn không có quyền xem thông tin đặt phòng này.', 'danger')
+        return redirect(url_for('owner.dashboard'))
 
     return render_template('owner/booking_details.html', booking=booking)
 
@@ -550,7 +538,7 @@ def switch_to_owner():
     current_user.temp_role = 'owner'
     db.session.commit()
     flash('Đã chuyển sang vai trò chủ nhà', 'success')
-    return redirect(url_for('owner.dashboard'))
+    return redirect(url_for('home'))
 
 @owner_bp.route('/profile', methods=['GET', 'POST'])
 @owner_required
@@ -704,3 +692,134 @@ def profile():
         return redirect(url_for('owner.profile'))
 
     return render_template("user/profile.html")
+
+@owner_bp.route('/book-room/<int:homestay_id>', methods=['GET', 'POST'])
+@owner_required
+def book_room(homestay_id):
+    """Allow owner to book a room for themselves at their homestay"""
+    homestay = Homestay.query.get_or_404(homestay_id)
+    
+    # Ensure this homestay belongs to the current owner
+    if homestay.owner_id != current_user.id:
+        flash("Bạn chỉ có thể đặt phòng trong homestay của chính mình.", "danger")
+        return redirect(url_for('owner.dashboard'))
+    
+    # Get room_id from query string (or form data)
+    room_id = request.args.get('room_id') or request.form.get('room_id')
+    
+    if request.method == 'POST':
+        if not room_id:
+            flash("Vui lòng chọn phòng.", "warning")
+            return redirect(url_for('owner.book_room', homestay_id=homestay.id))
+            
+        room = Room.query.get_or_404(room_id)
+        
+        # Verify the room belongs to this homestay and owner
+        if room.homestay_id != homestay.id:
+            flash("Lựa chọn phòng không hợp lệ.", "danger")
+            return redirect(url_for('owner.book_room', homestay_id=homestay.id))
+            
+        # Double check owner ownership
+        if room.homestay.owner_id != current_user.id:
+            flash("Bạn chỉ có thể đặt phòng trong homestay của chính mình.", "danger")
+            return redirect(url_for('owner.dashboard'))
+        
+        duration_str = request.form.get('duration')
+        if not duration_str:
+            flash("Duration is required", "warning")
+            return redirect(url_for('owner.book_room', homestay_id=homestay.id, room_id=room_id))
+        
+        try:
+            duration = int(duration_str)
+        except ValueError:
+            flash("Invalid duration value.", "danger")
+            return redirect(url_for('owner.book_room', homestay_id=homestay.id, room_id=room_id))
+        
+        if duration < 1:
+            flash("Minimum duration is 1 minute.", "warning")
+            return redirect(url_for('owner.book_room', homestay_id=homestay.id, room_id=room_id))
+        
+        start_date = request.form.get('start_date')
+        start_time = request.form.get('start_time')
+        if not start_date or not start_time:
+            flash("You must select both date and time.", "warning")
+            return redirect(url_for('owner.book_room', homestay_id=homestay.id, room_id=room_id))
+        
+        start_str = f"{start_date} {start_time}"
+        try:
+            start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
+        except ValueError:
+            flash("Invalid date or time format.", "danger")
+            return redirect(url_for('owner.book_room', homestay_id=homestay.id, room_id=room_id))
+        
+        end_datetime = start_datetime + timedelta(minutes=duration)
+        # Calculate total price using the room's price; convert minutes to hours.
+        total_price = room.price_per_hour * (duration / 60)
+        
+        # Check for overlapping bookings for this room
+        existing_bookings = Booking.query.filter_by(room_id=room.id).all()
+        for booking in existing_bookings:
+            if start_datetime < booking.end_time and end_datetime > booking.start_time:
+                flash('This room is not available during the selected time period.', 'danger')
+                return redirect(url_for('owner.book_room', homestay_id=homestay.id, room_id=room_id))
+        
+        # Tìm renter account của owner hiện tại (nếu có)
+        renter = Renter.query.filter_by(email=current_user.email).first()
+        
+        # Nếu không có, tạo mới một renter cho owner này
+        if not renter:
+            renter = Renter(
+                username=f"{current_user.username}_renter",
+                email=current_user.email,
+                full_name=current_user.full_name,
+                phone=current_user.phone,
+                personal_id=current_user.personal_id
+            )
+            # Generate a default password based on the username
+            default_password = f"{current_user.username}123"
+            renter.set_password(default_password)
+            db.session.add(renter)
+            db.session.commit()
+        
+        # Tạo booking mới
+        new_booking = Booking(
+            homestay_id=homestay.id,
+            room_id=room.id,
+            renter_id=renter.id,
+            start_time=start_datetime,
+            end_time=end_datetime,
+            total_price=total_price,
+            status='confirmed'  # Auto-confirm since owner is booking for themselves
+        )
+        
+        db.session.add(new_booking)
+        db.session.commit()
+
+        flash('Booking created successfully!', 'success')
+        return redirect(url_for('owner.view_bookings'))
+        
+    # GET request - hiển thị form để đặt phòng
+    return render_template('owner/book_room.html', homestay=homestay)
+
+@owner_bp.route('/manage-rooms/<int:homestay_id>')
+@login_required
+def manage_rooms(homestay_id):
+    homestay = Homestay.query.get_or_404(homestay_id)
+    
+    # Kiểm tra quyền sở hữu
+    if homestay.owner_id != current_user.id:
+        flash('Bạn không có quyền quản lý phòng của homestay này.', 'danger')
+        return redirect(url_for('owner.dashboard'))
+    
+    rooms = Room.query.filter_by(homestay_id=homestay_id).order_by(Room.floor_number, Room.room_number).all()
+
+    # Group rooms by floor
+    rooms_by_floor = {}
+    for room in rooms:
+        floor = room.floor_number
+        if floor not in rooms_by_floor:
+            rooms_by_floor[floor] = []
+        rooms_by_floor[floor].append(room)
+
+    # Pass the dictionary to the template
+    return render_template('owner/manage_rooms.html', homestay=homestay, rooms_by_floor=rooms_by_floor)

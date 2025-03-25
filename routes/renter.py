@@ -16,6 +16,13 @@ def renter_required(f):
         if not current_user.is_renter():
             flash('You must be a renter to access this page', 'danger')
             return redirect(url_for('home'))
+        
+        # Kiểm tra nếu là owner đang dùng chế độ xem renter
+        # Chỉ ngăn chặn các chức năng booking/đặt phòng
+        if current_user.__class__.__name__ == 'Owner' and current_user.is_renter() and request.endpoint in ['renter.book_homestay', 'renter.cancel_booking']:
+            flash('Bạn đang ở chế độ xem, không thể thực hiện đặt phòng', 'warning')
+            return redirect(url_for('home'))
+            
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
     return decorated_function
@@ -518,8 +525,8 @@ def switch_to_renter():
     
     current_user.temp_role = 'renter'
     db.session.commit()
-    flash('Đã chuyển sang vai trò người thuê', 'success')
-    return redirect(url_for('renter.dashboard'))
+    flash('Bạn đang ở chế độ xem', 'success')
+    return redirect(url_for('home'))
 
 @renter_bp.route('/booking-history')
 @login_required

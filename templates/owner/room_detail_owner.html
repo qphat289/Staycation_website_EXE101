@@ -119,10 +119,16 @@
                     <p>{{ room.description }}</p>
                 </div>
                 <!-- Nút Edit Room nằm ngay dưới Room Details (card-footer) -->
-                <div class="card-footer text-end">
-                    <button id="toggleEditFormBtn" class="btn btn-primary">
-                        <i class="bi bi-pencil-square"></i> Edit Room Information
-                    </button>
+                <div class="card-footer d-flex gap-2">
+                    <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to All Rooms
+                    </a>
+                    <a href="{{ url_for('owner.edit_room', id=room.id) }}" class="btn btn-warning">
+                        <i class="bi bi-pencil me-1"></i> Edit Room
+                    </a>
+                    <a href="{{ url_for('owner.book_room', homestay_id=room.homestay_id, room_id=room.id) }}" class="btn btn-primary">
+                        <i class="bi bi-calendar-plus me-1"></i> Đặt phòng
+                    </a>
                 </div>
             </div>
         </div>

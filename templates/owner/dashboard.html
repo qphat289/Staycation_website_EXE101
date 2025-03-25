@@ -53,6 +53,12 @@
                                <i class="bi bi-door-open me-1"></i> Manage Rooms
                             </a>
 
+                            <!-- Book Room Route -->
+                            <a href="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" 
+                               class="btn-action btn-primary">
+                               <i class="bi bi-calendar-plus me-1"></i> Đặt phòng
+                            </a>
+
                             <!-- Edit Homestay Route -->
                             <a href="{{ url_for('owner.edit_homestay', id=homestay.id) }}" 
                                class="btn-action btn-edit" data-translate="edit">
@@ -207,6 +213,14 @@
     }
     .btn-manage:hover {
         background: linear-gradient(to bottom, #0b5ed7, #0a58ca);
+        color: white;
+    }
+    .btn-primary, .btn-action.btn-primary {
+        background: linear-gradient(to bottom, #6f42c1, #6610f2);
+        color: white;
+    }
+    .btn-primary:hover, .btn-action.btn-primary:hover {
+        background: linear-gradient(to bottom, #6610f2, #5f0bdd);
         color: white;
     }
     .btn-edit {

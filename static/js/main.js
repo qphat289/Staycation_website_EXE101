@@ -1,6 +1,9 @@
 // Main JavaScript for Homestay Booking
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Đảm bảo ngôn ngữ mặc định là tiếng Việt
+    localStorage.setItem('language', 'vi');
+    
     // Add Bootstrap validation for forms
     const forms = document.querySelectorAll('.needs-validation');
     

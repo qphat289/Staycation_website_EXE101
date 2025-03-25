@@ -1,0 +1,127 @@
+<!-- templates/owner/book_room.html -->
+{% extends 'base.html' %}
+{% block title %}Book Room: {{ homestay.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('owner.dashboard') }}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('owner.manage_homestays') }}">Manage Homestays</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}">{{ homestay.title }}</a></li>
+      <li class="breadcrumb-item active">Book Room</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Book a Room in: {{ homestay.title }}</h4>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i> Đây là chức năng cho phép bạn đặt phòng trực tiếp cho khách đến homestay mà không sử dụng app.
+          </div>
+          
+          <form method="post" action="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" id="booking-form">
+
+            <!-- Room Selection Dropdown -->
+            <div class="mb-3">
+              <label for="room_id" class="form-label">Chọn phòng</label>
+              <select class="form-select" id="room_id" name="room_id" required>
+                {% for room in homestay.rooms %}
+                  <option value="{{ room.id }}" data-price="{{ room.price_per_hour|default(0) }}">
+                    Phòng {{ room.room_number }} - Giường: {{ room.bed_count }}, Phòng tắm: {{ room.bathroom_count }}, Sức chứa: {{ room.max_guests }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Date Field (using Flatpickr) -->
+            <div class="mb-3">
+              <label for="start_date" class="form-label">Ngày</label>
+              <input type="text" class="form-control" id="start_date" name="start_date" required>
+            </div>
+
+            <!-- Time Field -->
+            <div class="mb-3">
+              <label for="start_time" class="form-label">Giờ</label>
+              <input type="time" class="form-control" id="start_time" name="start_time" required>
+            </div>
+
+            <!-- Duration Field in Minutes -->
+            <div class="mb-3">
+              <label for="duration" class="form-label">Thời lượng (phút)</label>
+              <input type="number" class="form-control" id="duration" name="duration" min="1" value="60" required>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="card mb-3 border-primary">
+              <div class="card-body">
+                <h5>Tóm tắt đặt phòng</h5>
+                <table class="table table-borderless">
+                  <tr>
+                    <td>Giá mỗi giờ</td>
+                    <td class="text-end" id="price-per-hour">$0.00</td>
+                  </tr>
+                  <tr>
+                    <td>Thời lượng (phút)</td>
+                    <td class="text-end" id="duration-display">60</td>
+                  </tr>
+                  <tr class="fw-bold">
+                    <td>Tổng tiền</td>
+                    <td class="text-end" id="total-price">$0.00</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Xác nhận đặt phòng</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  // Initialize flatpickr on the date input
+  flatpickr("#start_date", {
+    minDate: "today",
+    dateFormat: "Y-m-d"
+  });
+
+  // Grab elements for summary calculation
+  const roomSelect = document.getElementById('room_id');
+  const durationInput = document.getElementById('duration');
+  const durationDisplay = document.getElementById('duration-display');
+  const pricePerHourEl = document.getElementById('price-per-hour');
+  const totalPriceEl = document.getElementById('total-price');
+
+  // Function to update booking summary based on selected room's price and duration
+  function updateSummary() {
+    const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+    const pricePerHour = parseFloat(selectedOption.dataset.price) || 0;
+    const duration = parseInt(durationInput.value) || 1;
+    
+    durationDisplay.textContent = duration;
+    pricePerHourEl.textContent = '$' + pricePerHour.toFixed(2);
+
+    // Convert minutes to hours for pricing calculation
+    const totalPrice = (duration / 60) * pricePerHour;
+    totalPriceEl.textContent = '$' + totalPrice.toFixed(2);
+  }
+
+  roomSelect.addEventListener('change', updateSummary);
+  durationInput.addEventListener('input', updateSummary);
+  updateSummary();
+</script>
+{% endblock %} 
