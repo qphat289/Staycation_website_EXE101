@@ -15,11 +15,11 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
+    <!-- Removed dark-mode.css -->
     
     {% block extra_css %}{% endblock %}
 </head>
-<body {% if current_user.is_authenticated and current_user.dark_mode %}class="dark-mode"{% endif %}>
+<body>
     {# Make the status_classes dictionary available to all child templates #}
     {% set status_classes = {
         'pending': 'badge bg-warning',
@@ -233,7 +233,6 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/translation.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>

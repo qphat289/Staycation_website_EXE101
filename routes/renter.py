@@ -585,14 +585,3 @@ def delete_account():
     logout_user()
     flash('Tài khoản của bạn đã được xóa', 'success')
     return redirect(url_for('home'))
-
-@renter_bp.route('/update-appearance', methods=['POST'])
-@login_required
-def update_appearance():
-    dark_mode = request.form.get('dark_mode') == 'on'
-    
-    current_user.dark_mode = dark_mode
-    db.session.commit()
-    
-    flash('Cài đặt giao diện đã được cập nhật', 'success')
-    return redirect(url_for('renter.settings'))

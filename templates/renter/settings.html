@@ -45,23 +45,7 @@
     </div>
 
     <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title" data-translate="appearance-settings">Appearance Settings</h5>
-                    <form method="POST" action="{{ url_for('renter.update_appearance') }}">
-                        <div class="mb-3">
-                            <label class="form-label" data-translate="color-theme">Color Theme</label>
-                            <div class="form-check form-switch">
-                                <input type="checkbox" class="form-check-input" id="darkMode" name="dark_mode" {% if current_user.dark_mode %}checked{% endif %}>
-                                <label class="form-check-label" for="darkMode" data-translate="dark-mode">Dark Mode</label>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary" data-translate="save-changes">Save Changes</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+        <!-- Removed the Appearance Settings card entirely -->
 
         <div class="col-md-6">
             <div class="card">
@@ -113,4 +97,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
