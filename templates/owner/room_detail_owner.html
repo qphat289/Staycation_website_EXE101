@@ -2,32 +2,26 @@
 {% block title %}Room {{ room.room_number }} (Owner View){% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ url_for('owner.dashboard') }}">Dashboard</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}">
-                    {{ room.homestay.title }}
-                </a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">
-                Room {{ room.room_number }}
-            </li>
-        </ol>
-    </nav>
+<div class="container my-5">
+    <div class="mb-4">
+        <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}" class="btn btn-light border shadow-sm d-inline-flex align-items-center ps-3 pe-4 py-2 rounded-pill transition-all">
+            <i class="bi bi-arrow-left me-2"></i> <span>Quay lại danh sách phòng</span>
+        </a>
+    </div>
 
-    <h2 class="mb-3">Room {{ room.room_number }} (Owner View)</h2>
+    <h2 class="display-5 fw-bold mb-4">Room {{ room.room_number }} <span class="text-muted fs-5">(Owner View)</span></h2>
     
     <!-- Row: Gallery Preview (left) và Room Details (right) -->
-    <div class="row">
+    <div class="row g-4">
         <!-- GALLERY (LEFT) -->
         <div class="col-lg-8 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0">Gallery Preview</h3>
+            <div class="card shadow border-0 overflow-hidden">
+                <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0 fw-bold"><i class="bi bi-images me-2"></i>Gallery Phòng</h3>
+                    <div class="gallery-counter badge bg-light text-dark rounded-pill px-3 py-2 fs-6">
+                        <i class="bi bi-image me-1"></i> 
+                        {% if room.images %}{{ room.images|length }}{% else %}0{% endif %} ảnh
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="main-image-container position-relative">
@@ -37,62 +31,76 @@
                             {% set main_img = featured if featured else room.images[0] %}
 
                             <!-- Ảnh chính -->
-                            <div style="position: relative; width: 100%; padding-bottom: 56.25%; background-color: #f8f9fa;">
+                            <div class="position-relative ratio ratio-16x9 bg-light">
                                 <img 
                                   id="mainImage"
                                   src="{{ url_for('static', filename=main_img.image_path) }}"
-                                  class="img-fluid"
+                                  class="img-fluid object-fit-cover w-100 h-100"
                                   alt="Room {{ room.room_number }}"
-                                  style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+                                  loading="lazy">
                             </div>
 
                             <!-- Mũi tên chuyển ảnh (nếu có nhiều hơn 1 ảnh) -->
                             {% if room.images|length > 1 %}
-                            <div class="position-absolute top-50 start-0 translate-middle-y arrow-left"
-                                 style="cursor:pointer; width:40px; height:40px; background:rgba(0,0,0,0.3);"
-                                 onclick="prevImage()">
-                                <i class="bi bi-chevron-left text-white" 
-                                   style="position:absolute; left:10px; top:8px;"></i>
+                            <div class="position-absolute top-50 start-0 translate-middle-y"
+                                 style="z-index: 10;">
+                                <button class="btn btn-light rounded-circle shadow gallery-nav ms-3"
+                                        aria-label="Previous image"
+                                        onclick="prevImage()">
+                                    <i class="bi bi-chevron-left fs-4"></i>
+                                </button>
                             </div>
-                            <div class="position-absolute top-50 end-0 translate-middle-y arrow-right"
-                                 style="cursor:pointer; width:40px; height:40px; background:rgba(0,0,0,0.3);"
-                                 onclick="nextImage()">
-                                <i class="bi bi-chevron-right text-white"
-                                   style="position:absolute; right:10px; top:8px;"></i>
+                            <div class="position-absolute top-50 end-0 translate-middle-y"
+                                 style="z-index: 10;">
+                                <button class="btn btn-light rounded-circle shadow gallery-nav me-3"
+                                        aria-label="Next image"
+                                        onclick="nextImage()">
+                                    <i class="bi bi-chevron-right fs-4"></i>
+                                </button>
                             </div>
                             {% endif %}
 
                             <!-- Nút Fullscreen -->
-                            <div class="position-absolute bottom-0 end-0 m-2">
-                                <button class="btn btn-sm btn-light" onclick="openFullscreen()">
-                                    <i class="bi bi-fullscreen me-1"></i>Gallery
+                            <div class="position-absolute bottom-0 end-0 m-3">
+                                <button class="btn btn-sm btn-light rounded-pill shadow-sm" onclick="openFullscreen()">
+                                    <i class="bi bi-fullscreen me-1"></i>Xem gallery
                                 </button>
                             </div>
                         {% else %}
-                            <div class="d-flex justify-content-center align-items-center bg-light"
-                                 style="height:300px;">
-                                <p class="text-muted">No images available for this room</p>
+                            <div class="d-flex justify-content-center align-items-center bg-light empty-gallery"
+                                 style="height:400px;">
+                                <div class="text-center">
+                                    <i class="bi bi-camera text-muted" style="font-size: 3rem;"></i>
+                                    <p class="text-muted mt-2">Chưa có hình ảnh cho phòng này</p>
+                                </div>
                             </div>
                         {% endif %}
                     </div>
 
                     {% if room.images and room.images|length > 1 %}
                     <!-- Thumbnails -->
-                    <div class="thumbnail-gallery d-flex overflow-auto p-2 gap-2">
+                    <div class="thumbnail-gallery d-flex overflow-auto p-3 gap-3 bg-light border-top position-relative">
+                        <!-- Hiển thị số lượng ảnh -->
+                        <div class="position-absolute top-0 end-0 bg-dark bg-opacity-75 text-white px-2 py-1 m-2 rounded">
+                            <i class="bi bi-images me-1"></i> {{ room.images|length }} ảnh
+                        </div>
+                        
                         {% for img in room.images %}
                         <div class="thumbnail-container text-center" data-index="{{ loop.index0 }}">
-                            <img 
-                              src="{{ url_for('static', filename=img.image_path) }}"
-                              class="img-thumbnail thumbnail-img {% if img == main_img %}active{% endif %}"
-                              alt="Room Image #{{ loop.index }}"
-                              style="width:120px; height:80px; object-fit:cover;"
-                              onclick="showImage({{ loop.index0 }})">
-
-                            <!-- Nút xóa ảnh -->
-                            <div class="mt-1">
+                            <div class="position-relative">
+                                <img 
+                                  src="{{ url_for('static', filename=img.image_path) }}"
+                                  class="img-thumbnail thumbnail-img rounded shadow-sm {% if img == main_img %}active{% endif %}"
+                                  alt="Room Image #{{ loop.index }}"
+                                  style="width:120px; height:80px; object-fit:cover; cursor: pointer;"
+                                  onclick="showImage({{ loop.index0 }})" />
+                                
+                                <!-- Nút xóa ảnh -->
                                 <a href="{{ url_for('owner.delete_room_image', image_id=img.id) }}"
-                                   class="btn btn-sm btn-outline-danger">
-                                   Delete
+                                   class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 p-1"
+                                   style="transform: translate(30%, -30%);"
+                                   title="Xóa ảnh">
+                                   <i class="bi bi-trash"></i>
                                 </a>
                             </div>
                         </div>
@@ -105,28 +113,65 @@
         
         <!-- ROOM DETAILS (RIGHT) -->
         <div class="col-lg-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="card-title mb-0">Room Details</h5>
+            <div class="card shadow border-0 overflow-hidden h-100">
+                <div class="card-header bg-secondary text-white py-3">
+                    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>Thông tin phòng</h5>
                 </div>
                 <div class="card-body">
-                    <p><strong>Price/Hour:</strong> ${{ room.price_per_hour }}</p>
-                    <p><strong>Max Guests:</strong> {{ room.max_guests }}</p>
-                    <p><strong>Beds:</strong> {{ room.bed_count }}</p>
-                    <p><strong>Bathrooms:</strong> {{ room.bathroom_count }}</p>
+                    <div class="room-specs">
+                        <div class="spec-item">
+                            <div class="spec-label">Giá/Giờ</div>
+                            <div class="spec-value text-primary">${{ room.price_per_hour }}</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Khách tối đa</div>
+                            <div class="spec-value">{{ room.max_guests }} <i class="bi bi-people"></i></div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Giường</div>
+                            <div class="spec-value">{{ room.bed_count }} <i class="bi bi-house-door"></i></div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Phòng tắm</div>
+                            <div class="spec-value">{{ room.bathroom_count }} <i class="bi bi-droplet"></i></div>
+                        </div>
+                    </div>
                     <hr>
-                    <h5>Description</h5>
-                    <p>{{ room.description }}</p>
+                    <h5 class="fw-bold">Mô tả</h5>
+                    <div class="room-description">
+                        <div class="feature-badges d-flex flex-wrap gap-2 mb-3">
+                            <div class="badge rounded-pill bg-primary px-3 py-2 d-flex align-items-center">
+                                <i class="bi bi-wifi me-1"></i> 
+                                <span>Wifi miễn phí</span>
+                            </div>
+                            <div class="badge rounded-pill bg-primary px-3 py-2 d-flex align-items-center">
+                                <i class="bi bi-tv me-1"></i> 
+                                <span>TV màn hình phẳng</span>
+                            </div>
+                            <div class="badge rounded-pill bg-primary px-3 py-2 d-flex align-items-center">
+                                <i class="bi bi-snow me-1"></i> 
+                                <span>Điều hòa</span>
+                            </div>
+                            <div class="badge rounded-pill bg-primary px-3 py-2 d-flex align-items-center">
+                                <i class="bi bi-cup-hot me-1"></i> 
+                                <span>Máy pha cà phê</span>
+                            </div>
+                        </div>
+                        <div class="bg-light p-3 rounded shadow-sm">
+                            {% if room.description and room.description != '1' %}
+                                <p class="text-secondary mb-0">{{ room.description }}</p>
+                            {% else %}
+                                <p class="text-muted fst-italic small mb-0">Thêm mô tả chi tiết bằng cách nhấn nút "Chỉnh sửa".</p>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
                 <!-- Nút Edit Room nằm ngay dưới Room Details (card-footer) -->
-                <div class="card-footer d-flex gap-2">
-                    <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-1"></i> Back to All Rooms
-                    </a>
-                    <a href="{{ url_for('owner.edit_room', id=room.id) }}" class="btn btn-warning">
-                        <i class="bi bi-pencil me-1"></i> Edit Room
-                    </a>
-                    <a href="{{ url_for('owner.book_room', homestay_id=room.homestay_id, room_id=room.id) }}" class="btn btn-primary">
+                <div class="card-footer d-flex gap-2 py-3 bg-light">
+                    <button id="toggleEditFormBtn" class="btn btn-warning flex-grow-1">
+                        <i class="bi bi-pencil me-1"></i> Chỉnh sửa
+                    </button>
+                    <a href="{{ url_for('owner.book_room', homestay_id=room.homestay_id, room_id=room.id) }}" class="btn btn-primary flex-grow-1">
                         <i class="bi bi-calendar-plus me-1"></i> Đặt phòng
                     </a>
                 </div>
@@ -135,100 +180,163 @@
     </div>  <!-- end row -->
 
     <!-- Form Edit Room (ẩn mặc định) -->
-    <div class="card shadow-sm" id="editForm" style="display:none;">
-        <div class="card-header bg-primary text-white">
-            <h5 class="card-title mb-0">Edit Room Information</h5>
+    <div class="card shadow-sm border-0 mt-4" id="editForm" style="display:none;">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa thông tin phòng</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             <form method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
-                    <label for="room_number" class="form-label">Room Number</label>
+                    <label for="room_number" class="form-label fw-medium">Số phòng</label>
                     <input 
                       type="text" 
-                      class="form-control" 
+                      class="form-control form-control-lg" 
                       id="room_number" 
                       name="room_number"
                       value="{{ room.room_number }}" 
                       required>
                 </div>
-                <div class="row">
+                <div class="row g-3">
                     <div class="col-md-6 mb-3">
-                        <label for="bed_count" class="form-label">Bed Count</label>
-                        <input 
-                          type="number" 
-                          class="form-control" 
-                          id="bed_count" 
-                          name="bed_count"
-                          value="{{ room.bed_count }}" 
-                          min="1" 
-                          required>
+                        <label for="bed_count" class="form-label fw-medium">Số giường</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-house-door"></i></span>
+                            <input 
+                              type="number" 
+                              class="form-control" 
+                              id="bed_count" 
+                              name="bed_count"
+                              value="{{ room.bed_count }}" 
+                              min="1" 
+                              required>
+                        </div>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="bathroom_count" class="form-label">Bathroom Count</label>
-                        <input 
-                          type="number" 
-                          class="form-control" 
-                          id="bathroom_count" 
-                          name="bathroom_count"
-                          value="{{ room.bathroom_count }}" 
-                          min="1" 
-                          required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="max_guests" class="form-label">Max Guests</label>
-                        <input 
-                          type="number" 
-                          class="form-control" 
-                          id="max_guests" 
-                          name="max_guests"
-                          value="{{ room.max_guests }}" 
-                          min="1" 
-                          required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="price_per_hour" class="form-label">Price per Hour</label>
-                        <input 
-                          type="number" 
-                          class="form-control" 
-                          id="price_per_hour" 
-                          name="price_per_hour"
-                          value="{{ room.price_per_hour }}" 
-                          min="0" 
-                          step="0.01" 
-                          required>
+                        <label for="bathroom_count" class="form-label fw-medium">Số phòng tắm</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-droplet"></i></span>
+                            <input 
+                              type="number" 
+                              class="form-control" 
+                              id="bathroom_count" 
+                              name="bathroom_count"
+                              value="{{ room.bathroom_count }}" 
+                              min="1" 
+                              required>
+                        </div>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
+                <div class="row g-3">
+                    <div class="col-md-6 mb-3">
+                        <label for="max_guests" class="form-label fw-medium">Số khách tối đa</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-people"></i></span>
+                            <input 
+                              type="number" 
+                              class="form-control" 
+                              id="max_guests" 
+                              name="max_guests"
+                              value="{{ room.max_guests }}" 
+                              min="1" 
+                              required>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="price_per_hour" class="form-label fw-medium">Giá mỗi giờ ($)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-currency-dollar"></i></span>
+                            <input 
+                              type="number" 
+                              class="form-control" 
+                              id="price_per_hour" 
+                              name="price_per_hour"
+                              value="{{ room.price_per_hour }}" 
+                              min="0" 
+                              step="0.01" 
+                              required>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="description" class="form-label fw-medium">Mô tả phòng</label>
+                    <div class="mb-3 p-2 bg-light rounded">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" value="1" id="wifi_feature" name="has_wifi" 
+                                {% if "Wifi miễn phí" in room.description %}checked{% endif %}>
+                            <label class="form-check-label d-flex align-items-center" for="wifi_feature">
+                                <div class="feature-icon me-2 p-2 rounded-circle bg-primary text-white">
+                                    <i class="bi bi-wifi"></i>
+                                </div>
+                                <span>Wifi tốc độ cao</span>
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" value="1" id="tv_feature" name="has_tv"
+                                {% if "TV màn hình" in room.description %}checked{% endif %}>
+                            <label class="form-check-label d-flex align-items-center" for="tv_feature">
+                                <div class="feature-icon me-2 p-2 rounded-circle bg-primary text-white">
+                                    <i class="bi bi-tv"></i>
+                                </div>
+                                <span>Netflix</span>
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" value="1" id="ac_feature" name="has_ac"
+                                {% if "Điều hòa" in room.description %}checked{% endif %}>
+                            <label class="form-check-label d-flex align-items-center" for="ac_feature">
+                                <div class="feature-icon me-2 p-2 rounded-circle bg-primary text-white">
+                                    <i class="bi bi-snow"></i>
+                                </div>
+                                <span>Điều hòa </span>
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" value="1" id="coffee_feature" name="has_coffee"
+                                {% if "cà phê" in room.description %}checked{% endif %}>
+                            <label class="form-check-label d-flex align-items-center" for="coffee_feature">
+                                <div class="feature-icon me-2 p-2 rounded-circle bg-primary text-white">
+                                    <i class="bi bi-cup-hot"></i>
+                                </div>
+                                <span>Cà phê</span>
+                            </label>
+                        </div>
+                    </div>
                     <textarea 
                       class="form-control" 
                       id="description" 
                       name="description"
-                      rows="3" 
-                      required>{{ room.description }}</textarea>
+                      rows="4" 
+                      placeholder="Thêm mô tả chi tiết về phòng (tùy chọn)">{{ room.description if room.description and room.description != '1' else '' }}</textarea>
+                    <small class="text-muted fst-italic">
+                        Mô tả thêm về không gian, cảnh quan, hoặc các tiện nghi đặc biệt của phòng.
+                    </small>
                 </div>
 
                 <!-- File input for new images -->
-                <div class="mb-3">
-                    <label for="gallery" class="form-label">Additional Images</label>
-                    <input 
-                      type="file" 
-                      class="form-control" 
-                      id="gallery" 
-                      name="gallery" 
-                      multiple>
-                    <small class="text-muted">
-                        Select multiple images to add more photos.
+                <div class="mb-4">
+                    <label for="gallery" class="form-label fw-medium">Thêm hình ảnh</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-images"></i></span>
+                        <input 
+                          type="file" 
+                          class="form-control" 
+                          id="gallery" 
+                          name="gallery" 
+                          multiple>
+                    </div>
+                    <small class="text-muted fst-italic">
+                        Có thể chọn nhiều hình ảnh cùng lúc.
                     </small>
                 </div>
                 
-                <button type="submit" class="btn btn-success">Save Changes</button>
-                <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay.id) }}" 
-                   class="btn btn-secondary">
-                   Back to Manage Rooms
-                </a>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-success py-2 px-4">
+                        <i class="bi bi-check-lg me-1"></i> Lưu thay đổi
+                    </button>
+                    <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary py-2 px-4">
+                        <i class="bi bi-x-lg me-1"></i> Hủy
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -240,24 +348,26 @@
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Room {{ room.room_number }} Gallery</h5>
+                <h5 class="modal-title"><i class="bi bi-images me-2"></i>Gallery phòng {{ room.room_number }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" 
                         aria-label="Close"></button>
             </div>
             <div class="modal-body d-flex align-items-center justify-content-center bg-dark p-0">
                 <img id="fullscreenImage" src="" class="img-fluid" 
-                     alt="Room image fullscreen view">
+                     alt="Room image fullscreen view" style="max-height: 90vh; object-fit: contain;">
                 
                 {% if room.images|length > 1 %}
                 <div class="position-absolute top-50 start-0 translate-middle-y">
                     <button class="btn btn-light rounded-circle ms-3 fs-modal-nav"
-                            onclick="prevFullscreenImage()">
+                            onclick="prevFullscreenImage()"
+                            aria-label="Previous image">
                         <i class="bi bi-chevron-left"></i>
                     </button>
                 </div>
                 <div class="position-absolute top-50 end-0 translate-middle-y">
                     <button class="btn btn-light rounded-circle me-3 fs-modal-nav"
-                            onclick="nextFullscreenImage()">
+                            onclick="nextFullscreenImage()"
+                            aria-label="Next image">
                         <i class="bi bi-chevron-right"></i>
                     </button>
                 </div>
@@ -277,29 +387,56 @@
     {% endfor %}
   ];
   var currentIndex = 0;
+  var isAnimating = false;
 
   const mainImage = document.getElementById("mainImage");
   const thumbnails = document.querySelectorAll(".thumbnail-img");
 
-  function showImage(index) {
+  function showImage(index, direction = null) {
+    if (isAnimating) return;
+    isAnimating = true;
+    
     currentIndex = index;
-    mainImage.src = "{{ url_for('static', filename='') }}" + galleryImages[index];
+    const newSrc = "{{ url_for('static', filename='') }}" + galleryImages[index];
+    
+    // Thêm hiệu ứng fade
+    mainImage.style.opacity = '0';
+    mainImage.style.transition = 'opacity 0.6s ease-in-out';
+    
+    setTimeout(() => {
+      mainImage.src = newSrc;
+      mainImage.style.opacity = '1';
+    }, 300);
 
     // Xóa active cũ, set mới
     thumbnails.forEach(thumb => thumb.classList.remove("active"));
     thumbnails[index].classList.add("active");
+
+    // Auto-scroll thumbnail into view
+    const container = document.querySelector('.thumbnail-gallery');
+    const thumbnail = document.querySelector(`.thumbnail-container[data-index="${index}"]`);
+    if (container && thumbnail) {
+      container.scrollTo({
+        left: thumbnail.offsetLeft - container.offsetWidth / 2 + thumbnail.offsetWidth / 2,
+        behavior: 'smooth'
+      });
+    }
+
+    setTimeout(() => {
+      isAnimating = false;
+    }, 600);
   }
   window.showImage = showImage;
 
   function nextImage() {
-    currentIndex = (currentIndex + 1) % galleryImages.length;
-    showImage(currentIndex);
+    const nextIndex = (currentIndex + 1) % galleryImages.length;
+    showImage(nextIndex, 'next');
   }
   window.nextImage = nextImage;
 
   function prevImage() {
-    currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
-    showImage(currentIndex);
+    const prevIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+    showImage(prevIndex, 'prev');
   }
   window.prevImage = prevImage;
 
@@ -326,6 +463,15 @@
       "{{ url_for('static', filename='') }}" + galleryImages[currentIndex];
   }
   window.prevFullscreenImage = prevFullscreenImage;
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') {
+      prevImage();
+    } else if (e.key === 'ArrowRight') {
+      nextImage();
+    }
+  });
 </script>
 {% endif %}
 
@@ -333,14 +479,149 @@
   // Toggle form
   const toggleBtn = document.getElementById('toggleEditFormBtn');
   const editForm = document.getElementById('editForm');
+  const cancelBtn = document.getElementById('cancelEditBtn');
 
   toggleBtn.addEventListener('click', () => {
     if (editForm.style.display === 'none') {
       editForm.style.display = 'block';
+      // Smooth scroll to form
+      editForm.scrollIntoView({ behavior: 'smooth' });
     } else {
       editForm.style.display = 'none';
     }
   });
+
+  cancelBtn.addEventListener('click', () => {
+    editForm.style.display = 'none';
+  });
+
+  // Add animation classes
+  document.addEventListener('DOMContentLoaded', function() {
+    const card = document.querySelector('.card');
+    if (card) {
+      card.classList.add('animate__animated', 'animate__fadeIn');
+    }
+    
+    // Form submit handler để kết hợp các tính năng vào phần mô tả
+    const roomForm = document.querySelector('#editForm form');
+    if (roomForm) {
+      roomForm.addEventListener('submit', function(e) {
+        // Lấy các giá trị checkbox
+        const hasWifi = document.getElementById('wifi_feature').checked;
+        const hasTv = document.getElementById('tv_feature').checked;
+        const hasAc = document.getElementById('ac_feature').checked;
+        const hasCoffee = document.getElementById('coffee_feature').checked;
+        
+        // Lấy mô tả hiện tại
+        const descriptionEl = document.getElementById('description');
+        let description = descriptionEl.value.trim();
+        
+        // Tạo mảng các tính năng
+        const features = [];
+        if (hasWifi) features.push("Wifi tốc độ cao");
+        if (hasTv) features.push("Netflix");
+        if (hasAc) features.push("Điều hòa");
+        if (hasCoffee) features.push("Máy pha cà phê");
+        
+        // Nếu không có mô tả và có ít nhất một tính năng
+        if (description === '' && features.length > 0) {
+          // Gán giá trị cho trường mô tả
+          descriptionEl.value = features.join(', ');
+        }
+        // Nếu trống hoàn toàn, gán giá trị mặc định '1' để không bị null
+        else if (description === '' && features.length === 0) {
+          descriptionEl.value = '1';
+        }
+      });
+    }
+  });
 </script>
+
+<style>
+  .transition-all {
+    transition: all 0.3s ease;
+  }
+  
+  .gallery-nav {
+    width: 45px;
+    height: 45px;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+  }
+  
+  .gallery-nav:hover {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  
+  .thumbnail-img {
+    transition: all 0.2s ease;
+    border: 3px solid transparent;
+  }
+  
+  .thumbnail-img:hover {
+    transform: translateY(-3px);
+  }
+  
+  .thumbnail-img.active {
+    border-color: var(--primary-color);
+  }
+  
+  #mainImage {
+    transition: opacity 0.6s ease-in-out;
+  }
+  
+  .room-specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .spec-item {
+    background-color: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  
+  .spec-item:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-3px);
+  }
+  
+  .feature-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+  
+  .feature-item {
+    transition: all 0.2s ease;
+  }
+  
+  .feature-item:hover {
+    transform: translateX(5px);
+  }
+  
+  .gallery-counter {
+    transition: all 0.3s ease;
+  }
+  
+  .gallery-counter:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .room-specs {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
 {% endblock %}
 {% endblock %}
