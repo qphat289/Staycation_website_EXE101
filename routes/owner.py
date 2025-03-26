@@ -313,26 +313,26 @@ def add_room_images(room_id):
     
     return render_template('owner/add_room_images.html', room=room, existing_images=existing_images)
 
-@owner_bp.route('/room-image/<int:image_id>/set-featured')
-@owner_required
-def set_room_image_as_featured(image_id):
+@owner_bp.route('/set-featured-image/<int:image_id>', methods=['GET'])
+@login_required
+def set_featured_image(image_id):
+    # Lấy thông tin ảnh
     image = RoomImage.query.get_or_404(image_id)
-    room = Room.query.get_or_404(image.room_id)
-    
+    room = image.room
+
     # Kiểm tra quyền sở hữu
     if room.homestay.owner_id != current_user.id:
-        flash('Bạn không có quyền chỉnh sửa ảnh của phòng này.', 'danger')
+        flash("Bạn không có quyền thực hiện thao tác này.", "danger")
         return redirect(url_for('owner.dashboard'))
+
+    # Bỏ featured của tất cả ảnh khác trong phòng
+    RoomImage.query.filter_by(room_id=room.id).update({RoomImage.is_featured: False})
     
-    # Clear featured status from all images for this room
-    for img in RoomImage.query.filter_by(room_id=room.id).all():
-        img.is_featured = False
-    
-    # Set this image as featured
+    # Đặt ảnh được chọn làm featured
     image.is_featured = True
     db.session.commit()
-    
-    flash('Đã cập nhật ảnh đại diện thành công!', 'success')
+
+    flash("Đã đặt ảnh làm ảnh đại diện thành công!", "success")
     return redirect(url_for('owner.add_room_images', room_id=room.id))
 
 @owner_bp.route('/room-image/<int:image_id>/delete')
