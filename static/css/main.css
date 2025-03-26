@@ -280,7 +280,7 @@ footer {
     width: 100%;
     /* height: 400px;  BỎ: tránh bóp méo ảnh */
     height: auto;
-    max-height: 400px;   /* Giới hạn tối đa */
+    max-height: 800px;   /* Giới hạn tối đa */
     object-fit: cover;
     object-position: center;
 }
