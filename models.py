@@ -97,10 +97,7 @@ class Renter(UserMixin, db.Model):
     # Cài đặt quyền riêng tư
     show_profile = db.Column(db.Boolean, default=True)
     show_booking_history = db.Column(db.Boolean, default=True)
-    
-    # Cài đặt giao diện
-    dark_mode = db.Column(db.Boolean, default=False)
-    
+        
     google_id = db.Column(db.String(120), unique=True, nullable=True)
     google_username = db.Column(db.String(100), unique=False, nullable=True)
 
