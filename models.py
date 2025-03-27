@@ -225,6 +225,11 @@ class Booking(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)  # Có thể không chỉ định phòng
     renter_id = db.Column(db.Integer, db.ForeignKey('renter.id'), nullable=False)
     
+    payment_status = db.Column(db.String(20), default='pending')
+    payment_date = db.Column(db.DateTime, nullable=True)
+    payment_method = db.Column(db.String(50), nullable=True)
+    payment_reference = db.Column(db.String(100), nullable=True)
+    
     room = db.relationship('Room', backref='bookings', lazy=True)
     
     def __repr__(self):
