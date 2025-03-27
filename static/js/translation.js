@@ -10,11 +10,11 @@ const translations = {
         'login': 'Login',
         'register': 'Register',
         'logout': 'Logout',
-        'about-homestay': 'About Homestay Booking',
+        'about-homestay': 'About Horin',
         'platform-desc': 'A platform connecting homestay owners with travelers looking for unique accommodations.',
         'links': 'Links',
         'contact': 'Contact',
-        'homestay-booking': 'Homestay Booking',
+        'homestay-booking': 'Horin',
         'find-perfect-homestay': 'Find Your Perfect Homestay',
         'book-description': 'Book unique accommodations or list your property to earn extra income.',
         'explore-description': 'Explore our selection of homestays or create an account to get started.',
@@ -26,7 +26,7 @@ const translations = {
         'view-all': 'View All',
         'email': 'Email',
         'phone': 'Phone',
-        'copyright': '© 2025 Homestay Booking - School Project',
+        'copyright': '© 2025 Horin - School Project',
         'available-rooms': 'Available Rooms',
         'room': 'Room',
         'address': 'Address',
@@ -156,7 +156,7 @@ const translations = {
         'number-of-floors': 'Number of Floors',
         'upload-image': 'Upload Image',
         'all-bookings': 'All Bookings',
-        'homestay-bookings': 'Homestay Bookings',
+        'homestay-bookings': 'Horin Bookings',
         'id': 'ID',
         'booker': 'Booker',
         'homestay': 'Homestay',
@@ -261,7 +261,8 @@ const translations = {
         'nice-view': 'Nice View',
         'bluetooth-speaker': 'Bluetooth Speaker',
         'add-description': 'Add a detailed description by clicking "Edit".',
-        'edit-room-info': 'Edit Room Information'
+        'edit-room-info': 'Edit Room Information',
+        'book-homestay': 'Book with Horin'
     },
     vi: {
         'home': 'Trang chủ',
@@ -274,11 +275,11 @@ const translations = {
         'login': 'Đăng nhập',
         'register': 'Đăng ký',
         'logout': 'Đăng xuất',
-        'about-homestay': 'Về Homestay Booking',
+        'about-homestay': 'Về Horin',
         'platform-desc': 'Nền tảng kết nối chủ nhà với khách du lịch tìm kiếm chỗ ở độc đáo.',
         'links': 'Liên kết',
         'contact': 'Liên hệ',
-        'homestay-booking': 'Homestay Booking',
+        'homestay-booking': 'Horin',
         'find-perfect-homestay': 'Tìm Homestay Lý Tưởng',
         'book-description': 'Đặt phòng độc đáo hoặc đăng ký cho thuê để tăng thêm thu nhập.',
         'explore-description': 'Khám phá danh sách homestay của chúng tôi hoặc tạo tài khoản để bắt đầu.',
@@ -290,7 +291,7 @@ const translations = {
         'view-all': 'Xem Tất Cả',
         'email': 'Email',
         'phone': 'Điện thoại',
-        'copyright': '© 2025 Đặt Phòng Homestay - Dự Án Học Tập',
+        'copyright': '© 2025 Horin - Dự Án Học Tập',
         'available-rooms': 'Phòng Còn Trống',
         'room': 'Phòng',
         'address': 'Địa chỉ',
@@ -420,7 +421,7 @@ const translations = {
         'number-of-floors': 'Số tầng',
         'upload-image': 'Tải ảnh lên',
         'all-bookings': 'Trạng thái đặt phòng',
-        'homestay-bookings': 'Danh Sách Đặt Phòng',
+        'homestay-bookings': 'Horin Bookings',
         'id': 'ID',
         'booker': 'Người đặt',
         'homestay': 'Homestay',
@@ -525,7 +526,8 @@ const translations = {
         'nice-view': 'View đẹp',
         'bluetooth-speaker': 'Loa bluetooth',
         'add-description': 'Thêm mô tả chi tiết bằng cách nhấn nút "Chỉnh sửa".',
-        'edit-room-info': 'Chỉnh sửa thông tin phòng'
+        'edit-room-info': 'Chỉnh sửa thông tin phòng',
+        'book-homestay': 'Đặt phòng với Horin'
     }
 };
 
@@ -639,10 +641,22 @@ function showLanguageMenu() {
 
 // Hàm đặt ngôn ngữ
 function setLanguage(lang) {
-    currentLang = lang;
-    localStorage.setItem('language', lang);
-    updateContent();
-    updateLanguageButton();
+    // Nếu ngôn ngữ mới khác với ngôn ngữ hiện tại, lưu và tải lại trang
+    if (currentLang !== lang) {
+        currentLang = lang;
+        localStorage.setItem('language', lang);
+        
+        // Phát sự kiện trước khi tải lại trang (để các thành phần khác có thể phản ứng nếu cần)
+        const event = new CustomEvent('languageChanged', { detail: { language: lang } });
+        window.dispatchEvent(event);
+        
+        // Tải lại trang để áp dụng ngôn ngữ mới
+        window.location.reload();
+    } else {
+        // Nếu cùng ngôn ngữ, chỉ cập nhật UI
+        updateContent();
+        updateLanguageButton();
+    }
 }
 
 // Hàm cập nhật nút chuyển đổi ngôn ngữ
@@ -672,6 +686,16 @@ function toggleLanguage(event) {
 // Hàm cập nhật nội dung dựa trên ngôn ngữ
 function updateContent() {
     document.querySelectorAll('[data-translate]').forEach(element => {
+        // Bỏ qua phần tử navbar-brand để giữ lại logo
+        if (element.parentElement && element.parentElement.classList.contains('navbar-brand')) {
+            // Chỉ cập nhật văn bản của phần tử, không thay đổi HTML
+            const key = element.getAttribute('data-translate');
+            if (translations[currentLang] && translations[currentLang][key]) {
+                element.textContent = translations[currentLang][key];
+            }
+            return;
+        }
+        
         const key = element.getAttribute('data-translate');
         if (translations[currentLang] && translations[currentLang][key]) {
             let text = translations[currentLang][key];

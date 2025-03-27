@@ -1,4 +1,4 @@
-// Main JavaScript for Homestay Booking
+// Main JavaScript for Horin
 
 document.addEventListener('DOMContentLoaded', function() {
     // Không đặt lại ngôn ngữ mặc định để tôn trọng lựa chọn của người dùng
