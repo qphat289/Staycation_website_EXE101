@@ -96,7 +96,7 @@
     text-align: center;
     font-weight: bold;
     cursor: pointer;
-    color: white;
+    color: black;
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -109,13 +109,13 @@
   }
   
   .room-card.available {
-    background: linear-gradient(135deg, #7ABC0E, #407010); /* Xanh olive */
-    color: white;
+    background: linear-gradient(135deg, #e2b77b, #d29d5c); /* Light beige to darker beige */
+    color: black;
   }
   
   .room-card.booked {
-    background: linear-gradient(135deg, #A86400, #9A610E); /* Cam nâu */
-    color: white;
+    background: linear-gradient(135deg, #ae8a56, #8e6d3e); /* Darker beige to brown */
+    color: black;
   }
   
   .room-card:hover {
@@ -180,6 +180,17 @@
     .room-status {
       font-size: 12px;
     }
+  }
+
+  .room-card a {
+    color: black;
+    text-decoration: none;
+  }
+
+  .room-card .room-number, 
+  .room-card .room-status,
+  .room-card .room-status span {
+    color: black;
   }
 </style>
 {% endblock %}
