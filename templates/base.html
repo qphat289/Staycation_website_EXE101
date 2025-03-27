@@ -26,7 +26,8 @@
         'confirmed': 'badge bg-primary',
         'active': 'badge bg-info',
         'completed': 'badge bg-success',
-        'cancelled': 'badge bg-danger'
+        'cancelled': 'badge bg-danger',
+        'rejected': 'badge bg-danger'
     } %}
     
     {% if current_user.is_authenticated and current_user.__class__.__name__ == 'Owner' and current_user.is_renter() %}
