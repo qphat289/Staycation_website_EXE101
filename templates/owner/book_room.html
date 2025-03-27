@@ -1,6 +1,6 @@
 <!-- templates/owner/book_room.html -->
 {% extends 'base.html' %}
-{% block title %}Book Room: {{ homestay.title }}{% endblock %}
+{% block title %}Book with Horin: {{ homestay.title }}{% endblock %}
 
 {% block content %}
 <div class="container my-4">
@@ -36,7 +36,10 @@
                           data-beds="{{ room.bed_count }}"
                           data-bathrooms="{{ room.bathroom_count }}"
                           data-capacity="{{ room.max_guests }}">
-                    Phòng {{ room.room_number }}
+                    <span class="room-prefix" data-translate="room">Phòng</span> {{ room.room_number }} - 
+                    <span class="room-beds" data-translate="beds">Giường</span>: {{ room.bed_count }}, 
+                    <span class="room-baths" data-translate="bathrooms">Phòng tắm</span>: {{ room.bathroom_count }}, 
+                    <span class="room-cap" data-translate="capacity">Sức chứa</span>: {{ room.max_guests }}
                   </option>
                 {% endfor %}
               </select>
@@ -128,42 +131,40 @@
   durationInput.addEventListener('input', updateSummary);
   updateSummary();
   
-  // Cập nhật nội dung các option khi trang tải
-  function updateRoomOptions() {
+  // Function to set up the page for translation
+  document.addEventListener('DOMContentLoaded', function() {
+    // Update content initially
+    updateTranslations();
+    
+    // Listen to language changes
+    window.addEventListener('languageChanged', updateTranslations);
+  });
+  
+  // Function to update translations specifically for the room options
+  function updateTranslations() {
+    // The data-translate elements will be handled by the main translation system
+    // We need to manually update the room select options
     try {
-      // Lấy ngôn ngữ hiện tại
-      const lang = localStorage.getItem('language') || 'vi';
-      
-      // Lấy các bản dịch từ object toàn cục
-      if (typeof translations !== 'undefined' && translations[lang]) {
-        const roomText = translations[lang]['room'] || 'Room';
-        const bedsText = translations[lang]['beds'] || 'Beds';
-        const bathroomsText = translations[lang]['bathrooms'] || 'Bathrooms';
-        const capacityText = translations[lang]['capacity'] || 'Capacity';
+      const roomOptions = document.querySelectorAll('#room_id option');
+      roomOptions.forEach(option => {
+        const roomNumber = option.getAttribute('data-room-number');
+        const beds = option.getAttribute('data-beds');
+        const bathrooms = option.getAttribute('data-bathrooms');
+        const capacity = option.getAttribute('data-capacity');
         
-        // Cập nhật tất cả các option
-        for (let i = 0; i < roomSelect.options.length; i++) {
-          const option = roomSelect.options[i];
-          const roomNumber = option.getAttribute('data-room-number');
-          const beds = option.getAttribute('data-beds');
-          const bathrooms = option.getAttribute('data-bathrooms');
-          const capacity = option.getAttribute('data-capacity');
-          
-          if (roomNumber && beds && bathrooms && capacity) {
-            option.textContent = `${roomText} ${roomNumber} - ${bedsText}: ${beds}, ${bathroomsText}: ${bathrooms}, ${capacityText}: ${capacity}`;
-          }
+        // Get translated text from the translation elements
+        const roomText = document.querySelector('[data-translate="room"]')?.textContent || 'Phòng';
+        const bedsText = document.querySelector('[data-translate="beds"]')?.textContent || 'Giường';
+        const bathroomsText = document.querySelector('[data-translate="bathrooms"]')?.textContent || 'Phòng tắm';
+        const capacityText = document.querySelector('[data-translate="capacity"]')?.textContent || 'Sức chứa';
+        
+        if (roomNumber && beds && bathrooms && capacity) {
+          option.textContent = `${roomText} ${roomNumber} - ${bedsText}: ${beds}, ${bathroomsText}: ${bathrooms}, ${capacityText}: ${capacity}`;
         }
-      }
+      });
     } catch (error) {
       console.error("Lỗi khi cập nhật tùy chọn phòng:", error);
     }
-  }
-  
-  // Gọi hàm khi trang đã tải xong
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", updateRoomOptions);
-  } else {
-    updateRoomOptions();
   }
 </script>
 {% endblock %} 
