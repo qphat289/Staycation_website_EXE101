@@ -46,13 +46,20 @@
             {% for room in rooms_on_floor %}
               <div class="room-card {% if room.is_booked %}booked{% else %}available{% endif %} shadow-sm">
                 <a href="{{ url_for('owner.owner_room_detail', room_id=room.id) }}" class="text-decoration-none">
-                  <div class="room-number">{{ room.room_number }}</div>
-                  <div class="room-status">
-                    {% if room.is_booked %}
-                      <i class="bi bi-calendar-check"></i> <span data-translate="booked">Đã đặt</span>
-                    {% else %}
-                      <i class="bi bi-calendar-plus"></i> <span data-translate="available">Trống</span>
-                    {% endif %}
+                  {% if room.images|length > 0 %}
+                  <div class="room-image" data-image-url="{{ url_for('uploaded_file', filename=room.images[0].image_path.split('/')[-1]) }}"></div>
+                  {% else %}
+                  <div class="room-image room-image-placeholder"></div>
+                  {% endif %}
+                  <div class="room-name-container">
+                    <div class="room-number">{{ room.room_number }}</div>
+                    <div class="room-status">
+                      {% if room.is_booked %}
+                        <i class="bi bi-calendar-check"></i> <span data-translate="booked">Đã đặt</span>
+                      {% else %}
+                        <i class="bi bi-calendar-plus"></i> <span data-translate="available">Trống</span>
+                      {% endif %}
+                    </div>
                   </div>
                 </a>
               </div>
@@ -93,10 +100,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    font-weight: bold;
-    cursor: pointer;
-    color: white;
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -106,31 +109,57 @@
   .room-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
-  }
-  
-  .room-card.available {
-    background: linear-gradient(135deg, #7ABC0E, #407010); /* Xanh olive */
-    color: white;
-  }
-  
-  .room-card.booked {
-    background: linear-gradient(135deg, #A86400, #9A610E); /* Cam nâu */
-    color: white;
-  }
-  
-  .room-card:hover {
     border-color: #F7D9AF;
   }
   
+  .room-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+  }
+  
+  .room-image-placeholder {
+    background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+  }
+  
+  .room-name-container {
+    position: relative;
+    z-index: 2;
+    background-color: rgba(255, 255, 255, 0.85); 
+    padding: 5px 10px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
   .room-number {
-    font-size: 24px;
-    margin-bottom: 8px;
+    font-size: 18px;
     font-weight: 700;
+    color: #333;
+    margin-bottom: 2px;
   }
   
   .room-status {
-    font-size: 14px;
-    opacity: 0.9;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .room-status i {
+    margin-right: 2px;
+  }
+  
+  .room-card.available .room-status {
+    color: #407010;
+  }
+  
+  .room-card.booked .room-status {
+    color: #9A610E;
   }
   
   .floor-section {
@@ -174,12 +203,34 @@
     }
     
     .room-number {
-      font-size: 20px;
+      font-size: 16px;
     }
     
     .room-status {
-      font-size: 12px;
+      font-size: 11px;
     }
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Thiết lập hình nền cho các phòng có hình ảnh
+    const roomImages = document.querySelectorAll('.room-image:not(.room-image-placeholder)');
+    
+    roomImages.forEach(function(element) {
+      const imageUrl = element.getAttribute('data-image-url');
+      
+      if (imageUrl) {
+        element.style.backgroundImage = `url('${imageUrl}')`;
+        
+        const img = new Image();
+        img.onerror = function() {
+          element.classList.add('room-image-placeholder'); 
+          element.style.backgroundImage = '';
+        };
+        img.src = imageUrl;
+      }
+    });
+  });
+</script>
 {% endblock %}
