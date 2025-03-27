@@ -811,7 +811,20 @@ def manage_rooms(homestay_id):
         flash('Bạn không có quyền quản lý phòng của homestay này.', 'danger')
         return redirect(url_for('owner.dashboard'))
     
-    rooms = Room.query.filter_by(homestay_id=homestay_id).order_by(Room.floor_number, Room.room_number).all()
+    # Lấy tham số floor từ query string (nếu có)
+    floor_filter = request.args.get('floor', type=int)
+    
+    # Lấy tất cả các phòng để xác định danh sách các tầng
+    all_rooms = Room.query.filter_by(homestay_id=homestay_id).all()
+    all_floors = sorted(set(room.floor_number for room in all_rooms))
+    
+    # Lọc phòng theo tầng nếu có tham số floor
+    if floor_filter:
+        rooms = Room.query.filter_by(homestay_id=homestay_id, floor_number=floor_filter).order_by(Room.room_number).all()
+    else:
+        # Lấy tất cả phòng nếu không có tham số floor
+        rooms = all_rooms
+        rooms.sort(key=lambda x: (x.floor_number, x.room_number))
 
     # Group rooms by floor
     rooms_by_floor = {}
@@ -822,4 +835,4 @@ def manage_rooms(homestay_id):
         rooms_by_floor[floor].append(room)
 
     # Pass the dictionary to the template
-    return render_template('owner/manage_rooms.html', homestay=homestay, rooms_by_floor=rooms_by_floor)
+    return render_template('owner/manage_rooms.html', homestay=homestay, rooms_by_floor=rooms_by_floor, all_floors=all_floors)

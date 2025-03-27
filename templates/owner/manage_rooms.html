@@ -3,6 +3,35 @@
 {% block content %}
 <h2>Manage Rooms for Homestay: {{ homestay.title }}</h2>
 
+<!-- Thay đổi bộ lọc tầng sang dạng dropdown -->
+<div class="filter-container mb-4">
+  <div class="dropdown">
+    <button class="btn btn-warning dropdown-toggle" type="button" id="floorFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      {% if request.args.get('floor') %}
+        Tầng {{ request.args.get('floor') }}
+      {% else %}
+        Tất cả các tầng
+      {% endif %}
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="floorFilterDropdown">
+      <li>
+        <a class="dropdown-item {% if not request.args.get('floor') %}active{% endif %}" 
+           href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}">
+          Tất cả các tầng
+        </a>
+      </li>
+      {% for floor_num in all_floors %}
+        <li>
+          <a class="dropdown-item {% if request.args.get('floor')|int == floor_num %}active{% endif %}" 
+             href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id, floor=floor_num) }}">
+            Tầng {{ floor_num }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
 {% if rooms_by_floor %}
   {% for floor_num, rooms_on_floor in rooms_by_floor.items() %}
     <h3>Floor {{ floor_num }} ({{ rooms_on_floor|length }} rooms)</h3>
@@ -32,6 +61,7 @@
 <style>
   .floor-container {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 20px;
   }
@@ -50,6 +80,13 @@
   }
   .room.booked {
       background-color: red;
+  }
+  .dropdown-menu {
+      min-width: 180px;
+  }
+  .dropdown-item.active {
+      background-color: #0d6efd;
+      color: white;
   }
 </style>
 {% endblock %}
