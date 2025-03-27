@@ -3,28 +3,26 @@
 
 {% block content %}
 <div class="container-fluid mt-4">
-  <h2 class="mb-3">All Bookings</h2>
+  <h2 class="mb-3" data-translate="all-bookings">All Bookings</h2>
   <hr>
   {% if bookings %}
     <div class="card mb-4">
       <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">Homestay Bookings</h4>
+        <h4 class="mb-0" data-translate="homestay-bookings">Homestay Bookings</h4>
       </div>
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-bordered table-hover align-middle text-center">
             <thead class="table-dark">
               <tr>
-                <th class="align-middle" style="width: 3%">ID</th>
-                <th class="align-middle" style="width: 15%">Người đặt</th>
-                <th class="align-middle" style="width: 15%">Homestay</th>
-                <th class="align-middle" style="width: 8%">Room</th>
-                <th class="align-middle" style="width: 10%">Ngày Check-in</th>
-                <th class="align-middle" style="width: 7%">Giờ Check-in</th>
-                <th class="align-middle" style="width: 10%">Ngày Check-out</th>
-                <th class="align-middle" style="width: 7%">Giờ Check-out</th>
-                <th class="align-middle" style="width: 10%">Status</th>
-                <th class="align-middle" style="width: 15%">Actions</th>
+                <th class="align-middle" style="width: 3%" data-translate="id">ID</th>
+                <th class="align-middle" style="width: 15%" data-translate="booker">Người đặt</th>
+                <th class="align-middle" style="width: 15%" data-translate="homestay">Homestay</th>
+                <th class="align-middle" style="width: 8%" data-translate="room">Room</th>
+                <th class="align-middle" style="width: 10%" data-translate="check-in-date">Ngày Check-in</th>
+                <th class="align-middle" style="width: 7%" data-translate="check-in-time">Giờ Check-in</th>
+                <th class="align-middle" style="width: 10%" data-translate="check-out-date">Ngày Check-out</th>
+                <th class="align-middle" style="width: 7%" data-translate="check-out-time">Giờ Check-out</th>
               </tr>
             </thead>
             <tbody style="white-space: nowrap;">
@@ -37,63 +35,13 @@
                     {% if booking.room %}
                       Room {{ booking.room.room_number }}
                     {% else %}
-                      <em>No room assigned</em>
+                      <em data-translate="no-room-assigned">No room assigned</em>
                     {% endif %}
                   </td>
                   <td class="align-middle">{{ booking.start_time.strftime('%d-%m-%Y') }}</td>
                   <td class="align-middle">{{ booking.start_time.strftime('%H:%M') }}</td>
                   <td class="align-middle">{{ booking.end_time.strftime('%d-%m-%Y') }}</td>
                   <td class="align-middle">{{ booking.end_time.strftime('%H:%M') }}</td>
-                  
-                  <!-- Hiển thị trạng thái với badge màu -->
-                  <td class="align-middle">
-                    {% if booking.status == 'pending' %}
-                      <span class="badge bg-warning fs-6 w-100 py-2">Pending</span>
-                    {% elif booking.status == 'confirmed' %}
-                      <span class="badge bg-primary fs-6 w-100 py-2">Confirmed</span>
-                    {% elif booking.status == 'active' %}
-                      <span class="badge bg-info fs-6 w-100 py-2">Active</span>
-                    {% elif booking.status == 'completed' %}
-                      <span class="badge bg-success fs-6 w-100 py-2">Completed</span>
-                    {% elif booking.status == 'cancelled' %}
-                      <span class="badge bg-danger fs-6 w-100 py-2">Cancelled</span>
-                    {% elif booking.status == 'rejected' %}
-                      <span class="badge bg-danger fs-6 w-100 py-2">Rejected</span>
-                    {% else %}
-                      <span class="badge bg-secondary fs-6 w-100 py-2">{{ booking.status|capitalize }}</span>
-                    {% endif %}
-                  </td>
-                  
-                  <!-- Các nút hành động -->
-                  <td class="align-middle">
-                    {% if booking.status == 'pending' %}
-                      <div class="d-flex flex-column align-items-center gap-2">
-                        <div class="d-flex justify-content-center w-100 gap-1">
-                          <!-- Nút Confirm -->
-                          <a href="{{ url_for('owner.confirm_booking', id=booking.id) }}"
-                            class="btn btn-success btn-sm" style="width: 90px;">
-                            <i class="bi bi-check-circle"></i> Confirm
-                          </a>
-                          <!-- Nút Reject -->
-                          <a href="{{ url_for('owner.reject_booking', id=booking.id) }}"
-                            class="btn btn-danger btn-sm" style="width: 90px;">
-                            <i class="bi bi-x-circle"></i> Reject
-                          </a>
-                        </div>
-                        <!-- Nút Details -->
-                        <a href="{{ url_for('owner.booking_details', booking_id=booking.id) }}"
-                          class="btn btn-info btn-sm" style="width: 90px;">
-                          <i class="bi bi-info-circle"></i> Details
-                        </a>
-                      </div>
-                    {% else %}
-                      <!-- Chỉ hiển thị nút Details -->
-                      <a href="{{ url_for('owner.booking_details', booking_id=booking.id) }}"
-                        class="btn btn-info btn-sm" style="width: 90px;">
-                        <i class="bi bi-info-circle"></i> Details
-                      </a>
-                    {% endif %}
-                  </td>
                 </tr>
               {% endfor %}
             </tbody>
@@ -103,7 +51,7 @@
     </div>
   {% else %}
     <div class="alert alert-info">
-      <p class="mb-0">Chưa có booking nào.</p>
+      <p class="mb-0" data-translate="no-bookings-yet">Chưa có booking nào.</p>
     </div>
   {% endif %}
 </div>

@@ -6,10 +6,10 @@
 <div class="container my-4">
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('owner.dashboard') }}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="{{ url_for('owner.manage_homestays') }}">Manage Homestays</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('owner.dashboard') }}" data-translate="dashboard">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('owner.manage_homestays') }}" data-translate="manage-homestays">Manage Homestays</a></li>
       <li class="breadcrumb-item"><a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}">{{ homestay.title }}</a></li>
-      <li class="breadcrumb-item active">Book Room</li>
+      <li class="breadcrumb-item active" data-translate="book-room">Book Room</li>
     </ol>
   </nav>
 
@@ -17,22 +17,26 @@
     <div class="col-md-8 mx-auto">
       <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-          <h4 class="mb-0">Book a Room in: {{ homestay.title }}</h4>
+          <h4 class="mb-0" data-translate="book-room-in">Book a Room in: {{ homestay.title }}</h4>
         </div>
         <div class="card-body">
           <div class="alert alert-info">
-            <i class="bi bi-info-circle me-2"></i> Đây là chức năng cho phép bạn đặt phòng trực tiếp cho khách đến homestay mà không sử dụng app.
+            <i class="bi bi-info-circle me-2"></i> <span data-translate="direct-booking-info">Đây là chức năng cho phép bạn đặt phòng trực tiếp cho khách đến homestay mà không sử dụng app.</span>
           </div>
           
           <form method="post" action="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" id="booking-form">
 
             <!-- Room Selection Dropdown -->
             <div class="mb-3">
-              <label for="room_id" class="form-label">Chọn phòng</label>
+              <label for="room_id" class="form-label" data-translate="select-room">Chọn phòng</label>
               <select class="form-select" id="room_id" name="room_id" required>
                 {% for room in homestay.rooms %}
-                  <option value="{{ room.id }}" data-price="{{ room.price_per_hour|default(0) }}">
-                    Phòng {{ room.room_number }} - Giường: {{ room.bed_count }}, Phòng tắm: {{ room.bathroom_count }}, Sức chứa: {{ room.max_guests }}
+                  <option value="{{ room.id }}" data-price="{{ room.price_per_hour|default(0) }}" 
+                          data-room-number="{{ room.room_number }}"
+                          data-beds="{{ room.bed_count }}"
+                          data-bathrooms="{{ room.bathroom_count }}"
+                          data-capacity="{{ room.max_guests }}">
+                    Phòng {{ room.room_number }}
                   </option>
                 {% endfor %}
               </select>
@@ -40,44 +44,44 @@
 
             <!-- Date Field (using Flatpickr) -->
             <div class="mb-3">
-              <label for="start_date" class="form-label">Ngày</label>
+              <label for="start_date" class="form-label" data-translate="date">Ngày</label>
               <input type="text" class="form-control" id="start_date" name="start_date" required>
             </div>
 
             <!-- Time Field -->
             <div class="mb-3">
-              <label for="start_time" class="form-label">Giờ</label>
+              <label for="start_time" class="form-label" data-translate="time">Giờ</label>
               <input type="time" class="form-control" id="start_time" name="start_time" required>
             </div>
 
             <!-- Duration Field in Minutes -->
             <div class="mb-3">
-              <label for="duration" class="form-label">Thời lượng (phút)</label>
+              <label for="duration" class="form-label" data-translate="duration-minutes">Thời lượng (phút)</label>
               <input type="number" class="form-control" id="duration" name="duration" min="1" value="60" required>
             </div>
 
             <!-- Booking Summary -->
             <div class="card mb-3 border-primary">
               <div class="card-body">
-                <h5>Tóm tắt đặt phòng</h5>
+                <h5 data-translate="booking-summary">Tóm tắt đặt phòng</h5>
                 <table class="table table-borderless">
                   <tr>
-                    <td>Giá mỗi giờ</td>
+                    <td data-translate="price-per-hour">Giá mỗi giờ</td>
                     <td class="text-end" id="price-per-hour">$0.00</td>
                   </tr>
                   <tr>
-                    <td>Thời lượng (phút)</td>
+                    <td data-translate="duration-minutes">Thời lượng (phút)</td>
                     <td class="text-end" id="duration-display">60</td>
                   </tr>
                   <tr class="fw-bold">
-                    <td>Tổng tiền</td>
+                    <td data-translate="total-price">Tổng tiền</td>
                     <td class="text-end" id="total-price">$0.00</td>
                   </tr>
                 </table>
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Xác nhận đặt phòng</button>
+            <button type="submit" class="btn btn-primary w-100" data-translate="confirm-booking">Xác nhận đặt phòng</button>
           </form>
         </div>
       </div>
@@ -123,5 +127,43 @@
   roomSelect.addEventListener('change', updateSummary);
   durationInput.addEventListener('input', updateSummary);
   updateSummary();
+  
+  // Cập nhật nội dung các option khi trang tải
+  function updateRoomOptions() {
+    try {
+      // Lấy ngôn ngữ hiện tại
+      const lang = localStorage.getItem('language') || 'vi';
+      
+      // Lấy các bản dịch từ object toàn cục
+      if (typeof translations !== 'undefined' && translations[lang]) {
+        const roomText = translations[lang]['room'] || 'Room';
+        const bedsText = translations[lang]['beds'] || 'Beds';
+        const bathroomsText = translations[lang]['bathrooms'] || 'Bathrooms';
+        const capacityText = translations[lang]['capacity'] || 'Capacity';
+        
+        // Cập nhật tất cả các option
+        for (let i = 0; i < roomSelect.options.length; i++) {
+          const option = roomSelect.options[i];
+          const roomNumber = option.getAttribute('data-room-number');
+          const beds = option.getAttribute('data-beds');
+          const bathrooms = option.getAttribute('data-bathrooms');
+          const capacity = option.getAttribute('data-capacity');
+          
+          if (roomNumber && beds && bathrooms && capacity) {
+            option.textContent = `${roomText} ${roomNumber} - ${bedsText}: ${beds}, ${bathroomsText}: ${bathrooms}, ${capacityText}: ${capacity}`;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật tùy chọn phòng:", error);
+    }
+  }
+  
+  // Gọi hàm khi trang đã tải xong
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", updateRoomOptions);
+  } else {
+    updateRoomOptions();
+  }
 </script>
 {% endblock %} 

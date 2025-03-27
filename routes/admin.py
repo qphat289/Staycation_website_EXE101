@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from models import db, Admin, Owner, Renter
+from models import db, Admin, Owner, Renter, Homestay
 from sqlalchemy.exc import IntegrityError
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -94,3 +94,35 @@ def create_owner():
             return render_template('admin/create_owner.html', form_data=form_data)
             
     return render_template('admin/create_owner.html', form_data=form_data)
+
+@admin_bp.route('/homestay/<int:homestay_id>')
+@login_required
+def homestay_details(homestay_id):
+    if not isinstance(current_user, Admin):
+        flash("Bạn không có quyền truy cập!", "danger")
+        return redirect(url_for('auth.login'))
+    
+    homestay = Homestay.query.get_or_404(homestay_id)
+    return render_template('admin/homestay_details.html', homestay=homestay)
+
+@admin_bp.route('/homestay/<int:homestay_id>/toggle-status', methods=['POST'])
+@login_required
+def toggle_homestay_status(homestay_id):
+    if not isinstance(current_user, Admin):
+        flash("Bạn không có quyền thực hiện thao tác này!", "danger")
+        return redirect(url_for('auth.login'))
+    
+    homestay = Homestay.query.get_or_404(homestay_id)
+    
+    # Đảo ngược trạng thái hoạt động
+    homestay.is_active = not homestay.is_active
+    
+    try:
+        db.session.commit()
+        status_message = "Đã mở khóa" if homestay.is_active else "Đã tạm khóa"
+        flash(f"{status_message} homestay '{homestay.title}' thành công!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Có lỗi xảy ra: {str(e)}", "danger")
+    
+    return redirect(url_for('admin.homestay_details', homestay_id=homestay.id))

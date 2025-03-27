@@ -55,7 +55,7 @@
 
                             <!-- Book Room Route -->
                             <a href="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" 
-                               class="btn-action btn-primary">
+                               class="btn-action btn-primary" data-translate="book-room">
                                <i class="bi bi-calendar-plus me-1"></i> Đặt phòng
                             </a>
 
@@ -68,7 +68,7 @@
                             <!-- Delete Homestay Route -->
                             <a href="{{ url_for('owner.delete_homestay', id=homestay.id) }}" 
                                class="btn-action btn-delete"
-                               onclick="return confirm('Are you sure you want to delete this homestay?');"
+                               onclick="const lang = localStorage.getItem('language') || 'vi'; return confirm(translations[lang]['confirm-delete-homestay'] || 'Are you sure you want to delete this homestay?');"
                                data-translate="delete">
                                <i class="bi bi-trash me-1"></i> Delete
                             </a>

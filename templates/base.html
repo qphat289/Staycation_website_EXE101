@@ -31,14 +31,14 @@
     
     {% if current_user.is_authenticated and current_user.__class__.__name__ == 'Owner' and current_user.is_renter() %}
     <div class="bg-white text-dark text-center py-1 border-bottom" style="position: sticky; top: 0; z-index: 1050;">
-        <strong>Bạn đang ở chế độ xem</strong>
+        <strong data-translate="viewing-mode">Bạn đang ở chế độ xem</strong>
     </div>
     {% endif %}
     
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}" data-translate="homestay-booking">
+            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}" data-translate="homestay-booking" style="color: #333333;">
                 <i class="bi bi-house-heart me-2"></i>Homestay Booking
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -49,25 +49,25 @@
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_owner() %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('owner.dashboard') }}">
+                                <a class="nav-link" href="{{ url_for('owner.dashboard') }}" style="color: #333333;">
                                     <i class="bi bi-speedometer2 me-1"></i><span data-translate="owner-dashboard">Owner Dashboard</span>
                                 </a>
                             </li>
                         {% else %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('home') }}">
+                                <a class="nav-link" href="{{ url_for('home') }}" style="color: #333333;">
                                     <i class="bi bi-house me-1"></i><span data-translate="home">Home</span>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('renter.search') }}">
+                                <a class="nav-link" href="{{ url_for('renter.search') }}" style="color: #333333;">
                                     <i class="bi bi-search me-1"></i><span data-translate="search">Search</span>
                                 </a>
                             </li>
                         {% endif %}
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('home') }}">
+                            <a class="nav-link" href="{{ url_for('home') }}" style="color: #333333;">
                                 <i class="bi bi-house me-1"></i><span data-translate="home">Home</span>
                             </a>
                         </li>
@@ -77,7 +77,7 @@
                     {% if current_user.is_authenticated %}
                         {% if current_user.role == 'admin' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                                <a class="nav-link" href="{{ url_for('admin.dashboard') }}" style="color: #333333;">
                                     <i class="bi bi-shield-lock me-1"></i><span data-translate="admin-dashboard">Admin Dashboard</span>
                                 </a>
                             </li>
@@ -86,7 +86,7 @@
                         {% else %}
                             {% if not (current_user.__class__.__name__ == 'Owner' and current_user.is_renter()) %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('renter.dashboard') }}">
+                                <a class="nav-link" href="{{ url_for('renter.dashboard') }}" style="color: #333333;">
                                     <i class="bi bi-person-workspace me-1"></i><span data-translate="renter-dashboard">Renter Dashboard</span>
                                 </a>
                             </li>
@@ -95,7 +95,7 @@
                         
                         <!-- Language Toggle Button -->
                         <li class="nav-item">
-                            <button id="languageToggle" class="btn btn-outline-light ms-2 rounded-pill" onclick="toggleLanguage(event)">
+                            <button id="languageToggle" class="btn ms-2 rounded-pill" onclick="toggleLanguage(event)">
                                 <img src="{{ url_for('static', filename='images/flags/vn.svg') }}" alt="VN" class="flag-img">
                                 <span>VI</span>
                             </button>
@@ -103,7 +103,7 @@
 
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown ms-3">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #333333;">
                                 {% if current_user.avatar %}
                                     <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2 border border-2 border-white" style="width: 32px; height: 32px; object-fit: cover;">
                                 {% else %}
@@ -150,17 +150,17 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}" style="color: #333333;">
                                 <i class="bi bi-box-arrow-in-right me-1"></i><span data-translate="login">Login</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.register') }}">
+                            <a class="nav-link" href="{{ url_for('auth.register') }}" style="color: #333333;">
                                 <i class="bi bi-person-plus me-1"></i><span data-translate="register">Register</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <button id="languageToggle" class="btn btn-outline-light ms-2 rounded-pill" onclick="toggleLanguage(event)">
+                            <button id="languageToggle" class="btn ms-2 rounded-pill" onclick="toggleLanguage(event)">
                                 <img src="{{ url_for('static', filename='images/flags/vn.svg') }}" alt="VN" class="flag-img">
                                 <span>VI</span>
                             </button>
@@ -177,7 +177,93 @@
             {% if messages %}
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category }} shadow-sm rounded-3">
-                        <i class="bi bi-info-circle me-2"></i>{{ message }}
+                        <i class="bi bi-info-circle me-2"></i>
+                        <!-- Kiểm tra nếu thông báo trùng khớp với từ khóa trong hệ thống dịch -->
+                        {% if message == 'Booking created successfully!' %}
+                        <span data-translate="booking-created-successfully">{{ message }}</span>
+                        {% elif message == 'Registration successful! Please log in.' %}
+                        <span data-translate="registration-successful">{{ message }}</span>
+                        {% elif message == 'You have been logged out' %}
+                        <span data-translate="logged-out">{{ message }}</span>
+                        {% elif message == 'Profile updated successfully!' %}
+                        <span data-translate="profile-updated">{{ message }}</span>
+                        {% elif message == 'Booking request submitted successfully!' %}
+                        <span data-translate="booking-request-submitted">{{ message }}</span>
+                        {% elif message == 'Booking cancelled successfully' %}
+                        <span data-translate="booking-cancelled">{{ message }}</span>
+                        {% elif message == 'Review submitted!' %}
+                        <span data-translate="review-submitted">{{ message }}</span>
+                        {% elif message == 'Bạn đang ở chế độ xem' %}
+                        <span data-translate="viewing-mode">{{ message }}</span>
+                        {% elif message == 'Cài đặt thông báo đã được cập nhật' %}
+                        <span data-translate="notification-settings-updated">{{ message }}</span>
+                        {% elif message == 'Cài đặt quyền riêng tư đã được cập nhật' %}
+                        <span data-translate="privacy-settings-updated">{{ message }}</span>
+                        {% elif message == 'Tài khoản của bạn đã được xóa' %}
+                        <span data-translate="account-deleted">{{ message }}</span>
+                        {% elif message == 'Homestay updated successfully!' %}
+                        <span data-translate="homestay-updated">{{ message }}</span>
+                        {% elif message == 'Đã xóa homestay thành công!' %}
+                        <span data-translate="homestay-deleted">{{ message }}</span>
+                        {% elif message == 'Đã xóa ảnh thành công!' %}
+                        <span data-translate="image-deleted">{{ message }}</span>
+                        {% elif message == 'Đặt phòng đã được xác nhận thành công!' %}
+                        <span data-translate="booking-confirmed">{{ message }}</span>
+                        {% elif message == 'Đã chuyển sang vai trò chủ nhà' %}
+                        <span data-translate="switched-to-owner">{{ message }}</span>
+                        {% elif message == 'You must be a renter to access this page' %}
+                        <span data-translate="not-renter-access">{{ message }}</span>
+                        {% elif message == 'This room is not available during the selected time period.' %}
+                        <span data-translate="room-not-available">{{ message }}</span>
+                        {% elif message == 'You do not have permission to cancel this booking' %}
+                        <span data-translate="no-cancel-permission">{{ message }}</span>
+                        {% elif message == 'Cannot cancel a booking that has already started' %}
+                        <span data-translate="cannot-cancel-started">{{ message }}</span>
+                        {% elif message == 'You have already left a review for this homestay.' %}
+                        <span data-translate="already-reviewed">{{ message }}</span>
+                        {% elif message == 'Bạn không phải là chủ nhà để thực hiện chuyển đổi này' %}
+                        <span data-translate="not-owner-switch">{{ message }}</span>
+                        {% elif message == 'Mật khẩu không chính xác' %}
+                        <span data-translate="incorrect-password">{{ message }}</span>
+                        {% elif message == 'You must be an owner to access this page' %}
+                        <span data-translate="must-be-owner">{{ message }}</span>
+                        {% elif message == 'Bạn không có quyền xóa homestay này' %}
+                        <span data-translate="no-delete-homestay-permission">{{ message }}</span>
+                        {% elif message == 'Bạn không có quyền thêm phòng vào homestay này.' %}
+                        <span data-translate="no-add-room-permission">{{ message }}</span>
+                        {% elif message == 'Bạn không có quyền thêm ảnh cho phòng này.' %}
+                        <span data-translate="no-add-image-permission">{{ message }}</span>
+                        {% elif message == 'Bạn không có quyền xóa ảnh của phòng này.' %}
+                        <span data-translate="no-delete-image-permission">{{ message }}</span>
+                        {% elif message == 'Bạn không có quyền xác nhận đặt phòng này.' %}
+                        <span data-translate="no-confirm-booking-permission">{{ message }}</span>
+                        {% elif message == 'Bạn không có quyền từ chối đặt phòng này.' %}
+                        <span data-translate="no-reject-booking-permission">{{ message }}</span>
+                        {% elif message == 'Bạn không có quyền xem thông tin đặt phòng này.' %}
+                        <span data-translate="no-view-booking-permission">{{ message }}</span>
+                        {% elif message == 'Bạn không phải là người thuê để thực hiện chuyển đổi này' %}
+                        <span data-translate="not-renter-to-switch">{{ message }}</span>
+                        {% elif message == 'Bạn không có quyền quản lý phòng của homestay này.' %}
+                        <span data-translate="no-manage-room-permission">{{ message }}</span>
+                        {% elif message == 'Bạn đang ở chế độ xem, không thể thực hiện đặt phòng' %}
+                        <span data-translate="viewing-mode-no-booking">{{ message }}</span>
+                        {% elif message == 'Đã từ chối đặt phòng.' %}
+                        <span data-translate="booking-rejected">{{ message }}</span>
+                        {% elif message == 'Please select a room.' %}
+                        <span data-translate="please-select-room">{{ message }}</span>
+                        {% elif message == 'Duration is required' %}
+                        <span data-translate="duration-required">{{ message }}</span>
+                        {% elif message == 'Invalid duration value.' %}
+                        <span data-translate="invalid-duration">{{ message }}</span>
+                        {% elif message == 'Minimum duration is 1 minute.' %}
+                        <span data-translate="minimum-duration">{{ message }}</span>
+                        {% elif message == 'You must select both date and time.' %}
+                        <span data-translate="select-date-time">{{ message }}</span>
+                        {% elif message == 'Invalid date or time format.' %}
+                        <span data-translate="invalid-date-time">{{ message }}</span>
+                        {% else %}
+                        {{ message }}
+                        {% endif %}
                     </div>
                 {% endfor %}
             {% endif %}

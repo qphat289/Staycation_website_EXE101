@@ -2,15 +2,22 @@
    0. NEW COLOR SCHEME
    ========================= */
    :root {
-    /* Thay đổi sang bảng màu vàng */
-    --primary-color: #e6bb5e;       /* Màu chủ đạo (vàng) */
-    --primary-light: #f0d08a;       /* Màu nhạt hơn */
-    --primary-dark: #c2993a;        /* Màu đậm hơn */
+    /* Bảng màu bổ túc bộ bốn */
+    --primary-color: #F1B55F;       /* Màu chủ đạo (vàng) */
+    --primary-light: #F7D9AF;       /* Màu nhạt hơn */
+    --primary-dark: #EA9415;        /* Màu đậm hơn */
+    --accent-color: #7ABC0E;        /* Màu tương phản (xanh olive) */
+    --accent-dark: #407010;         /* Màu tương phản đậm */
+    --warning-color: #A86400;       /* Màu cảnh báo (cam nâu) */
+    --warning-dark: #9A610E;        /* Màu cảnh báo đậm */
+    --muted-color: #9A970E;         /* Màu thứ cấp */
     --text-primary: #333333;        /* Màu chữ chính */
     --text-secondary: #666666;      /* Màu chữ phụ */
+    --text-light: #FFFDFA;          /* Màu chữ sáng */
     --border-color: #e0e0e0;        /* Màu viền */
-    --background-light: #f8f9fa;    /* Màu nền sáng */
-    --white: #ffffff;              /* Màu trắng */
+    --background-light: #FFFDFA;    /* Màu nền sáng */
+    --background-warning: #FFDBA8;  /* Màu nền cảnh báo */
+    --white: #ffffff;               /* Màu trắng */
 }
 
 /* =======================================================================
@@ -90,7 +97,7 @@ main {
 .btn-primary {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    color: #000000;
+    color: var(--text-primary);
     border-radius: 6px;
     padding: 8px 16px;
     font-weight: 500;
@@ -99,7 +106,7 @@ main {
 .btn-primary:hover {
     background-color: var(--primary-dark);
     border-color: var(--primary-dark);
-    color: #000000;
+    color: var(--text-light);
 }
 
 .btn-outline-primary {
@@ -113,14 +120,57 @@ main {
 .btn-outline-primary:hover {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    color: #000000;
+    color: var(--text-primary);
+}
+
+.btn-success {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--text-light);
+}
+
+.btn-success:hover {
+    background-color: var(--accent-dark);
+    border-color: var(--accent-dark);
+    color: var(--text-light);
+}
+
+.btn-warning {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.btn-warning:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: var(--text-primary);
+}
+
+.btn-danger {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: var(--text-light);
+}
+
+.btn-danger:hover {
+    background-color: var(--warning-dark);
+    border-color: var(--warning-dark);
+    color: var(--text-light);
 }
 
 /* 1.4 Navbar */
-/* Nếu bạn dùng .navbar-dark.bg-primary => đổi sang var(--primary-color) */
 .navbar-dark.bg-primary {
     background-color: var(--primary-color) !important;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: var(--text-primary);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: var(--warning-dark);
 }
 
 /* 1.5 Form Controls */
@@ -131,9 +181,52 @@ main {
 
 .form-control:focus {
     border-color: var(--primary-color);
-    /* Tạo lớp mờ xung quanh field khi focus */
-    box-shadow: 0 0 0 0.25rem rgba(233, 199, 127, 0.25);
-    /* Màu shadow = primary-color + opacity 0.25 */
+    box-shadow: 0 0 0 0.25rem rgba(241, 181, 95, 0.25);
+}
+
+/* Badge Styles */
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+    color: var(--text-primary);
+}
+
+.badge.bg-success {
+    background-color: var(--accent-color) !important;
+    color: var(--text-light);
+}
+
+.badge.bg-warning {
+    background-color: var(--primary-dark) !important;
+    color: var(--text-light);
+}
+
+.badge.bg-danger {
+    background-color: var(--warning-color) !important;
+    color: var(--text-light);
+}
+
+.badge.bg-info {
+    background-color: var(--muted-color) !important;
+    color: var(--text-light);
+}
+
+/* Alert Styles */
+.alert-warning {
+    background-color: var(--background-warning);
+    color: var(--warning-dark);
+    border-color: var(--primary-light);
+}
+
+.alert-success {
+    background-color: rgba(122, 188, 14, 0.15);
+    color: var(--accent-dark);
+    border-color: var(--accent-color);
+}
+
+.alert-danger {
+    background-color: rgba(168, 100, 0, 0.15);
+    color: var(--warning-dark);
+    border-color: var(--warning-color);
 }
 
 /* 1.6 Footer */
@@ -173,11 +266,100 @@ footer {
 }
 
 .room-card .card-header {
-    background-color: var(--primary-color);
-    color: var(--white);
+    background-color: var(--primary-light);
+    color: var(--text-primary);
     font-weight: 600;
     padding: 10px 15px;
     border-bottom: none;
+}
+
+.room-card .card-body {
+    background-color: var(--white);
+}
+
+.room-card .card-footer {
+    background-color: var(--background-light);
+    border-top: 1px solid var(--border-color);
+    padding: 15px;
+}
+
+/* Tùy chỉnh cho trạng thái phòng */
+.room-status {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.room-status.available {
+    background-color: rgba(122, 188, 14, 0.15);
+    color: var(--accent-dark);
+}
+
+.room-status.booked {
+    background-color: rgba(168, 100, 0, 0.15);
+    color: var(--warning-dark);
+}
+
+/* Tùy chỉnh cho các nút hành động phòng */
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.action-button.primary {
+    background-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.action-button.primary:hover {
+    background-color: var(--primary-dark);
+    color: var(--text-light);
+}
+
+.action-button.success {
+    background-color: var(--accent-color);
+    color: var(--text-light);
+}
+
+.action-button.success:hover {
+    background-color: var(--accent-dark);
+}
+
+.action-button.danger {
+    background-color: var(--warning-color);
+    color: var(--text-light);
+}
+
+.action-button.danger:hover {
+    background-color: var(--warning-dark);
+}
+
+/* Tùy chỉnh cho các tab */
+.nav-tabs .nav-link {
+    color: var(--text-secondary);
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 15px;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    color: var(--primary-dark);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-dark);
+    background-color: transparent;
+    border-bottom: 2px solid var(--primary-dark);
 }
 
 /* 3.2 Room Image Container */
@@ -573,13 +755,14 @@ footer {
     justify-content: center;
     transition: all 0.3s ease;
     padding: 6px 14px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 #languageToggle:hover {
     transform: scale(1.05);
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: #f8f9fa;
 }
 
 #languageToggle:active {

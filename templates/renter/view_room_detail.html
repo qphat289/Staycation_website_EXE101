@@ -105,9 +105,81 @@
                     <p><span>{{ room.bed_count }}</span> <span data-translate="beds">Bed(s)</span></p>
                     <p><span>{{ room.bathroom_count }}</span> <span data-translate="bathrooms">Bathroom(s)</span></p>
                     
+                    <!-- Hiển thị tiện nghi phòng -->
+                    <hr>
+                    <h5 data-translate="amenities">Tiện nghi</h5>
+                    
+                    {% if 'Wifi tốc độ cao' in room.description or 'Wifi miễn phí' in room.description or 'Netflix' in room.description or 'TV màn hình' in room.description or 'Điều hòa' in room.description or 'Máy pha cà phê' in room.description or 'cà phê' in room.description or 'View đẹp' in room.description or 'Loa bluetooth' in room.description %}
+                    <div class="amenity-list bg-light p-3 rounded-3 mb-3">
+                        <div class="row g-2">
+                            {% if 'Wifi tốc độ cao' in room.description or 'Wifi miễn phí' in room.description %}
+                            <div class="col-12 mb-2">
+                                <i class="bi bi-wifi me-2 text-primary"></i>
+                                <span class="text-nowrap">Wifi tốc độ cao</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if 'Netflix' in room.description or 'TV màn hình' in room.description %}
+                            <div class="col-12 mb-2">
+                                <i class="bi bi-tv me-2 text-primary"></i>
+                                <span class="text-nowrap">Netflix</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if 'Điều hòa' in room.description %}
+                            <div class="col-12 mb-2">
+                                <i class="bi bi-snow me-2 text-primary"></i>
+                                <span class="text-nowrap">Điều hòa</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if 'Máy pha cà phê' in room.description or 'cà phê' in room.description %}
+                            <div class="col-12 mb-2">
+                                <i class="bi bi-cup-hot me-2 text-primary"></i>
+                                <span class="text-nowrap">Máy pha cà phê</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if 'View đẹp' in room.description %}
+                            <div class="col-12 mb-2">
+                                <i class="bi bi-view-stacked me-2 text-primary"></i>
+                                <span class="text-nowrap">View đẹp</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if 'Loa bluetooth' in room.description %}
+                            <div class="col-12 mb-2">
+                                <i class="bi bi-music-note-beamed me-2 text-primary"></i>
+                                <span class="text-nowrap">Loa bluetooth</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted fst-italic">Chưa có thông tin tiện nghi</p>
+                    {% endif %}
+                    
                     <hr>
                     <h5 data-translate="description">Description</h5>
-                    <p>{{ room.description }}</p>
+                    <p>{% if room.description and room.description != '1' %}
+                    {% set amenities = ["Wifi tốc độ cao", "Netflix", "Điều hòa", "Máy pha cà phê", "View đẹp", "Loa bluetooth"] %}
+                    {% set description_parts = room.description.split(', ') %}
+                    {% set real_description = [] %}
+                    
+                    {% for part in description_parts %}
+                        {% if part not in amenities %}
+                            {% set _ = real_description.append(part) %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if real_description|length > 0 %}
+                        {{ real_description|join(', ') }}
+                    {% else %}
+                        <span class="text-muted fst-italic">Chưa có mô tả chi tiết</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted fst-italic">Chưa có mô tả chi tiết</span>
+                {% endif %}</p>
                     
                     <div class="d-grid gap-2 mt-4">
                         <a href="{{ url_for('renter.book_homestay', homestay_id=room.homestay.id) }}" class="btn btn-lg btn-primary">

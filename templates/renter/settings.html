@@ -53,7 +53,7 @@
                     <h5 class="card-title" data-translate="language-settings">Language Settings</h5>
                     <div class="mb-3">
                         <label class="form-label" data-translate="preferred-language">Preferred Language</label>
-                        <select class="form-select" id="languageSelect" onchange="toggleLanguage()">
+                        <select class="form-select" id="languageSelect" onchange="setLanguage(this.value)">
                             <option value="en" {% if current_lang == 'en' %}selected{% endif %}>English</option>
                             <option value="vi" {% if current_lang == 'vi' %}selected{% endif %}>Tiếng Việt</option>
                         </select>

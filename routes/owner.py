@@ -385,32 +385,70 @@ def edit_room(room_id):
         return redirect(url_for('owner.dashboard'))
     
     if request.method == 'POST':
-        # 2) Update fields from form
-        room.room_number = request.form['room_number']
-        room.floor_number = request.form['floor_number']
-        room.bed_count = request.form['bed_count']
-        room.bathroom_count = request.form['bathroom_count']
-        room.max_guests = request.form['max_guests']
-        room.price_per_hour = request.form['price_per_hour']
-        room.description = request.form['description']
+        # Handle form submission to edit
+        room.room_number = request.form.get('room_number', room.room_number)
+        room.bed_count = request.form.get('bed_count', room.bed_count)
+        room.bathroom_count = request.form.get('bathroom_count', room.bathroom_count)
+        room.max_guests = request.form.get('max_guests', room.max_guests)
+        room.price_per_hour = request.form.get('price_per_hour', room.price_per_hour)
+        
+        # Lấy giá trị mô tả ban đầu (đã được lọc tiện ích từ client)
+        description = request.form.get('description', '').strip()
+        
+        # Xử lý các tiện ích được chọn
+        has_wifi = 'has_wifi' in request.form
+        has_tv = 'has_tv' in request.form
+        has_ac = 'has_ac' in request.form
+        has_coffee = 'has_coffee' in request.form
+        has_view = 'has_view' in request.form
+        has_bluetooth = 'has_bluetooth' in request.form
+        
+        # Tạo mảng tiện ích đã chọn
+        amenities = []
+        if has_wifi: amenities.append("Wifi tốc độ cao")
+        if has_tv: amenities.append("Netflix")
+        if has_ac: amenities.append("Điều hòa")
+        if has_coffee: amenities.append("Máy pha cà phê")
+        if has_view: amenities.append("View đẹp")
+        if has_bluetooth: amenities.append("Loa bluetooth")
+        
+        # Tạo chuỗi tiện ích
+        amenities_string = ', '.join(amenities)
+        
+        # Xử lý dữ liệu lưu vào database
+        # Nếu có cả mô tả và tiện ích
+        if description and amenities:
+            room.description = description + (', ' + amenities_string if description else '')
+        # Nếu chỉ có tiện ích
+        elif amenities:
+            room.description = amenities_string
+        # Nếu chỉ có mô tả
+        elif description:
+            room.description = description
+        # Nếu không có cả hai
+        else:
+            room.description = '1'  # Giá trị mặc định
+
+        # Xử lý hình ảnh
         image_files = request.files.getlist('gallery')
         for image_file in image_files:
-            if image_file and image_file.filename != '':
-                # Save to uploads folder
+            if image_file and image_file.filename:
+                # Save file to uploads folder
                 filename = secure_filename(image_file.filename)
                 file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                 image_file.save(file_path)
 
-                # Add to DB (assuming a RoomImage model)
+                # Create RoomImage record
                 new_image = RoomImage(
                     room_id=room.id,
                     image_path=f"uploads/{filename}"
                 )
                 db.session.add(new_image)
+
         db.session.commit()
-        flash('Phòng đã được cập nhật thành công!', 'success')
+        flash("Phòng đã được cập nhật thành công!", "success")
         return redirect(url_for('owner.owner_room_detail', room_id=room.id))
-    
+
     # Render a form with existing room data
     return render_template('owner/room_detail_owner.html', room=room)
 
@@ -438,12 +476,46 @@ def owner_room_detail(room_id):
         room.bathroom_count = request.form.get('bathroom_count', room.bathroom_count)
         room.max_guests = request.form.get('max_guests', room.max_guests)
         room.price_per_hour = request.form.get('price_per_hour', room.price_per_hour)
-        room.description = request.form.get('description', room.description)
         
-        # (Optional) handle images if you allow owners to upload more images
-        # image_files = request.files.getlist('gallery')
-        # ... logic to save them ...
-        image_files = request.files.getlist('gallery')  # matches <input name="gallery" multiple>
+        # Lấy giá trị mô tả ban đầu (đã được lọc tiện ích từ client)
+        description = request.form.get('description', '').strip()
+        
+        # Xử lý các tiện ích được chọn
+        has_wifi = 'has_wifi' in request.form
+        has_tv = 'has_tv' in request.form
+        has_ac = 'has_ac' in request.form
+        has_coffee = 'has_coffee' in request.form
+        has_view = 'has_view' in request.form
+        has_bluetooth = 'has_bluetooth' in request.form
+        
+        # Tạo mảng tiện ích đã chọn
+        amenities = []
+        if has_wifi: amenities.append("Wifi tốc độ cao")
+        if has_tv: amenities.append("Netflix")
+        if has_ac: amenities.append("Điều hòa")
+        if has_coffee: amenities.append("Máy pha cà phê")
+        if has_view: amenities.append("View đẹp")
+        if has_bluetooth: amenities.append("Loa bluetooth")
+        
+        # Tạo chuỗi tiện ích
+        amenities_string = ', '.join(amenities)
+        
+        # Xử lý dữ liệu lưu vào database
+        # Nếu có cả mô tả và tiện ích
+        if description and amenities:
+            room.description = description + (', ' + amenities_string if description else '')
+        # Nếu chỉ có tiện ích
+        elif amenities:
+            room.description = amenities_string
+        # Nếu chỉ có mô tả
+        elif description:
+            room.description = description
+        # Nếu không có cả hai
+        else:
+            room.description = '1'  # Giá trị mặc định
+
+        # Xử lý hình ảnh
+        image_files = request.files.getlist('gallery')
         for image_file in image_files:
             if image_file and image_file.filename:
                 # Save file to uploads folder
@@ -454,7 +526,7 @@ def owner_room_detail(room_id):
                 # Create RoomImage record
                 new_image = RoomImage(
                     room_id=room.id,
-                    image_path=f"uploads/{filename}"  # or however you store the path
+                    image_path=f"uploads/{filename}"
                 )
                 db.session.add(new_image)
 

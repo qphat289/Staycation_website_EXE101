@@ -69,15 +69,24 @@
                         </div>
                         
                         <!-- Level-up Text -->
-                        <small class="text-muted">
-                            {% if next_rank %}
-                                <span data-translate="leveling-to">Leveling to</span> 
-                                <span data-translate="{{ next_rank|lower }}">{{ next_rank }}</span>
-                                (<span data-translate="xp-progress" data-xp="{{ xp_formatted }}" data-next-min="{{ next_min_formatted }}">{{ xp_formatted }}/{{ next_min_formatted }} XP</span>)
-                            {% else %}
-                                <span data-translate="max-rank">Already at Diamond Rank!</span>
-                            {% endif %}
-                        </small>
+                        <div class="mt-2">
+                            <h6 class="mb-1" data-translate="leveling-progress">Tiến Trình Cấp Độ</h6>
+                            <div class="text-muted">
+                                {% if next_rank %}
+                                    <div>
+                                        <span data-translate="current-xp">Điểm Kinh Nghiệm</span>: <strong>{{ xp_formatted }} XP</strong>
+                                    </div>
+                                    <div>
+                                        <span data-translate="next-rank-xp">Cần để đạt</span> <span data-translate="{{ next_rank|lower }}">{{ next_rank }}</span>: <strong>{{ next_min_formatted }} XP</strong>
+                                    </div>
+                                    <div>
+                                        <span data-translate="xp-needed">Còn thiếu</span>: <strong>{{ "%.1f"|format(xp_needed) }} XP</strong>
+                                    </div>
+                                {% else %}
+                                    <span data-translate="max-rank">Already at Diamond Rank!</span>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                     
                 </div>

@@ -69,7 +69,7 @@ def create_app():
             homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
             return render_template('home.html', homestays=homestays)
         # Retrieve featured homestays to display on the homepage
-        homestays = Homestay.query.limit(6).all()
+        homestays = Homestay.query.filter_by(is_active=True).limit(6).all()
         return render_template('home.html', homestays=homestays)
 
     # Route to handle image uploads

@@ -148,6 +148,7 @@ class Homestay(db.Model):
     image_path = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
     
     # Liên kết với Owner
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
@@ -177,6 +178,8 @@ class Room(db.Model):
     # Quan hệ với cascade delete cho RoomImage:
     images = db.relationship('RoomImage', backref='room', lazy=True, cascade="all, delete-orphan")
     
+    # Liên kết với amenities đã được định nghĩa ở bảng liên kết room_amenities
+    
     def __repr__(self):
         return f'<Room {self.room_number} in {self.homestay.title}>'
 
@@ -189,6 +192,25 @@ class RoomImage(db.Model):
     
     def __repr__(self):
         return f'<RoomImage {self.id} for Room {self.room_id}>'
+
+# Bảng liên kết nhiều-nhiều giữa Room và Amenity
+room_amenities = db.Table('room_amenities',
+    db.Column('room_id', db.Integer, db.ForeignKey('room.id'), primary_key=True),
+    db.Column('amenity_id', db.Integer, db.ForeignKey('amenity.id'), primary_key=True)
+)
+
+class Amenity(db.Model):
+    __tablename__ = 'amenity'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    icon = db.Column(db.String(100), nullable=False)  # Tên biểu tượng Bootstrap
+    category = db.Column(db.String(50), default='general')  # Phân loại: general, bathroom, entertainment, etc.
+    
+    # Quan hệ nhiều-nhiều với Room
+    rooms = db.relationship('Room', secondary=room_amenities, backref=db.backref('amenities', lazy='dynamic'))
+    
+    def __repr__(self):
+        return f'<Amenity {self.name}>'
 
 class Booking(db.Model):
     __tablename__ = 'booking'

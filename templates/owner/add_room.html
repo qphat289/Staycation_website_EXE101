@@ -1,48 +1,48 @@
 {% extends 'base.html' %}
-{% block title %}Add Room to {{ homestay.title }}{% endblock %}
+{% block title %}<span data-translate="add-room-to">Add Room to</span> {{ homestay.title }}{% endblock %}
 
 {% block content %}
-<h2>Add Room for Homestay: {{ homestay.title }}</h2>
+<h2><span data-translate="add-room-for-homestay">Add Room for Homestay</span>: {{ homestay.title }}</h2>
 
 <form method="post">  <!-- Bỏ enctype="multipart/form-data" nếu không còn upload hình -->
   <div class="mb-3">
-    <label for="room_number" class="form-label">Room Number</label>
+    <label for="room_number" class="form-label" data-translate="room-name">Room name</label>
     <input type="text" class="form-control" id="room_number" name="room_number" required>
   </div>
 
   <div class="mb-3">
-    <label for="bed_count" class="form-label">Bed Count</label>
+    <label for="bed_count" class="form-label" data-translate="bed-count-label">Bed Count</label>
     <input type="number" class="form-control" id="bed_count" name="bed_count" required min="1">
   </div>
 
   <div class="mb-3">
-    <label for="bathroom_count" class="form-label">Bathroom Count</label>
+    <label for="bathroom_count" class="form-label" data-translate="bathroom-count-label">Bathroom Count</label>
     <input type="number" class="form-control" id="bathroom_count" name="bathroom_count" required min="1">
   </div>
 
   <div class="mb-3">
-    <label for="max_guests" class="form-label">Max Guests</label>
+    <label for="max_guests" class="form-label" data-translate="max-guests">Max Guests</label>
     <input type="number" class="form-control" id="max_guests" name="max_guests" required min="1">
   </div>
 
   <div class="mb-3">
-    <label for="price_per_hour" class="form-label">Price per Hour</label>
+    <label for="price_per_hour" class="form-label" data-translate="price-per-hour-label">Price per Hour</label>
     <input type="number" class="form-control" id="price_per_hour" name="price_per_hour" min="0" step="0.01" required>
   </div>
 
   <div class="mb-3">
-    <label for="description" class="form-label">Description</label>
+    <label for="description" class="form-label" data-translate="description">Description</label>
     <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
   </div>
 
   <!-- Floor Selection -->
   <div class="mb-3">
-    <label for="floor_number" class="form-label">Floor Number</label>
+    <label for="floor_number" class="form-label" data-translate="floor-number">Floor Number</label>
     <input type="number" name="floor_number" id="floor_number" class="form-control" value="1" required min="1">
   </div>
 
   <!-- Xóa phần Featured Image & Additional Gallery Images -->
 
-  <button type="submit" class="btn btn-primary">Add Room</button>
+  <button type="submit" class="btn btn-primary" data-translate="add-room-button">Add Room</button>
 </form>
 {% endblock %}

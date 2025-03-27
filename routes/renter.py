@@ -62,7 +62,7 @@ def search():
     bedrooms = request.args.get('bedrooms', type=int)
     
     # Build query
-    query = Homestay.query
+    query = Homestay.query.filter_by(is_active=True)
     
     if city:
         query = query.filter(Homestay.city.ilike(f'%{city}%'))
@@ -91,6 +91,12 @@ def search():
 @renter_bp.route('/view-homestay/<int:id>')
 def view_homestay(id):
     homestay = Homestay.query.get_or_404(id)
+    
+    # Kiểm tra nếu homestay đã bị khóa
+    if not homestay.is_active:
+        flash("Homestay này hiện tại đã ngừng hoạt động và không khả dụng để đặt phòng.", "warning")
+        return redirect(url_for('home'))
+    
     rooms = Room.query.filter_by(homestay_id=id).all()
     
     # Load images for each room
