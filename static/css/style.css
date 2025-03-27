@@ -1,7 +1,8 @@
 :root {
-    --primary-color: #e6bb5e;     /* Màu chủ đạo vàng */
-    --primary-light: #f0d08a;   /* Màu nhạt hơn */
-    --primary-dark: #c2993a;      /* Màu đậm hơn */
+    --primary-color: #D8C3A5;     /* Màu chủ đạo beige */
+    --primary-light: #e2b77b;   /* Màu nhạt hơn */
+    --primary-dark: #ae8a56;      /* Màu đậm hơn */
+    --price-color: #E98074;       /* Màu giá */
     --text-primary: #333333;      /* Màu chữ chính */
     --text-secondary: #666666;    /* Màu chữ phụ */
     --border-color: #e0e0e0;      /* Màu viền */
@@ -34,14 +35,14 @@ body {
     background-color: var(--primary-color);
     border-color: var(--primary-dark);
     color: #000000;
-    box-shadow: 0 4px 10px rgba(230, 187, 94, 0.3);
+    box-shadow: 0 4px 10px rgba(216, 195, 165, 0.3);
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-dark);
+    background-color: var(--primary-hover);
     border-color: var(--primary-dark);
     color: #000000;
-    box-shadow: 0 6px 15px rgba(230, 187, 94, 0.4);
+    box-shadow: 0 6px 15px rgba(216, 195, 165, 0.4);
     transform: translateY(-2px);
 }
 
@@ -168,10 +169,10 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Footer cải tiến */
 footer {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8edf2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     padding-top: 3rem;
     margin-top: 5rem;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 -5px 20px rgba(174, 138, 86, 0.1);
 }
 
 footer h5 {
@@ -188,7 +189,7 @@ footer h5:after {
     width: 40px;
     height: 3px;
     border-radius: 2px;
-    background-color: var(--primary-color);
+    background-color: var(--primary-dark);
 }
 
 /* Responsive tweaks */
@@ -236,4 +237,117 @@ body {
 .card {
     margin-right: 10px;
     margin-left: 10px;
+}
+
+/* Price styling */
+.price-value {
+    color: var(--price-color) !important;
+}
+
+.price-section {
+    border-left: 5px solid var(--price-color);
+}
+
+/* Status badge styling */
+.status-pending {
+    background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+}
+.status-confirmed {
+    background: linear-gradient(to right, var(--primary-color), var(--primary-hover));
+}
+.status-active {
+    background: linear-gradient(to right, var(--primary-light), var(--primary-hover));
+}
+.status-completed {
+    background: linear-gradient(to right, var(--primary-dark), var(--primary-hover));
+}
+.status-cancelled, .status-rejected {
+    background: linear-gradient(to right, var(--price-color), var(--primary-color));
+}
+
+/* Table row highlighting */
+.table-warning.bg-opacity-25 {
+    background-color: rgba(216, 195, 165, 0.1) !important;
+}
+.table-primary.bg-opacity-25 {
+    background-color: rgba(216, 195, 165, 0.1) !important;
+}
+.table-success.bg-opacity-25 {
+    background-color: rgba(174, 138, 86, 0.1) !important;
+}
+.table-danger.bg-opacity-25 {
+    background-color: rgba(233, 128, 116, 0.1) !important;
+}
+
+/* Filter button styling */
+.btn-outline-warning {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-outline-warning:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+.btn-warning {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Avatar and badge styling */
+.avatar {
+    background-color: var(--primary-color) !important;
+}
+
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+/* Status indicators */
+.status-indicator.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.status-indicator.bg-success {
+    background-color: var(--primary-dark) !important;
+}
+
+.status-indicator.bg-warning {
+    background-color: var(--primary-light) !important;
+}
+
+.status-indicator.bg-danger {
+    background-color: var(--price-color) !important;
+}
+
+/* Booking status steps */
+.booking-status-step.completed .step-icon {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+.booking-status-step.completed .step-label {
+    color: var(--primary-dark);
+}
+.booking-status-step.completed:not(:last-child):after {
+    background-color: var(--primary-dark);
+}
+
+/* Guest avatar */
+.guest-avatar {
+    background-color: var(--primary-color) !important;
+}
+
+/* Info icons */
+.info-icon {
+    background-color: var(--primary-color) !important;
+}
+
+/* Duration badge */
+.duration-badge {
+    background-color: var(--primary-color);
+}
+
+/* Time hours */
+.time-hours {
+    color: var(--primary-color);
 } 

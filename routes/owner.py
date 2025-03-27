@@ -33,7 +33,27 @@ def owner_required(f):
 @owner_required
 def dashboard():
     homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
-    return render_template('owner/dashboard.html', homestays=homestays)
+    
+    # Get homestay IDs owned by current owner
+    homestay_ids = [h.id for h in homestays]
+    
+    # Get pending bookings count for notifications
+    pending_bookings = Booking.query.filter(
+        Booking.homestay_id.in_(homestay_ids),
+        Booking.status == 'pending'
+    ).all()
+    
+    # Get recent bookings (last 5) for quick access
+    recent_bookings = Booking.query.filter(
+        Booking.homestay_id.in_(homestay_ids)
+    ).order_by(Booking.created_at.desc()).limit(5).all()
+    
+    return render_template(
+        'owner/dashboard.html', 
+        homestays=homestays, 
+        pending_bookings=pending_bookings,
+        recent_bookings=recent_bookings
+    )
 
 
 @owner_bp.route('/manage-homestays')
@@ -166,19 +186,29 @@ def delete_homestay(id):
 
 
 @owner_bp.route('/view-bookings')
+@owner_bp.route('/view-bookings/<status>')
 @owner_required
-def view_bookings():
-    """View all bookings for the owner's homestays."""
-    # Lấy tất cả homestay của owner hiện tại
+def view_bookings(status=None):
+    # Get all homestays owned by current user
     homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
     
-    # Lấy ID của tất cả homestay thuộc về owner
-    homestay_ids = [h.id for h in homestays]
+    # Get all bookings for these homestays
+    all_bookings = []
+    for homestay in homestays:
+        all_bookings.extend(homestay.bookings)
     
-    # Query booking dựa trên homestay_id để đảm bảo chỉ lấy booking của owner
-    bookings = Booking.query.filter(Booking.homestay_id.in_(homestay_ids)).all()
+    # Filter bookings by status if specified
+    if status and status != 'all':
+        filtered_bookings = [b for b in all_bookings if b.status == status]
+    else:
+        filtered_bookings = all_bookings
     
-    return render_template('owner/view_bookings.html', bookings=bookings)
+    # Sort bookings by created_at (newest first)
+    filtered_bookings.sort(key=lambda x: x.created_at, reverse=True)
+    
+    return render_template('owner/view_bookings.html', 
+                          bookings=all_bookings,  # Send all bookings for counting
+                          filtered_bookings=filtered_bookings)  # Send filtered bookings for display
 
 
 
@@ -537,22 +567,42 @@ def owner_room_detail(room_id):
     # For GET requests, display the edit form
     return render_template('owner/room_detail_owner.html', room=room)
 
-@owner_bp.route('/confirm-booking/<int:id>')
+@owner_bp.route('/booking/confirm/<int:id>')
 @owner_required
 def confirm_booking(id):
     booking = Booking.query.get_or_404(id)
     
-    # Ensure this booking belongs to one of the current owner's homestays
+    # Make sure the owner owns this booking's homestay
     if booking.homestay.owner_id != current_user.id:
-        flash('Bạn không có quyền xác nhận đặt phòng này.', 'danger')
-        return redirect(url_for('owner.dashboard'))
-
-    # Update the booking status
+        flash('You do not have permission to manage this booking.', 'danger')
+        return redirect(url_for('owner.view_bookings'))
+    
+    # Get all other pending bookings for the same room with overlapping time
+    overlapping_pending_bookings = Booking.query.filter(
+        Booking.room_id == booking.room_id,
+        Booking.id != booking.id,
+        Booking.status == 'pending',
+        Booking.start_time < booking.end_time,
+        Booking.end_time > booking.start_time
+    ).all()
+    
+    # Reject all other overlapping pending bookings
+    for other_booking in overlapping_pending_bookings:
+        other_booking.status = 'rejected'
+        # You could also set a rejection reason here
+        other_booking.rejection_reason = "Room was booked by another guest for the same time period."
+    
+    # Set status to confirmed
     booking.status = 'confirmed'
+    
+    # Add notification (you can expand this into a proper notification system)
+    booking.notification_for_renter = 'Your booking has been confirmed! Please proceed with payment.'
+    booking.notification_date = datetime.now()
+    
     db.session.commit()
-
-    flash('Đặt phòng đã được xác nhận thành công!', 'success')
-    return redirect(url_for('owner.view_bookings'))
+    
+    flash('Booking #' + str(booking.id) + ' has been confirmed! Renter will be prompted for payment.', 'success')
+    return redirect(url_for('owner.booking_details', booking_id=id))
 
 @owner_bp.route('/reject-booking/<int:id>')
 @owner_required
@@ -566,8 +616,13 @@ def reject_booking(id):
 
     # Update the booking status
     booking.status = 'rejected'
+    
+    # Add notification with suggestion to book another room/homestay
+    booking.notification_for_renter = 'Yêu cầu đặt phòng của bạn đã bị từ chối. Vui lòng tìm kiếm và đặt phòng khác phù hợp với nhu cầu của bạn.'
+    booking.notification_date = datetime.now()
+    
     db.session.commit()
-
+    
     flash('Đã từ chối đặt phòng.', 'warning')
     return redirect(url_for('owner.view_bookings'))
 
