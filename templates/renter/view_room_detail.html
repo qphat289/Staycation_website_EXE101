@@ -96,7 +96,7 @@
                         <div class="col-6">
                             <div class="bg-light rounded-3 p-3 h-100">
                                 <div class="text-muted small mb-1">Giá mỗi giờ</div>
-                                <div class="h5 mb-0 text-primary">${{ "{:,.1f}".format(room.price_per_hour) }}</div>
+                                <div class="h5 mb-0 text-primary">{{ "{:,}".format(room.display_price) }} VND</div>
                             </div>
                         </div>
                         

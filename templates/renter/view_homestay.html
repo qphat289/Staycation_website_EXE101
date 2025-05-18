@@ -121,7 +121,7 @@
                     <div class="card-body p-4">
                         <!-- Giá phòng -->
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0 text-primary fw-bold">{{ "{:,.0f}".format(room.price_per_hour) }}đ<span class="text-muted fw-normal">/giờ</span></h5>
+                            <h5 class="mb-0 text-primary fw-bold">{{ "{:,}".format(room.display_price) }} VND<span class="text-muted fw-normal">/giờ</span></h5>
                         </div>
 
                         <!-- Thông tin cơ bản -->

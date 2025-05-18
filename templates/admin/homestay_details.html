@@ -84,7 +84,7 @@
                     <td class="text-center">{{ room.bed_count }}</td>
                     <td class="text-center">{{ room.bathroom_count }}</td>
                     <td class="text-center">{{ room.max_guests }}</td>
-                    <td class="text-center">{{ room.price_per_hour }}₫</td>
+                    <td class="text-center">{{ "{:,}".format(room.display_price) }} VND</td>
                     <td class="text-center">{{ room.description or 'Không có mô tả' }}</td>
                   </tr>
                   {% endfor %}

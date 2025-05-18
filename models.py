@@ -178,8 +178,11 @@ class Room(db.Model):
     # Quan hệ với cascade delete cho RoomImage:
     images = db.relationship('RoomImage', backref='room', lazy=True, cascade="all, delete-orphan")
     
-    # Liên kết với amenities đã được định nghĩa ở bảng liên kết room_amenities
-    
+    @property
+    def display_price(self):
+        """Return the price formatted for display (multiplied by 1000 and converted to integer)"""
+        return int(self.price_per_hour * 1000)
+
     def __repr__(self):
         return f'<Room {self.room_number} in {self.homestay.title}>'
 

@@ -203,7 +203,7 @@
                     <div class="room-specs">
                         <div class="spec-item">
                             <div class="spec-label" data-translate="price-per-hour">Giá/Giờ</div>
-                            <div class="spec-value text-primary">${{ room.price_per_hour }}</div>
+                            <div class="spec-value text-primary">{{ "{:,}".format(room.display_price) }} VND</div>
                         </div>
                         <div class="spec-item">
                             <div class="spec-label" data-translate="max-guests">Khách tối đa</div>
