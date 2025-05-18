@@ -245,10 +245,10 @@
                                         <div class="row row-cols-2 g-3">
                                             {% set common_amenities = [] %}
                                             {% for amenity in amenities_list %}
-                                                {% if ('Wifi' in amenity or 'Netflix' in amenity or 'Điều hòa' in amenity 
-                                                    or 'cà phê' in amenity or 'lưu trú' in amenity or 'lễ tân' in amenity 
-                                                    or 'giặt' in amenity or 'đậu xe' in amenity or '24_HOUR' in amenity 
-                                                    or 'ăn sáng' in amenity or 'sân bay' in amenity) %}
+                                                {% if ('Wifi tốc độ cao' in amenity or 'Netflix' in amenity or 'Điều hòa' in amenity 
+                                                    or 'Máy pha cà phê' in amenity or 'Dịch vụ lưu trú' in amenity or 'Quầy lễ tân' in amenity 
+                                                    or 'Dịch vụ giặt ủi' in amenity or 'Bãi đậu xe' in amenity or 'Lễ tân 24h' in amenity 
+                                                    or 'Có ăn sáng' in amenity or 'Đưa đón sân bay' in amenity or 'Nhận phòng sớm' in amenity) %}
                                                     {% if common_amenities|length < 2 %}
                                                         {% set _ = common_amenities.append(amenity) %}
                                                         <div class="col">
@@ -269,12 +269,14 @@
                                                                     <i class="bi bi-basket me-2 text-primary"></i>
                                                                 {% elif 'đậu xe' in amenity %}
                                                                     <i class="bi bi-p-square me-2 text-primary"></i>
-                                                                {% elif '24_HOUR' in amenity %}
+                                                                {% elif 'Lễ tân 24h' in amenity %}
                                                                     <i class="bi bi-clock me-2 text-primary"></i>
                                                                 {% elif 'ăn sáng' in amenity %}
                                                                     <i class="bi bi-egg-fried me-2 text-primary"></i>
                                                                 {% elif 'sân bay' in amenity %}
                                                                     <i class="bi bi-airplane me-2 text-primary"></i>
+                                                                {% elif 'Nhận phòng sớm' in amenity %}
+                                                                    <i class="bi bi-door-open me-2 text-primary"></i>
                                                                 {% endif %}
                                                                 <span>{{ amenity }}</span>
                                                             </div>
@@ -294,13 +296,13 @@
                                         <div class="row row-cols-2 g-3">
                                             {% set room_amenities = [] %}
                                             {% for amenity in amenities_list %}
-                                                {% if ('Máy sấy tóc' in amenity or 'gia đình' in amenity or 'hút thuốc' in amenity 
-                                                    or 'Tủ lạnh' in amenity or 'Bồn tắm' in amenity or 'bếp' in amenity 
+                                                {% if ('Máy sấy tóc' in amenity or 'Phòng gia đình' in amenity or 'Khu vực hút thuốc' in amenity 
+                                                    or 'Tủ lạnh' in amenity or 'Bồn tắm' in amenity or 'Nhà bếp' in amenity 
                                                     or 'Phòng liền thông' in amenity or 'Máy sưởi' in amenity or 'Ổ cắm' in amenity)
-                                                    and not ('Wifi' in amenity or 'Netflix' in amenity or 'Điều hòa' in amenity 
-                                                    or 'cà phê' in amenity or 'lưu trú' in amenity or 'lễ tân' in amenity 
-                                                    or 'giặt' in amenity or 'đậu xe' in amenity or '24_HOUR' in amenity 
-                                                    or 'ăn sáng' in amenity or 'sân bay' in amenity) %}
+                                                    and not ('Wifi tốc độ cao' in amenity or 'Netflix' in amenity or 'Điều hòa' in amenity 
+                                                    or 'Máy pha cà phê' in amenity or 'Dịch vụ lưu trú' in amenity or 'Quầy lễ tân' in amenity 
+                                                    or 'Dịch vụ giặt ủi' in amenity or 'Bãi đậu xe' in amenity or 'Lễ tân 24h' in amenity 
+                                                    or 'Có ăn sáng' in amenity or 'Đưa đón sân bay' in amenity or 'Nhận phòng sớm' in amenity) %}
                                                     {% if room_amenities|length < 2 %}
                                                         {% set _ = room_amenities.append(amenity) %}
                                                         <div class="col">
@@ -342,9 +344,16 @@
                                         <div class="row row-cols-2 g-3">
                                             {% set unique_amenities = [] %}
                                             {% for amenity in amenities_list %}
-                                                {% if 'View' in amenity or 'Loa' in amenity or 'giải trí' in amenity 
-                                                    or 'Bar' in amenity or 'golf' in amenity or 'thể thao' in amenity 
-                                                    or 'tennis' in amenity or 'rượu' in amenity or 'mua sắm' in amenity %}
+                                                {% if ('View đẹp' in amenity or 'Loa bluetooth' in amenity or 'Khu vực giải trí' in amenity 
+                                                    or 'Bar & Pub' in amenity or 'Chơi golf' in amenity or 'Thể thao trong nhà' in amenity 
+                                                    or 'Đánh tennis' in amenity or 'Nhà máy rượu vang' in amenity or 'Khu vực mua sắm' in amenity)
+                                                    and not ('Wifi tốc độ cao' in amenity or 'Netflix' in amenity or 'Điều hòa' in amenity 
+                                                    or 'Máy pha cà phê' in amenity or 'Dịch vụ lưu trú' in amenity or 'Quầy lễ tân' in amenity 
+                                                    or 'Dịch vụ giặt ủi' in amenity or 'Bãi đậu xe' in amenity or 'Lễ tân 24h' in amenity 
+                                                    or 'Có ăn sáng' in amenity or 'Đưa đón sân bay' in amenity or 'Nhận phòng sớm' in amenity)
+                                                    and not ('Máy sấy tóc' in amenity or 'Phòng gia đình' in amenity or 'Khu vực hút thuốc' in amenity 
+                                                    or 'Tủ lạnh' in amenity or 'Bồn tắm' in amenity or 'Nhà bếp' in amenity 
+                                                    or 'Phòng liền thông' in amenity or 'Máy sưởi' in amenity or 'Ổ cắm' in amenity) %}
                                                     {% if unique_amenities|length < 2 %}
                                                         {% set _ = unique_amenities.append(amenity) %}
                                                         <div class="col">
@@ -536,7 +545,54 @@
                                                 <i class="bi bi-tv me-2 text-primary"></i>Netflix
                                             </label>
                                         </div>
-                                        <!-- Thêm các tiện nghi phổ biến khác tương tự -->
+                                        <div class="form-check my-2">
+                                            <input type="checkbox" class="form-check-input" id="hotel_service_feature" name="has_hotel_service" value="1" {% if 'Dịch vụ lưu trú' in room.description %}checked{% endif %}>
+                                            <label class="form-check-label" for="hotel_service_feature">
+                                                <i class="bi bi-building me-2 text-primary"></i>Dịch vụ lưu trú
+                                            </label>
+                                        </div>
+                                        <div class="form-check my-2">
+                                            <input type="checkbox" class="form-check-input" id="reception_feature" name="has_reception" value="1" {% if 'Quầy lễ tân' in room.description %}checked{% endif %}>
+                                            <label class="form-check-label" for="reception_feature">
+                                                <i class="bi bi-person-workspace me-2 text-primary"></i>Quầy lễ tân
+                                            </label>
+                                        </div>
+                                        <div class="form-check my-2">
+                                            <input type="checkbox" class="form-check-input" id="laundry_feature" name="has_laundry" value="1" {% if 'Dịch vụ giặt ủi' in room.description %}checked{% endif %}>
+                                            <label class="form-check-label" for="laundry_feature">
+                                                <i class="bi bi-basket me-2 text-primary"></i>Dịch vụ giặt ủi
+                                            </label>
+                                        </div>
+                                        <div class="form-check my-2">
+                                            <input type="checkbox" class="form-check-input" id="parking_feature" name="has_parking" value="1" {% if 'Bãi đậu xe' in room.description %}checked{% endif %}>
+                                            <label class="form-check-label" for="parking_feature">
+                                                <i class="bi bi-p-square me-2 text-primary"></i>Bãi đậu xe
+                                            </label>
+                                        </div>
+                                        <div class="form-check my-2">
+                                            <input type="checkbox" class="form-check-input" id="front_desk_feature" name="has_front_desk" value="1" {% if 'Lễ tân 24h' in room.description %}checked{% endif %}>
+                                            <label class="form-check-label" for="front_desk_feature">
+                                                <i class="bi bi-clock me-2 text-primary"></i>Lễ tân 24h
+                                            </label>
+                                        </div>
+                                        <div class="form-check my-2">
+                                            <input type="checkbox" class="form-check-input" id="breakfast_feature" name="has_breakfast" value="1" {% if 'Có ăn sáng' in room.description %}checked{% endif %}>
+                                            <label class="form-check-label" for="breakfast_feature">
+                                                <i class="bi bi-egg-fried me-2 text-primary"></i>Có ăn sáng
+                                            </label>
+                                        </div>
+                                        <div class="form-check my-2">
+                                            <input type="checkbox" class="form-check-input" id="pickup_feature" name="has_pickup" value="1" {% if 'Đưa đón sân bay' in room.description %}checked{% endif %}>
+                                            <label class="form-check-label" for="pickup_feature">
+                                                <i class="bi bi-airplane me-2 text-primary"></i>Đưa đón sân bay
+                                            </label>
+                                        </div>
+                                        <div class="form-check my-2">
+                                            <input type="checkbox" class="form-check-input" id="early_checkin_feature" name="has_early_checkin" value="1" {% if 'Nhận phòng sớm' in room.description %}checked{% endif %}>
+                                            <label class="form-check-label" for="early_checkin_feature">
+                                                <i class="bi bi-door-open me-2 text-primary"></i>Nhận phòng sớm
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -567,9 +623,9 @@
                                             </label>
                                 </div>
                                         <div class="form-check my-2">
-                                            <input type="checkbox" class="form-check-input" id="no_smoking_feature" name="has_no_smoking" value="1" {% if 'Phòng cấm hút thuốc' in room.description %}checked{% endif %}>
+                                            <input type="checkbox" class="form-check-input" id="no_smoking_feature" name="has_no_smoking" value="1" {% if 'Khu vực hút thuốc' in room.description %}checked{% endif %}>
                                             <label class="form-check-label" for="no_smoking_feature">
-                                                <i class="bi bi-slash-circle me-2 text-primary"></i>Phòng cấm hút thuốc
+                                                <i class="bi bi-slash-circle me-2 text-primary"></i>Khu vực hút thuốc
                                             </label>
                                         </div>
                                         <div class="form-check my-2">
@@ -839,210 +895,146 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Tiện nghi phổ biến -->
-                <div class="mb-3">
-                    <h6 class="mb-2 d-flex align-items-center border-bottom pb-2">
-                        <i class="bi bi-building me-2 text-primary"></i> Tiện nghi phổ biến
-                    </h6>
-                    <div class="row row-cols-2 g-2">
-                        {% if 'Wifi tốc độ cao' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-wifi me-2 text-primary"></i>
-                                <span>Wifi tốc độ cao</span>
-                            </div>
+                {% if '|AMENITIES|' in room.description %}
+                    {% set description_parts = room.description.split('|AMENITIES|') %}
+                    {% set amenities_part = description_parts[1]|trim %}
+                    {% set amenities_list = amenities_part.split('|') %}
+                    
+                    <!-- Tiện nghi phổ biến -->
+                    <div class="mb-3">
+                        <h6 class="mb-2 d-flex align-items-center border-bottom pb-2">
+                            <i class="bi bi-building me-2 text-primary"></i> Tiện nghi phổ biến
+                        </h6>
+                        <div class="row row-cols-2 g-2">
+                            {% for amenity in amenities_list %}
+                                {% if 'Wifi tốc độ cao' in amenity or 'Netflix' in amenity or 'Điều hòa' in amenity 
+                                    or 'Máy pha cà phê' in amenity or 'Dịch vụ lưu trú' in amenity or 'Quầy lễ tân' in amenity 
+                                    or 'Dịch vụ giặt ủi' in amenity or 'Bãi đậu xe' in amenity or 'Lễ tân 24h' in amenity 
+                                    or 'Có ăn sáng' in amenity or 'Đưa đón sân bay' in amenity or 'Nhận phòng sớm' in amenity %}
+                                    <div class="col">
+                                        <div class="d-flex align-items-center">
+                                            {% if 'Wifi' in amenity %}
+                                                <i class="bi bi-wifi me-2 text-primary"></i>
+                                            {% elif 'Netflix' in amenity %}
+                                                <i class="bi bi-tv me-2 text-primary"></i>
+                                            {% elif 'Điều hòa' in amenity %}
+                                                <i class="bi bi-snow me-2 text-primary"></i>
+                                            {% elif 'cà phê' in amenity %}
+                                                <i class="bi bi-cup-hot me-2 text-primary"></i>
+                                            {% elif 'lưu trú' in amenity %}
+                                                <i class="bi bi-house me-2 text-primary"></i>
+                                            {% elif 'lễ tân' in amenity %}
+                                                <i class="bi bi-person-workspace me-2 text-primary"></i>
+                                            {% elif 'giặt' in amenity %}
+                                                <i class="bi bi-basket me-2 text-primary"></i>
+                                            {% elif 'đậu xe' in amenity %}
+                                                <i class="bi bi-p-square me-2 text-primary"></i>
+                                            {% elif 'Lễ tân 24h' in amenity %}
+                                                <i class="bi bi-clock me-2 text-primary"></i>
+                                            {% elif 'ăn sáng' in amenity %}
+                                                <i class="bi bi-egg-fried me-2 text-primary"></i>
+                                            {% elif 'sân bay' in amenity %}
+                                                <i class="bi bi-airplane me-2 text-primary"></i>
+                                            {% elif 'Nhận phòng sớm' in amenity %}
+                                                <i class="bi bi-door-open me-2 text-primary"></i>
+                                            {% endif %}
+                                            <span>{{ amenity }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
-                        {% endif %}
-
-                        {% if 'Netflix' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-tv me-2 text-primary"></i>
-                                <span>Netflix</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Dịch vụ lưu trú' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-house me-2 text-primary"></i>
-                                <span>Dịch vụ lưu trú</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Quầy lễ tân' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-person-workspace me-2 text-primary"></i>
-                                <span>Quầy lễ tân</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Dịch vụ giặt ủi' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-basket me-2 text-primary"></i>
-                                <span>Dịch vụ giặt ủi</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Bãi đậu xe' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-p-square me-2 text-primary"></i>
-                                <span>Bãi đậu xe</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if '24_HOUR_FRONT_DESK_TITLE' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-clock me-2 text-primary"></i>
-                                <span>Lễ tân 24h</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Có ăn sáng' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-egg-fried me-2 text-primary"></i>
-                                <span>Có ăn sáng</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Đưa đón sân bay' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-airplane me-2 text-primary"></i>
-                                <span>Đưa đón sân bay</span>
-                            </div>
-                        </div>
-                        {% endif %}
                     </div>
-                </div>
 
-                <!-- Tiện nghi phòng -->
-                <div class="mb-3">
-                    <h6 class="mb-2 d-flex align-items-center border-bottom pb-2">
-                        <i class="bi bi-house-door me-2 text-primary"></i> Tiện nghi phòng
-                    </h6>
-                    <div class="row row-cols-2 g-2">
-                        {% if 'Máy sấy tóc' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-wind me-2 text-primary"></i>
-                                <span>Máy sấy tóc</span>
-                            </div>
+                    <!-- Tiện nghi phòng -->
+                    <div class="mb-3">
+                        <h6 class="mb-2 d-flex align-items-center border-bottom pb-2">
+                            <i class="bi bi-house-door me-2 text-primary"></i> Tiện nghi phòng
+                        </h6>
+                        <div class="row row-cols-2 g-2">
+                            {% for amenity in amenities_list %}
+                                {% if ('Máy sấy tóc' in amenity or 'Phòng gia đình' in amenity or 'Khu vực hút thuốc' in amenity 
+                                    or 'Tủ lạnh' in amenity or 'Bồn tắm' in amenity or 'Nhà bếp' in amenity 
+                                    or 'Phòng liền thông' in amenity or 'Máy sưởi' in amenity or 'Ổ cắm' in amenity)
+                                    and not ('Wifi tốc độ cao' in amenity or 'Netflix' in amenity or 'Điều hòa' in amenity 
+                                    or 'Máy pha cà phê' in amenity or 'Dịch vụ lưu trú' in amenity or 'Quầy lễ tân' in amenity 
+                                    or 'Dịch vụ giặt ủi' in amenity or 'Bãi đậu xe' in amenity or 'Lễ tân 24h' in amenity 
+                                    or 'Có ăn sáng' in amenity or 'Đưa đón sân bay' in amenity or 'Nhận phòng sớm' in amenity) %}
+                                    <div class="col">
+                                        <div class="d-flex align-items-center">
+                                            {% if 'sấy tóc' in amenity %}
+                                                <i class="bi bi-wind me-2 text-primary"></i>
+                                            {% elif 'gia đình' in amenity %}
+                                                <i class="bi bi-people me-2 text-primary"></i>
+                                            {% elif 'hút thuốc' in amenity %}
+                                                <i class="bi bi-slash-circle me-2 text-primary"></i>
+                                            {% elif 'Tủ lạnh' in amenity %}
+                                                <i class="bi bi-thermometer-snow me-2 text-primary"></i>
+                                            {% elif 'Bồn tắm' in amenity %}
+                                                <i class="bi bi-droplet me-2 text-primary"></i>
+                                            {% elif 'bếp' in amenity %}
+                                                <i class="bi bi-fire me-2 text-primary"></i>
+                                            {% elif 'liền thông' in amenity %}
+                                                <i class="bi bi-door-open-fill me-2 text-primary"></i>
+                                            {% elif 'sưởi' in amenity %}
+                                                <i class="bi bi-thermometer-high me-2 text-primary"></i>
+                                            {% elif 'cắm' in amenity %}
+                                                <i class="bi bi-plug me-2 text-primary"></i>
+                                            {% endif %}
+                                            <span>{{ amenity }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
-                        {% endif %}
-                        <!-- ... other room amenities ... -->
                     </div>
-                </div>
 
-                <!-- Tiện nghi độc đáo -->
-                <div class="mb-3">
-                    <h6 class="mb-2 d-flex align-items-center border-bottom pb-2">
-                        <i class="bi bi-star me-2 text-primary"></i> Tiện nghi độc đáo
-                    </h6>
-                    <div class="row row-cols-2 g-2">
-                        {% if 'View đẹp' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-view-stacked me-2 text-primary"></i>
-                                <span>View đẹp</span>
-                            </div>
+                    <!-- Tiện nghi độc đáo -->
+                    <div class="mb-3">
+                        <h6 class="mb-2 d-flex align-items-center border-bottom pb-2">
+                            <i class="bi bi-star me-2 text-primary"></i> Tiện nghi độc đáo
+                        </h6>
+                        <div class="row row-cols-2 g-2">
+                            {% for amenity in amenities_list %}
+                                {% if ('View đẹp' in amenity or 'Loa bluetooth' in amenity or 'Khu vực giải trí' in amenity 
+                                    or 'Bar & Pub' in amenity or 'Chơi golf' in amenity or 'Thể thao trong nhà' in amenity 
+                                    or 'Đánh tennis' in amenity or 'Nhà máy rượu vang' in amenity or 'Khu vực mua sắm' in amenity)
+                                    and not ('Wifi tốc độ cao' in amenity or 'Netflix' in amenity or 'Điều hòa' in amenity 
+                                    or 'Máy pha cà phê' in amenity or 'Dịch vụ lưu trú' in amenity or 'Quầy lễ tân' in amenity 
+                                    or 'Dịch vụ giặt ủi' in amenity or 'Bãi đậu xe' in amenity or 'Lễ tân 24h' in amenity 
+                                    or 'Có ăn sáng' in amenity or 'Đưa đón sân bay' in amenity or 'Nhận phòng sớm' in amenity)
+                                    and not ('Máy sấy tóc' in amenity or 'Phòng gia đình' in amenity or 'Khu vực hút thuốc' in amenity 
+                                    or 'Tủ lạnh' in amenity or 'Bồn tắm' in amenity or 'Nhà bếp' in amenity 
+                                    or 'Phòng liền thông' in amenity or 'Máy sưởi' in amenity or 'Ổ cắm' in amenity) %}
+                                    <div class="col">
+                                        <div class="d-flex align-items-center">
+                                            {% if 'View' in amenity %}
+                                                <i class="bi bi-view-stacked me-2 text-primary"></i>
+                                            {% elif 'Loa' in amenity %}
+                                                <i class="bi bi-music-note-beamed me-2 text-primary"></i>
+                                            {% elif 'giải trí' in amenity %}
+                                                <i class="bi bi-controller me-2 text-primary"></i>
+                                            {% elif 'Bar' in amenity %}
+                                                <i class="bi bi-cup-straw me-2 text-primary"></i>
+                                            {% elif 'golf' in amenity %}
+                                                <i class="bi bi-bullseye me-2 text-primary"></i>
+                                            {% elif 'thể thao' in amenity %}
+                                                <i class="bi bi-activity me-2 text-primary"></i>
+                                            {% elif 'tennis' in amenity %}
+                                                <i class="bi bi-circle me-2 text-primary"></i>
+                                            {% elif 'rượu' in amenity %}
+                                                <i class="bi bi-wine-glass me-2 text-primary"></i>
+                                            {% elif 'mua sắm' in amenity %}
+                                                <i class="bi bi-bag me-2 text-primary"></i>
+                                            {% endif %}
+                                            <span>{{ amenity }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
-                        {% endif %}
-
-                        {% if 'Loa bluetooth' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-music-note-beamed me-2 text-primary"></i>
-                                <span>Loa bluetooth</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Khu vực giải trí' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-controller me-2 text-primary"></i>
-                                <span>Khu vực giải trí</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Bar & Pub' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-cup-straw me-2 text-primary"></i>
-                                <span>Bar & Pub</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Chơi golf' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-bullseye me-2 text-primary"></i>
-                                <span>Chơi golf</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Thể thao trong nhà' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-activity me-2 text-primary"></i>
-                                <span>Thể thao trong nhà</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Thể thao sân cứng' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-dribbble me-2 text-primary"></i>
-                                <span>Thể thao sân cứng</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Đánh tennis' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-circle me-2 text-primary"></i>
-                                <span>Đánh tennis</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Nhà máy rượu vang' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-gift me-2 text-primary"></i>
-                                <span>Nhà máy rượu vang</span>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if 'Khu vực mua sắm' in amenities_part %}
-                        <div class="col">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-bag me-2 text-primary"></i>
-                                <span>Khu vực mua sắm</span>
-                            </div>
-                        </div>
-                        {% endif %}
                     </div>
-                </div>
+                {% endif %}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -1341,7 +1333,7 @@
                 <div class="col">
                   <div class="d-flex align-items-center justify-content-center">
                     <i class="bi bi-slash-circle me-2 text-primary"></i>
-                    <span>Phòng cấm hút thuốc</span>
+                    <span>Khu vực hút thuốc</span>
                   </div>
                 </div>` : ''}
                 
@@ -1596,7 +1588,7 @@
         if (document.getElementById('reception_feature')?.checked) features.push("Quầy lễ tân");
         if (document.getElementById('laundry_feature')?.checked) features.push("Dịch vụ giặt ủi");
         if (document.getElementById('parking_feature')?.checked) features.push("Bãi đậu xe");
-        if (document.getElementById('front_desk_feature')?.checked) features.push("24_HOUR_FRONT_DESK_TITLE");
+        if (document.getElementById('front_desk_feature')?.checked) features.push("Lễ tân 24h");
         if (document.getElementById('breakfast_feature')?.checked) features.push("Có ăn sáng");
         if (document.getElementById('pickup_feature')?.checked) features.push("Đưa đón sân bay");
         if (document.getElementById('early_checkin_feature')?.checked) features.push("Nhận phòng sớm");
@@ -1604,7 +1596,7 @@
         // Tiện nghi phòng
         if (document.getElementById('hair_dryer_feature')?.checked) features.push("Máy sấy tóc");
         if (document.getElementById('family_room_feature')?.checked) features.push("Phòng gia đình");
-        if (document.getElementById('no_smoking_feature')?.checked) features.push("Phòng cấm hút thuốc");
+        if (document.getElementById('no_smoking_feature')?.checked) features.push("Khu vực hút thuốc");
         if (document.getElementById('refrigerator_feature')?.checked) features.push("Tủ lạnh");
         if (document.getElementById('bathtub_feature')?.checked) features.push("Bồn tắm");
         if (document.getElementById('kitchen_feature')?.checked) features.push("Nhà bếp");
