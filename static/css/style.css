@@ -1,19 +1,29 @@
 :root {
-    --primary-color: #D8C3A5;     /* Màu chủ đạo beige */
-    --primary-light: #e2b77b;   /* Màu nhạt hơn */
-    --primary-dark: #ae8a56;      /* Màu đậm hơn */
-    --price-color: #E98074;       /* Màu giá */
-    --text-primary: #333333;      /* Màu chữ chính */
-    --text-secondary: #666666;    /* Màu chữ phụ */
-    --border-color: #e0e0e0;      /* Màu viền */
-    --background-light: #f8f9fa;  /* Màu nền sáng */
-    --white: #ffffff;             /* Màu trắng */
+    --primary-color: #C3D500; /* Màu chủ đạo */
+    --primary-light: #D0E508; /* Màu nhạt hơn */
+    --primary-dark: #18282C;  /* Màu đậm hơn */
+    --primary-bg: #F2F49F;    /* Nền sáng */
+    --primary-bg-light: #F5F9F2; /* Nền sáng hơn */
+    --primary-black: #181D1D; /* Đen chủ đạo */
+    --accent-1: #D1E518;
+    --accent-2: #C2D500;
+    --accent-3: #B4C500;
+    --accent-4: #A5B500;
+    --gray-1: #E5E9FA;
+    --gray-2: #D9E3C7;
+    --gray-3: #CCDBA4;
+    --gray-4: #B8C7A7;
+    --text-primary: #18282C;
+    --text-secondary: #273A24;
+    --border-color: #C2D500;
+    --background-light: #F5F9F2;
+    --white: #ffffff;
 }
 
 /* Light mode (default) styles */
 body {
-    color: #000000;
-    background-color: #ffffff;
+    color: var(--text-primary);
+    background-color: var(--background-light);
     font-family: 'Poppins', sans-serif;
     line-height: 1.6;
 }
@@ -22,27 +32,40 @@ body {
     background-color: var(--primary-color) !important;
 }
 
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navbar-brand .brand-text {
+    position: relative;
+    top: 3px;
+    font-weight: bold;
+    font-size: 1.6rem;
+}
+
 .navbar-brand,
 .nav-link {
-    color: #000000 !important;
+    color: var(--primary-dark) !important;
 }
 
 .nav-link:hover {
-    color: var(--primary-dark) !important;
+    color: var(--accent-1) !important;
 }
 
 .btn-primary {
     background-color: var(--primary-color);
     border-color: var(--primary-dark);
-    color: #000000;
-    box-shadow: 0 4px 10px rgba(216, 195, 165, 0.3);
+    color: var(--primary-dark);
+    box-shadow: 0 4px 10px rgba(195, 213, 0, 0.3);
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-hover);
+    background-color: var(--primary-light);
     border-color: var(--primary-dark);
-    color: #000000;
-    box-shadow: 0 6px 15px rgba(216, 195, 165, 0.4);
+    color: var(--primary-dark);
+    box-shadow: 0 6px 15px rgba(195, 213, 0, 0.4);
     transform: translateY(-2px);
 }
 
@@ -54,15 +77,15 @@ body {
 .btn-outline-primary:hover {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    color: #000000;
-    box-shadow: 0 6px 15px rgba(230, 187, 94, 0.3);
+    color: var(--primary-dark);
+    box-shadow: 0 6px 15px rgba(195, 213, 0, 0.3);
     transform: translateY(-2px);
 }
 
 .card {
     border-color: var(--border-color);
     border: none;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 5px 15px rgba(24, 40, 44, 0.05);
     transition: all 0.3s ease;
     border-radius: 12px;
     overflow: hidden;
@@ -70,23 +93,23 @@ body {
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 30px rgba(24, 40, 44, 0.1);
 }
 
 .card-title,
 h1, h2, h3, h4, h5, h6 {
-    color: #000000;
+    color: var(--primary-dark);
 }
 
 .form-control,
 .form-select {
-    color: #000000;
-    background-color: #ffffff;
+    color: var(--text-primary);
+    background-color: var(--white);
 }
 
 .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem var(--primary-light);
+    box-shadow: 0 0 0 0.25rem rgba(208, 229, 8, 0.3);
 }
 
 .dropdown-menu {
@@ -100,7 +123,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .dropdown-item:hover {
-    background-color: #f8f9fa;
+    background-color: var(--primary-bg-light);
     transform: translateX(5px);
 }
 
@@ -119,16 +142,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .text-muted,
 .settings-label {
-    color: #4a4a4a !important;
+    color: var(--text-secondary) !important;
 }
 
 /* Các style khác giữ nguyên */
 
 /* Chỉnh sửa jumbotron */
 .jumbotron {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+    background: linear-gradient(135deg, var(--primary-bg-light) 0%, var(--gray-2) 100%);
     border-radius: 16px !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 30px rgba(24, 40, 44, 0.05);
     transition: transform 0.3s ease;
 }
 
@@ -142,7 +165,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .card-footer {
     background-color: transparent;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-top: 1px solid rgba(24, 40, 44, 0.05);
 }
 
 /* Nút đẹp hơn */
@@ -154,16 +177,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-    box-shadow: 0 4px 10px rgba(230, 187, 94, 0.3);
+    box-shadow: 0 4px 10px rgba(195, 213, 0, 0.3);
 }
 
 .btn-primary:hover {
-    box-shadow: 0 6px 15px rgba(230, 187, 94, 0.4);
+    box-shadow: 0 6px 15px rgba(195, 213, 0, 0.4);
     transform: translateY(-2px);
 }
 
 .btn-outline-primary:hover {
-    box-shadow: 0 6px 15px rgba(230, 187, 94, 0.3);
+    box-shadow: 0 6px 15px rgba(195, 213, 0, 0.3);
     transform: translateY(-2px);
 }
 
@@ -172,7 +195,7 @@ footer {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     padding-top: 3rem;
     margin-top: 5rem;
-    box-shadow: 0 -5px 20px rgba(174, 138, 86, 0.1);
+    box-shadow: 0 -5px 20px rgba(24, 40, 44, 0.1);
 }
 
 footer h5 {
@@ -241,11 +264,11 @@ body {
 
 /* Price styling */
 .price-value {
-    color: var(--price-color) !important;
+    color: var(--primary-color) !important;
 }
 
 .price-section {
-    border-left: 5px solid var(--price-color);
+    border-left: 5px solid var(--primary-color);
 }
 
 /* Status badge styling */
@@ -253,30 +276,30 @@ body {
     background: linear-gradient(to right, var(--primary-color), var(--primary-light));
 }
 .status-confirmed {
-    background: linear-gradient(to right, var(--primary-color), var(--primary-hover));
+    background: linear-gradient(to right, var(--primary-color), var(--accent-1));
 }
 .status-active {
-    background: linear-gradient(to right, var(--primary-light), var(--primary-hover));
+    background: linear-gradient(to right, var(--primary-light), var(--accent-1));
 }
 .status-completed {
-    background: linear-gradient(to right, var(--primary-dark), var(--primary-hover));
+    background: linear-gradient(to right, var(--primary-dark), var(--accent-1));
 }
 .status-cancelled, .status-rejected {
-    background: linear-gradient(to right, var(--price-color), var(--primary-color));
+    background: linear-gradient(to right, var(--accent-4), var(--primary-color));
 }
 
 /* Table row highlighting */
 .table-warning.bg-opacity-25 {
-    background-color: rgba(216, 195, 165, 0.1) !important;
+    background-color: rgba(195, 213, 0, 0.1) !important;
 }
 .table-primary.bg-opacity-25 {
-    background-color: rgba(216, 195, 165, 0.1) !important;
+    background-color: rgba(195, 213, 0, 0.1) !important;
 }
 .table-success.bg-opacity-25 {
-    background-color: rgba(174, 138, 86, 0.1) !important;
+    background-color: rgba(165, 181, 0, 0.1) !important;
 }
 .table-danger.bg-opacity-25 {
-    background-color: rgba(233, 128, 116, 0.1) !important;
+    background-color: rgba(208, 229, 8, 0.1) !important;
 }
 
 /* Filter button styling */
@@ -287,11 +310,12 @@ body {
 .btn-outline-warning:hover {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    color: white;
+    color: var(--primary-dark);
 }
 .btn-warning {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--accent-2) !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid var(--border-color) !important;
 }
 
 /* Avatar and badge styling */
@@ -317,7 +341,7 @@ body {
 }
 
 .status-indicator.bg-danger {
-    background-color: var(--price-color) !important;
+    background-color: var(--accent-4) !important;
 }
 
 /* Booking status steps */
@@ -350,4 +374,99 @@ body {
 /* Time hours */
 .time-hours {
     color: var(--primary-color);
+}
+
+.card-header {
+    background-color: #E0EC9B !important;
+    color: var(--primary-dark) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.room-card,
+.room-card.available,
+.room-card.booked,
+.room-card[class] {
+    background: none !important;
+    background-color: #F2F4DF !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 8px rgba(24, 40, 44, 0.05) !important;
+}
+
+.room-card:hover,
+.room-card.available:hover,
+.room-card.booked:hover,
+.room-card[class]:hover {
+    background: none !important;
+    background-color: #E0EC9B !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.room-card .room-number {
+    color: var(--primary-dark) !important;
+}
+
+.badge {
+    background-color: var(--primary-color) !important;
+    color: var(--primary-dark) !important;
+    font-weight: 600;
+}
+
+.room-card,
+.room-card * {
+    color: var(--primary-dark) !important;
+    fill: var(--primary-dark) !important;
+}
+
+.room-card .room-status,
+.room-card .room-type,
+.room-card .room-info {
+    color: var(--primary-dark) !important;
+}
+
+.room-card i,
+.room-card svg {
+    color: var(--primary-dark) !important;
+    fill: var(--primary-dark) !important;
+}
+
+.btn-success {
+    background-color: var(--accent-4) !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.btn-warning {
+    background-color: var(--accent-2) !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dropdown-toggle,
+.filter-btn {
+    background-color: #E0EC9B !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.homestay-name, .homestay-title, .section-title, .card-header h2, .card-header span, .card-header strong {
+    color: var(--primary-dark) !important;
+}
+
+.navbar .container {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 40px;
+}
+
+.navbar-nav .nav-link i {
+    position: relative;
+    top: 2px;
 } 

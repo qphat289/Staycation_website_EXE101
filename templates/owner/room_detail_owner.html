@@ -508,9 +508,9 @@
                               class="form-control border-start-0" 
                               id="price_per_hour" 
                               name="price_per_hour"
-                              value="{{ room.price_per_hour }}" 
+                              value="{{ room.price_per_hour|int }}" 
                               min="0" 
-                              step="0.01" 
+                              step="1" 
                               required>
                         </div>
                     </div>

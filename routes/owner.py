@@ -228,8 +228,8 @@ def add_room(homestay_id):
         bed_count = request.form['bed_count']
         bathroom_count = request.form['bathroom_count']
         max_guests = request.form['max_guests']
-        # Convert price from display format (e.g. 100 -> 0.1 for storage)
-        price_per_hour = float(request.form['price_per_hour']) / 1000
+        # Convert price from display format (e.g. 120 -> 120.000 for storage)
+        price_per_hour = float(request.form['price_per_hour'])
         description = request.form['description']
 
         new_room = Room(
@@ -422,7 +422,7 @@ def edit_room(room_id):
         room.bathroom_count = request.form.get('bathroom_count', room.bathroom_count)
         room.max_guests = request.form.get('max_guests', room.max_guests)
         # Convert price from display format (e.g. 100 -> 0.1 for storage)
-        room.price_per_hour = float(request.form.get('price_per_hour', room.price_per_hour)) / 1000
+        room.price_per_hour = float(request.form.get('price_per_hour', room.price_per_hour))
         
         # Lấy giá trị mô tả ban đầu (đã được lọc tiện ích từ client)
         description = request.form.get('description', '').strip()
