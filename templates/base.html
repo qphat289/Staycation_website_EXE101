@@ -57,22 +57,11 @@
                             </li>
                         {% else %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('home') }}" style="color: #333333;">
-                                    <i class="bi bi-house me-1"></i><span data-translate="home">Home</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('renter.search') }}" style="color: #333333;">
                                     <i class="bi bi-search me-1"></i><span data-translate="search">Search</span>
                                 </a>
                             </li>
                         {% endif %}
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('home') }}" style="color: #333333;">
-                                <i class="bi bi-house me-1"></i><span data-translate="home">Home</span>
-                            </a>
-                        </li>
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav align-items-center">

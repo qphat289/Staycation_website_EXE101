@@ -2,97 +2,293 @@
 
 {% block title %}Home - Horin{% endblock %}
 
-{% block content %}
-<div class="jumbotron bg-light p-5 rounded animate-fade-in">
-    {% if current_user.is_authenticated and current_user.is_owner() %}
-        <h1 class="display-4 fw-bold" data-translate="your-homestays">Your Homestays</h1>
-        <p class="lead" data-translate="manage-homestays-desc">Manage your homestays and view their status.</p>
-        <hr class="my-4">
-        <a class="btn btn-primary btn-lg" href="{{ url_for('owner.add_homestay') }}" role="button">
-            <i class="bi bi-plus-circle me-2"></i><span data-translate="add-homestay">Add New Homestay</span>
-        </a>
-    {% else %}
-        <h1 class="display-4 fw-bold" data-translate="find-perfect-homestay">Find Your Perfect Homestay</h1>
-        <p class="lead" data-translate="book-description">Book unique accommodations or list your property to earn extra income.</p>
-        <hr class="my-4">
-        <p data-translate="explore-description">Explore our selection of homestays or create an account to get started.</p>
-        <div class="d-flex gap-3">
-            <a class="btn btn-primary btn-lg" href="{{ url_for('renter.search') }}" role="button">
-                <i class="bi bi-search me-2"></i><span data-translate="find-homestay-btn">Find a Homestay</span>
-            </a>
-            {% if not current_user.is_authenticated %}
-                <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.register') }}" role="button">
-                    <i class="bi bi-person-plus me-2"></i><span data-translate="register">Sign Up Now</span>
-                </a>
-            {% endif %}
-        </div>
-    {% endif %}
-</div>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
 
-<!-- Homestays Section -->
-<section class="mt-5 animate-fade-in" style="animation-delay: 0.3s;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">
-            {% if current_user.is_authenticated and current_user.is_owner() %}
-                <span data-translate="your-homestays">Your Homestays</span>
-            {% else %}
-                <span data-translate="featured-homestays">Featured Homestays</span>
-            {% endif %}
-        </h2>
-        {% if not current_user.is_authenticated or not current_user.is_owner() %}
-        <a href="{{ url_for('renter.search') }}" class="btn btn-outline-primary">
-            <i class="bi bi-grid me-2"></i><span data-translate="view-all">View All</span>
-        </a>
-        {% endif %}
-    </div>
-    
-    <div class="row g-4">
-        {% for homestay in homestays %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
-                {% if homestay.image_path %}
-                <div class="card-img-container" style="height: 200px; overflow: hidden;">
-                    <img src="{{ url_for('static', filename=homestay.image_path) }}" class="card-img-top" alt="{{ homestay.title }}" 
-                         style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                {% else %}
-                <div class="card-img-container" style="height: 200px; overflow: hidden;">
-                    <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image"
-                         style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title fw-bold">{{ homestay.title }}</h5>
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="bi bi-geo-alt text-primary me-2"></i>
-                        <span class="text-muted">{{ homestay.city }}, {{ homestay.district }}</span>
-                    </div>
-                    <p class="card-text">{{ homestay.description|truncate(100) }}</p>
-                </div>
-                <div class="card-footer border-0 bg-transparent">
-                    {% if current_user.is_authenticated and current_user.is_owner() %}
-                        <div class="d-flex gap-2">
-                            <a href="{{ url_for('owner.edit_homestay', id=homestay.id) }}" class="btn btn-primary flex-grow-1">
-                                <i class="bi bi-pencil me-1"></i><span data-translate="edit">Edit</span>
-                            </a>
-                            <a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}" class="btn btn-outline-primary flex-grow-1">
-                                <i class="bi bi-door-open me-1"></i><span data-translate="manage-rooms">Manage Rooms</span>
-                            </a>
-                        </div>
-                        <div class="mt-2">
-                            <a href="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" class="btn btn-success w-100">
-                                <i class="bi bi-calendar-plus me-1"></i> <span data-translate="book-room">Đặt phòng</span>
-                            </a>
-                        </div>
-                    {% else %}
-                        <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary w-100">
-                            <i class="bi bi-arrow-right me-2"></i><span data-translate="view-details">View Details</span>
-                        </a>
-                    {% endif %}
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section-fullwidth">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="hero-content">
+                    <h1 class="hero-title" data-translate="find-perfect-place">Tìm kiếm chỗ nghỉ ngơi<br>lý tưởng cho bạn</h1>
+                    <p class="hero-subtitle" data-translate="book-description">Book ngay và thỏa mãn trải nghiệm du lịch của bạn</p>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </section>
+
+<!-- Search Form - Outside hero section for better positioning -->
+<div class="search-form-wrapper">
+    <form class="search-form" action="{{ url_for('renter.search') }}" method="GET">
+        <div class="row g-2">
+            <div class="col-md-2">
+                <label for="location" class="form-label">Địa điểm hoặc tên homestay</label>
+                <input type="text" class="form-control" id="location" name="location" placeholder="Nhập địa điểm hoặc tên homestay">
+            </div>
+            <div class="col-md-2">
+                <label for="checkin" class="form-label" data-translate="checkin-date">Ngày nhận phòng</label>
+                <input type="date" class="form-control" id="checkin" name="checkin_date">
+            </div>
+            <div class="col-md-2">
+                <label for="checkin-time" class="form-label" data-translate="checkin-time">Giờ check-in</label>
+                <input type="time" class="form-control" id="checkin-time" name="checkin_time">
+            </div>
+            <div class="col-md-2">
+                <label for="checkout-time" class="form-label" data-translate="checkout-time">Giờ check-out</label>
+                <input type="time" class="form-control" id="checkout-time" name="checkout_time">
+            </div>
+            <div class="col-md-2">
+                <label for="guests-rooms" class="form-label" data-translate="guests-rooms">Khách và Phòng</label>
+                <div class="guest-selector">
+                    <input type="text" class="form-control guest-display" id="guests-rooms" name="guests_rooms" 
+                           value="1 người lớn, 0 Trẻ em, 1 phòng" readonly>
+                    <div class="guest-dropdown" id="guest-dropdown">
+                        <div class="guest-row">
+                            <div class="guest-info">
+                                <i class="bi bi-person-fill text-success"></i>
+                                <span>Người lớn</span>
+                            </div>
+                            <div class="guest-controls">
+                                <button type="button" class="btn-decrease" data-target="adults">−</button>
+                                <span class="guest-count" id="adults-count">1</span>
+                                <button type="button" class="btn-increase" data-target="adults">+</button>
+                            </div>
+                        </div>
+                        <div class="guest-row">
+                            <div class="guest-info">
+                                <i class="bi bi-person text-success"></i>
+                                <span>Trẻ em</span>
+                            </div>
+                            <div class="guest-controls">
+                                <button type="button" class="btn-decrease" data-target="children">−</button>
+                                <span class="guest-count" id="children-count">0</span>
+                                <button type="button" class="btn-increase" data-target="children">+</button>
+                            </div>
+                        </div>
+                        <div class="guest-row">
+                            <div class="guest-info">
+                                <i class="bi bi-door-open text-success"></i>
+                                <span>Phòng</span>
+                            </div>
+                            <div class="guest-controls">
+                                <button type="button" class="btn-decrease" data-target="rooms">−</button>
+                                <span class="guest-count" id="rooms-count">1</span>
+                                <button type="button" class="btn-increase" data-target="rooms">+</button>
+                            </div>
+                        </div>
+                        <div class="guest-actions">
+                            <button type="button" class="btn btn-primary btn-done">Xong</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 search-btn-col">
+                <label class="form-label d-block">&nbsp;</label>
+                <button type="submit" class="btn search-btn w-100" data-translate="search">Tìm kiếm</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Featured Homestays Section -->
+<section class="featured-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="section-title" data-translate="featured-homestays">Homestay Nổi Bật</h2>
+                    <a href="{{ url_for('renter.search') }}" class="btn btn-view-all">
+                        <i class="bi bi-grid me-2"></i><span data-translate="view-all">Xem Tất Cả</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for homestay in homestays %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card homestay-card h-100">
+                    <div class="card-img-container">
+                        {% if homestay.image_path %}
+                        <img src="{{ url_for('static', filename=homestay.image_path) }}" class="card-img-top" alt="{{ homestay.title }}">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
+                        {% endif %}
+                        <div class="price-badge">
+                            ${{ homestay.price_per_night or '50' }}/đêm
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ homestay.title }}</h5>
+                        <div class="location-info mb-2">
+                            <i class="bi bi-geo-alt me-1"></i>
+                            {{ homestay.city }}, {{ homestay.district }}
+                        </div>
+                        <div class="rating-stars mb-2">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star"></i>
+                            <span class="text-muted ms-1">(4.2)</span>
+                        </div>
+                        <p class="card-text">{{ homestay.description|truncate(100) }}</p>
+                        <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right me-2"></i><span data-translate="view-details">Xem Chi Tiết</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Navbar scroll effect
+window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
+
+// Set default dates and times
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // Set default date for check-in
+    const checkinInput = document.getElementById('checkin');
+    if (checkinInput) {
+        checkinInput.value = todayStr;
+        checkinInput.min = todayStr; // Prevent past dates
+    }
+    
+    // Set default times
+    const checkinTimeInput = document.getElementById('checkin-time');
+    const checkoutTimeInput = document.getElementById('checkout-time');
+    
+    if (checkinTimeInput) {
+        checkinTimeInput.value = '14:00'; // Default check-in time 2:00 PM
+    }
+    
+    if (checkoutTimeInput) {
+        checkoutTimeInput.value = '12:00'; // Default check-out time 12:00 PM
+    }
+    
+    // Make time inputs fully clickable
+    const timeInputs = document.querySelectorAll('input[type="time"]');
+    timeInputs.forEach(function(input) {
+        input.addEventListener('click', function() {
+            this.showPicker && this.showPicker(); // Modern browsers
+        });
+        
+        // Also trigger on focus
+        input.addEventListener('focus', function() {
+            this.showPicker && this.showPicker(); // Modern browsers
+        });
+    });
+    
+    // Make date inputs fully clickable
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(function(input) {
+        input.addEventListener('click', function() {
+            this.showPicker && this.showPicker(); // Modern browsers
+        });
+        
+        // Also trigger on focus
+        input.addEventListener('focus', function() {
+            this.showPicker && this.showPicker(); // Modern browsers
+        });
+    });
+    
+    // Guest Selector Functionality
+    const guestDisplay = document.querySelector('.guest-display');
+    const guestDropdown = document.getElementById('guest-dropdown');
+    const btnDone = document.querySelector('.btn-done');
+    
+    let guestCounts = {
+        adults: 1,
+        children: 0,
+        rooms: 1
+    };
+    
+    // Toggle dropdown
+    guestDisplay.addEventListener('click', function(e) {
+        e.stopPropagation();
+        guestDropdown.classList.toggle('show');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.guest-selector')) {
+            guestDropdown.classList.remove('show');
+        }
+    });
+    
+    // Handle increase/decrease buttons
+    document.querySelectorAll('.btn-increase, .btn-decrease').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const target = this.dataset.target;
+            const isIncrease = this.classList.contains('btn-increase');
+            
+            if (isIncrease) {
+                guestCounts[target]++;
+            } else {
+                if (target === 'adults' && guestCounts[target] > 1) {
+                    guestCounts[target]--;
+                } else if (target === 'children' && guestCounts[target] > 0) {
+                    guestCounts[target]--;
+                } else if (target === 'rooms' && guestCounts[target] > 1) {
+                    guestCounts[target]--;
+                }
+            }
+            
+            // Update display
+            document.getElementById(target + '-count').textContent = guestCounts[target];
+            
+            // Update decrease button state
+            const decreaseBtn = document.querySelector(`[data-target="${target}"].btn-decrease`);
+            if ((target === 'adults' || target === 'rooms') && guestCounts[target] <= 1) {
+                decreaseBtn.disabled = true;
+            } else if (target === 'children' && guestCounts[target] <= 0) {
+                decreaseBtn.disabled = true;
+            } else {
+                decreaseBtn.disabled = false;
+            }
+            
+            updateGuestDisplay();
+        });
+    });
+    
+    // Done button
+    btnDone.addEventListener('click', function() {
+        guestDropdown.classList.remove('show');
+    });
+    
+    // Update guest display text
+    function updateGuestDisplay() {
+        const adultsText = guestCounts.adults + ' người lớn';
+        const childrenText = guestCounts.children + ' Trẻ em';
+        const roomsText = guestCounts.rooms + ' phòng';
+        
+        guestDisplay.value = `${adultsText}, ${childrenText}, ${roomsText}`;
+    }
+    
+    // Initialize decrease button states
+    document.querySelector('[data-target="adults"].btn-decrease').disabled = true;
+    document.querySelector('[data-target="children"].btn-decrease').disabled = true;
+    document.querySelector('[data-target="rooms"].btn-decrease').disabled = true;
+});
+</script>
 {% endblock %}
