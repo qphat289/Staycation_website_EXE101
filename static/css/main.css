@@ -159,18 +159,53 @@ main {
     color: var(--text-light);
 }
 
-/* 1.4 Navbar */
+/* 1.4 Navbar - Default (cho trang auth) */
 .navbar-dark.bg-primary {
-    background-color: var(--primary-color) !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.1) !important; /* Trong suốt với màu trắng nhạt */
+    backdrop-filter: blur(10px); /* Hiệu ứng blur */
+    -webkit-backdrop-filter: blur(10px); /* Hỗ trợ Safari */
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
 }
 
+/* Navbar khi scroll - có thể thêm class này bằng JavaScript */
+.navbar-dark.bg-primary.scrolled {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+/* Default navbar text color (cho trang auth) */
 .navbar-dark .navbar-nav .nav-link {
-    color: var(--text-primary);
+    color: #333 !important; /* Màu chữ tối cho trang auth */
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 .navbar-dark .navbar-nav .nav-link:hover {
-    color: var(--warning-dark);
+    color: #8bc34a !important; /* Màu xanh lá khi hover */
+    transform: translateY(-1px);
+}
+
+/* Brand text cho trang auth */
+.navbar-brand .brand-text {
+    color: #333 !important;
+    font-weight: 700;
+}
+
+/* Navbar toggler */
+.navbar-toggler {
+    border: none;
+    padding: 4px 8px;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 /* 1.5 Form Controls */
@@ -809,4 +844,55 @@ footer {
     background-color: #f0f0f0;
     font-weight: bold;
     pointer-events: none;
+}
+
+/* Dropdown menu styling */
+.navbar .dropdown-menu {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 10px 0;
+}
+
+.navbar .dropdown-item {
+    color: #333 !important;
+    padding: 8px 20px;
+    transition: all 0.3s ease;
+}
+
+.navbar .dropdown-item:hover {
+    background: rgba(139, 195, 74, 0.1);
+    color: #8bc34a !important;
+}
+
+.navbar .dropdown-item.text-danger {
+    color: #dc3545 !important;
+}
+
+.navbar .dropdown-item.text-danger:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545 !important;
+}
+
+/* Language toggle button */
+#languageToggle {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #333 !important;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+#languageToggle:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-1px);
+}
+
+#languageToggle span {
+    color: #333 !important;
+    font-weight: 600;
 }

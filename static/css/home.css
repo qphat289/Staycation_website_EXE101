@@ -15,8 +15,8 @@ html, body {
     display: none !important;
 }
 
-/* Navbar Override for Home Page */
-.navbar.bg-primary {
+/* Navbar Override for Home Page - Highest specificity */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
     background: transparent !important;
     transition: all 0.3s ease;
     position: fixed;
@@ -53,25 +53,47 @@ html, body {
     padding-left: 0.5rem; /* Reduce left padding to allow logo to move left */
 }
 
-/* Navbar khi scroll */
-.navbar.bg-primary.scrolled {
+/* Navbar khi scroll - Home page */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled {
     background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
     padding: 0.5rem 0;
 }
 
-.navbar .nav-link {
+/* Force white color for home page navbar - Highest specificity */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link {
     color: white !important;
     font-weight: 500;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.navbar .navbar-brand .brand-text {
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-brand .brand-text {
     color: white !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    line-height: 1; /* Reset line height to prevent vertical offset */
-    vertical-align: middle; /* Align text to middle */
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* Dynamic text color based on image brightness */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.navbar-light-text .nav-link {
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.navbar-light-text .navbar-brand .brand-text {
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.navbar-dark-text .nav-link {
+    color: #333 !important;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.navbar-dark-text .navbar-brand .brand-text {
+    color: #333 !important;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
 }
 
 /* Logo styling */
@@ -80,20 +102,26 @@ html, body {
     vertical-align: middle; /* Align image to middle */
 }
 
-/* Language button styling */
-.navbar #languageToggle {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+/* Language toggle button for home page */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary #languageToggle {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
     backdrop-filter: blur(5px);
 }
 
-.navbar #languageToggle:hover {
-    background: rgba(255, 255, 255, 0.3);
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary #languageToggle:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
 }
 
-/* User dropdown styling */
-.navbar .dropdown-toggle {
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary #languageToggle span {
+    color: white !important;
+    font-weight: 600;
+}
+
+/* User dropdown styling for home page */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .dropdown-toggle {
+    color: white !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
@@ -157,10 +185,11 @@ main.container {
 .search-form-wrapper {
     position: relative;
     z-index: 10;
-    margin-top: -80px; /* Overlap with hero section */
+    margin-top: -60px; /* Giảm overlap từ -80px xuống -60px */
+    margin-bottom: 20px; /* Thêm margin-bottom để tạo khoảng cách với featured section */
     display: flex;
     justify-content: center;
-    padding: 0 20px; /* Add some padding for mobile */
+    padding: 0 15px; /* Increase padding for mobile */
 }
 
 /* Search Form Styles */
@@ -168,7 +197,7 @@ main.container {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 12px;
-    padding: 1.5rem; /* Increase padding for more breathing room */
+    padding: 1.5rem;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     max-width: 1400px; /* Increase max-width to accommodate all text */
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -260,9 +289,9 @@ main.container {
 
 /* Featured Section Styles */
 .featured-section {
-    padding: 4rem 0;
+    padding: 1rem 0; /* Giảm từ 4rem xuống 2rem để di chuyển lên trên */
     background: #f8f9fa;
-    margin-top: 40px; /* Reduce margin since search form is now in normal flow */
+    margin-top: 10px; /* Giảm từ 40px xuống 10px để di chuyển lên trên hơn */
 }
 
 /* Reset container for featured section */
@@ -270,14 +299,37 @@ main.container {
     max-width: 1200px !important;
     padding: 0 15px !important;
     margin: 0 auto !important;
+    margin-left: 45px !important; /* Di chuyển sang trái 20px */
+}
+
+/* Section Header Styles */
+.section-header {
+    margin-bottom: 2.5rem !important;
+    padding-right: 20px; /* Thêm padding để tạo khoảng cách */
+}
+
+.section-title-wrapper {
+    flex: 1;
 }
 
 .section-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
-    text-align: center;
-    margin-bottom: 3rem;
-    color: #333;
+    color: #ffffff;
+    margin-bottom: 0.5rem !important;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: #ffffff !important;
+    font-weight: 400;
+    margin-bottom: 0 !important;
+}
+
+.section-action {
+    flex-shrink: 0;
+    margin-right: -200px; /* Tăng từ -30px lên -50px để di chuyển sang phải thêm */
+    margin-top: -15px; /* Di chuyển nút xuống một chút để căn với tiêu đề */
 }
 
 /* Homestay Card Styles */
@@ -356,19 +408,46 @@ main.container {
 
 /* Button Styles */
 .btn-view-all {
-    background: transparent;
-    border: 2px solid #8bc34a;
-    color: #8bc34a;
-    padding: 0.75rem 2rem;
-    border-radius: 8px;
+    background: linear-gradient(135deg, #8bc34a, #689f38);
+    border: none;
+    color: white;
+    padding: 0.5rem 1.8rem; /* Tăng padding để nút to hơn */
+    border-radius: 25px;
     font-weight: 600;
+    font-size: 1rem; /* Tăng font size */
+    text-decoration: none;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 195, 74, 0.3);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap; /* Đảm bảo text không bị xuống dòng */
+    min-width: 160px; /* Đặt chiều rộng tối thiểu */
+    display: inline-flex; /* Sử dụng inline-flex để căn chỉnh tốt hơn */
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-view-all::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
 }
 
 .btn-view-all:hover {
-    background: #8bc34a;
+    background: linear-gradient(135deg, #689f38, #558b2f);
     color: white;
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 195, 74, 0.4);
+    text-decoration: none;
+}
+
+.btn-view-all:hover::before {
+    left: 100%;
 }
 
 /* Different widths for different types of inputs */
@@ -425,7 +504,8 @@ main.container {
     
     .search-form-wrapper {
         padding: 0 15px; /* Increase padding for mobile */
-        margin-top: -60px; /* Adjust overlap for mobile */
+        margin-top: -40px; /* Điều chỉnh overlap cho mobile */
+        margin-bottom: 15px; /* Giảm margin-bottom trên mobile */
     }
     
     .search-form {
@@ -438,12 +518,48 @@ main.container {
         margin-bottom: 1rem;
     }
     
+    /* Section Header Mobile Styles */
+    .section-header {
+        margin-bottom: 2rem !important;
+        padding-right: 0; /* Bỏ padding-right trên mobile */
+    }
+    
     .section-title {
         font-size: 2rem;
+        text-align: center;
+    }
+    
+    .section-subtitle {
+        font-size: 1rem;
+        text-align: center;
+    }
+    
+    .section-title-wrapper {
+        text-align: center !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .section-action {
+        margin-right: 0; /* Bỏ margin-right trên mobile */
+        margin-top: 0; /* Bỏ margin-top trên mobile */
+        display: flex;
+        justify-content: center; /* Căn giữa nút trên mobile */
+    }
+    
+    .btn-view-all {
+        padding: 0.7rem 1.5rem; /* Giảm padding trên mobile */
+        font-size: 0.95rem; /* Giảm font size trên mobile */
+        min-width: 150px; /* Giảm min-width trên mobile */
     }
     
     .featured-section {
-        padding: 3rem 0;
+        padding: 2rem 0; /* Giảm padding trên mobile */
+        margin-top: 5px; /* Giảm margin-top trên mobile */
+    }
+    
+    /* Điều chỉnh container trên mobile */
+    .featured-section .container {
+        margin-left: -10px !important; /* Giảm margin-left trên mobile */
     }
 }
 
