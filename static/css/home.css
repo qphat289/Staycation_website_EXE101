@@ -3,6 +3,19 @@ html, body {
     margin: 0 !important;
     padding: 0 !important;
     overflow-x: hidden;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+}
+
+/* Prevent zooming */
+html {
+    zoom: 100% !important;
+    -ms-zoom: 100% !important;
+    -webkit-zoom: 100% !important;
+    -moz-transform: scale(1) !important;
+    -webkit-transform: scale(1) !important;
+    transform: scale(1) !important;
 }
 
 /* Hide viewing mode banner on home page */
@@ -232,64 +245,96 @@ main.container {
     margin: 0 !important;
 }
 
-/* Hero Section Compact Styles - Like Traveloka */
+/* Hero Section Compact Styles */
 .hero-section-fullwidth {
     background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/hero-bg.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    min-height: 60vh; /* Reduced from 100vh to 60vh */
-    max-height: 500px; /* Maximum height limit */
+    height: min(60vh, 500px) !important;
+    min-height: 300px !important;
+    max-height: 500px !important;
     display: flex;
-    align-items: flex-start; /* Change to flex-start to control positioning better */
+    align-items: flex-start;
     color: white;
     position: relative;
-    width: 100vw;
+    width: 100%;
     margin: 0;
-    padding: 120px 0 40px 0; /* Increase top padding to push content down */
-    top: 0;
-    left: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 .hero-content {
     z-index: 2;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Change to flex-start */
-    align-items: flex-start; /* Align to left instead of center */
-    height: auto; /* Change from 100% to auto */
-    text-align: left; /* Change from center to left */
-    margin-top: 2rem; /* Add some top margin to position title nicely */
-    margin-left: -15%; /* Reduce margin to move title more to the left */
+    justify-content: flex-start;
+    align-items: flex-start;
+    height: auto;
+    text-align: left;
+    padding: 0;
+    max-width: 1400px;
+    width: 100%;
+    position: relative !important;
+    left: -130px;
+    top: 200px;
 }
 
 .hero-title {
-    font-size: 2.8rem; /* Reduced from 3.5rem */
+    font-size: 40px !important;
     font-weight: 700;
-    margin-top: 0; /* Remove the 3rem margin-top to center it in hero */
-    margin-bottom: 0.8rem;
+    margin: 0;
+    padding: 0;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     line-height: 1.2;
-    color: white; /* Set title color to white */
+    color: white;
+    width: 100%;
+    position: relative !important;
 }
 
 .hero-subtitle {
-    font-size: 1rem; /* Reduced from 1.1rem */
-    margin-bottom: 0; /* Remove bottom margin since search form is separate */
+    font-size: 20px !important;
+    margin: 16px 0 0 0;
+    padding: 0;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
     opacity: 0.95;
-    color: white; /* Set subtitle color to white */
+    color: white;
+    width: 100%;
+    position: relative !important;
 }
 
 /* Search Form Wrapper */
 .search-form-wrapper {
     position: relative;
     z-index: 10;
-    margin-top: -60px; /* Giảm overlap từ -80px xuống -60px */
-    margin-bottom: 20px; /* Thêm margin-bottom để tạo khoảng cách với featured section */
+    margin-top: -30px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: center;
-    padding: 0 15px; /* Increase padding for mobile */
+    width: 100%;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .hero-content {
+        left: 16px;
+        top: 120px;
+    }
+    
+    .hero-title {
+        font-size: 32px !important;
+    }
+    
+    .hero-subtitle {
+        font-size: 16px !important;
+    }
+
+    .search-form-wrapper {
+        padding: 0;
+    }
 }
 
 /* Search Form Styles */
@@ -299,62 +344,38 @@ main.container {
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    max-width: 1400px; /* Increase max-width to accommodate all text */
+    max-width: 1400px;
+    width: calc(100% - 48px);
+    margin: 0 24px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    width: 100%; /* Take full width of wrapper */
-    position: relative; /* Change from absolute to relative */
+    position: relative;
 }
 
 .search-form .row {
     align-items: end;
-    gap: 0.3rem; /* Reduce gap further to prevent wrapping */
-    flex-wrap: nowrap; /* Prevent wrapping to next line */
-}
-
-/* Add margin to each column for better spacing */
-.search-form .col-md-2,
-.search-form .search-btn-col {
-    margin-bottom: 0;
-    padding-left: 0.3rem; /* Reduce padding */
-    padding-right: 0.3rem;
-    flex-shrink: 0; /* Prevent shrinking */
+    gap: 0.3rem;
+    flex-wrap: nowrap;
+    width: 100%;
+    margin: 0;
 }
 
 .search-form .form-label {
     color: #333;
     font-weight: 600;
-    margin-bottom: 0.4rem; /* Reduce margin */
-    font-size: 0.8rem; /* Slightly larger font for labels */
-    white-space: nowrap; /* Prevent label text wrapping */
+    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
 }
 
 .search-form .form-control,
 .search-form .form-select {
     border: 1px solid #ddd;
     border-radius: 6px;
-    padding: 0.7rem 0.9rem; /* Increase padding */
-    font-size: 0.9rem; /* Increase font size */
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
     background: white;
-    cursor: pointer; /* Make it clear it's clickable */
-}
-
-/* Different min-widths for different input types */
-.search-form input[type="time"] {
-    min-width: 100px; /* Increase for time inputs */
-}
-
-.search-form input[name="location"] {
-    min-width: 200px; /* Ensure location input is wide enough */
-}
-
-.search-form select[name="guests_rooms"] {
-    min-width: 180px; /* Increase for guests and rooms */
-}
-
-.search-form .form-control:not([type="time"]):not([name="location"]),
-.search-form .form-select:not([name="guests_rooms"]) {
-    min-width: 140px; /* Increase default min-width */
+    cursor: pointer;
 }
 
 .search-form .form-control:focus,
@@ -368,14 +389,14 @@ main.container {
     background: #8bc34a;
     border: none;
     border-radius: 6px;
-    padding: 0.7rem 0.9rem; /* Match form control padding */
+    padding: 0.7rem 0.9rem;
     font-weight: 600;
-    font-size: 0.9rem; /* Match form control font size */
+    font-size: 0.9rem;
     transition: all 0.3s ease;
     color: white;
     height: 100%;
-    white-space: nowrap; /* Prevent text wrapping */
-    min-width: 110px; /* Increase to fit button text */
+    white-space: nowrap;
+    min-width: 110px;
 }
 
 .search-btn:hover {
@@ -385,51 +406,124 @@ main.container {
     color: white;
 }
 
-/* Form Layout Adjustments - moved above */
+/* Different widths for different types of inputs */
+.search-form .col-md-2:nth-child(1) {
+    flex: 0 0 auto !important;
+    width: 22% !important;
+    min-width: 200px !important;
+}
+
+.search-form .col-md-2:nth-child(2) {
+    flex: 0 0 auto !important;
+    width: 15% !important;
+    min-width: 140px !important;
+}
+
+.search-form .col-md-2:nth-child(3) {
+    flex: 0 0 auto !important;
+    width: 12% !important;
+    min-width: 120px !important;
+}
+
+.search-form .col-md-2:nth-child(4) {
+    flex: 0 0 auto !important;
+    width: 12% !important;
+    min-width: 120px !important;
+}
+
+.search-form .col-md-2:nth-child(5) {
+    flex: 0 0 auto !important;
+    width: 22% !important;
+    min-width: 180px !important;
+}
+
+.search-form .search-btn-col {
+    flex: 0 0 auto !important;
+    width: 14% !important;
+    min-width: 110px !important;
+}
+
+@media (max-width: 768px) {
+    .search-form-wrapper {
+        padding: 0;
+    }
+    
+    .search-form {
+        width: calc(100% - 32px);
+        margin: 0 16px;
+        padding: 1rem;
+    }
+    
+    .search-form .row {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .search-form [class*="col-"] {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+}
 
 /* Featured Section Styles */
 .featured-section {
-    padding: 1rem 0; /* Giảm từ 4rem xuống 2rem để di chuyển lên trên */
+    padding: 1rem 0;
     background: #f8f9fa;
-    margin-top: 10px; /* Giảm từ 40px xuống 10px để di chuyển lên trên hơn */
+    margin-top: 10px;
+    position: relative;
 }
 
 /* Reset container for featured section */
 .featured-section .container {
-    max-width: 1200px !important;
-    padding: 0 15px !important;
+    max-width: 1400px !important;
+    width: 100% !important;
+    padding: 0 !important;
     margin: 0 auto !important;
-    margin-left: 45px !important; /* Di chuyển sang trái 20px */
+    position: relative !important;
 }
 
 /* Section Header Styles */
 .section-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
     margin-bottom: 2.5rem !important;
-    padding-right: 20px; /* Thêm padding để tạo khoảng cách */
+    padding: 0 24px !important;
+    position: relative !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .section-title-wrapper {
-    flex: 1;
+    flex: 0 0 auto !important;
+    position: relative !important;
+    padding-right: 24px !important;
 }
 
 .section-title {
-    font-size: 2rem;
+    font-size: 32px !important;
     font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 0.5rem !important;
+    color: #333333;
+    margin-bottom: 8px !important;
+    white-space: nowrap !important;
+    position: relative !important;
 }
 
 .section-subtitle {
-    font-size: 1.1rem;
-    color: #ffffff !important;
+    font-size: 16px !important;
+    color: #666666 !important;
     font-weight: 400;
     margin-bottom: 0 !important;
+    white-space: nowrap !important;
+    position: relative !important;
 }
 
 .section-action {
-    flex-shrink: 0;
-    margin-right: -200px; /* Tăng từ -30px lên -50px để di chuyển sang phải thêm */
-    margin-top: -15px; /* Di chuyển nút xuống một chút để căn với tiêu đề */
+    flex: 0 0 auto !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    margin-left: auto !important;
 }
 
 /* Homestay Card Styles */
@@ -508,176 +602,63 @@ main.container {
 
 /* Button Styles */
 .btn-view-all {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 24px !important;
+    min-width: 160px !important;
+    height: 40px !important;
+    font-size: 16px !important;
+    white-space: nowrap !important;
     background: linear-gradient(135deg, #8bc34a, #689f38);
     border: none;
     color: white;
-    padding: 0.5rem 1.8rem; /* Tăng padding để nút to hơn */
     border-radius: 25px;
     font-weight: 600;
-    font-size: 1rem; /* Tăng font size */
     text-decoration: none;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(139, 195, 74, 0.3);
-    position: relative;
-    overflow: hidden;
-    white-space: nowrap; /* Đảm bảo text không bị xuống dòng */
-    min-width: 160px; /* Đặt chiều rộng tối thiểu */
-    display: inline-flex; /* Sử dụng inline-flex để căn chỉnh tốt hơn */
-    align-items: center;
-    justify-content: center;
 }
 
-.btn-view-all::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+/* Row of homestay cards */
+.featured-section .row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    margin: 0 -12px !important;
+    position: relative !important;
 }
 
-.btn-view-all:hover {
-    background: linear-gradient(135deg, #689f38, #558b2f);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 195, 74, 0.4);
-    text-decoration: none;
+.featured-section .col-lg-4 {
+    padding: 0 12px !important;
+    margin-bottom: 24px !important;
+    position: relative !important;
 }
 
-.btn-view-all:hover::before {
-    left: 100%;
-}
-
-/* Different widths for different types of inputs */
-.search-form .col-md-2:nth-child(1) { /* Địa điểm hoặc tên homestay */
-    flex: 0 0 auto !important;
-    width: 22% !important; /* Reduce slightly */
-    max-width: 22% !important;
-}
-
-.search-form .col-md-2:nth-child(2) { /* Ngày nhận phòng */
-    flex: 0 0 auto !important;
-    width: 15% !important; /* Reduce */
-    max-width: 15% !important;
-}
-
-.search-form .col-md-2:nth-child(3) { /* Giờ check-in */
-    flex: 0 0 auto !important;
-    width: 12% !important; /* Reduce */
-    max-width: 12% !important;
-}
-
-.search-form .col-md-2:nth-child(4) { /* Giờ check-out */
-    flex: 0 0 auto !important;
-    width: 12% !important; /* Reduce */
-    max-width: 12% !important;
-}
-
-.search-form .col-md-2:nth-child(5) { /* Khách và Phòng */
-    flex: 0 0 auto !important;
-    width: 22% !important; /* Increase for longer text */
-    max-width: 22% !important;
-}
-
-.search-form .search-btn-col { /* Button */
-    flex: 0 0 auto !important;
-    width: 14% !important; /* Keep same */
-    max-width: 14% !important;
-}
-
-/* Responsive Design */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .hero-title {
-        font-size: 2.5rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-    
-    .hero-content {
-        text-align: left; /* Keep left alignment on mobile */
-        align-items: flex-start; /* Keep left alignment */
-    }
-    
-    .search-form-wrapper {
-        padding: 0 15px; /* Increase padding for mobile */
-        margin-top: -40px; /* Điều chỉnh overlap cho mobile */
-        margin-bottom: 15px; /* Giảm margin-bottom trên mobile */
-    }
-    
-    .search-form {
-        padding: 1.5rem;
-    }
-    
-    .search-form .col-md-2,
-    .search-btn-col {
-        width: 100% !important;
-        margin-bottom: 1rem;
-    }
-    
-    /* Section Header Mobile Styles */
     .section-header {
-        margin-bottom: 2rem !important;
-        padding-right: 0; /* Bỏ padding-right trên mobile */
-    }
-    
-    .section-title {
-        font-size: 2rem;
-        text-align: center;
-    }
-    
-    .section-subtitle {
-        font-size: 1rem;
-        text-align: center;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 0 16px !important;
     }
     
     .section-title-wrapper {
-        text-align: center !important;
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 16px !important;
+        padding-right: 0 !important;
     }
     
     .section-action {
-        margin-right: 0; /* Bỏ margin-right trên mobile */
-        margin-top: 0; /* Bỏ margin-top trên mobile */
-        display: flex;
-        justify-content: center; /* Căn giữa nút trên mobile */
+        width: 100% !important;
     }
     
     .btn-view-all {
-        padding: 0.7rem 1.5rem; /* Giảm padding trên mobile */
-        font-size: 0.95rem; /* Giảm font size trên mobile */
-        min-width: 150px; /* Giảm min-width trên mobile */
+        width: 100% !important;
+        max-width: none !important;
     }
     
-    .featured-section {
-        padding: 2rem 0; /* Giảm padding trên mobile */
-        margin-top: 5px; /* Giảm margin-top trên mobile */
-    }
-    
-    /* Điều chỉnh container trên mobile */
     .featured-section .container {
-        margin-left: -10px !important; /* Giảm margin-left trên mobile */
-    }
-}
-
-@media (max-width: 576px) {
-    .hero-title {
-        font-size: 2rem;
-    }
-    
-    .hero-content {
-        text-align: left; /* Keep left alignment on small mobile */
-    }
-    
-    .search-form-wrapper {
-        margin-top: -40px; /* Further adjust for small mobile */
-    }
-    
-    .search-form {
-        padding: 1rem;
+        padding: 0 16px !important;
     }
 }
 
