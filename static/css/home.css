@@ -25,7 +25,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
     right: 0;
     width: 100%;
     z-index: 1050;
-    padding: 1rem 0;
+    padding: 1rem 2rem; /* Tăng padding để logo và các phần tử có không gian */
     margin: 0;
 }
 
@@ -40,17 +40,22 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
 
 /* Adjust navbar brand positioning */
 .navbar .navbar-brand {
-    margin-right: -10rem; /* Reduce from 2rem to 1rem to move logo left */
-    margin-left: -2rem; /* Add negative margin-left to move logo further left */
-    display: flex; /* Use flexbox for proper alignment */
-    align-items: center; /* Center vertically */
-    padding-top: 0; /* Remove any top padding */
-    padding-bottom: 0; /* Remove any bottom padding */
+    margin-right: 2rem;
+    margin-left: 0;
+    display: flex;
+    align-items: center;
+    padding: 0;
 }
 
-/* Adjust navbar container to allow logo to move left */
+/* Adjust navbar container */
 .navbar .container {
-    padding-left: 0.5rem; /* Reduce left padding to allow logo to move left */
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 /* Navbar khi scroll - Home page */
@@ -285,11 +290,15 @@ main.container {
 .search-form-wrapper {
     position: relative;
     z-index: 10;
-    margin-top: -60px; /* Giảm overlap từ -80px xuống -60px */
-    margin-bottom: 20px; /* Thêm margin-bottom để tạo khoảng cách với featured section */
+    margin-top: -60px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: center;
-    padding: 0 15px; /* Increase padding for mobile */
+    padding: 0 2rem;
+    width: 100%;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Search Form Styles */
@@ -297,115 +306,99 @@ main.container {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1.5rem 2rem;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    max-width: 1400px; /* Increase max-width to accommodate all text */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    width: 100%; /* Take full width of wrapper */
-    position: relative; /* Change from absolute to relative */
+    width: 100%;
+    position: relative;
 }
 
 .search-form .row {
-    align-items: end;
-    gap: 0.3rem; /* Reduce gap further to prevent wrapping */
-    flex-wrap: nowrap; /* Prevent wrapping to next line */
+    display: flex;
+    align-items: center;
+    margin: 0;
+    gap: 1rem;
+    flex-wrap: nowrap;
+    width: 100%;
 }
 
-/* Add margin to each column for better spacing */
-.search-form .col-md-2,
+/* Specific column widths */
+.search-form .col-md-2:nth-child(1) { /* Địa điểm */
+    flex: 2.8;
+    min-width: 250px;
+}
+
+.search-form .col-md-2:nth-child(2) { /* Ngày */
+    flex: 1.5;
+    min-width: 160px;
+}
+
+.search-form .col-md-2:nth-child(3), /* Giờ check-in */
+.search-form .col-md-2:nth-child(4) { /* Giờ check-out */
+    flex: 1.2;
+    min-width: 120px;
+}
+
+.search-form .col-md-2:nth-child(5) { /* Khách và Phòng */
+    flex: 2.5;
+    min-width: 200px;
+}
+
 .search-form .search-btn-col {
-    margin-bottom: 0;
-    padding-left: 0.3rem; /* Reduce padding */
-    padding-right: 0.3rem;
-    flex-shrink: 0; /* Prevent shrinking */
+    flex: 1;
+    min-width: 120px;
 }
 
-.search-form .form-label {
-    color: #333;
-    font-weight: 600;
-    margin-bottom: 0.4rem; /* Reduce margin */
-    font-size: 0.8rem; /* Slightly larger font for labels */
-    white-space: nowrap; /* Prevent label text wrapping */
-}
-
-.search-form .form-control,
-.search-form .form-select {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 0.7rem 0.9rem; /* Increase padding */
-    font-size: 0.9rem; /* Increase font size */
-    transition: all 0.3s ease;
-    background: white;
-    cursor: pointer; /* Make it clear it's clickable */
-}
-
-/* Different min-widths for different input types */
-.search-form input[type="time"] {
-    min-width: 100px; /* Increase for time inputs */
-}
-
-.search-form input[name="location"] {
-    min-width: 200px; /* Ensure location input is wide enough */
-}
-
-.search-form select[name="guests_rooms"] {
-    min-width: 180px; /* Increase for guests and rooms */
-}
-
-.search-form .form-control:not([type="time"]):not([name="location"]),
-.search-form .form-select:not([name="guests_rooms"]) {
-    min-width: 140px; /* Increase default min-width */
-}
-
-.search-form .form-control:focus,
-.search-form .form-select:focus {
-    border-color: #8bc34a;
-    box-shadow: 0 0 0 0.2rem rgba(139, 195, 74, 0.25);
-    outline: none;
-}
-
+/* Search Button */
 .search-btn {
+    height: 48px;
+    width: 100%;
     background: #8bc34a;
-    border: none;
-    border-radius: 6px;
-    padding: 0.7rem 0.9rem; /* Match form control padding */
-    font-weight: 600;
-    font-size: 0.9rem; /* Match form control font size */
-    transition: all 0.3s ease;
     color: white;
-    height: 100%;
-    white-space: nowrap; /* Prevent text wrapping */
-    min-width: 110px; /* Increase to fit button text */
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
 .search-btn:hover {
-    background: #689f38;
+    background: #7cb342;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(139, 195, 74, 0.3);
-    color: white;
 }
 
-/* Form Layout Adjustments - moved above */
+/* Form Labels */
+.search-form .form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.5rem;
+    display: block;
+    white-space: nowrap;
+}
 
 /* Featured Section Styles */
 .featured-section {
-    padding: 1rem 0; /* Giảm từ 4rem xuống 2rem để di chuyển lên trên */
+    padding: 2rem 0;
     background: #f8f9fa;
-    margin-top: 10px; /* Giảm từ 40px xuống 10px để di chuyển lên trên hơn */
+    margin-top: 20px;
 }
 
-/* Reset container for featured section */
 .featured-section .container {
-    max-width: 1200px !important;
-    padding: 0 15px !important;
+    max-width: 1400px !important; /* Tăng max-width để phù hợp với form tìm kiếm */
+    padding: 0 2rem !important;
     margin: 0 auto !important;
-    margin-left: 45px !important; /* Di chuyển sang trái 20px */
+    width: 100% !important;
 }
 
 /* Section Header Styles */
 .section-header {
     margin-bottom: 2.5rem !important;
-    padding-right: 20px; /* Thêm padding để tạo khoảng cách */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
 }
 
 .section-title-wrapper {
@@ -415,21 +408,20 @@ main.container {
 .section-title {
     font-size: 2rem;
     font-weight: 700;
-    color: #ffffff;
+    color: #333333; /* Đổi màu chữ thành màu tối */
     margin-bottom: 0.5rem !important;
 }
 
 .section-subtitle {
     font-size: 1.1rem;
-    color: #ffffff !important;
+    color: #666666 !important; /* Đổi màu chữ thành màu tối hơn */
     font-weight: 400;
     margin-bottom: 0 !important;
 }
 
 .section-action {
     flex-shrink: 0;
-    margin-right: -200px; /* Tăng từ -30px lên -50px để di chuyển sang phải thêm */
-    margin-top: -15px; /* Di chuyển nút xuống một chút để căn với tiêu đề */
+    margin-left: 2rem;
 }
 
 /* Homestay Card Styles */
@@ -550,44 +542,38 @@ main.container {
     left: 100%;
 }
 
-/* Different widths for different types of inputs */
-.search-form .col-md-2:nth-child(1) { /* Địa điểm hoặc tên homestay */
-    flex: 0 0 auto !important;
-    width: 22% !important; /* Reduce slightly */
-    max-width: 22% !important;
-}
-
-.search-form .col-md-2:nth-child(2) { /* Ngày nhận phòng */
-    flex: 0 0 auto !important;
-    width: 15% !important; /* Reduce */
-    max-width: 15% !important;
-}
-
-.search-form .col-md-2:nth-child(3) { /* Giờ check-in */
-    flex: 0 0 auto !important;
-    width: 12% !important; /* Reduce */
-    max-width: 12% !important;
-}
-
-.search-form .col-md-2:nth-child(4) { /* Giờ check-out */
-    flex: 0 0 auto !important;
-    width: 12% !important; /* Reduce */
-    max-width: 12% !important;
-}
-
-.search-form .col-md-2:nth-child(5) { /* Khách và Phòng */
-    flex: 0 0 auto !important;
-    width: 22% !important; /* Increase for longer text */
-    max-width: 22% !important;
-}
-
-.search-form .search-btn-col { /* Button */
-    flex: 0 0 auto !important;
-    width: 14% !important; /* Keep same */
-    max-width: 14% !important;
-}
-
 /* Responsive Design */
+@media (max-width: 1200px) {
+    .search-form {
+        padding: 1.5rem;
+    }
+    
+    .search-form .row {
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .search-form {
+        padding: 1rem;
+    }
+    
+    .search-form .row {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .search-form .col-md-2,
+    .search-form .search-btn-col {
+        width: calc(50% - 0.5rem) !important;
+        min-width: auto;
+    }
+    
+    .search-form .search-btn-col {
+        width: 100% !important;
+    }
+}
+
 @media (max-width: 768px) {
     .hero-title {
         font-size: 2.5rem;
@@ -609,13 +595,22 @@ main.container {
     }
     
     .search-form {
-        padding: 1.5rem;
+        padding: 1rem;
+    }
+    
+    .search-form .row {
+        flex-direction: column;
     }
     
     .search-form .col-md-2,
-    .search-btn-col {
+    .search-form .search-btn-col {
         width: 100% !important;
-        margin-bottom: 1rem;
+    }
+    
+    .search-form .form-control,
+    .search-form .form-select,
+    .search-btn {
+        height: 44px;
     }
     
     /* Section Header Mobile Styles */
