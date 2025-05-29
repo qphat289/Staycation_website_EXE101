@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Search Homestays - Horin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Search Filters -->
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0" data-translate="filter-options">Filter Options</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{{ url_for('renter.search') }}">
+                    <div class="mb-3">
+                        <label for="city" class="form-label" data-translate="city">City</label>
+                        <select class="form-select" id="city" name="city">
+                            <option value="" data-translate="all-cities">All Cities</option>
+                            {% for city in cities %}
+                            <option value="{{ city }}" {% if search_params.city == city %}selected{% endif %}>{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="district" class="form-label" data-translate="district">District</label>
+                        <select class="form-select" id="district" name="district">
+                            <option value="" data-translate="all-districts">All Districts</option>
+                            {% for district in districts %}
+                            <option value="{{ district }}" {% if search_params.district == district %}selected{% endif %}>{{ district }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="min_price" class="form-label" data-translate="min-price-per-hour">Min Price per Hour ($)</label>
+                        <input type="number" class="form-control" id="min_price" name="min_price" min="0" step="0.01" value="{{ search_params.min_price or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="max_price" class="form-label" data-translate="max-price-per-hour">Max Price per Hour ($)</label>
+                        <input type="number" class="form-control" id="max_price" name="max_price" min="0" step="0.01" value="{{ search_params.max_price or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="bedrooms" class="form-label" data-translate="minimum-bedrooms">Minimum Bedrooms</label>
+                        <input type="number" class="form-control" id="bedrooms" name="bedrooms" min="1" value="{{ search_params.bedrooms or '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" data-translate="apply-filters">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Homestay Results -->
+    <div class="col-md-9">
+        <h2 class="mb-4" data-translate="available-homestays">Available Homestays</h2>
+        
+        {% if homestays %}
+            <div class="row">
+                {% for homestay in homestays %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        {% if homestay.image_path %}
+                        <img src="{{ url_for('static', filename=homestay.image_path) }}" 
+                             class="card-img-top" alt="{{ homestay.title }}" 
+                             style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" 
+                             class="card-img-top" alt="Default Image" 
+                             style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ homestay.title }}</h5>
+                            <p class="card-text">{{ homestay.description|truncate(100) }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt"></i> {{ homestay.city }}, {{ homestay.district }}
+                                </small>
+                            </p>
+                            {% set rooms = homestay.rooms|list %}
+                            {% if rooms|length > 0 %}
+                                {% set price_list = rooms|map(attribute='price_per_hour')|list %}
+                                {% set min_price = price_list|min %}
+                                <p class="card-text fw-bold">${{ min_price }}/hour</p>
+                            {% else %}
+                                <p class="card-text fw-bold" data-translate="no-rooms">No rooms yet</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary" data-translate="view-details">View Details</a>
+                            {% if current_user.is_authenticated and current_user.is_renter() %}
+                            <a href="{{ url_for('renter.book_homestay', homestay_id=homestay.id) }}" class="btn btn-outline-primary" data-translate="book-now">Book Now</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info" data-translate="no-homestays-found">
+                No homestays found matching your criteria. Try adjusting your filters.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4" data-translate="my-profile">My Profile</h2>
+    
+    {% if current_user.role == 'admin' %}
+    <!-- ADMIN LAYOUT: Avatar bên trái, Form bên phải -->
+    <div class="row">
+        <!-- LEFT COLUMN: Avatar Display -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <!-- Avatar -->
+                    <div class="avatar-container" style="width: 220px; height: 220px; border: 3px solid #ddd; border-radius: 50%; padding: 10px; margin: 0 auto 20px; background: #f8f9fa;">
+                        {% if current_user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="card-title">{{ current_user.full_name or current_user.username }}</h5>
+                    <span class="badge bg-danger">Admin</span>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">Quản trị viên hệ thống</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT COLUMN: Admin Profile Form -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Thông tin Admin</h5>
+                    <form method="POST" enctype="multipart/form-data">
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username" 
+                                   name="username" 
+                                   value="{{ current_user.username }}"
+                                   required>
+                        </div>
+                        
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Họ và Tên</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="full_name" 
+                                   name="full_name" 
+                                   value="{{ current_user.full_name }}"
+                                   required>
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ current_user.email }}"
+                                   required>
+                        </div>
+                        
+                        <!-- Avatar Upload -->
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">Cập nhật Avatar</label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="avatar" 
+                                   name="avatar" 
+                                   accept="image/*">
+                            <small class="text-muted">Chọn ảnh để thay đổi avatar</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- ORIGINAL LAYOUT: Avatar bên trái, Form bên phải cho user thường -->
+    <div class="row">
+        <!-- LEFT COLUMN: Avatar + Rank -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <!-- Avatar -->
+                    <div class="avatar-container" style="width: 220px; height: 220px; border: 3px solid #ddd; border-radius: 50%; padding: 10px; margin: 0 auto 20px; background: #f8f9fa;">
+                        {% if current_user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="card-title">{{ current_user.full_name or "Unnamed User" }}</h5>
+
+                    <!-- Calculate rank info -->
+                    {% set xp_current = current_user.experience_points if current_user.experience_points is defined else 0 %}
+                    {% set xp_formatted = "%.2f"|format(xp_current) %}
+                    
+                    {# get_rank_info filter returns (current_rank, current_min, next_rank, next_min) #}
+                    {% set current_rank, current_min, next_rank, next_min = xp_current|rank_info %}
+
+                    <!-- Show current rank as a badge -->
+                    <span class="badge
+                        {% if current_rank == 'Bronze' %} bg-secondary
+                        {% elif current_rank == 'Silver' %} bg-light text-dark
+                        {% elif current_rank == 'Gold' %} bg-warning text-dark
+                        {% elif current_rank == 'Emerald' %} bg-success
+                        {% elif current_rank == 'Diamond' %} bg-info text-dark
+                        {% else %} bg-primary
+                        {% endif %}
+                    " data-translate="{{ current_rank|lower }}">
+                      {{ current_rank }}
+                    </span>
+                    
+                    <!-- XP progress bar -->
+                    <div class="mt-3">
+                        <div class="progress" style="height: 20px;">
+                            {% if next_rank != None and next_min > xp_current %}
+                                {% set xp_needed = next_min - xp_current %}
+                                {% set percentage = (xp_current / next_min) * 100 %}
+                                {% set next_min_formatted = "%.1f"|format(next_min) %}
+                            {% else %}
+                                {% set xp_needed = 0 %}
+                                {% set percentage = 100 %}
+                                {% set next_min_formatted = xp_formatted %}
+                            {% endif %}
+                            
+                            <div class="progress-bar 
+                                {% if percentage < 25 %} bg-secondary
+                                {% elif percentage < 50 %} bg-info
+                                {% elif percentage < 75 %} bg-warning
+                                {% else %} bg-success
+                                {% endif %}
+                            " role="progressbar"
+                              style="width: {{ percentage|round(0, 'floor') }}%;">
+                                {{ xp_formatted }} XP
+                            </div>
+                        </div>
+                        
+                        <!-- Level-up Text -->
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <span data-translate="current-level">Tiến Trình Cấp Độ</span>: {{ xp_formatted }} XP<br>
+                                {% if next_rank != None and xp_needed > 0 %}
+                                    <span data-translate="next-level">Cần để đạt Bậc</span> {{ next_rank }}: {{ "%.1f"|format(xp_needed) }} XP<br>
+                                    <span data-translate="remaining">Còn thiếu</span>: {{ "%.1f"|format(xp_needed) }} XP
+                                {% else %}
+                                    <span data-translate="max-level">Đã đạt cấp độ tối đa!</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT COLUMN: Profile Edit Form -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label" data-translate="full-name">Full Name</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="full_name" 
+                                   name="full_name" 
+                                   value="{{ current_user.full_name }}">
+                        </div>
+                        
+                        <!-- Phone Number -->
+                        <div class="mb-3">
+                            <label for="phone" class="form-label" data-translate="phone-number">Phone Number</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="phone" 
+                                   name="phone" 
+                                   value="{{ current_user.phone }}">
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label" data-translate="email">Email</label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ current_user.email }}">
+                        </div>
+                        
+                        <!-- Personal ID -->
+                        <div class="mb-3">
+                            <label for="personal_id" class="form-label" data-translate="personal-id">Personal ID</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="personal_id" 
+                                   name="personal_id" 
+                                   value="{{ current_user.personal_id }}">
+                        </div>
+                        
+                        <!-- CCCD Upload -->
+                        <div class="mb-3">
+                            <label class="form-label" data-translate="cccd-upload">Upload CCCD</label>
+                            
+                            <!-- Mặt trước CCCD -->
+                            <div class="mb-3">
+                                <label for="cccd_front" class="form-label" data-translate="cccd-front">Mặt trước CCCD</label>
+                                {% if current_user.cccd_front_image %}
+                                    <div class="mb-2">
+                                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.cccd_front_image) }}" 
+                                             alt="CCCD Mặt trước" 
+                                             class="img-thumbnail" 
+                                             style="max-width: 200px;">
+                                    </div>
+                                {% endif %}
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="cccd_front" 
+                                       name="cccd_front" 
+                                       accept="image/*">
+                            </div>
+
+                            <!-- Mặt sau CCCD -->
+                            <div class="mb-3">
+                                <label for="cccd_back" class="form-label" data-translate="cccd-back">Mặt sau CCCD</label>
+                                {% if current_user.cccd_back_image %}
+                                    <div class="mb-2">
+                                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.cccd_back_image) }}" 
+                                             alt="CCCD Mặt sau" 
+                                             class="img-thumbnail" 
+                                             style="max-width: 200px;">
+                                    </div>
+                                {% endif %}
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="cccd_back" 
+                                       name="cccd_back" 
+                                       accept="image/*">
+                            </div>
+                            <small class="text-muted" data-translate="cccd-upload-help">Vui lòng upload ảnh rõ ràng cả mặt trước và mặt sau của CCCD</small>
+                        </div>
+                        
+                        <!-- Avatar Upload -->
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label" data-translate="change-avatar">Change Avatar</label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="avatar" 
+                                   name="avatar" 
+                                   accept="image/*">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" data-translate="update-profile">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

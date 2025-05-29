@@ -1,0 +1,446 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Horin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<style>
+/* Force white navbar for home page - Inline CSS has highest priority */
+.navbar-dark .navbar-nav .nav-link {
+    color: white !important;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand .brand-text {
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#languageToggle {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+}
+
+#languageToggle span {
+    color: white !important;
+}
+
+.navbar .dropdown-toggle {
+    color: white !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section-fullwidth">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="hero-content">
+                    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                    <h1 class="hero-title" data-translate="admin-management-interface">Giao diện quản lí cho<br> Admin</h1>
+                    <p class="hero-subtitle" data-translate="admin-subtitle">Quản lý toàn bộ hệ thống homestay, người dùng và đặt phòng một cách hiệu quả</p>
+                    {% else %}
+                    <h1 class="hero-title" data-translate="find-perfect-place">Tìm kiếm chỗ nghỉ ngơi<br>lý tưởng cho bạn</h1>
+                    <p class="hero-subtitle" data-translate="book-description">Book ngay và thỏa mãn trải nghiệm du lịch của bạn</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Search Form - Outside hero section for better positioning -->
+<div class="search-form-wrapper">
+    <form class="search-form" action="{{ url_for('renter.search') }}" method="GET">
+        {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <!-- Admin search form - simplified -->
+        <div class="row g-2 justify-content-center">
+            <div class="col-md-8">
+                <label for="location" class="form-label">Tìm kiếm homestay theo địa điểm hoặc tên</label>
+                <input type="text" class="form-control" id="location" name="location" placeholder="Nhập địa điểm hoặc tên homestay để quản lý">
+            </div>
+            <div class="col-md-2 search-btn-col">
+                <label class="form-label d-block">&nbsp;</label>
+                <button type="submit" class="btn search-btn w-100" data-translate="search">Tìm kiếm</button>
+            </div>
+        </div>
+        {% else %}
+        <!-- Regular user search form -->
+        <div class="row g-2">
+            <div class="col-md-2">
+                <label for="location" class="form-label">Địa điểm hoặc tên homestay</label>
+                <input type="text" class="form-control" id="location" name="location" placeholder="Nhập địa điểm hoặc tên homestay">
+            </div>
+            <div class="col-md-2">
+                <label for="checkin" class="form-label" data-translate="checkin-date">Ngày nhận phòng</label>
+                <input type="date" class="form-control" id="checkin" name="checkin_date">
+            </div>
+            <div class="col-md-2">
+                <label for="checkin-time" class="form-label" data-translate="checkin-time">Giờ check-in</label>
+                <input type="time" class="form-control" id="checkin-time" name="checkin_time">
+            </div>
+            <div class="col-md-2">
+                <label for="checkout-time" class="form-label" data-translate="checkout-time">Giờ check-out</label>
+                <input type="time" class="form-control" id="checkout-time" name="checkout_time">
+            </div>
+            <div class="col-md-2">
+                <label for="guests-rooms" class="form-label" data-translate="guests-rooms">Khách và Phòng</label>
+                <div class="guest-selector">
+                    <input type="text" class="form-control guest-display" id="guests-rooms" name="guests_rooms" 
+                           value="1 người lớn, 0 Trẻ em, 1 phòng" readonly>
+                    <div class="guest-dropdown" id="guest-dropdown">
+                        <div class="guest-row">
+                            <div class="guest-info">
+                                <i class="bi bi-person-fill text-success"></i>
+                                <span>Người lớn</span>
+                            </div>
+                            <div class="guest-controls">
+                                <button type="button" class="btn-decrease" data-target="adults">−</button>
+                                <span class="guest-count" id="adults-count">1</span>
+                                <button type="button" class="btn-increase" data-target="adults">+</button>
+                            </div>
+                        </div>
+                        <div class="guest-row">
+                            <div class="guest-info">
+                                <i class="bi bi-person text-success"></i>
+                                <span>Trẻ em</span>
+                            </div>
+                            <div class="guest-controls">
+                                <button type="button" class="btn-decrease" data-target="children">−</button>
+                                <span class="guest-count" id="children-count">0</span>
+                                <button type="button" class="btn-increase" data-target="children">+</button>
+                            </div>
+                        </div>
+                        <div class="guest-row">
+                            <div class="guest-info">
+                                <i class="bi bi-door-open text-success"></i>
+                                <span>Phòng</span>
+                            </div>
+                            <div class="guest-controls">
+                                <button type="button" class="btn-decrease" data-target="rooms">−</button>
+                                <span class="guest-count" id="rooms-count">1</span>
+                                <button type="button" class="btn-increase" data-target="rooms">+</button>
+                            </div>
+                        </div>
+                        <div class="guest-actions">
+                            <button type="button" class="btn btn-primary btn-done">Xong</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 search-btn-col">
+                <label class="form-label d-block">&nbsp;</label>
+                <button type="submit" class="btn search-btn w-100" data-translate="search">Tìm kiếm</button>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Featured Homestays Section -->
+<section class="featured-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-header d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+                    <div class="section-title-wrapper text-center text-md-start mb-3 mb-md-0">
+                        <h2 class="section-title mb-0" data-translate="featured-homestays">Khám Phá Ngay Các Homestay Nổi Bật!</h2>
+                        <p class="section-subtitle text-muted mb-0">Khám phá những homestay được yêu thích nhất</p>
+                    </div>
+                    <div class="section-action">
+                        <a href="{{ url_for('renter.search') }}" class="btn btn-view-all d-flex align-items-center">
+                            <i class="bi bi-grid me-2"></i>
+                            <span data-translate="view-all">Xem Tất Cả</span>                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for homestay in homestays %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card homestay-card h-100">
+                    <div class="card-img-container">
+                        {% if homestay.image_path %}
+                        <img src="{{ url_for('static', filename=homestay.image_path) }}" class="card-img-top" alt="{{ homestay.title }}">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
+                        {% endif %}
+                        <div class="price-badge">
+                            ${{ homestay.price_per_night or '50' }}/đêm
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ homestay.title }}</h5>
+                        <div class="location-info mb-2">
+                            <i class="bi bi-geo-alt me-1"></i>
+                            {{ homestay.city }}, {{ homestay.district }}
+                        </div>
+                        <div class="rating-stars mb-2">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star"></i>
+                            <span class="text-muted ms-1">(4.2)</span>
+                        </div>
+                        <p class="card-text">{{ homestay.description|truncate(100) }}</p>
+                        <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right me-2"></i><span data-translate="view-details">Xem Chi Tiết</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Function to analyze image brightness and adjust navbar text color
+function analyzeImageBrightness() {
+    const heroSection = document.querySelector('.hero-section-fullwidth');
+    if (!heroSection) return;
+    
+    // Create a canvas to analyze the hero background image
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    // Get background image URL
+    const computedStyle = window.getComputedStyle(heroSection);
+    const backgroundImage = computedStyle.backgroundImage;
+    
+    if (backgroundImage && backgroundImage !== 'none') {
+        // Extract URL from background-image CSS property
+        const imageUrl = backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/i, '$1');
+        
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+            // Set canvas size (smaller for performance)
+            canvas.width = 100;
+            canvas.height = 100;
+            
+            // Draw image to canvas
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            try {
+                // Get image data
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                let totalBrightness = 0;
+                let pixelCount = 0;
+                
+                // Calculate average brightness
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    
+                    // Calculate brightness using luminance formula
+                    const brightness = (0.299 * r + 0.587 * g + 0.114 * b);
+                    totalBrightness += brightness;
+                    pixelCount++;
+                }
+                
+                const averageBrightness = totalBrightness / pixelCount;
+                
+                // Adjust navbar text color based on brightness
+                // Threshold: 128 (middle value between 0-255)
+                const navbar = document.querySelector('.navbar');
+                if (navbar) {
+                    if (averageBrightness < 128) {
+                        // Dark image - use white text
+                        navbar.classList.add('navbar-light-text');
+                        navbar.classList.remove('navbar-dark-text');
+                    } else {
+                        // Light image - use dark text
+                        navbar.classList.add('navbar-dark-text');
+                        navbar.classList.remove('navbar-light-text');
+                    }
+                }
+                
+                console.log('Image brightness analyzed:', averageBrightness, averageBrightness < 128 ? 'Dark image - White text' : 'Light image - Dark text');
+                
+            } catch (error) {
+                console.log('Could not analyze image brightness (CORS issue), using default white text');
+                // Fallback to white text for dark images
+                const navbar = document.querySelector('.navbar');
+                if (navbar) {
+                    navbar.classList.add('navbar-light-text');
+                    navbar.classList.remove('navbar-dark-text');
+                }
+            }
+        };
+        
+        img.onerror = function() {
+            console.log('Could not load hero image, using default white text');
+            // Fallback to white text
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.classList.add('navbar-light-text');
+                navbar.classList.remove('navbar-dark-text');
+            }
+        };
+        
+        img.src = imageUrl;
+    } else {
+        // No background image, use default
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.classList.add('navbar-light-text');
+        }
+    }
+}
+
+// Navbar scroll effect
+window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
+
+// Set default dates and times
+document.addEventListener('DOMContentLoaded', function() {
+    // Analyze image brightness when page loads
+    analyzeImageBrightness();
+    
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // Set default date for check-in
+    const checkinInput = document.getElementById('checkin');
+    if (checkinInput) {
+        checkinInput.value = todayStr;
+        checkinInput.min = todayStr; // Prevent past dates
+    }
+    
+    // Set default times
+    const checkinTimeInput = document.getElementById('checkin-time');
+    const checkoutTimeInput = document.getElementById('checkout-time');
+    
+    if (checkinTimeInput) {
+        checkinTimeInput.value = '14:00'; // Default check-in time 2:00 PM
+    }
+    
+    if (checkoutTimeInput) {
+        checkoutTimeInput.value = '12:00'; // Default check-out time 12:00 PM
+    }
+    
+    // Make time inputs fully clickable
+    const timeInputs = document.querySelectorAll('input[type="time"]');
+    timeInputs.forEach(function(input) {
+        input.addEventListener('click', function() {
+            this.showPicker && this.showPicker(); // Modern browsers
+        });
+        
+        // Also trigger on focus
+        input.addEventListener('focus', function() {
+            this.showPicker && this.showPicker(); // Modern browsers
+        });
+    });
+    
+    // Make date inputs fully clickable
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(function(input) {
+        input.addEventListener('click', function() {
+            this.showPicker && this.showPicker(); // Modern browsers
+        });
+        
+        // Also trigger on focus
+        input.addEventListener('focus', function() {
+            this.showPicker && this.showPicker(); // Modern browsers
+        });
+    });
+    
+    // Guest Selector Functionality
+    const guestDisplay = document.querySelector('.guest-display');
+    const guestDropdown = document.getElementById('guest-dropdown');
+    const btnDone = document.querySelector('.btn-done');
+    
+    let guestCounts = {
+        adults: 1,
+        children: 0,
+        rooms: 1
+    };
+    
+    // Toggle dropdown
+    guestDisplay.addEventListener('click', function(e) {
+        e.stopPropagation();
+        guestDropdown.classList.toggle('show');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.guest-selector')) {
+            guestDropdown.classList.remove('show');
+        }
+    });
+    
+    // Handle increase/decrease buttons
+    document.querySelectorAll('.btn-increase, .btn-decrease').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const target = this.dataset.target;
+            const isIncrease = this.classList.contains('btn-increase');
+            
+            if (isIncrease) {
+                guestCounts[target]++;
+            } else {
+                if (target === 'adults' && guestCounts[target] > 1) {
+                    guestCounts[target]--;
+                } else if (target === 'children' && guestCounts[target] > 0) {
+                    guestCounts[target]--;
+                } else if (target === 'rooms' && guestCounts[target] > 1) {
+                    guestCounts[target]--;
+                }
+            }
+            
+            // Update display
+            document.getElementById(target + '-count').textContent = guestCounts[target];
+            
+            // Update decrease button state
+            const decreaseBtn = document.querySelector(`[data-target="${target}"].btn-decrease`);
+            if ((target === 'adults' || target === 'rooms') && guestCounts[target] <= 1) {
+                decreaseBtn.disabled = true;
+            } else if (target === 'children' && guestCounts[target] <= 0) {
+                decreaseBtn.disabled = true;
+            } else {
+                decreaseBtn.disabled = false;
+            }
+            
+            updateGuestDisplay();
+        });
+    });
+    
+    // Done button
+    btnDone.addEventListener('click', function() {
+        guestDropdown.classList.remove('show');
+    });
+    
+    // Update guest display text
+    function updateGuestDisplay() {
+        const adultsText = guestCounts.adults + ' người lớn';
+        const childrenText = guestCounts.children + ' Trẻ em';
+        const roomsText = guestCounts.rooms + ' phòng';
+        
+        guestDisplay.value = `${adultsText}, ${childrenText}, ${roomsText}`;
+    }
+    
+    // Initialize decrease button states
+    document.querySelector('[data-target="adults"].btn-decrease').disabled = true;
+    document.querySelector('[data-target="children"].btn-decrease').disabled = true;
+    document.querySelector('[data-target="rooms"].btn-decrease').disabled = true;
+});
+</script>
+{% endblock %}

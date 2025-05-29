@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Review Homestay{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h2>Review {{ homestay.title }}</h2>
+        <form method="post">
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating (1-5)</label>
+                <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" value="5">
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Your Review</label>
+                <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

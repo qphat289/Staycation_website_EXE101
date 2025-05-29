@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Review Booking{% endblock %}
+
+{% block content %}
+<h2>Review for Booking #{{ booking.id }}</h2>
+<hr>
+
+{% if existing_review %}
+  <p>You already left a review for this homestay. You can update it below if you wish.</p>
+  <form method="post">
+    <div class="mb-3">
+      <label for="rating" class="form-label">Rating (1-5)</label>
+      <input type="number" class="form-control" name="rating" id="rating" value="{{ existing_review.rating }}" min="1" max="5" required>
+    </div>
+    <div class="mb-3">
+      <label for="content" class="form-label">Review</label>
+      <textarea class="form-control" name="content" id="content" rows="4" required>{{ existing_review.content }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Review</button>
+  </form>
+{% else %}
+  <p>No existing review found. Write one below.</p>
+  <form method="post">
+    <div class="mb-3">
+      <label for="rating" class="form-label">Rating (1-5)</label>
+      <input type="number" class="form-control" name="rating" id="rating" min="1" max="5" value="5" required>
+    </div>
+    <div class="mb-3">
+      <label for="content" class="form-label">Review</label>
+      <textarea class="form-control" name="content" id="content" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Review</button>
+  </form>
+{% endif %}
+{% endblock %}

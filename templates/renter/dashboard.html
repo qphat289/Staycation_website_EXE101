@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% block title %}Trang Quản Lý Người Thuê{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2 class="mb-3">Trang Quản Lý Người Thuê</h2>
+  <hr>
+
+  <!-- Notification Section -->
+  <div class="card mb-4">
+    <div class="card-header" style="background-color: #e2b77b; color: white;">
+      <h5 class="mb-0"><i class="bi bi-bell-fill me-2"></i>Thông Báo</h5>
+    </div>
+    <div class="card-body">
+      {% for booking in bookings %}
+        {% if booking.notification_for_renter and booking.notification_date %}
+          <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-info-circle-fill me-2"></i>
+              <div>
+                <strong>{{ booking.notification_for_renter }}</strong>
+                <br>
+                <small class="text-muted">Thông báo từ: {{ booking.notification_date.strftime('%d-%m-%Y %H:%M') }}</small>
+              </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if bookings %}
+    <div class="card mb-4">
+      <div class="card-header" style="background-color: #e2b77b; color: white;">
+        <h4 class="mb-0">Danh Sách Đặt Phòng</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-dark">
+              <tr>
+                <th class="align-middle" style="width: 12%">Homestay</th>
+                <th class="align-middle" style="width: 7%">Phòng</th>
+                <th class="align-middle" style="width: 8%">Ngày Check-in</th>
+                <th class="align-middle" style="width: 7%">Giờ Check-in</th>
+                <th class="align-middle" style="width: 8%">Ngày Check-out</th>
+                <th class="align-middle" style="width: 7%">Giờ Check-out</th>
+                <th class="align-middle" style="width: 12%">Trạng Thái</th>
+                <th class="align-middle" style="width: 39%">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody style="white-space: nowrap;">
+              {% for booking in bookings %}
+                <tr>
+                  <td class="align-middle">
+                    {% if booking.room is not none %}
+                      {{ booking.room.homestay.title }}
+                    {% else %}
+                      <em>Chưa được gán</em>
+                    {% endif %}
+                  </td>
+                  <td class="align-middle">
+                    {% if booking.room is not none %}
+                      Phòng {{ booking.room.room_number }}
+                    {% else %}
+                      <em>Chưa gán phòng</em>
+                    {% endif %}
+                  </td>
+                  <td class="align-middle">{{ booking.start_time.strftime('%d-%m-%Y') }}</td>
+                  <td class="align-middle">{{ booking.start_time.strftime('%H:%M') }}</td>
+                  <td class="align-middle">{{ booking.end_time.strftime('%d-%m-%Y') }}</td>
+                  <td class="align-middle">{{ booking.end_time.strftime('%H:%M') }}</td>
+                  
+                  <!-- Hiển thị trạng thái với badge màu -->
+                  <td class="align-middle">
+                    {% if booking.status == 'pending' %}
+                      <span class="badge bg-warning fs-6 w-100 py-2">Đang Chờ</span>
+                    {% elif booking.status == 'confirmed' %}
+                      <span class="badge bg-primary fs-6 w-100 py-2">Đã Xác Nhận</span>
+                      {% if booking.payment_status == 'paid' %}
+                        <span class="badge bg-success fs-6 w-100 py-2 mt-1">Đã Thanh Toán</span>
+                      {% else %}
+                        <span class="badge bg-danger fs-6 w-100 py-2 mt-1">Chưa Thanh Toán</span>
+                      {% endif %}
+                    {% elif booking.status == 'active' %}
+                      <span class="badge bg-info fs-6 w-100 py-2">Đang Hoạt Động</span>
+                    {% elif booking.status == 'completed' %}
+                      <span class="badge bg-success fs-6 w-100 py-2">Hoàn Thành</span>
+                    {% elif booking.status == 'cancelled' %}
+                      <span class="badge bg-danger fs-6 w-100 py-2">Đã Hủy</span>
+                    {% elif booking.status == 'rejected' %}
+                      <span class="badge bg-danger fs-6 w-100 py-2">Từ Chối</span>
+                    {% else %}
+                      <span class="badge bg-secondary fs-6 w-100 py-2">{{ booking.status|capitalize }}</span>
+                    {% endif %}
+                  </td>
+                  
+                  <!-- Các nút hành động -->
+                  <td class="align-middle">
+                    <div class="action-buttons">
+                      {% if booking.room is not none %}
+                        {% if booking.status != 'rejected' %}
+                          <a href="{{ url_for('renter.book_homestay', homestay_id=booking.room.homestay.id) }}" 
+                             class="action-button book-again">
+                            <i class="bi bi-calendar-plus"></i> Đặt lại
+                          </a>
+                        {% endif %}
+                      {% endif %}
+                      
+                      {% if booking.status == 'completed' and not booking.has_review and booking.room is not none %}
+                        <a href="{{ url_for('renter.review_booking', booking_id=booking.id) }}" 
+                           class="action-button review">
+                          <i class="bi bi-star"></i> Đánh giá
+                        </a>
+                      {% endif %}
+                      
+                      {% if booking.status == 'confirmed' and booking.payment_status != 'paid' %}
+                        <a href="{{ url_for('payment.checkout', booking_id=booking.id) }}" 
+                           class="action-button pay">
+                          <i class="bi bi-credit-card"></i> Thanh toán
+                        </a>
+                      {% endif %}
+                      
+                      {% if booking.status == 'rejected' %}
+                        <a href="{{ url_for('renter.book_homestay', homestay_id=booking.room.homestay.id) }}" 
+                           class="action-button book-again">
+                          <i class="bi bi-calendar-plus"></i> Đặt lại
+                        </a>
+                      {% elif booking.status not in ['cancelled', 'completed', 'rejected'] %}
+                        <a href="{{ url_for('renter.cancel_booking', id=booking.id) }}" 
+                           class="action-button cancel">
+                          <i class="bi bi-x-circle"></i> Hủy
+                        </a>
+                      {% endif %}
+                      <a href="{{ url_for('renter.booking_details', booking_id=booking.id) }}" 
+                         class="action-button details">
+                        <i class="bi bi-info-circle"></i> Chi tiết
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <p class="mb-0">Bạn chưa có booking nào.</p>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  .table th, .table td {
+    vertical-align: middle !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  /* Định dạng nút hành động */
+  .action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 5px;
+  }
+  
+  .action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+    padding: 6px 10px;
+    text-align: center;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    color: white;
+    margin: 2px;
+  }
+  
+  .action-button i {
+    margin-right: 4px;
+  }
+  
+  .action-button:hover {
+    opacity: 0.9;
+    color: white;
+  }
+  
+  .book-again {
+    background-color: #ffc107;
+    color: #212529;
+  }
+  
+  .details {
+    background-color: #0dcaf0;
+  }
+  
+  .review {
+    background-color: #6c757d;
+  }
+  
+  .pay {
+    background-color: #198754;  /* Success green color */
+  }
+  
+  .cancel {
+    background-color: #dc3545;
+  }
+  
+  /* Đảm bảo bảng đủ rộng */
+  @media (min-width: 992px) {
+    .container-fluid {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .action-buttons {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .action-button {
+      width: 100%;
+      margin: 2px 0;
+    }
+  }
+</style>
+{% endblock %}

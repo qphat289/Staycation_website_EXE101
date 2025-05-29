@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Reviews for {{ homestay.title }}{% endblock %}
+
+{% block content %}
+<h2>Reviews for {{ homestay.title }}</h2>
+<hr>
+
+<!-- Show existing reviews -->
+{% if reviews %}
+  {% for review in reviews %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <p><strong>Rating:</strong> {{ review.rating }} / 5</p>
+        <p>{{ review.content }}</p>
+        <p class="text-muted">By {{ review.renter.username }} on {{ review.created_at.strftime('%Y-%m-%d') }}</p>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>No reviews yet for this homestay.</p>
+{% endif %}
+
+<hr>
+<!-- Always show the "Write a Review" button -->
+<a href="{{ url_for('renter.view_reviews', homestay_id=homestay.id, write=1) }}" class="btn btn-primary mb-3">
+  Write a Review
+</a>
+
+<!-- If user can post AND write_mode is set, show the form -->
+{% if can_post and write_mode %}
+  <h4>Leave or Update Your Review</h4>
+  <form method="post">
+    <div class="mb-3">
+      <label for="rating" class="form-label">Rating (1-5)</label>
+      <input type="number" class="form-control" name="rating" id="rating" min="1" max="5" value="5" required>
+    </div>
+    <div class="mb-3">
+      <label for="content" class="form-label">Your Review</label>
+      <textarea class="form-control" name="content" id="content" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Review</button>
+  </form>
+{% else %}
+  <!-- If user can't post or didn't click 'Write a Review', no form. 
+       If they can't post, the route already flashed a warning. -->
+{% endif %}
+{% endblock %}

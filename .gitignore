@@ -1,0 +1,6 @@
+__pycache__/
+migrations/versions/__pycache__/
+migrations/README
+routes/__pycache__/
+static/uploads/
+instance/homestay.db

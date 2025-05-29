@@ -1,0 +1,196 @@
+<!-- templates/owner/manage_rooms.html -->
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header py-3" style="background-color: #F7D9AF; color: #333;">
+    <h2 class="mb-0 fw-bold"><i class="bi bi-house-door me-2"></i><span data-translate="manage-rooms-for-homestay">Manage Rooms for Homestay</span>: <span style="color: #9A610E;">{{ homestay.title }}</span></h2>
+  </div>
+  <div class="card-body p-4" style="background-color: #FFFDFA;">
+    <!-- Thay đổi bộ lọc tầng sang dạng dropdown với thiết kế đẹp hơn -->
+    <div class="filter-container mb-4">
+      <div class="dropdown">
+        <button class="btn dropdown-toggle fw-semibold shadow-sm" type="button" id="floorFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #F1B55F; color: #333; border: none;">
+          <i class="bi bi-layers me-2"></i>
+          {% if request.args.get('floor') %}
+            <span data-translate="floor">Tầng</span> {{ request.args.get('floor') }}
+          {% else %}
+            <span data-translate="all-floors">Tất cả các tầng</span>
+          {% endif %}
+        </button>
+        <ul class="dropdown-menu shadow-sm" aria-labelledby="floorFilterDropdown">
+          <li>
+            <a class="dropdown-item {% if not request.args.get('floor') %}active{% endif %}" 
+               href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}">
+              <i class="bi bi-grid-3x3 me-2"></i><span data-translate="all-floors">Tất cả các tầng</span>
+            </a>
+          </li>
+          {% for floor_num in all_floors %}
+            <li>
+              <a class="dropdown-item {% if request.args.get('floor')|int == floor_num %}active{% endif %}" 
+                 href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id, floor=floor_num) }}">
+                <i class="bi bi-layers-half me-2"></i><span data-translate="floor">Tầng</span> {{ floor_num }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    {% if rooms_by_floor %}
+      {% for floor_num, rooms_on_floor in rooms_by_floor.items() %}
+        <div class="floor-section mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <h3 class="mb-0 fw-bold"><i class="bi bi-building me-2"></i><span data-translate="floor">Tầng</span> {{ floor_num }} <span class="badge ms-2" style="background-color: #EA9415; color: white;">{{ rooms_on_floor|length }} <span data-translate="rooms">phòng</span></span></h3>
+          </div>
+          <div class="floor-container">
+            {% for room in rooms_on_floor %}
+              <div class="room-card {% if room.is_booked %}booked{% else %}available{% endif %} shadow-sm">
+                <a href="{{ url_for('owner.owner_room_detail', room_id=room.id) }}" class="text-decoration-none">
+                  <div class="room-number">{{ room.room_number }}</div>
+                  <div class="room-status">
+                    {% if room.is_booked %}
+                      <i class="bi bi-calendar-check"></i> <span data-translate="booked">Đã đặt</span>
+                    {% else %}
+                      <i class="bi bi-calendar-plus"></i> <span data-translate="available">Trống</span>
+                    {% endif %}
+                  </div>
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="alert d-flex align-items-center" role="alert" style="background-color: #FFDBA8; color: #94700E; border: none;">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+        <div data-translate="no-rooms-found">Không tìm thấy phòng nào. Hãy thêm phòng mới cho homestay của bạn!</div>
+      </div>
+    {% endif %}
+
+    <div class="d-flex gap-3 mt-4">
+      <a href="{{ url_for('owner.add_room', homestay_id=homestay.id) }}" class="btn shadow-sm" style="background-color: #9A970E; color: white;">
+        <i class="bi bi-plus-circle-fill me-2"></i> <span data-translate="add-new-room">Add New Room</span>
+      </a>
+      <a href="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" class="btn shadow-sm" style="background-color: #EA9415; color: white;">
+        <i class="bi bi-calendar-plus-fill me-2"></i> <span data-translate="book-room-for-guest">Đặt phòng cho khách</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .floor-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .room-card {
+    border-radius: 12px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    color: black;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+  
+  .room-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
+  }
+  
+  .room-card.available {
+    background: linear-gradient(135deg, #e2b77b, #d29d5c); /* Light beige to darker beige */
+    color: black;
+  }
+  
+  .room-card.booked {
+    background: linear-gradient(135deg, #ae8a56, #8e6d3e); /* Darker beige to brown */
+    color: black;
+  }
+  
+  .room-card:hover {
+    border-color: #F7D9AF;
+  }
+  
+  .room-number {
+    font-size: 24px;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  
+  .room-status {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+  
+  .floor-section {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .dropdown-menu {
+    min-width: 200px;
+    border: none;
+    border-radius: 10px;
+  }
+  
+  .dropdown-item {
+    padding: 10px 15px;
+    font-weight: 500;
+    border-radius: 6px;
+    margin: 3px 5px;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #FFDBA8;
+    color: #333;
+  }
+  
+  .dropdown-item.active {
+    background-color: #F1B55F;
+    color: #333;
+  }
+  
+  /* Responsive adjustment */
+  @media (max-width: 768px) {
+    .floor-container {
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+    
+    .room-card {
+      height: 110px;
+    }
+    
+    .room-number {
+      font-size: 20px;
+    }
+    
+    .room-status {
+      font-size: 12px;
+    }
+  }
+
+  .room-card a {
+    color: black;
+    text-decoration: none;
+  }
+
+  .room-card .room-number, 
+  .room-card .room-status,
+  .room-card .room-status span {
+    color: black;
+  }
+</style>
+{% endblock %}

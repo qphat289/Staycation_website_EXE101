@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+{% block title %}Đăng ký - Horin{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h3 class="login-title">Tạo tài khoản Horin mới</h3>
+    </div>
+    
+    <div class="login-body">
+      <form method="post" autocomplete="off">
+        <!-- Họ và Tên - chia thành 2 trường -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="first_name" class="form-label">Họ*</label>
+              <input type="text" 
+                     name="first_name" 
+                     id="first_name" 
+                     class="form-control" 
+                     required
+                     value="{{ form_data.first_name|default('') }}"
+                     placeholder=""
+              >
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="last_name" class="form-label">Tên*</label>
+              <input type="text" 
+                     name="last_name" 
+                     id="last_name" 
+                     class="form-control" 
+                     required
+                     value="{{ form_data.last_name|default('') }}"
+                     placeholder=""
+              >
+            </div>
+          </div>
+        </div>
+        
+        <!-- Tên đăng nhập -->
+        <div class="form-group">
+          <label for="username" class="form-label">Tên đăng nhập*</label>
+          <input type="text" 
+                 name="username" 
+                 id="username" 
+                 class="form-control" 
+                 required 
+                 autocomplete="off"
+                 value="{{ form_data.username|default('') }}"
+                 placeholder=""
+          >
+        </div>
+        
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email" class="form-label">Email*</label>
+          <input type="email" 
+                 name="email" 
+                 id="email" 
+                 class="form-control" 
+                 required
+                 value="{{ form_data.email|default('') }}"
+                 placeholder=""
+          >
+        </div>
+        
+        <!-- Số Điện Thoại -->
+        <div class="form-group">
+          <label for="phone" class="form-label">Số Điện Thoại*</label>
+          <input type="text" 
+                 name="phone" 
+                 id="phone" 
+                 class="form-control" 
+                 required
+                 value="{{ form_data.phone|default('') }}"
+                 placeholder=""
+          >
+        </div>
+        
+        <!-- CCCD/CMND -->
+        <div class="form-group">
+          <label for="personal_id" class="form-label">CCCD/CMND*</label>
+          <input type="text" 
+                 name="personal_id" 
+                 id="personal_id" 
+                 class="form-control" 
+                 required
+                 value="{{ form_data.personal_id|default('') }}"
+                 placeholder=""
+          >
+        </div>
+        
+        <!-- Mật khẩu -->
+        <div class="form-group">
+          <label for="password" class="form-label">Mật khẩu*</label>
+          <input type="password" 
+                 name="password" 
+                 id="password" 
+                 class="form-control" 
+                 required 
+                 autocomplete="new-password"
+                 placeholder=""
+          >
+        </div>
+        
+        <!-- Xác nhận mật khẩu -->
+        <div class="form-group">
+          <label for="confirm_password" class="form-label">Xác nhận mật khẩu*</label>
+          <input type="password" 
+                 name="confirm_password" 
+                 id="confirm_password" 
+                 class="form-control" 
+                 required 
+                 autocomplete="new-password"
+                 placeholder=""
+          >
+        </div>
+        
+        <!-- Submit -->
+        <button type="submit" class="btn-login">Đăng ký</button>
+      </form>
+      
+      <!-- Separator -->
+      <div class="separator">
+        <span>HOẶC</span>
+      </div>
+      
+      <!-- Social login buttons -->
+      <div class="social-login">
+        <!-- Google login button -->
+        <a href="{{ url_for('auth.login_google') }}" class="btn-social google">
+          <i class="fab fa-google"></i>
+          Đăng ký với Google
+        </a>
+
+        <!-- Facebook login button -->
+        <a href="{{ url_for('auth.login_facebook') }}" class="btn-social facebook">
+          <i class="fab fa-facebook-f"></i>
+          Đăng ký với Facebook
+        </a>
+      </div>
+      
+      <!-- Link to login -->
+      <div class="login-footer-link">
+        <span>Đã có tài khoản? </span>
+        <a href="{{ url_for('auth.login') }}" class="register-link">Đăng nhập</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: #f5f5f5;
+  padding: 20px;
+  padding-top: 100px;
+}
+
+.login-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 680px;
+  overflow: hidden;
+}
+
+.login-header {
+  background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
+  color: white;
+  padding: 25px 30px 10px 30px;
+  text-align: center;
+}
+
+.login-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgb(0, 0, 0);
+}
+
+.login-body {
+  padding: 10px 30px 30px 30px;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}
+
+/* Styling for row layout */
+.row {
+  margin-left: -5px;
+  margin-right: -5px;
+}
+
+.row .col-md-6 {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #f9f9f9;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #000000;
+  background: white;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.btn-login {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
+  color: #000000;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.btn-login:hover {
+  background: #a5d6a7;
+}
+
+.separator {
+  text-align: center;
+  margin: 10px 0;
+  position: relative;
+}
+
+.separator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #ddd;
+}
+
+.separator span {
+  background: white;
+  padding: 0 15px;
+  color: #999;
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+.social-login {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.btn-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+}
+
+.btn-social i {
+  margin-right: 10px;
+  font-size: 1.1rem;
+}
+
+.btn-social.google:hover {
+  background: #db4437 !important;
+  color: white !important;
+  border-color: #db4437 !important;
+}
+
+.btn-social.facebook:hover {
+  background: #4267B2 !important;
+  color: white !important;
+  border-color: #4267B2 !important;
+}
+
+.login-footer-link {
+  text-align: center;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  color: #666;
+}
+
+.register-link {
+  color: rgba(139, 195, 74, 0.95);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.register-link:hover {
+  color: rgba(104, 159, 56, 0.95);
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .login-container {
+    padding: 10px;
+  }
+  
+  .login-card {
+    border-radius: 8px;
+  }
+  
+  .login-header {
+    padding: 25px 20px 15px 20px;
+  }
+  
+  .login-title {
+    font-size: 1.3rem;
+  }
+  
+  .login-body {
+    padding: 15px 20px 25px 20px;
+  }
+}
+
+/* Navbar scroll effects - Higher specificity */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
+    background: transparent !important; /* Ban đầu trong suốt */
+    transition: all 0.3s ease !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 1050 !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled {
+    background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .navbar-nav .nav-link {
+    color: white !important; /* Màu trắng khi có background xanh */
+    text-shadow: none !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .navbar-brand .brand-text {
+    color: white !important; /* Màu trắng khi có background xanh */
+    text-shadow: none !important;
+}
+
+/* Force black text for transparent navbar */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-nav .nav-link {
+    color: black !important; /* Màu đen khi navbar trong suốt */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-brand .brand-text {
+    color: black !important; /* Màu đen khi navbar trong suốt */
+}
+
+/* Hide footer on register page */
+footer {
+    display: none !important;
+}
+</style>
+
+<script>
+// Navbar scroll effect - tương tự như homepage
+window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        console.log('Scroll position:', window.scrollY); // Debug
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+            console.log('Added scrolled class'); // Debug
+        } else {
+            navbar.classList.remove('scrolled');
+            console.log('Removed scrolled class'); // Debug
+        }
+    } else {
+        console.log('Navbar not found'); // Debug
+    }
+});
+
+// Debug: Check if navbar exists when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const navbar = document.querySelector('.navbar');
+    console.log('Navbar found on page load:', navbar);
+});
+</script>
+{% endblock %}

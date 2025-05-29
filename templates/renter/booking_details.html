@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% block title %}Booking Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="background-color: #e2b77b; color: white;">
+                    <h4 class="mb-0">Chi Tiết Đặt Phòng</h4>
+                </div>
+                
+                <!-- Notification Section -->
+                {% if booking.notification_for_renter and booking.notification_date %}
+                <div class="card-body border-bottom">
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <div>
+                                <strong>{{ booking.notification_for_renter }}</strong>
+                                <br>
+                                <small class="text-muted">Thông báo từ: {{ booking.notification_date.strftime('%d-%m-%Y %H:%M') }}</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="card-body">
+                    <div class="container-fluid my-4">
+                        <div class="mb-3">
+                            <a href="{{ url_for('renter.dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+                            </a>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #e2b77b; color: white;">
+                                <h3 class="card-title mb-0">Booking #{{ booking.id }}</h3>
+                                <div>
+                                    {% if booking.status not in ['cancelled', 'completed', 'rejected'] %}
+                                        <a href="{{ url_for('renter.cancel_booking', id=booking.id) }}" class="btn btn-outline-danger">
+                                            <i class="bi bi-x-circle"></i> Hủy đặt phòng
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card mb-3 h-100">
+                                            <div class="card-header bg-info text-white">
+                                                <h5 class="card-title mb-0">Booking Information</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <table class="table table-bordered table-striped text-center align-middle detail-table">
+                                                    <tr>
+                                                        <th class="align-middle" style="width: 40%">Status:</th>
+                                                        <td class="align-middle">
+                                                            {% if booking.status == 'pending' %}
+                                                                <span class="badge bg-warning fs-6 w-100 py-2">Pending</span>
+                                                            {% elif booking.status == 'confirmed' %}
+                                                                <span class="badge bg-primary fs-6 w-100 py-2">Confirmed</span>
+                                                            {% elif booking.status == 'active' %}
+                                                                <span class="badge bg-info fs-6 w-100 py-2">Active</span>
+                                                            {% elif booking.status == 'completed' %}
+                                                                <span class="badge bg-success fs-6 w-100 py-2">Completed</span>
+                                                            {% elif booking.status == 'cancelled' %}
+                                                                <span class="badge bg-danger fs-6 w-100 py-2">Cancelled</span>
+                                                            {% elif booking.status == 'rejected' %}
+                                                                <span class="badge bg-danger fs-6 w-100 py-2">Rejected</span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary fs-6 w-100 py-2">{{ booking.status|capitalize }}</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Created:</th>
+                                                        <td class="align-middle">{{ booking.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Ngày Check-in:</th>
+                                                        <td class="align-middle">{{ booking.start_time.strftime('%d-%m-%Y') }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Giờ Check-in:</th>
+                                                        <td class="align-middle">{{ booking.start_time.strftime('%H:%M') }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Ngày Check-out:</th>
+                                                        <td class="align-middle">{{ booking.end_time.strftime('%d-%m-%Y') }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Giờ Check-out:</th>
+                                                        <td class="align-middle">{{ booking.end_time.strftime('%H:%M') }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Total Price:</th>
+                                                        <td class="align-middle">${{ "%.2f"|format(booking.total_price) }}</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card mb-3 h-100">
+                                            <div class="card-header bg-success text-white">
+                                                <h5 class="card-title mb-0">Thông tin của bạn</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <table class="table table-bordered table-striped text-center align-middle detail-table">
+                                                    <tr>
+                                                        <th class="align-middle" style="width: 40%">Họ và tên:</th>
+                                                        <td class="align-middle">{{ booking.renter.full_name }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Email:</th>
+                                                        <td class="align-middle">{{ booking.renter.email }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Số điện thoại:</th>
+                                                        <td class="align-middle">{{ booking.renter.phone }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">CCCD/CMND:</th>
+                                                        <td class="align-middle">{{ booking.renter.personal_id }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Ngày tham gia:</th>
+                                                        <td class="align-middle">{{ booking.renter.created_at.strftime('%d-%m-%Y') }}</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="card mb-3">
+                                            <div class="card-header bg-warning text-dark">
+                                                <h5 class="card-title mb-0">Thông tin Homestay</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <table class="table table-bordered table-striped text-center align-middle detail-table">
+                                                    <tr>
+                                                        <th class="align-middle" style="width: 20%">Homestay:</th>
+                                                        <td class="align-middle">{{ booking.room.homestay.title }}</td>
+                                                        <th class="align-middle" style="width: 20%">Room:</th>
+                                                        <td class="align-middle">Room {{ booking.room.room_number }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="align-middle">Room Type:</th>
+                                                        <td class="align-middle">{{ booking.room.room_type }}</td>
+                                                        <th class="align-middle">Address:</th>
+                                                        <td class="align-middle">{{ booking.room.homestay.address }}, {{ booking.room.homestay.city }}</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-12 text-center">
+                                        <div class="action-buttons-container">
+                                            {% if booking.status == 'confirmed' and booking.payment_status != 'paid' %}
+                                                <a href="{{ url_for('payment.checkout', booking_id=booking.id) }}" class="detail-action-button payment-btn">
+                                                    <i class="bi bi-credit-card"></i> Thanh toán ngay
+                                                </a>
+                                            {% endif %}
+                                            
+                                            {% if booking.room is not none %}
+                                                <a href="{{ url_for('renter.book_homestay', homestay_id=booking.room.homestay.id) }}" class="detail-action-button book-again-btn">
+                                                    <i class="bi bi-calendar-plus"></i> Đặt phòng lại
+                                                </a>
+                                            {% endif %}
+                                            
+                                            {% if booking.status == 'completed' and not booking.has_review %}
+                                                <a href="{{ url_for('renter.review_booking', booking_id=booking.id) }}" class="detail-action-button review-btn">
+                                                    <i class="bi bi-star"></i> Đánh giá Homestay
+                                                </a>
+                                            {% endif %}
+                                            
+                                            {% if booking.status not in ['cancelled', 'completed', 'rejected'] %}
+                                                <a href="{{ url_for('renter.cancel_booking', id=booking.id) }}" class="detail-action-button cancel-btn">
+                                                    <i class="bi bi-x-circle"></i> Hủy đặt phòng
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+  .detail-table th, .detail-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .detail-table td {
+    max-width: 300px;
+  }
+  
+  /* Đảm bảo các card có chiều cao đều nhau */
+  .card.h-100 {
+    height: 100% !important;
+  }
+  
+  /* Định dạng các nút hành động */
+  .action-buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .detail-action-button {
+    display: inline-block;
+    min-width: 150px;
+    padding: 10px 16px;
+    text-align: center;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    color: white;
+  }
+  
+  .detail-action-button:hover {
+    opacity: 0.9;
+    color: white;
+    text-decoration: none;
+  }
+  
+  .payment-btn {
+    background-color: #28a745;
+  }
+  
+  .book-again-btn {
+    background-color: #ffc107;
+    color: #212529;
+  }
+  
+  .review-btn {
+    background-color: #6c757d;
+  }
+  
+  .cancel-btn {
+    background-color: #dc3545;
+  }
+  
+  /* Đảm bảo container đủ rộng */
+  @media (min-width: 992px) {
+    .container-fluid {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .action-buttons-container {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .detail-action-button {
+      margin-bottom: 8px;
+      width: 100%;
+      max-width: 300px;
+    }
+  }
+</style>
+{% endblock %}
