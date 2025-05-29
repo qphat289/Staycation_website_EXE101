@@ -49,7 +49,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav ms-3">
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_owner() %}
                             <li class="nav-item">
@@ -57,7 +57,15 @@
                                     <i class="bi bi-speedometer2 me-1"></i><span data-translate="owner-dashboard">Owner Dashboard</span>
                                 </a>
                             </li>
-                        {% else %}
+                        {% elif current_user.role == 'renter' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('renter.dashboard') }}" style="color: #333333;">
+                                    <i class="bi bi-person-workspace me-1"></i><span data-translate="renter-dashboard">Renter Dashboard</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% if current_user.role != 'admin' %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('renter.search') }}" style="color: #333333;">
                                     <i class="bi bi-search me-1"></i><span data-translate="search">Search</span>
@@ -66,24 +74,16 @@
                         {% endif %}
                     {% endif %}
                 </ul>
-                <ul class="navbar-nav align-items-center">
+                <ul class="navbar-nav ms-auto align-items-center">
                     {% if current_user.is_authenticated %}
                         {% if current_user.role == 'admin' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.dashboard') }}" style="color: #333333;">
-                                    <i class="bi bi-shield-lock me-1"></i><span data-translate="admin-dashboard">Admin Dashboard</span>
-                                </a>
+                            <li class="nav-item me-3">
+                                <div style="border: 1px solid rgba(212, 204, 204, 0.6); border-radius: 8px; padding: 4px 8px;">
+                                    <a class="nav-link" href="{{ url_for('admin.dashboard') }}" style="color: #333333; padding: 4px 8px;">
+                                        <i class="bi bi-shield-lock me-1"></i><span data-translate="admin-dashboard">Admin Dashboard</span>
+                                    </a>
+                                </div>
                             </li>
-                        {% elif current_user.is_owner() %}
-                            <!-- Đã xóa nút Switch to Renter ở đây để tránh trùng lặp -->
-                        {% else %}
-                            {% if not (current_user.__class__.__name__ == 'Owner' and current_user.is_renter()) %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('renter.dashboard') }}" style="color: #333333;">
-                                    <i class="bi bi-person-workspace me-1"></i><span data-translate="renter-dashboard">Renter Dashboard</span>
-                                </a>
-                            </li>
-                            {% endif %}
                         {% endif %}
                         
                         <!-- Language Toggle Button -->
@@ -96,19 +96,26 @@
 
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown ms-3">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #333333;">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #333333; border: 1px solid rgba(255, 255, 255, 0.5) !important; border-radius: 25px !important; padding: 4px 12px !important; background: transparent !important;">
                                 {% if current_user.avatar %}
-                                    <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2 border border-2 border-white" style="width: 32px; height: 32px; object-fit: cover;">
+                                    <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% else %}
-                                    <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2 border border-2 border-white" style="width: 32px; height: 32px; object-fit: cover;">
+                                    <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% endif %}
                                 <span>{{ current_user.display_name }}</span>
+                                <i class="fas fa-bars ms-2" style="font-size: 14px;"></i>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
                                 <li>
+                                    {% if current_user.role == 'admin' %}
+                                    <a class="dropdown-item" href="{{ url_for('admin.profile') }}">
+                                        <i class="bi bi-person-circle me-2"></i><span data-translate="my-profile">My Profile</span>
+                                    </a>
+                                    {% else %}
                                     <a class="dropdown-item" href="{{ url_for('renter.profile') }}">
                                         <i class="bi bi-person-circle me-2"></i><span data-translate="my-profile">My Profile</span>
                                     </a>
+                                    {% endif %}
                                 </li>
                                 {% if current_user.is_owner() %}
                                 <li>
@@ -123,11 +130,13 @@
                                     </a>
                                 </li>
                                 {% endif %}
+                                {% if current_user.role != 'admin' %}
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('renter.booking_history') }}">
                                         <i class="bi bi-clock-history me-2"></i><span data-translate="booking-history">Booking History</span>
                                     </a>
                                 </li>
+                                {% endif %}
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('renter.settings') }}">
                                         <i class="bi bi-gear-fill me-2"></i><span data-translate="settings">Settings</span>
@@ -159,7 +168,7 @@
                             </button>
                         </li>
                     {% endif %}
-                </ul>                
+                </ul>
             </div>
         </div>
     </nav>

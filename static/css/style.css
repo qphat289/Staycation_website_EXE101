@@ -117,13 +117,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .dropdown-item {
-    color: var(--text-primary);
+    color: #333 !important; /* Force consistent color */
     transition: all 0.2s ease;
     padding: 8px 20px;
+    font-weight: 500;
 }
 
 .dropdown-item:hover {
-    background-color: var(--primary-bg-light);
+    background-color: rgba(139, 195, 74, 0.1) !important; /* Consistent hover color */
+    color: #8bc34a !important;
     transform: translateX(5px);
 }
 

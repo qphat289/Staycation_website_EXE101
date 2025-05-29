@@ -125,6 +125,106 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .dropdown-toggle {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* Avatar styling for home page navbar */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link img.rounded-circle {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transition: all 0.3s ease;
+    position: relative !important;
+    z-index: 1051 !important; /* Higher than navbar z-index */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link img.rounded-circle:hover {
+    border: none !important;
+    box-shadow: none !important;
+    transform: scale(1.05);
+}
+
+/* Avatar styling when navbar is scrolled on home page */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link img.rounded-circle {
+    border: none !important;
+    box-shadow: none !important;
+    position: relative !important;
+    z-index: 1051 !important; /* Higher than navbar z-index */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link img.rounded-circle:hover {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Ensure dropdown toggle has proper z-index */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.dropdown-toggle {
+    position: relative !important;
+    z-index: 1051 !important;
+}
+
+/* Remove all background and styling from user dropdown toggle on home page */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* When navbar is scrolled on home page */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Change dropdown arrow to hamburger menu for user dropdown on home page */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle::after {
+    display: none !important; /* Hide default Bootstrap arrow */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle::before {
+    display: none !important;
+}
+
+/* When navbar is scrolled */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle::after {
+    display: none !important; /* Hide default Bootstrap arrow */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle::before {
+    display: none !important;
+}
+
 /* Override main container for full width hero */
 main.container {
     max-width: none !important;
@@ -788,4 +888,33 @@ main.container {
 
 .btn-done:hover {
     background: #689f38;
+}
+
+/* User dropdown container styling for home page */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.user-dropdown-container {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 25px !important;
+    padding: 4px 12px !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: all 0.3s ease;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.user-dropdown-container:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* When navbar is scrolled on home page */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.user-dropdown-container {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.user-dropdown-container:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
 } 

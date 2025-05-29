@@ -3,23 +3,116 @@
 <div class="container py-4">
     <h2 class="mb-4" data-translate="my-profile">My Profile</h2>
     
+    {% if current_user.role == 'admin' %}
+    <!-- ADMIN LAYOUT: Avatar bên trái, Form bên phải -->
+    <div class="row">
+        <!-- LEFT COLUMN: Avatar Display -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <!-- Avatar -->
+                    <div class="avatar-container" style="width: 220px; height: 220px; border: 3px solid #ddd; border-radius: 50%; padding: 10px; margin: 0 auto 20px; background: #f8f9fa;">
+                        {% if current_user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="card-title">{{ current_user.full_name or current_user.username }}</h5>
+                    <span class="badge bg-danger">Admin</span>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">Quản trị viên hệ thống</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT COLUMN: Admin Profile Form -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Thông tin Admin</h5>
+                    <form method="POST" enctype="multipart/form-data">
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username" 
+                                   name="username" 
+                                   value="{{ current_user.username }}"
+                                   required>
+                        </div>
+                        
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Họ và Tên</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="full_name" 
+                                   name="full_name" 
+                                   value="{{ current_user.full_name }}"
+                                   required>
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ current_user.email }}"
+                                   required>
+                        </div>
+                        
+                        <!-- Avatar Upload -->
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">Cập nhật Avatar</label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="avatar" 
+                                   name="avatar" 
+                                   accept="image/*">
+                            <small class="text-muted">Chọn ảnh để thay đổi avatar</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- ORIGINAL LAYOUT: Avatar bên trái, Form bên phải cho user thường -->
     <div class="row">
         <!-- LEFT COLUMN: Avatar + Rank -->
         <div class="col-md-4">
             <div class="card mb-4">
                 <div class="card-body text-center">
                     <!-- Avatar -->
-                    {% if current_user.avatar %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
-                            alt="Avatar"
-                            class="avatar-circle"
-                            style="width: 150px; height: 150px; object-fit: cover;">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
-                            alt="Avatar"
-                            class="avatar-circle"
-                            style="width: 150px; height: 150px; object-fit: cover;">
-                    {% endif %}
+                    <div class="avatar-container" style="width: 220px; height: 220px; border: 3px solid #ddd; border-radius: 50%; padding: 10px; margin: 0 auto 20px; background: #f8f9fa;">
+                        {% if current_user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% endif %}
+                    </div>
                     
                     <h5 class="card-title">{{ current_user.full_name or "Unnamed User" }}</h5>
 
@@ -70,25 +163,17 @@
                         
                         <!-- Level-up Text -->
                         <div class="mt-2">
-                            <h6 class="mb-1" data-translate="leveling-progress">Tiến Trình Cấp Độ</h6>
-                            <div class="text-muted">
-                                {% if next_rank %}
-                                    <div>
-                                        <span data-translate="current-xp">Điểm Kinh Nghiệm</span>: <strong>{{ xp_formatted }} XP</strong>
-                                    </div>
-                                    <div>
-                                        <span data-translate="next-rank-xp">Cần để đạt</span> <span data-translate="{{ next_rank|lower }}">{{ next_rank }}</span>: <strong>{{ next_min_formatted }} XP</strong>
-                                    </div>
-                                    <div>
-                                        <span data-translate="xp-needed">Còn thiếu</span>: <strong>{{ "%.1f"|format(xp_needed) }} XP</strong>
-                                    </div>
+                            <small class="text-muted">
+                                <span data-translate="current-level">Tiến Trình Cấp Độ</span>: {{ xp_formatted }} XP<br>
+                                {% if next_rank != None and xp_needed > 0 %}
+                                    <span data-translate="next-level">Cần để đạt Bậc</span> {{ next_rank }}: {{ "%.1f"|format(xp_needed) }} XP<br>
+                                    <span data-translate="remaining">Còn thiếu</span>: {{ "%.1f"|format(xp_needed) }} XP
                                 {% else %}
-                                    <span data-translate="max-rank">Already at Diamond Rank!</span>
+                                    <span data-translate="max-level">Đã đạt cấp độ tối đa!</span>
                                 {% endif %}
-                            </div>
+                            </small>
                         </div>
                     </div>
-                    
                 </div>
             </div>
         </div>
@@ -196,5 +281,6 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

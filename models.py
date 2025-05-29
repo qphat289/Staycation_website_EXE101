@@ -35,6 +35,10 @@ class Admin(UserMixin, db.Model):
     def is_renter(self):
         return False
         
+    @property
+    def display_name(self):
+        return self.full_name or self.username
+        
     def __repr__(self):
         return f'<Admin {self.username}>'
 

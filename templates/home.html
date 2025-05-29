@@ -40,8 +40,13 @@
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="hero-content">
+                    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                    <h1 class="hero-title" data-translate="admin-management-interface">Giao diện quản lí cho<br> Admin</h1>
+                    <p class="hero-subtitle" data-translate="admin-subtitle">Quản lý toàn bộ hệ thống homestay, người dùng và đặt phòng một cách hiệu quả</p>
+                    {% else %}
                     <h1 class="hero-title" data-translate="find-perfect-place">Tìm kiếm chỗ nghỉ ngơi<br>lý tưởng cho bạn</h1>
                     <p class="hero-subtitle" data-translate="book-description">Book ngay và thỏa mãn trải nghiệm du lịch của bạn</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -51,6 +56,20 @@
 <!-- Search Form - Outside hero section for better positioning -->
 <div class="search-form-wrapper">
     <form class="search-form" action="{{ url_for('renter.search') }}" method="GET">
+        {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <!-- Admin search form - simplified -->
+        <div class="row g-2 justify-content-center">
+            <div class="col-md-8">
+                <label for="location" class="form-label">Tìm kiếm homestay theo địa điểm hoặc tên</label>
+                <input type="text" class="form-control" id="location" name="location" placeholder="Nhập địa điểm hoặc tên homestay để quản lý">
+            </div>
+            <div class="col-md-2 search-btn-col">
+                <label class="form-label d-block">&nbsp;</label>
+                <button type="submit" class="btn search-btn w-100" data-translate="search">Tìm kiếm</button>
+            </div>
+        </div>
+        {% else %}
+        <!-- Regular user search form -->
         <div class="row g-2">
             <div class="col-md-2">
                 <label for="location" class="form-label">Địa điểm hoặc tên homestay</label>
@@ -118,6 +137,7 @@
                 <button type="submit" class="btn search-btn w-100" data-translate="search">Tìm kiếm</button>
             </div>
         </div>
+        {% endif %}
     </form>
 </div>
 

@@ -861,6 +861,7 @@ footer {
     color: #333 !important;
     padding: 8px 20px;
     transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 .navbar .dropdown-item:hover {
@@ -874,6 +875,36 @@ footer {
 
 .navbar .dropdown-item.text-danger:hover {
     background: rgba(220, 53, 69, 0.1);
+    color: #dc3545 !important;
+}
+
+/* Ensure all dropdown items have consistent styling */
+.dropdown-item,
+.navbar .dropdown-item,
+.dropdown-menu .dropdown-item {
+    color: #333 !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.dropdown-item:hover,
+.navbar .dropdown-item:hover,
+.dropdown-menu .dropdown-item:hover {
+    background: rgba(139, 195, 74, 0.1) !important;
+    color: #8bc34a !important;
+}
+
+/* Special styling for danger items (logout) */
+.dropdown-item.text-danger,
+.navbar .dropdown-item.text-danger,
+.dropdown-menu .dropdown-item.text-danger {
+    color: #dc3545 !important;
+}
+
+.dropdown-item.text-danger:hover,
+.navbar .dropdown-item.text-danger:hover,
+.dropdown-menu .dropdown-item.text-danger:hover {
+    background: rgba(220, 53, 69, 0.1) !important;
     color: #dc3545 !important;
 }
 
@@ -895,4 +926,181 @@ footer {
 #languageToggle span {
     color: #333 !important;
     font-weight: 600;
+}
+
+/* Avatar styling in navbar */
+.navbar .nav-link img.rounded-circle {
+    border: none !important;
+    background: transparent !important;
+    transition: all 0.3s ease;
+    box-shadow: none !important;
+    position: relative !important;
+    z-index: 1051 !important; /* Higher than navbar z-index */
+}
+
+.navbar .nav-link img.rounded-circle:hover {
+    border: none !important;
+    box-shadow: none !important;
+    transform: scale(1.05);
+}
+
+/* Avatar styling for home page - blend with transparent navbar */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link img.rounded-circle {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    position: relative !important;
+    z-index: 1051 !important; /* Higher than navbar z-index */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link img.rounded-circle:hover {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Avatar styling when navbar is scrolled */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link img.rounded-circle {
+    border: none !important;
+    box-shadow: none !important;
+    position: relative !important;
+    z-index: 1051 !important; /* Higher than navbar z-index */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link img.rounded-circle:hover {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Ensure dropdown toggle has proper z-index */
+.navbar .nav-link.dropdown-toggle {
+    position: relative !important;
+    z-index: 1051 !important;
+}
+
+/* Remove all background and styling from user dropdown toggle */
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+}
+
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* For home page specifically */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* When navbar is scrolled */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Change dropdown arrow to hamburger menu for user dropdown */
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle::after {
+    display: none !important; /* Hide default Bootstrap arrow */
+}
+
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle::before {
+    display: none !important; /* Hide the before pseudo-element */
+}
+
+/* For home page specifically */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle::after {
+    display: none !important; /* Hide default Bootstrap arrow */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle::before {
+    display: none !important;
+}
+
+/* User dropdown container styling */
+.navbar .nav-link.user-dropdown-container {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 25px !important;
+    padding: 4px 12px !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link.user-dropdown-container:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* For home page specifically */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.user-dropdown-container {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.user-dropdown-container:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* When navbar is scrolled */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.user-dropdown-container {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.user-dropdown-container:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
 }

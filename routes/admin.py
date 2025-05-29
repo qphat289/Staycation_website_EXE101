@@ -1,9 +1,16 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from models import db, Admin, Owner, Renter, Homestay
 from sqlalchemy.exc import IntegrityError
+import os
+from werkzeug.utils import secure_filename
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+def allowed_file(filename):
+    """Check if the file extension is allowed"""
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @admin_bp.route('/dashboard')
 @login_required
@@ -13,6 +20,115 @@ def dashboard():
         return redirect(url_for('auth.login'))
     owners = Owner.query.all()
     return render_template('admin/dashboard.html', owners=owners)
+
+@admin_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if not isinstance(current_user, Admin):
+        flash("You are not authorized!", "danger")
+        return redirect(url_for('auth.login'))
+    
+    if request.method == 'POST':
+        try:
+            # Get form data
+            new_username = request.form.get('username')
+            new_full_name = request.form.get('full_name')
+            new_email = request.form.get('email')
+            
+            # Validate required fields
+            if not new_username or not new_email:
+                flash("Username và Email là bắt buộc!", "danger")
+                return redirect(url_for('admin.profile'))
+            
+            # Check if username is being changed and if it already exists
+            if new_username != current_user.username:
+                existing_admin = Admin.query.filter_by(username=new_username).first()
+                existing_owner = Owner.query.filter_by(username=new_username).first()
+                existing_renter = Renter.query.filter_by(username=new_username).first()
+                
+                if existing_admin or existing_owner or existing_renter:
+                    flash(f"Username '{new_username}' đã tồn tại! Vui lòng chọn username khác.", "danger")
+                    return redirect(url_for('admin.profile'))
+            
+            # Check if email is being changed and if it already exists
+            if new_email != current_user.email:
+                existing_admin = Admin.query.filter_by(email=new_email).first()
+                existing_owner = Owner.query.filter_by(email=new_email).first()
+                existing_renter = Renter.query.filter_by(email=new_email).first()
+                
+                if existing_admin or existing_owner or existing_renter:
+                    flash(f"Email '{new_email}' đã tồn tại! Vui lòng chọn email khác.", "danger")
+                    return redirect(url_for('admin.profile'))
+            
+            # Update admin info
+            current_user.username = new_username
+            current_user.full_name = new_full_name
+            current_user.email = new_email
+
+            # Handle avatar upload
+            if 'avatar' in request.files:
+                avatar = request.files['avatar']
+                print(f"Received file: {avatar.filename}")
+                
+                if avatar and avatar.filename != '':
+                    if not allowed_file(avatar.filename):
+                        flash("File type not allowed. Please use: png, jpg, jpeg, gif, or webp", "danger")
+                        return redirect(url_for('admin.profile'))
+                    
+                    try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        print(f"Upload folder path: {upload_folder}")
+                        
+                        if not os.path.exists(upload_folder):
+                            print(f"Creating upload folder: {upload_folder}")
+                            os.makedirs(upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(avatar.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        print(f"Saving file to: {filepath}")
+                        
+                        # Save file
+                        avatar.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
+                        print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
+                        
+                        # Delete old avatar if exists
+                        if current_user.avatar:
+                            old_avatar_path = os.path.join(upload_folder, current_user.avatar)
+                            if os.path.exists(old_avatar_path):
+                                os.remove(old_avatar_path)
+                                print(f"Deleted old avatar: {old_avatar_path}")
+                        
+                        # Update the avatar field in the admin's profile
+                        current_user.avatar = filename
+                        print(f"Updated admin avatar in database: {filename}")
+                        
+                    except Exception as e:
+                        print(f"Error during file operations: {str(e)}")
+                        flash(f"Error saving avatar: {str(e)}", "danger")
+                        return redirect(url_for('admin.profile'))
+
+            # Commit changes to the database
+            db.session.commit()
+            flash("Cập nhật thông tin thành công!", "success")
+            
+        except IntegrityError as e:
+            print(f"IntegrityError: {str(e)}")
+            db.session.rollback()
+            flash("Lỗi: Username hoặc Email đã tồn tại. Vui lòng thử lại với thông tin khác.", "danger")
+        except Exception as e:
+            print(f"Error updating profile: {str(e)}")
+            db.session.rollback()
+            flash(f"Lỗi cập nhật thông tin: {str(e)}", "danger")
+            
+        return redirect(url_for('admin.profile'))
+
+    return render_template("user/profile.html")
 
 @admin_bp.route('/create_owner', methods=['GET', 'POST'])
 @login_required
