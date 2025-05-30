@@ -1,6 +1,115 @@
 {% extends 'base.html' %}
 {% block title %}<span data-translate="login">Đăng nhập</span> - <span data-translate="homestay-booking">Horin</span>{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Force black navbar for login page - Change from white to black */
+.navbar-dark .navbar-nav .nav-link {
+    color: black !important;
+    font-weight: 500;
+    text-shadow: none;
+}
+
+.navbar-brand .brand-text {
+    color: black !important;
+    text-shadow: none;
+}
+
+#languageToggle {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    color: black !important;
+}
+
+#languageToggle span {
+    color: black !important;
+}
+
+.navbar .dropdown-toggle {
+    color: black !important;
+    border-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.auth-link {
+    color: black !important;
+    font-weight: 500;
+    text-shadow: none;
+}
+
+.auth-link:hover {
+    color: #8bc34a !important;
+}
+
+/* Fix auth buttons layout */
+.auth-buttons-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+.auth-buttons-container .nav-link {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    padding: 0.375rem 0.75rem !important;
+    margin: 0 !important;
+}
+
+/* Make navbar background similar to home */
+.navbar-dark.bg-primary {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Force black text with high specificity */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-nav .nav-link {
+    color: black !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-brand .brand-text {
+    color: black !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link {
+    color: black !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary #languageToggle {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    color: black !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary #languageToggle span {
+    color: black !important;
+}
+
+/* Add blurred container for register button */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 20px !important;
+    padding: 0.375rem 0.875rem !important;
+    color: black !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: black !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="login-container">
   <div class="login-card">
@@ -16,7 +125,7 @@
         
         <!-- Username/Email -->
         <div class="form-group">
-          <label for="login_username" class="form-label">Email*</label>
+          <label for="login_username" class="form-label">Email hoặc tên đăng nhập*</label>
           <input type="text" 
                  name="username" 
                  id="login_username" 
@@ -24,7 +133,7 @@
                  required 
                  autocomplete="new-username"
                  value="{{ form_data.username|default('') }}"
-                 placeholder=""
+                 placeholder="Nhập email hoặc tên đăng nhập của bạn"
           >
         </div>
         
@@ -79,14 +188,94 @@
 </div>
 
 <style>
+body {
+  background: #f5f5f5;
+}
+
+/* Navbar styling */
+.navbar {
+  background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  height: 70px;
+  padding: 0 !important;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.navbar .container {
+  max-width: 1200px;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap !important;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+  min-width: fit-content;
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: fit-content;
+}
+
+.nav-item {
+  margin: 0;
+  padding: 0 0.75rem;
+  white-space: nowrap;
+}
+
+.nav-item:last-child {
+  padding-right: 0;
+}
+
+.navbar .nav-link,
+.navbar .navbar-brand,
+.navbar .brand-text {
+  color: black !important;
+  text-decoration: none;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.navbar .auth-link:hover {
+  color: #8bc34a !important;
+}
+
+@media (max-width: 768px) {
+  .navbar .container {
+    padding: 0 1rem;
+  }
+  
+  .nav-item {
+    padding: 0 0.5rem;
+  }
+}
+
+/* Login container */
 .login-container {
-  min-height: 100vh;
+  min-height: calc(100vh - 70px);
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  background: #f5f5f5;
   padding: 20px;
   padding-top: 100px;
+  margin-top: 70px;
 }
 
 .login-card {
@@ -237,13 +426,13 @@
 }
 
 .btn-social.google:hover {
-  background: #db4437 !important; /* Màu đỏ của Google */
+  background: #db4437 !important;
   color: white !important;
   border-color: #db4437 !important;
 }
 
 .btn-social.facebook:hover {
-  background: #4267B2 !important; /* Màu xanh của Facebook */
+  background: #4267B2 !important;
   color: white !important;
   border-color: #4267B2 !important;
 }
@@ -271,49 +460,9 @@
   }
 }
 
-/* Navbar scroll effects - Higher specificity */
-html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
-    background: transparent !important; /* Ban đầu trong suốt */
-    transition: all 0.3s ease !important;
-    backdrop-filter: none !important;
-    box-shadow: none !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    z-index: 1050 !important;
-}
-
-html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled {
-    background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
-}
-
-html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .navbar-nav .nav-link {
-    color: white !important; /* Màu trắng khi có background xanh */
-    text-shadow: none !important;
-}
-
-html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .navbar-brand .brand-text {
-    color: white !important; /* Màu trắng khi có background xanh */
-    text-shadow: none !important;
-}
-
-/* Force black text for transparent navbar */
-html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-nav .nav-link {
-    color: black !important; /* Màu đen khi navbar trong suốt */
-}
-
-html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-brand .brand-text {
-    color: black !important; /* Màu đen khi navbar trong suốt */
-}
-
 /* Hide footer on login page */
 footer {
-    display: none !important;
+  display: none !important;
 }
 </style>
 

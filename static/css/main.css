@@ -194,6 +194,78 @@ main {
     font-weight: 700;
 }
 
+/* Auth buttons container - Fix layout */
+.auth-buttons-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+.auth-buttons-container .nav-link {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    padding: 0.375rem 0.75rem !important;
+    margin: 0 !important;
+}
+
+/* Fix navbar responsive layout */
+.navbar-nav {
+    align-items: center !important;
+}
+
+.navbar-nav .nav-item {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Prevent text wrapping in auth buttons */
+.auth-link {
+    white-space: nowrap !important;
+    font-size: 0.9rem !important;
+}
+
+.auth-link i {
+    margin-right: 0.25rem !important;
+}
+
+/* Responsive design for auth buttons */
+@media (max-width: 991.98px) {
+    .auth-buttons-container {
+        gap: 0.25rem !important;
+    }
+    
+    .auth-link {
+        font-size: 0.8rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+    
+    .auth-link.register {
+        padding: 0.25rem 0.65rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .auth-buttons-container {
+        flex-direction: row !important;
+        gap: 0.125rem !important;
+    }
+    
+    .auth-link {
+        font-size: 0.75rem !important;
+        padding: 0.2rem 0.4rem !important;
+    }
+    
+    .auth-link.register {
+        padding: 0.2rem 0.5rem !important;
+    }
+    
+    .auth-link i {
+        display: none !important;
+    }
+}
+
 /* Navbar toggler */
 .navbar-toggler {
     border: none;
