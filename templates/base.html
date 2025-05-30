@@ -196,14 +196,14 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}" style="color: #333333;">
-                                <i class="bi bi-box-arrow-in-right me-1"></i><span data-translate="login">Login</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.register') }}" style="color: #333333;">
-                                <i class="bi bi-person-plus me-1"></i><span data-translate="register">Register</span>
-                            </a>
+                            <div class="auth-buttons-container">
+                                <a class="nav-link auth-link" href="{{ url_for('auth.login') }}">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i><span data-translate="login">Đăng nhập</span>
+                                </a>
+                                <a class="nav-link auth-link register" href="{{ url_for('auth.register') }}">
+                                    <i class="bi bi-person-plus me-1"></i><span data-translate="register">Đăng ký</span>
+                                </a>
+                            </div>
                         </li>
                         <li class="nav-item">
                             <button id="languageToggle" class="btn ms-2 rounded-pill" onclick="toggleLanguage(event)">
