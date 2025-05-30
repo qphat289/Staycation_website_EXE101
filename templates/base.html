@@ -366,101 +366,13 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} shadow-sm rounded-3 flash-message" role="alert">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <!-- Kiểm tra nếu thông báo trùng khớp với từ khóa trong hệ thống dịch -->
-                        {% if message == 'Booking created successfully!' %}
-                        <span data-translate="booking-created-successfully">{{ message }}</span>
-                        {% elif message == 'Registration successful! Please log in.' %}
-                        <span data-translate="registration-successful">{{ message }}</span>
-                        {% elif message == 'You have been logged out' %}
-                        <span data-translate="logged-out">{{ message }}</span>
-                        {% elif message == 'Đăng nhập thành công!' %}
-                        <span data-translate="login-successful">{{ message }}</span>
-                        {% elif message == 'Successfully logged in with Google!' %}
-                        <span data-translate="google-login-successful">{{ message }}</span>
-                        {% elif message.startswith('Welcome back,') and 'Facebook' in message %}
-                        <span data-translate="facebook-login-successful">{{ message }}</span>
-                        {% elif message == 'Profile updated successfully!' %}
-                        <span data-translate="profile-updated">{{ message }}</span>
-                        {% elif message == 'Booking request submitted successfully!' %}
-                        <span data-translate="booking-request-submitted">{{ message }}</span>
-                        {% elif message == 'Booking cancelled successfully' %}
-                        <span data-translate="booking-cancelled">{{ message }}</span>
-                        {% elif message == 'Review submitted!' %}
-                        <span data-translate="review-submitted">{{ message }}</span>
-                        {% elif message == 'Bạn đang ở chế độ xem' %}
-                        <span data-translate="viewing-mode">{{ message }}</span>
-                        {% elif message == 'Cài đặt thông báo đã được cập nhật' %}
-                        <span data-translate="notification-settings-updated">{{ message }}</span>
-                        {% elif message == 'Cài đặt quyền riêng tư đã được cập nhật' %}
-                        <span data-translate="privacy-settings-updated">{{ message }}</span>
-                        {% elif message == 'Tài khoản của bạn đã được xóa' %}
-                        <span data-translate="account-deleted">{{ message }}</span>
-                        {% elif message == 'Homestay updated successfully!' %}
-                        <span data-translate="homestay-updated">{{ message }}</span>
-                        {% elif message == 'Đã xóa homestay thành công!' %}
-                        <span data-translate="homestay-deleted">{{ message }}</span>
-                        {% elif message == 'Đã xóa ảnh thành công!' %}
-                        <span data-translate="image-deleted">{{ message }}</span>
-                        {% elif message == 'Đặt phòng đã được xác nhận thành công!' %}
-                        <span data-translate="booking-confirmed">{{ message }}</span>
-                        {% elif message == 'Đã chuyển sang vai trò chủ nhà' %}
-                        <span data-translate="switched-to-owner">{{ message }}</span>
-                        {% elif message == 'You must be a renter to access this page' %}
-                        <span data-translate="not-renter-access">{{ message }}</span>
-                        {% elif message == 'This room is not available during the selected time period.' %}
-                        <span data-translate="room-not-available">{{ message }}</span>
-                        {% elif message == 'You do not have permission to cancel this booking' %}
-                        <span data-translate="no-cancel-permission">{{ message }}</span>
-                        {% elif message == 'Cannot cancel a booking that has already started' %}
-                        <span data-translate="cannot-cancel-started">{{ message }}</span>
-                        {% elif message == 'You have already left a review for this homestay.' %}
-                        <span data-translate="already-reviewed">{{ message }}</span>
-                        {% elif message == 'Bạn không phải là chủ nhà để thực hiện chuyển đổi này' %}
-                        <span data-translate="not-owner-switch">{{ message }}</span>
-                        {% elif message == 'Mật khẩu không chính xác' %}
-                        <span data-translate="incorrect-password">{{ message }}</span>
-                        {% elif message == 'You must be an owner to access this page' %}
-                        <span data-translate="must-be-owner">{{ message }}</span>
-                        {% elif message == 'Bạn không có quyền xóa homestay này' %}
-                        <span data-translate="no-delete-homestay-permission">{{ message }}</span>
-                        {% elif message == 'Bạn không có quyền thêm phòng vào homestay này.' %}
-                        <span data-translate="no-add-room-permission">{{ message }}</span>
-                        {% elif message == 'Bạn không có quyền thêm ảnh cho phòng này.' %}
-                        <span data-translate="no-add-image-permission">{{ message }}</span>
-                        {% elif message == 'Bạn không có quyền xóa ảnh của phòng này.' %}
-                        <span data-translate="no-delete-image-permission">{{ message }}</span>
-                        {% elif message == 'Bạn không có quyền xác nhận đặt phòng này.' %}
-                        <span data-translate="no-confirm-booking-permission">{{ message }}</span>
-                        {% elif message == 'Bạn không có quyền từ chối đặt phòng này.' %}
-                        <span data-translate="no-reject-booking-permission">{{ message }}</span>
-                        {% elif message == 'Bạn không có quyền xem thông tin đặt phòng này.' %}
-                        <span data-translate="no-view-booking-permission">{{ message }}</span>
-                        {% elif message == 'Bạn không phải là người thuê để thực hiện chuyển đổi này' %}
-                        <span data-translate="not-renter-to-switch">{{ message }}</span>
-                        {% elif message == 'Bạn không có quyền quản lý phòng của homestay này.' %}
-                        <span data-translate="no-manage-room-permission">{{ message }}</span>
-                        {% elif message == 'Bạn đang ở chế độ xem, không thể thực hiện đặt phòng' %}
-                        <span data-translate="viewing-mode-no-booking">{{ message }}</span>
-                        {% elif message == 'Đã từ chối đặt phòng.' %}
-                        <span data-translate="booking-rejected">{{ message }}</span>
-                        {% elif message == 'Please select a room.' %}
-                        <span data-translate="please-select-room">{{ message }}</span>
-                        {% elif message == 'Duration is required' %}
-                        <span data-translate="duration-required">{{ message }}</span>
-                        {% elif message == 'Invalid duration value.' %}
-                        <span data-translate="invalid-duration">{{ message }}</span>
-                        {% elif message == 'Minimum duration is 1 minute.' %}
-                        <span data-translate="minimum-duration">{{ message }}</span>
-                        {% elif message == 'You must select both date and time.' %}
-                        <span data-translate="select-date-time">{{ message }}</span>
-                        {% elif message == 'Invalid date or time format.' %}
-                        <span data-translate="invalid-date-time">{{ message }}</span>
-                        {% else %}
-                        {{ message }}
-                        {% endif %}
-                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            let type = '{{ category }}';
+                            if (type === 'danger') type = 'error';
+                            showNotification(type, '{{ message }}');
+                        });
+                    </script>
                 {% endfor %}
             {% endif %}
         {% endwith %}
@@ -579,18 +491,21 @@
         
         if (loginSuccess) {
             console.log('Login success detected, showing notification');
-            showNotification('login');
+            showNotification('success', 'Chúc mừng bạn đăng nhập thành công!');
         } else if (logoutSuccess) {
             console.log('Logout success detected, showing notification');
-            showNotification('logout');
+            showNotification('success', 'Bạn đã đăng xuất');
         } else if (loginError) {
             console.log('Login error detected, showing notification');
-            showNotification('error');
+            showNotification('error', 'Tên đăng nhập hoặc mật khẩu không chính xác!');
+        } else if (message === 'Profile updated successfully!') {
+            console.log('Profile update success detected, showing notification');
+            showNotification('success', 'Thông tin của bạn đã được cập nhật');
         } else {
             console.log('No success/error parameter found');
         }
         
-        function showNotification(type) {
+        function showNotification(type, message, title = '') {
             // Create and show notification
             const successDiv = document.createElement('div');
             successDiv.className = 'login-success-notification';
@@ -606,50 +521,83 @@
             successDiv.style.color = 'white';
             successDiv.style.padding = '12px 16px';
             successDiv.style.borderRadius = '8px';
-            successDiv.style.border = '1px solid #fff';
-            successDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            successDiv.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+            successDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
             successDiv.style.fontSize = '14px';
             successDiv.style.fontWeight = '500';
             successDiv.style.display = 'block';
             successDiv.style.visibility = 'visible';
             successDiv.style.opacity = '1';
             
-            if (type === 'login') {
-                successDiv.style.backgroundColor = '#28a745';
-                // Get username for personalized message
-                const userDataEl = document.getElementById('user-data');
-                const username = userDataEl ? userDataEl.getAttribute('data-username') : 'User';
-                successDiv.innerHTML = `<i class="bi bi-check-circle me-2" style="font-size: 16px;"></i><span>Chúc mừng ${username} đăng nhập thành công!</span>`;
-            } else if (type === 'logout') {
-                successDiv.style.backgroundColor = '#6c757d';
-                successDiv.innerHTML = `<span>Bạn đã đăng xuất</span>`;
-            } else if (type === 'error') {
-                successDiv.style.backgroundColor = '#dc3545';
-                successDiv.innerHTML = `<i class="bi bi-exclamation-circle me-2" style="font-size: 16px;"></i><span>Tên đăng nhập hoặc mật khẩu không chính xác!</span>`;
+            // Set background color based on type
+            switch(type) {
+                case 'success':
+                    successDiv.style.background = 'linear-gradient(135deg, rgba(40, 167, 69, 0.95), rgba(40, 167, 69, 0.9))';
+                    break;
+                case 'error':
+                    successDiv.style.background = 'linear-gradient(135deg, rgba(220, 53, 69, 0.95), rgba(220, 53, 69, 0.9))';
+                    break;
+                case 'warning':
+                    successDiv.style.background = 'linear-gradient(135deg, rgba(255, 193, 7, 0.95), rgba(255, 193, 7, 0.9))';
+                    successDiv.style.color = '#212529';
+                    break;
+                case 'info':
+                    successDiv.style.background = 'linear-gradient(135deg, rgba(23, 162, 184, 0.95), rgba(23, 162, 184, 0.9))';
+                    break;
+                default:
+                    successDiv.style.background = 'linear-gradient(135deg, rgba(108, 117, 125, 0.95), rgba(108, 117, 125, 0.9))';
             }
             
-            // Ensure it's appended to body, not any container
-            document.body.style.position = 'relative';
+            // Create content with icon and message
+            let icon = '';
+            switch(type) {
+                case 'success':
+                    icon = 'bi-check-circle-fill';
+                    break;
+                case 'error':
+                    icon = 'bi-exclamation-circle-fill';
+                    break;
+                case 'warning':
+                    icon = 'bi-exclamation-triangle-fill';
+                    break;
+                case 'info':
+                    icon = 'bi-info-circle-fill';
+                    break;
+                default:
+                    icon = 'bi-bell-fill';
+            }
+            
+            successDiv.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <i class="bi ${icon} me-2" style="font-size: 18px;"></i>
+                    <div>
+                        ${title ? `<div style="font-weight: 600;">${title}</div>` : ''}
+                        <div style="font-size: ${title ? '13px' : '14px'}; opacity: 0.9;">${message}</div>
+                    </div>
+                </div>`;
+            
+            // Add to body
             document.body.appendChild(successDiv);
-            console.log('Notification added to DOM with styles:', successDiv.style.cssText);
             
-            // Auto hide after 5 seconds
-            setTimeout(function() {
-                successDiv.classList.add('slide-out');
-                console.log('Starting slide-out animation');
-                setTimeout(function() {
-                    successDiv.remove();
-                    console.log('Notification removed');
-                }, 800); // Match the animation duration
+            // Add slide-in animation
+            successDiv.animate([
+                { transform: 'translateX(100%)', opacity: 0 },
+                { transform: 'translateX(0)', opacity: 1 }
+            ], {
+                duration: 500,
+                easing: 'ease-out'
+            });
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                successDiv.animate([
+                    { transform: 'translateX(0)', opacity: 1 },
+                    { transform: 'translateX(100%)', opacity: 0 }
+                ], {
+                    duration: 500,
+                    easing: 'ease-in'
+                }).onfinish = () => successDiv.remove();
             }, 5000);
-            
-            // Clean up URL by removing the parameter
-            const url = new URL(window.location);
-            url.searchParams.delete('login_success');
-            url.searchParams.delete('logout_success');
-            url.searchParams.delete('login_error');
-            window.history.replaceState(null, '', url);
-            console.log('URL parameters cleaned up');
         }
     </script>
     

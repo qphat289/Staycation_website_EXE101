@@ -9,7 +9,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title" data-translate="notification-settings">Notification Settings</h5>
-                    <form method="POST" action="{{ url_for('renter.update_settings') }}">
+                    <form method="POST" action="{{ url_for('renter.update_settings') }}" id="notificationForm" onsubmit="return validateNotificationForm(event)">
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="emailNotifications" name="email_notifications" {% if current_user.email_notifications %}checked{% endif %}>
                             <label class="form-check-label" for="emailNotifications" data-translate="email-notifications">Email Notifications</label>
@@ -28,7 +28,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title" data-translate="privacy-settings">Privacy Settings</h5>
-                    <form method="POST" action="{{ url_for('renter.update_privacy') }}">
+                    <form method="POST" action="{{ url_for('renter.update_privacy') }}" id="privacyForm" onsubmit="return validatePrivacyForm(event)">
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="showProfile" name="show_profile" {% if current_user.show_profile %}checked{% endif %}>
                             <label class="form-check-label" for="showProfile" data-translate="show-profile">Show Profile to Other Users</label>
@@ -45,8 +45,6 @@
     </div>
 
     <div class="row mt-4">
-        <!-- Removed the Appearance Settings card entirely -->
-
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
@@ -97,4 +95,48 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Store initial values
+    window.initialEmailNotifications = {{ 'true' if current_user.email_notifications else 'false' }};
+    window.initialBookingReminders = {{ 'true' if current_user.booking_reminders else 'false' }};
+    window.initialShowProfile = {{ 'true' if current_user.show_profile else 'false' }};
+    window.initialShowBookingHistory = {{ 'true' if current_user.show_booking_history else 'false' }};
+});
+
+function validateNotificationForm(event) {
+    event.preventDefault(); // Prevent form from submitting immediately
+    
+    const emailNotifications = document.getElementById('emailNotifications').checked;
+    const bookingReminders = document.getElementById('bookingReminders').checked;
+    
+    if (emailNotifications === window.initialEmailNotifications && bookingReminders === window.initialBookingReminders) {
+        showNotification('warning', 'Vui lòng thay đổi cài đặt trước khi cập nhật');
+        return false;
+    }
+    
+    // If validation passes, submit the form
+    event.target.submit();
+    return false; // Prevent default form submission
+}
+
+function validatePrivacyForm(event) {
+    event.preventDefault(); // Prevent form from submitting immediately
+    
+    const showProfile = document.getElementById('showProfile').checked;
+    const showBookingHistory = document.getElementById('showBookingHistory').checked;
+    
+    if (showProfile === window.initialShowProfile && showBookingHistory === window.initialShowBookingHistory) {
+        showNotification('warning', 'Vui lòng thay đổi cài đặt trước khi cập nhật');
+        return false;
+    }
+    
+    // If validation passes, submit the form
+    event.target.submit();
+    return false; // Prevent default form submission
+}
+</script>
 {% endblock %}

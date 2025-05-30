@@ -58,7 +58,7 @@
                         <i class="fas fa-edit me-2"></i>
                         Thông Tin Admin
                     </h5>
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" enctype="multipart/form-data" id="profileForm" onsubmit="return validateForm()">
                         <!-- Username -->
                         <div class="mb-3">
                             <label for="username" class="form-label">
@@ -71,6 +71,9 @@
                                    name="username" 
                                    value="{{ current_user.username }}"
                                    required>
+                            <div class="invalid-feedback">
+                                Vui lòng nhập username
+                            </div>
                         </div>
                         
                         <!-- Full Name -->
@@ -83,7 +86,11 @@
                                    class="form-control form-input-admin" 
                                    id="full_name" 
                                    name="full_name" 
-                                   value="{{ current_user.full_name }}">
+                                   value="{{ current_user.full_name }}"
+                                   required>
+                            <div class="invalid-feedback">
+                                Vui lòng nhập họ và tên
+                            </div>
                         </div>
                         
                         <!-- Email -->
@@ -98,6 +105,9 @@
                                    name="email" 
                                    value="{{ current_user.email }}"
                                    required>
+                            <div class="invalid-feedback">
+                                Vui lòng nhập email hợp lệ
+                            </div>
                         </div>
                         
                         <!-- Avatar Upload -->
@@ -363,6 +373,86 @@
             width: 120px;
             height: 120px;
         }
+    }
+    </style>
+    
+    <script>
+    function validateForm() {
+        const form = document.getElementById('profileForm');
+        const username = document.getElementById('username').value.trim();
+        const fullName = document.getElementById('full_name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        let isValid = true;
+
+        // Reset previous error states
+        form.classList.remove('was-validated');
+
+        // Validate Username
+        if (!username) {
+            isValid = false;
+            document.getElementById('username').classList.add('is-invalid');
+        } else {
+            document.getElementById('username').classList.remove('is-invalid');
+        }
+
+        // Validate Full Name
+        if (!fullName) {
+            isValid = false;
+            document.getElementById('full_name').classList.add('is-invalid');
+        } else {
+            document.getElementById('full_name').classList.remove('is-invalid');
+        }
+
+        // Validate Email
+        if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            isValid = false;
+            document.getElementById('email').classList.add('is-invalid');
+        } else {
+            document.getElementById('email').classList.remove('is-invalid');
+        }
+
+        if (!isValid) {
+            // Show error notification
+            showNotification('validation-error');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Add this to your existing showNotification function in base.html
+    if (type === 'validation-error') {
+        successDiv.style.backgroundColor = '#dc3545';
+        successDiv.innerHTML = `<i class="bi bi-exclamation-circle me-2" style="font-size: 16px;"></i><span>Vui lòng điền đầy đủ thông tin!</span>`;
+    }
+    </script>
+    
+    <style>
+    .form-input-admin.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .invalid-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
+
+    .form-input-admin.is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+
+    .form-input-admin:focus {
+        box-shadow: none;
+    }
+
+    .form-input-admin.is-invalid:focus {
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
     }
     </style>
     
