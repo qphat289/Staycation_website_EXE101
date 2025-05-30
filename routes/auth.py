@@ -104,10 +104,13 @@ def login():
         # Store username for form repopulation if login fails
         form_data = {'username': username}
         
-        # Try to find the user by username (only regular users, not Google users)
-        admin = Admin.query.filter_by(username=username).first()
-        owner = Owner.query.filter_by(username=username).first()
-        renter = Renter.query.filter_by(username=username).first()  # Only finds regular users, not Google users
+        # Try to find the user by username or email (only regular users, not Google users)
+        admin = (Admin.query.filter_by(username=username).first() or 
+                Admin.query.filter_by(email=username).first())
+        owner = (Owner.query.filter_by(username=username).first() or 
+                Owner.query.filter_by(email=username).first())
+        renter = (Renter.query.filter_by(username=username).first() or 
+                 Renter.query.filter_by(email=username).first())  # Only finds regular users, not Google users
         
         user = admin or owner or renter
         
@@ -123,10 +126,14 @@ def login():
             elif renter:
                 session['user_role'] = 'renter'
                 
-            # Redirect to the appropriate page
+            # Redirect to the appropriate page with success parameter
             next_page = request.args.get('next')
             if not next_page or urlparse(next_page).netloc != '':
-                next_page = url_for('home')
+                next_page = url_for('home', login_success='1')
+            else:
+                # Add login success parameter to the next page URL
+                separator = '&' if '?' in next_page else '?'
+                next_page = next_page + separator + 'login_success=1'
                 
             return redirect(next_page)
         else:
@@ -139,8 +146,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out', 'info')
-    return redirect(url_for('home'))
+    return redirect(url_for('home', logout_success='1'))
 
 def get_google_provider_cfg():
     return requests.get(current_app.config['GOOGLE_DISCOVERY_URL']).json()
@@ -231,7 +237,7 @@ def callback_google():
         login_user(existing_renter)
         session['user_role'] = 'renter'
         flash("Successfully logged in with Google!", "success")
-        return redirect(url_for('home'))
+        return redirect(url_for('home', login_success='google'))
     else:
         # User doesn't exist, store info in session and redirect to complete profile
         session['google_id'] = google_id
@@ -398,7 +404,7 @@ def facebook_callback():
             login_user(existing_renter)
             session['user_role'] = 'renter'
             flash(f"Welcome back, {name}! You've successfully logged in with Facebook.", "success")
-            return redirect(url_for('home'))
+            return redirect(url_for('home', login_success='facebook'))
         else:
             # User doesn't exist, store info in session and redirect to complete profile
             session['facebook_id'] = facebook_id

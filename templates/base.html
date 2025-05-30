@@ -98,19 +98,58 @@
             }
         }
 
+        @keyframes slideInFromRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutToRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
         .flash-message {
             animation: slideDown 0.5s ease-out;
             overflow: hidden;
+            position: relative !important;
+            z-index: 1030 !important;
+            margin-bottom: 1rem !important;
+            border-left: 4px solid #28a745 !important;
         }
 
         .flash-message.slide-up {
             animation: slideUp 0.5s ease-in forwards;
+        }
+        
+        .login-success-notification {
+            animation: slideInFromRight 0.8s ease-out;
+        }
+        
+        .login-success-notification.slide-out {
+            animation: slideOutToRight 0.8s ease-in forwards;
         }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Hidden data for JavaScript -->
+    <div id="user-data" 
+         data-username="{{ current_user.display_name if current_user.is_authenticated else 'User' }}" 
+         style="display: none;"></div>
+    
     {# Make the status_classes dictionary available to all child templates #}
     {% set status_classes = {
         'pending': 'badge bg-warning',
@@ -276,6 +315,12 @@
                         <span data-translate="registration-successful">{{ message }}</span>
                         {% elif message == 'You have been logged out' %}
                         <span data-translate="logged-out">{{ message }}</span>
+                        {% elif message == 'Đăng nhập thành công!' %}
+                        <span data-translate="login-successful">{{ message }}</span>
+                        {% elif message == 'Successfully logged in with Google!' %}
+                        <span data-translate="google-login-successful">{{ message }}</span>
+                        {% elif message.startswith('Welcome back,') and 'Facebook' in message %}
+                        <span data-translate="facebook-login-successful">{{ message }}</span>
                         {% elif message == 'Profile updated successfully!' %}
                         <span data-translate="profile-updated">{{ message }}</span>
                         {% elif message == 'Booking request submitted successfully!' %}
@@ -437,21 +482,104 @@
             event.preventDefault();
         }, { passive: false });
 
-        // Auto-hide flash messages after 15 seconds
+        // Auto-hide flash messages after 8 seconds
         document.addEventListener('DOMContentLoaded', function() {
             const alerts = document.querySelectorAll('.flash-message');
+            console.log('Found flash messages:', alerts.length);
+            
             alerts.forEach(function(alert) {
+                console.log('Setting up auto-hide for flash message:', alert.textContent.trim());
+                
+                // Add a small delay to ensure page is fully loaded
                 setTimeout(function() {
                     // Add slide up animation class
                     alert.classList.add('slide-up');
+                    console.log('Starting slide-up animation for message');
                     
                     // Remove the element after animation completes
                     setTimeout(function() {
                         alert.remove();
+                        console.log('Flash message removed');
                     }, 500); // Match the animation duration
-                }, 5000); // 5 seconds
+                }, 8000); // 8 seconds
             });
         });
+        
+        // Check for login success URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const loginSuccess = urlParams.get('login_success');
+        const logoutSuccess = urlParams.get('logout_success');
+        console.log('Checking for login success parameter:', loginSuccess);
+        console.log('Checking for logout success parameter:', logoutSuccess);
+        console.log('Current URL:', window.location.href);
+        
+        if (loginSuccess) {
+            console.log('Login success detected, showing notification');
+            showNotification('login');
+        } else if (logoutSuccess) {
+            console.log('Logout success detected, showing notification');
+            showNotification('logout');
+        } else {
+            console.log('No success parameter found');
+        }
+        
+        function showNotification(type) {
+            // Create and show success notification
+            const successDiv = document.createElement('div');
+            successDiv.className = 'login-success-notification';
+            successDiv.style.position = 'fixed';
+            successDiv.style.top = '85px';
+            successDiv.style.right = '5px';
+            successDiv.style.left = 'auto';
+            successDiv.style.transform = 'none';
+            successDiv.style.zIndex = '99999';
+            successDiv.style.width = 'auto';
+            successDiv.style.maxWidth = '300px';
+            successDiv.style.textAlign = 'left';
+            successDiv.style.color = 'white';
+            successDiv.style.padding = '12px 16px';
+            successDiv.style.borderRadius = '8px';
+            successDiv.style.border = '1px solid #fff';
+            successDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            successDiv.style.fontSize = '14px';
+            successDiv.style.fontWeight = '500';
+            successDiv.style.display = 'block';
+            successDiv.style.visibility = 'visible';
+            successDiv.style.opacity = '1';
+            
+            if (type === 'login') {
+                successDiv.style.backgroundColor = '#28a745';
+                // Get username for personalized message
+                const userDataEl = document.getElementById('user-data');
+                const username = userDataEl ? userDataEl.getAttribute('data-username') : 'User';
+                successDiv.innerHTML = `<i class="bi bi-check-circle me-2" style="font-size: 16px;"></i><span>Chúc mừng ${username} đăng nhập thành công!</span>`;
+            } else if (type === 'logout') {
+                successDiv.style.backgroundColor = '#6c757d';
+                successDiv.innerHTML = `<span>Bạn đã đăng xuất</span>`;
+            }
+            
+            // Ensure it's appended to body, not any container
+            document.body.style.position = 'relative';
+            document.body.appendChild(successDiv);
+            console.log('Notification added to DOM with styles:', successDiv.style.cssText);
+            
+            // Auto hide after 5 seconds
+            setTimeout(function() {
+                successDiv.classList.add('slide-out');
+                console.log('Starting slide-out animation');
+                setTimeout(function() {
+                    successDiv.remove();
+                    console.log('Notification removed');
+                }, 800); // Match the animation duration
+            }, 5000);
+            
+            // Clean up URL by removing the parameter
+            const url = new URL(window.location);
+            url.searchParams.delete('login_success');
+            url.searchParams.delete('logout_success');
+            window.history.replaceState(null, '', url);
+            console.log('URL parameters cleaned up');
+        }
     </script>
     
     {% block extra_js %}{% endblock %}
