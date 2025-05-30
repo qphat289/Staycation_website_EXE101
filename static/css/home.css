@@ -994,15 +994,12 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.use
 }
 
 .auth-link.register {
-    background: #8bc34a;
     color: white !important;
     padding: 0.375rem 0.875rem !important;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .auth-link.register:hover {
-    background: #7cb342;
+
     color: white !important;
     box-shadow: 0 4px 12px rgba(139, 195, 74, 0.3);
 }

@@ -39,6 +39,8 @@
 
 .auth-link:hover {
     color: #8bc34a !important;
+    transform: translateY(-1px) !important;
+    transition: all 0.3s ease !important;
 }
 
 /* Make navbar background similar to home */
@@ -48,6 +50,41 @@
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Force black text and green hover with high specificity */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-nav .nav-link {
+    color: black !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-brand .brand-text {
+    color: black !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link {
+    color: black !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link:hover {
+    color: #8bc34a !important;
+    transform: translateY(-1px) !important;
+    transition: all 0.3s ease !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.auth-link:hover {
+    color: #8bc34a !important;
+    transform: translateY(-1px) !important;
+    transition: all 0.3s ease !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary #languageToggle {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    color: black !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary #languageToggle span {
+    color: black !important;
 }
 
 /* Add blurred container for register button */
@@ -65,7 +102,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register {
 
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register:hover {
     background: rgba(255, 255, 255, 0.25) !important;
-    color: black !important;
+    color: #8bc34a !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }

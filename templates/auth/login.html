@@ -44,7 +44,7 @@
 .auth-buttons-container {
     display: flex !important;
     align-items: center !important;
-    gap: 0.5rem !important;
+    gap: 0.25rem !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
 }
@@ -52,8 +52,14 @@
 .auth-buttons-container .nav-link {
     white-space: nowrap !important;
     flex-shrink: 0 !important;
-    padding: 0.375rem 0.75rem !important;
+    padding: 0.375rem 0.5rem !important;
     margin: 0 !important;
+}
+
+.auth-buttons-container .nav-link:hover {
+    color: #8bc34a !important;
+    transform: translateY(-1px) !important;
+    transition: all 0.3s ease !important;
 }
 
 /* Make navbar background similar to home */
@@ -76,6 +82,12 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .navbar-brand .brand-t
 
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link {
     color: black !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link:hover {
+    color: #8bc34a !important;
+    transform: translateY(-1px) !important;
+    transition: all 0.3s ease !important;
 }
 
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary #languageToggle {
@@ -103,7 +115,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register {
 
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register:hover {
     background: rgba(255, 255, 255, 0.25) !important;
-    color: black !important;
+    color: #8bc34a !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
@@ -236,7 +248,7 @@ body {
 
 .nav-item {
   margin: 0;
-  padding: 0 0.75rem;
+  padding: 0 0.35rem;
   white-space: nowrap;
 }
 
@@ -255,6 +267,8 @@ body {
 
 .navbar .auth-link:hover {
   color: #8bc34a !important;
+  transform: translateY(-1px) !important;
+  transition: all 0.3s ease !important;
 }
 
 @media (max-width: 768px) {
@@ -263,7 +277,7 @@ body {
   }
   
   .nav-item {
-    padding: 0 0.5rem;
+    padding: 0 0.25rem;
   }
 }
 
@@ -274,8 +288,40 @@ body {
   align-items: flex-start;
   justify-content: center;
   padding: 20px;
-  padding-top: 100px;
+  padding-top: 60px;
   margin-top: 70px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .login-card {
@@ -285,6 +331,7 @@ body {
   width: 100%;
   max-width: 550px;
   overflow: hidden;
+  animation: slideUpFadeIn 0.4s ease-out 0.1s both;
 }
 
 .login-header {
@@ -292,6 +339,7 @@ body {
   color: white;
   padding: 25px 30px 10px 30px;
   text-align: center;
+  animation: scaleIn 0.3s ease-out 0.15s both;
 }
 
 .login-title {
@@ -303,10 +351,20 @@ body {
 
 .login-body {
   padding: 10px 30px 30px 30px;
+  animation: fadeIn 0.3s ease-out 0.2s both;
 }
 
 .form-group {
   margin-bottom: 20px;
+  animation: slideUpFadeIn 0.3s ease-out both;
+}
+
+.form-group:nth-child(1) {
+  animation-delay: 0.25s;
+}
+
+.form-group:nth-child(2) {
+  animation-delay: 0.3s;
 }
 
 .form-label {
@@ -339,6 +397,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   margin-bottom: 25px;
+  animation: slideUpFadeIn 0.3s ease-out 0.35s both;
 }
 
 .form-check-input {
@@ -368,16 +427,44 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 10px;
+  animation: slideUpFadeIn 0.3s ease-out 0.4s both;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(139, 195, 74, 0.3);
+}
+
+.btn-login::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .btn-login:hover {
-  background: #a5d6a7;
+  transform: translateY(-2px) scale(1.02);
+  background: linear-gradient(135deg, rgba(139, 195, 74, 1), rgba(104, 159, 56, 1)) !important;
+  box-shadow: 0 6px 20px rgba(139, 195, 74, 0.4);
+  color: white !important;
+}
+
+.btn-login:hover::before {
+  left: 100%;
+}
+
+.btn-login:active {
+  transform: translateY(0) scale(0.98);
+  transition: all 0.1s ease;
 }
 
 .separator {
   text-align: center;
   margin: 10px 0;
   position: relative;
+  animation: fadeIn 0.3s ease-out 0.45s both;
 }
 
 .separator::before {
@@ -404,6 +491,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  animation: slideUpFadeIn 0.3s ease-out 0.5s both;
 }
 
 .btn-social {
@@ -418,23 +506,56 @@ body {
   border: 1px solid #ddd;
   background: white;
   color: #333;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.btn-social i {
-  margin-right: 10px;
-  font-size: 1.1rem;
+.btn-social::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-social:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+}
+
+.btn-social:hover::before {
+  left: 100%;
+}
+
+.btn-social:active {
+  transform: translateY(0);
+  transition: all 0.1s ease;
 }
 
 .btn-social.google:hover {
   background: #db4437 !important;
   color: white !important;
   border-color: #db4437 !important;
+  box-shadow: 0 6px 15px rgba(219, 68, 55, 0.3);
 }
 
 .btn-social.facebook:hover {
   background: #4267B2 !important;
   color: white !important;
   border-color: #4267B2 !important;
+  box-shadow: 0 6px 15px rgba(66, 103, 178, 0.3);
+}
+
+.btn-social i {
+  margin-right: 10px;
+  font-size: 1.1rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* Responsive */
