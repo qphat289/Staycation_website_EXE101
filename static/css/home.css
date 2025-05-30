@@ -239,51 +239,67 @@ main.container {
 
 /* Hero Section Compact Styles - Like Traveloka */
 .hero-section-fullwidth {
-    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/static/images/hero-bg.jpg');
+    background-image: url('/static/images/hero-bg.jpg');
+    position: relative;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    min-height: 60vh; /* Reduced from 100vh to 60vh */
-    max-height: 500px; /* Maximum height limit */
+    min-height: 60vh;
+    max-height: 500px;
     display: flex;
-    align-items: flex-start; /* Change to flex-start to control positioning better */
+    align-items: flex-start;
     color: white;
-    position: relative;
     width: 100vw;
     margin: 0;
-    padding: 120px 0 40px 0; /* Increase top padding to push content down */
+    padding: 120px 0 40px 0;
     top: 0;
     left: 0;
 }
 
+.hero-section-fullwidth::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(61, 61, 61, 0.315);
+    z-index: 1;
+}
+
 .hero-content {
+    position: relative;
     z-index: 2;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Change to flex-start */
-    align-items: flex-start; /* Align to left instead of center */
-    height: auto; /* Change from 100% to auto */
-    text-align: left; /* Change from center to left */
-    margin-top: 2rem; /* Add some top margin to position title nicely */
-    margin-left: -15%; /* Reduce margin to move title more to the left */
+    justify-content: flex-start;
+    align-items: flex-start;
+    height: auto;
+    text-align: left;
+    margin-top: 2rem;
+    margin-left: -15%;
 }
 
 .hero-title {
-    font-size: 2.8rem; /* Reduced from 3.5rem */
+    font-size: 2.8rem;
     font-weight: 700;
-    margin-top: 0; /* Remove the 3rem margin-top to center it in hero */
+    margin-top: 0;
     margin-bottom: 0.8rem;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     line-height: 1.2;
-    color: white; /* Set title color to white */
+    color: #ffffff;
+    position: relative;
+    z-index: 3;
 }
 
 .hero-subtitle {
-    font-size: 1rem; /* Reduced from 1.1rem */
-    margin-bottom: 0; /* Remove bottom margin since search form is separate */
+    font-size: 1rem;
+    margin-bottom: 0;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
     opacity: 0.95;
-    color: white; /* Set subtitle color to white */
+    color: #ffffff;
+    position: relative;
+    z-index: 3;
 }
 
 /* Search Form Wrapper */
@@ -578,7 +594,7 @@ main.container {
     .hero-title {
         font-size: 2.5rem;
     }
-    
+        
     .hero-subtitle {
         font-size: 1rem;
     }
