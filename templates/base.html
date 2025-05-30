@@ -46,6 +46,44 @@
             background-color: var(--bs-primary) !important;
         }
 
+        .navbar .nav-link {
+            border: 1px solid rgba(51, 51, 51, 0.3);
+            border-radius: 8px;
+            padding: 6px 12px !important;
+            margin: 0 4px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar .nav-link:hover {
+            background: rgba(51, 51, 51, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .navbar .auth-buttons-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .navbar .auth-buttons-container .auth-link {
+            border: 1px solid rgba(51, 51, 51, 0.3);
+            border-radius: 8px;
+            padding: 6px 12px !important;
+        }
+
+        .navbar .auth-buttons-container .auth-link:hover {
+            background: rgba(51, 51, 51, 0.05);
+            transform: translateY(-1px);
+        }
+
+        #languageToggle {
+            border: 1px solid rgba(51, 51, 51, 0.3) !important;
+        }
+
+        /* Exclude admin button since it already has a border */
+        .navbar .nav-item.me-3 .nav-link {
+            border: none;
+        }
+
         /* Fix flash messages being covered by navbar */
         .container.mt-3 {
             margin-top: 90px !important; /* Account for fixed navbar height */
@@ -140,6 +178,28 @@
         .login-success-notification.slide-out {
             animation: slideOutToRight 0.8s ease-in forwards;
         }
+
+        /* Avatar dropdown container styling */
+        .user-dropdown-container {
+            transition: all 0.3s ease !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .user-dropdown-container:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .user-dropdown-container span {
+            font-weight: 500;
+        }
+
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            border: 1px solid rgba(51, 51, 51, 0.1) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -224,7 +284,7 @@
 
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown ms-3">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #333333; border: 1px solid rgba(255, 255, 255, 0.5) !important; border-radius: 25px !important; padding: 4px 12px !important; background: transparent !important;">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #333333; border: 1px solid rgba(51, 51, 51, 0.3) !important; border-radius: 25px !important; padding: 4px 12px !important; background: rgba(255, 255, 255, 0.1) !important;">
                                 {% if current_user.avatar %}
                                     <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% else %}
@@ -419,6 +479,7 @@
     </main>
     
     <!-- Footer -->
+    {% if not (current_user.is_authenticated and current_user.role == 'admin' and request.endpoint != 'home') %}
     <footer class="bg-light text-center text-lg-start mt-5">
         <div class="container p-4">
             <div class="row">
@@ -448,6 +509,7 @@
             © 2025 Horin - School Project
         </div>
     </footer>
+    {% endif %}
     
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

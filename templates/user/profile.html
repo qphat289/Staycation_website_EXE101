@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container py-4">
-    <div class="text-center mb-5">
+    <div class="text-center mb-4">
         <h2 class="profile-title" data-translate="my-profile">
             <i class="fas fa-user-circle me-2"></i>
             Hồ Sơ Của Tôi
@@ -14,7 +14,7 @@
     <div class="row">
         <!-- LEFT COLUMN: Avatar Display -->
         <div class="col-md-4">
-            <div class="admin-profile-card">
+            <div class="admin-profile-card mt-2">
                 <div class="card-body text-center">
                     <!-- Avatar -->
                     <div class="avatar-container-admin">
@@ -27,9 +27,6 @@
                                 alt="Avatar"
                                 class="avatar-circle-admin">
                         {% endif %}
-                        <div class="avatar-badge">
-                            <i class="fas fa-crown"></i>
-                        </div>
                     </div>
                     
                     <h5 class="admin-name">{{ current_user.username }}</h5>
@@ -134,9 +131,13 @@
     .profile-title {
         color: #8ab82f;
         font-weight: 700;
-        font-size: 2.2rem;
-        margin-bottom: 15px;
+        font-size: 2rem;
+        margin-bottom: 10px;
         text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .container.py-4 {
+        margin-top: -20px;
     }
     
     .title-underline {
