@@ -42,7 +42,7 @@ def profile():
             
             # Check if username is being changed and if it already exists
             if new_username != current_user.username:
-                existing_admin = Admin.query.filter_by(username=new_username).first()
+                existing_admin = Admin.query.filter_by(username=new_username).filter(Admin.id != current_user.id).first()
                 existing_owner = Owner.query.filter_by(username=new_username).first()
                 existing_renter = Renter.query.filter_by(username=new_username).first()
                 
@@ -52,7 +52,7 @@ def profile():
             
             # Check if email is being changed and if it already exists
             if new_email != current_user.email:
-                existing_admin = Admin.query.filter_by(email=new_email).first()
+                existing_admin = Admin.query.filter_by(email=new_email).filter(Admin.id != current_user.id).first()
                 existing_owner = Owner.query.filter_by(email=new_email).first()
                 existing_renter = Renter.query.filter_by(email=new_email).first()
                 
@@ -128,7 +128,13 @@ def profile():
             
         return redirect(url_for('admin.profile'))
 
-    return render_template("user/profile.html")
+    # Calculate statistics for dashboard
+    total_users = (Admin.query.count() or 0) + (Owner.query.count() or 0) + (Renter.query.count() or 0)
+    total_homestays = Homestay.query.count() or 0
+    
+    return render_template("user/profile.html", 
+                          total_users=total_users,
+                          total_homestays=total_homestays)
 
 @admin_bp.route('/create_owner', methods=['GET', 'POST'])
 @login_required

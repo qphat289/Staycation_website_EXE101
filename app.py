@@ -39,16 +39,17 @@ def create_app():
         db.create_all()
         print("Database tables created successfully.")
 
-        # Check if admin exists and create one if not
-        existing_admin = Admin.query.filter_by(username='admin').first()
+        # Check if any admin exists and create one if not
+        existing_admin = Admin.query.first()
         if existing_admin:
-            print("Admin user already exists and is an admin.")
+            print(f"Admin user already exists: {existing_admin.username}")
         else:
             admin_user = Admin(username='admin', email='admin@example.com')
             admin_user.set_password('123')
             db.session.add(admin_user)
             db.session.commit()
-            print("Admin user created.")
+            print("Default admin user created with username='admin', password='123'")
+            print("Please login and update the admin information immediately!")
 
     # Import and register blueprints
     from routes.auth import auth_bp

@@ -90,9 +90,9 @@
                   <td class="fw-bold ps-3">#{{ booking.id }}</td>
                   <td>
                     <div class="d-flex align-items-center">
-                      <div class="avatar bg-primary rounded-circle me-2">{{ booking.renter.full_name|truncate(1, True, '') }}</div>
-                      <div>
-                        <div class="fw-semibold">{{ booking.renter.full_name }}</div>
+                      <div class="avatar bg-primary rounded-circle me-2">{{ booking.renter.display_name|truncate(1, True, '') }}</div>
+                      <div class="renter-info">
+                        <div class="fw-semibold">{{ booking.renter.display_name }}</div>
                         <small class="text-muted">{{ booking.renter.email }}</small>
                       </div>
                     </div>

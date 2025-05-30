@@ -43,7 +43,7 @@
             </div>
             <div class="card-body">
               <p><strong>ID chủ nhà:</strong> {{ homestay.owner.id }}</p>
-              <p><strong>Họ và tên:</strong> {{ homestay.owner.full_name }}</p>
+              <p><strong>Username:</strong> {{ homestay.owner.display_name }}</p>
               <p><strong>Email:</strong> {{ homestay.owner.email }}</p>
               <p><strong>Điện thoại:</strong> {{ homestay.owner.phone or 'Chưa cập nhật' }}</p>
               <p><strong>Ngày tham gia:</strong> {{ homestay.owner.created_at.strftime('%d/%m/%Y') }}</p>

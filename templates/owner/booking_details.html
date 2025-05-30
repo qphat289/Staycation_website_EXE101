@@ -147,9 +147,9 @@
                         <div class="card-body">
                             <div class="guest-profile mb-4">
                                 <div class="guest-avatar">
-                                    {{ booking.renter.full_name|truncate(1, True, '') }}
+                                    {{ booking.renter.display_name|truncate(1, True, '') }}
                                 </div>
-                                <div class="guest-name">{{ booking.renter.full_name }}</div>
+                                <div class="guest-name">{{ booking.renter.display_name }}</div>
                             </div>
                             
                             <div class="row mb-3">

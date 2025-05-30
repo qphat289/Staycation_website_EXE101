@@ -1,35 +1,53 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container py-4">
-    <h2 class="mb-4" data-translate="my-profile">My Profile</h2>
+    <div class="text-center mb-5">
+        <h2 class="profile-title" data-translate="my-profile">
+            <i class="fas fa-user-circle me-2"></i>
+            Hồ Sơ Của Tôi
+        </h2>
+        <div class="title-underline"></div>
+    </div>
     
     {% if current_user.role == 'admin' %}
     <!-- ADMIN LAYOUT: Avatar bên trái, Form bên phải -->
     <div class="row">
         <!-- LEFT COLUMN: Avatar Display -->
         <div class="col-md-4">
-            <div class="card">
+            <div class="admin-profile-card">
                 <div class="card-body text-center">
                     <!-- Avatar -->
-                    <div class="avatar-container" style="width: 220px; height: 220px; border: 3px solid #ddd; border-radius: 50%; padding: 10px; margin: 0 auto 20px; background: #f8f9fa;">
+                    <div class="avatar-container-admin">
                         {% if current_user.avatar %}
                             <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
                                 alt="Avatar"
-                                class="avatar-circle"
-                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                class="avatar-circle-admin">
                         {% else %}
                             <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
                                 alt="Avatar"
-                                class="avatar-circle"
-                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                class="avatar-circle-admin">
                         {% endif %}
+                        <div class="avatar-badge">
+                            <i class="fas fa-crown"></i>
+                        </div>
                     </div>
                     
-                    <h5 class="card-title">{{ current_user.full_name or current_user.username }}</h5>
-                    <span class="badge bg-danger">Admin</span>
+                    <h5 class="admin-name">{{ current_user.username }}</h5>
+                    <div class="admin-badge-modern">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <span>Quản Trị Viên</span>
+                    </div>
                     
-                    <div class="mt-3">
-                        <small class="text-muted">Quản trị viên hệ thống</small>
+                    <div class="admin-status">
+                        <div class="status-dot"></div>
+                        <span class="status-text">Đang hoạt động</span>
+                    </div>
+                    
+                    <div class="admin-description">
+                        <small class="text-muted">
+                            <i class="fas fa-cog me-1"></i>
+                            Quản trị viên hệ thống
+                        </small>
                     </div>
                 </div>
             </div>
@@ -37,15 +55,21 @@
         
         <!-- RIGHT COLUMN: Admin Profile Form -->
         <div class="col-md-8">
-            <div class="card">
+            <div class="form-card-admin">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Thông tin Admin</h5>
+                    <h5 class="form-title-admin">
+                        <i class="fas fa-edit me-2"></i>
+                        Thông Tin Admin
+                    </h5>
                     <form method="POST" enctype="multipart/form-data">
                         <!-- Username -->
                         <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user me-1"></i>
+                                Username
+                            </label>
                             <input type="text" 
-                                   class="form-control" 
+                                   class="form-control form-input-admin" 
                                    id="username" 
                                    name="username" 
                                    value="{{ current_user.username }}"
@@ -54,20 +78,25 @@
                         
                         <!-- Full Name -->
                         <div class="mb-3">
-                            <label for="full_name" class="form-label">Họ và Tên</label>
+                            <label for="full_name" class="form-label">
+                                <i class="fas fa-id-card me-1"></i>
+                                Họ và Tên
+                            </label>
                             <input type="text" 
-                                   class="form-control" 
+                                   class="form-control form-input-admin" 
                                    id="full_name" 
                                    name="full_name" 
-                                   value="{{ current_user.full_name }}"
-                                   required>
+                                   value="{{ current_user.full_name }}">
                         </div>
                         
                         <!-- Email -->
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>
+                                Email
+                            </label>
                             <input type="email" 
-                                   class="form-control" 
+                                   class="form-control form-input-admin" 
                                    id="email" 
                                    name="email" 
                                    value="{{ current_user.email }}"
@@ -75,22 +104,266 @@
                         </div>
                         
                         <!-- Avatar Upload -->
-                        <div class="mb-3">
-                            <label for="avatar" class="form-label">Cập nhật Avatar</label>
+                        <div class="mb-4">
+                            <label for="avatar" class="form-label">
+                                <i class="fas fa-image me-1"></i>
+                                Cập nhật Avatar
+                            </label>
                             <input type="file" 
-                                   class="form-control" 
+                                   class="form-control form-input-admin" 
                                    id="avatar" 
                                    name="avatar" 
                                    accept="image/*">
-                            <small class="text-muted">Chọn ảnh để thay đổi avatar</small>
+                            <small class="text-muted mt-1">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Chọn ảnh để thay đổi avatar
+                            </small>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
+                        <button type="submit" class="btn-submit-admin">
+                            <i class="fas fa-save me-2"></i>
+                            Cập nhật thông tin
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    
+    <style>
+    .profile-title {
+        color: #8ab82f;
+        font-weight: 700;
+        font-size: 2.2rem;
+        margin-bottom: 15px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .title-underline {
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, #9ed649, #b2e254);
+        border-radius: 2px;
+        margin: 0 auto;
+    }
+    
+    .admin-profile-card {
+        background: linear-gradient(135deg, #9ed649 0%, #8ab82f 100%);
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(158, 214, 73, 0.2);
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .admin-profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="white" opacity="0.1"/><circle cx="80" cy="80" r="1" fill="white" opacity="0.1"/><circle cx="40" cy="60" r="1" fill="white" opacity="0.05"/></svg>') repeat;
+        pointer-events: none;
+    }
+    
+    .admin-profile-card .card-body {
+        position: relative;
+        z-index: 1;
+        padding: 30px;
+    }
+    
+    .avatar-container-admin {
+        width: 140px;
+        height: 140px;
+        margin: 0 auto 20px;
+        position: relative;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        padding: 8px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .avatar-circle-admin {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid white;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .avatar-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 35px;
+        height: 35px;
+        background: linear-gradient(135deg, #cbdda5, #9ed649);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #f34646;
+        font-size: 14px;
+        border: 3px solid white;
+        box-shadow: 0 4px 15px rgba(248, 151, 148, 0.568);
+    }
+    
+    .admin-name {
+        color: white;
+        font-weight: 600;
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .admin-badge-modern {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255,255,255,0.9);
+        color: #8ab82f;
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+    }
+    
+    .admin-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #b2e254;
+        border-radius: 50%;
+        animation: pulse-status 2s infinite;
+    }
+    
+    .status-text {
+        color: rgba(255,255,255,0.9);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    @keyframes pulse-status {
+        0% { box-shadow: 0 0 0 0 rgba(158, 214, 73, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(158, 214, 73, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(158, 214, 73, 0); }
+    }
+    
+    .admin-description {
+        margin-top: 10px;
+    }
+    
+    .admin-description .text-muted {
+        color: rgba(255,255,255,0.8) !important;
+    }
+    
+    .form-card-admin {
+        background: white;
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 2px solid rgba(195, 213, 0, 0.1);
+    }
+    
+    .form-card-admin:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        border-color: rgba(195, 213, 0, 0.3);
+    }
+    
+    .form-card-admin .card-body {
+        padding: 30px;
+    }
+    
+    .form-title-admin {
+        color: #8ab82f;
+        font-weight: 600;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f8f9fa;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-label {
+        color: #8ab82f;
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-input-admin {
+        border: 2px solid #E5E9FA;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #F5F9F2;
+    }
+    
+    .form-input-admin:focus {
+        outline: none;
+        border-color: #C3D500;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(195, 213, 0, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .btn-submit-admin {
+        background: linear-gradient(135deg, #9ed649 0%, #b2e254 100%);
+        color: #18282C;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(158, 214, 73, 0.4);
+        text-decoration: none;
+    }
+    
+    .btn-submit-admin:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(158, 214, 73, 0.6);
+        color: #18282C;
+        background: linear-gradient(135deg, #b2e254 0%, #9ed649 100%);
+    }
+    
+    .btn-submit-admin:active {
+        transform: translateY(0);
+    }
+    
+    @media (max-width: 768px) {
+        .profile-title {
+            font-size: 1.8rem;
+        }
+        
+        .admin-profile-card .card-body {
+            padding: 20px;
+        }
+        
+        .avatar-container-admin {
+            width: 120px;
+            height: 120px;
+        }
+    }
+    </style>
     
     {% else %}
     <!-- ORIGINAL LAYOUT: Avatar bên trái, Form bên phải cho user thường -->
@@ -114,7 +387,7 @@
                         {% endif %}
                     </div>
                     
-                    <h5 class="card-title">{{ current_user.full_name or "Unnamed User" }}</h5>
+                    <h5 class="card-title">{{ current_user.display_name }}</h5>
 
                     <!-- Calculate rank info -->
                     {% set xp_current = current_user.experience_points if current_user.experience_points is defined else 0 %}

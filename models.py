@@ -37,7 +37,7 @@ class Admin(UserMixin, db.Model):
         
     @property
     def display_name(self):
-        return self.full_name or self.username
+        return self.username
         
     def __repr__(self):
         return f'<Admin {self.username}>'
@@ -74,6 +74,10 @@ class Owner(UserMixin, db.Model):
     
     def is_renter(self):
         return self.temp_role == 'renter'
+        
+    @property
+    def display_name(self):
+        return self.username
         
     def __repr__(self):
         return f'<Owner {self.username}>'
@@ -127,7 +131,7 @@ class Renter(UserMixin, db.Model):
     
     @property
     def display_name(self):
-        """Return the appropriate username for display regardless of login method"""
+        """Return the username for display regardless of login method"""
         return self.username or self.google_username or self.facebook_username or "User"
     
     def check_password(self, password):

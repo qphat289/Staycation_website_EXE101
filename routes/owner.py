@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, Homestay, Room, Booking, RoomImage, Renter
+from models import db, Homestay, Room, Booking, RoomImage, Renter, Admin, Owner
 import os
 from datetime import datetime, timedelta
 from PIL import Image
@@ -674,11 +674,50 @@ def switch_to_owner():
 def profile():
     if request.method == 'POST':
         try:
+            # Get form data
+            new_full_name = request.form.get('full_name')
+            new_phone = request.form.get('phone')
+            new_email = request.form.get('email')
+            new_personal_id = request.form.get('personal_id')
+            
+            # Validate required fields
+            if not new_email or not new_personal_id:
+                flash("Email và CCCD/CMND là bắt buộc!", "danger")
+                return redirect(url_for('owner.profile'))
+            
+            # Check if email is being changed and if it already exists
+            if new_email != current_user.email:
+                existing_admin = Admin.query.filter_by(email=new_email).first()
+                existing_owner = Owner.query.filter_by(email=new_email).filter(Owner.id != current_user.id).first()
+                existing_renter = Renter.query.filter_by(email=new_email).first()
+                
+                if existing_admin or existing_owner or existing_renter:
+                    flash(f"Email '{new_email}' đã tồn tại! Vui lòng chọn email khác.", "danger")
+                    return redirect(url_for('owner.profile'))
+            
+            # Check if phone is being changed and if it already exists
+            if new_phone and new_phone != current_user.phone:
+                existing_owner = Owner.query.filter_by(phone=new_phone).filter(Owner.id != current_user.id).first()
+                existing_renter = Renter.query.filter_by(phone=new_phone).first()
+                
+                if existing_owner or existing_renter:
+                    flash(f"Số điện thoại '{new_phone}' đã tồn tại! Vui lòng chọn số khác.", "danger")
+                    return redirect(url_for('owner.profile'))
+            
+            # Check if personal_id is being changed and if it already exists
+            if new_personal_id != current_user.personal_id:
+                existing_owner = Owner.query.filter_by(personal_id=new_personal_id).filter(Owner.id != current_user.id).first()
+                existing_renter = Renter.query.filter_by(personal_id=new_personal_id).first()
+                
+                if existing_owner or existing_renter:
+                    flash(f"CCCD/CMND '{new_personal_id}' đã tồn tại! Vui lòng chọn số khác.", "danger")
+                    return redirect(url_for('owner.profile'))
+            
             # Update user info
-            current_user.full_name = request.form.get('full_name')
-            current_user.phone = request.form.get('phone')
-            current_user.email = request.form.get('email')
-            current_user.personal_id = request.form.get('personal_id')
+            current_user.full_name = new_full_name
+            current_user.phone = new_phone
+            current_user.email = new_email
+            current_user.personal_id = new_personal_id
 
             # Handle avatar upload
             if 'avatar' in request.files:
