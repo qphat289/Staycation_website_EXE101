@@ -46,6 +46,13 @@
             background-color: var(--bs-primary) !important;
         }
 
+        /* Fix flash messages being covered by navbar */
+        .container.mt-3 {
+            margin-top: 90px !important; /* Account for fixed navbar height */
+            position: relative;
+            z-index: 1020;
+        }
+
         /* Ensure proper scrolling */
         body {
             overflow-y: auto;
@@ -60,6 +67,44 @@
 
         footer {
             flex-shrink: 0;
+        }
+
+        /* Flash message animations */
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+                max-height: 100px;
+                margin-bottom: 1rem;
+                padding: 0.75rem 1.25rem;
+            }
+            to {
+                transform: translateY(-100%);
+                opacity: 0;
+                max-height: 0;
+                margin-bottom: 0;
+                padding: 0 1.25rem;
+            }
+        }
+
+        .flash-message {
+            animation: slideDown 0.5s ease-out;
+            overflow: hidden;
+        }
+
+        .flash-message.slide-up {
+            animation: slideUp 0.5s ease-in forwards;
         }
     </style>
     
@@ -222,7 +267,7 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} shadow-sm rounded-3">
+                    <div class="alert alert-{{ category }} shadow-sm rounded-3 flash-message" role="alert">
                         <i class="bi bi-info-circle me-2"></i>
                         <!-- Kiểm tra nếu thông báo trùng khớp với từ khóa trong hệ thống dịch -->
                         {% if message == 'Booking created successfully!' %}
@@ -391,6 +436,22 @@
         document.addEventListener('gesturestart', function(event) {
             event.preventDefault();
         }, { passive: false });
+
+        // Auto-hide flash messages after 15 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.flash-message');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    // Add slide up animation class
+                    alert.classList.add('slide-up');
+                    
+                    // Remove the element after animation completes
+                    setTimeout(function() {
+                        alert.remove();
+                    }, 500); // Match the animation duration
+                }, 5000); // 5 seconds
+            });
+        });
     </script>
     
     {% block extra_js %}{% endblock %}
