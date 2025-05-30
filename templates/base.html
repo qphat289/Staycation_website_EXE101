@@ -505,12 +505,14 @@
             });
         });
         
-        // Check for login success URL parameter
+        // Check for login success/error URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const loginSuccess = urlParams.get('login_success');
         const logoutSuccess = urlParams.get('logout_success');
+        const loginError = urlParams.get('login_error');
         console.log('Checking for login success parameter:', loginSuccess);
         console.log('Checking for logout success parameter:', logoutSuccess);
+        console.log('Checking for login error parameter:', loginError);
         console.log('Current URL:', window.location.href);
         
         if (loginSuccess) {
@@ -519,12 +521,15 @@
         } else if (logoutSuccess) {
             console.log('Logout success detected, showing notification');
             showNotification('logout');
+        } else if (loginError) {
+            console.log('Login error detected, showing notification');
+            showNotification('error');
         } else {
-            console.log('No success parameter found');
+            console.log('No success/error parameter found');
         }
         
         function showNotification(type) {
-            // Create and show success notification
+            // Create and show notification
             const successDiv = document.createElement('div');
             successDiv.className = 'login-success-notification';
             successDiv.style.position = 'fixed';
@@ -556,6 +561,9 @@
             } else if (type === 'logout') {
                 successDiv.style.backgroundColor = '#6c757d';
                 successDiv.innerHTML = `<span>Bạn đã đăng xuất</span>`;
+            } else if (type === 'error') {
+                successDiv.style.backgroundColor = '#dc3545';
+                successDiv.innerHTML = `<i class="bi bi-exclamation-circle me-2" style="font-size: 16px;"></i><span>Tên đăng nhập hoặc mật khẩu không chính xác!</span>`;
             }
             
             // Ensure it's appended to body, not any container
@@ -577,6 +585,7 @@
             const url = new URL(window.location);
             url.searchParams.delete('login_success');
             url.searchParams.delete('logout_success');
+            url.searchParams.delete('login_error');
             window.history.replaceState(null, '', url);
             console.log('URL parameters cleaned up');
         }

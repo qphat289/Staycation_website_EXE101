@@ -94,8 +94,9 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     
-    # Initialize empty form_data
-    form_data = {}
+    # Initialize form_data, check for username from URL parameters
+    username_param = request.args.get('username', '')
+    form_data = {'username': username_param} if username_param else {}
         
     if request.method == 'POST':
         username = request.form.get('username')
@@ -137,8 +138,8 @@ def login():
                 
             return redirect(next_page)
         else:
-            # Invalid credentials
-            flash("Invalid username or password. Please try again.", "danger")
+            # Invalid credentials - redirect with error parameter and preserve username
+            return redirect(url_for('auth.login', login_error='1', username=username))
                 
     return render_template('auth/login.html', form_data=form_data)
 
