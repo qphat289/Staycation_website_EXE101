@@ -6,7 +6,6 @@ from PIL import Image
 import io
 import os
 from werkzeug.utils import secure_filename
-from utils.s3_utils import S3Handler
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
@@ -214,53 +213,6 @@ def allowed_file(filename):
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
-def handle_file_upload(file, folder=""):
-    """Handle file upload using either S3 or local storage"""
-    if not file or not file.filename:
-        return None
-        
-    if not allowed_file(file.filename):
-        raise ValueError("File type not allowed")
-        
-    filename = secure_filename(file.filename)
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    filename = f"{timestamp}_{filename}"
-    
-    if current_app.config.get('USE_S3'):
-        s3 = S3Handler(
-            aws_access_key_id=current_app.config['AWS_ACCESS_KEY_ID'],
-            aws_secret_access_key=current_app.config['AWS_SECRET_ACCESS_KEY'],
-            region_name=current_app.config['AWS_REGION'],
-            bucket_name=current_app.config['S3_BUCKET']
-        )
-        return s3.upload_file(file, folder)
-    else:
-        # Fallback to local storage
-        upload_path = os.path.join('static', 'uploads', folder) if folder else os.path.join('static', 'uploads')
-        os.makedirs(upload_path, exist_ok=True)
-        filepath = os.path.join(upload_path, filename)
-        file.save(filepath)
-        return os.path.join('uploads', folder, filename) if folder else os.path.join('uploads', filename)
-
-def delete_file(file_path):
-    """Delete file from either S3 or local storage"""
-    if current_app.config['USE_S3']:
-        s3 = S3Handler(
-            aws_access_key_id=current_app.config['AWS_ACCESS_KEY_ID'],
-            aws_secret_access_key=current_app.config['AWS_SECRET_ACCESS_KEY'],
-            region_name=current_app.config['AWS_REGION'],
-            bucket_name=current_app.config['S3_BUCKET']
-        )
-        return s3.delete_file(file_path)
-    else:
-        # Delete from local storage
-        if file_path:
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], os.path.basename(file_path))
-            if os.path.exists(filepath):
-                os.remove(filepath)
-                return True
-    return False
-
 @renter_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -314,52 +266,100 @@ def profile():
             # Handle avatar upload
             if 'avatar' in request.files:
                 avatar = request.files['avatar']
+                print(f"Received file: {avatar.filename}")
+                print(f"File content type: {avatar.content_type}")
+                print(f"File size: {len(avatar.read())} bytes")
+                avatar.seek(0)  # Reset file pointer after reading
+                
                 if avatar and avatar.filename != '':
                     if not allowed_file(avatar.filename):
+                        print(f"File type not allowed: {avatar.filename}")
                         flash("File type not allowed. Please use: png, jpg, jpeg, or gif", "danger")
                         return redirect(url_for('renter.profile'))
                     
                     try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        print(f"Upload folder path: {upload_folder}")
+                        abs_upload_folder = os.path.abspath(upload_folder)
+                        print(f"Absolute upload folder path: {abs_upload_folder}")
+                        
+                        if not os.path.exists(abs_upload_folder):
+                            print(f"Creating upload folder: {abs_upload_folder}")
+                            os.makedirs(abs_upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(avatar.filename)
+                        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                        filename = f"{timestamp}_{filename}"
+                        filepath = os.path.join(abs_upload_folder, filename)
+                        print(f"Saving file to: {filepath}")
+                        
+                        # Save file
+                        avatar.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
+                        print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
+                        
                         # Delete old avatar if exists
                         if current_user.avatar:
-                            delete_file(current_user.avatar)
+                            old_avatar_path = os.path.join(abs_upload_folder, current_user.avatar)
+                            if os.path.exists(old_avatar_path):
+                                os.remove(old_avatar_path)
+                                print(f"Deleted old avatar: {old_avatar_path}")
                         
-                        # Upload new avatar
-                        file_path = handle_file_upload(avatar, 'avatars')
-                        if file_path:
-                            current_user.avatar = file_path
-                            flash("Avatar updated successfully!", "success")
-                        else:
-                            flash("Error uploading avatar", "danger")
-                            return redirect(url_for('renter.profile'))
-                            
+                        # Update the avatar field in the user's profile
+                        current_user.avatar = filename
+                        print(f"Updated user avatar in database: {filename}")
+                        
+                        # Commit changes to database
+                        db.session.commit()
+                        flash("Avatar updated successfully!", "success")
+                        
                     except Exception as e:
                         print(f"Error during file operations: {str(e)}")
+                        print(f"Current working directory: {os.getcwd()}")
                         flash(f"Error saving avatar: {str(e)}", "danger")
                         return redirect(url_for('renter.profile'))
 
             # Handle CCCD upload
             if 'cccd_front' in request.files:
                 cccd_front = request.files['cccd_front']
+                print(f"Received CCCD front file: {cccd_front.filename}")
+                
                 if cccd_front and cccd_front.filename != '':
                     if not allowed_file(cccd_front.filename):
                         flash("File type not allowed. Please use: png, jpg, jpeg, or gif", "danger")
                         return redirect(url_for('renter.profile'))
                     
                     try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        
+                        if not os.path.exists(upload_folder):
+                            os.makedirs(upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(cccd_front.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        
+                        # Save file
+                        cccd_front.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
                         # Delete old CCCD front if exists
                         if current_user.cccd_front_image:
-                            delete_file(current_user.cccd_front_image)
+                            old_cccd_path = os.path.join(upload_folder, current_user.cccd_front_image)
+                            if os.path.exists(old_cccd_path):
+                                os.remove(old_cccd_path)
                         
-                        # Upload new CCCD front
-                        file_path = handle_file_upload(cccd_front, 'cccd')
-                        if file_path:
-                            current_user.cccd_front_image = file_path
-                            flash("CCCD front updated successfully!", "success")
-                        else:
-                            flash("Error uploading CCCD front", "danger")
-                            return redirect(url_for('renter.profile'))
-                            
+                        # Update the CCCD front field in the user's profile
+                        current_user.cccd_front_image = filename
+                        
                     except Exception as e:
                         print(f"Error during CCCD front file operations: {str(e)}")
                         flash(f"Error saving CCCD front: {str(e)}", "danger")
@@ -367,25 +367,39 @@ def profile():
 
             if 'cccd_back' in request.files:
                 cccd_back = request.files['cccd_back']
+                print(f"Received CCCD back file: {cccd_back.filename}")
+                
                 if cccd_back and cccd_back.filename != '':
                     if not allowed_file(cccd_back.filename):
                         flash("File type not allowed. Please use: png, jpg, jpeg, or gif", "danger")
                         return redirect(url_for('renter.profile'))
                     
                     try:
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        
+                        if not os.path.exists(upload_folder):
+                            os.makedirs(upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(cccd_back.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        
+                        # Save file
+                        cccd_back.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
                         # Delete old CCCD back if exists
                         if current_user.cccd_back_image:
-                            delete_file(current_user.cccd_back_image)
+                            old_cccd_path = os.path.join(upload_folder, current_user.cccd_back_image)
+                            if os.path.exists(old_cccd_path):
+                                os.remove(old_cccd_path)
                         
-                        # Upload new CCCD back
-                        file_path = handle_file_upload(cccd_back, 'cccd')
-                        if file_path:
-                            current_user.cccd_back_image = file_path
-                            flash("CCCD back updated successfully!", "success")
-                        else:
-                            flash("Error uploading CCCD back", "danger")
-                            return redirect(url_for('renter.profile'))
-                            
+                        # Update the CCCD back field in the user's profile
+                        current_user.cccd_back_image = filename
+                        
                     except Exception as e:
                         print(f"Error during CCCD back file operations: {str(e)}")
                         flash(f"Error saving CCCD back: {str(e)}", "danger")

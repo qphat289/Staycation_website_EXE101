@@ -1,33 +1,4 @@
 {% extends 'base.html' %}
-
-{% macro render_image(image_url, default_image, alt_text, additional_class='', style='') %}
-    {% if image_url %}
-        {% if config.USE_S3 %}
-            <img src="{{ image_url }}" 
-                 alt="{{ alt_text }}" 
-                 class="img-fluid {{ additional_class }}"
-                 style="{{ style }}">
-        {% else %}
-            {% if image_url.startswith('http') %}
-                <img src="{{ image_url }}" 
-                     alt="{{ alt_text }}" 
-                     class="img-fluid {{ additional_class }}"
-                     style="{{ style }}">
-            {% else %}
-                <img src="{{ url_for('static', filename=image_url) if not image_url.startswith('/') else url_for('static', filename=image_url[1:]) }}" 
-                     alt="{{ alt_text }}" 
-                     class="img-fluid {{ additional_class }}"
-                     style="{{ style }}">
-            {% endif %}
-        {% endif %}
-    {% else %}
-        <img src="{{ url_for('static', filename=default_image) }}" 
-             alt="{{ alt_text }}" 
-             class="img-fluid {{ additional_class }}"
-             style="{{ style }}">
-    {% endif %}
-{% endmacro %}
-
 {% block content %}
 <div class="container py-4">
     <div class="text-center mb-4">
@@ -47,11 +18,15 @@
                 <div class="card-body text-center">
                     <!-- Avatar -->
                     <div class="avatar-container-admin">
-                        {{ render_image(current_user.avatar, 
-                                        'images/default-avatar.png', 
-                                        'Avatar',
-                                        'avatar-circle-admin',
-                                        'width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 4px solid white;') }}
+                        {% if current_user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                                alt="Avatar"
+                                class="avatar-circle-admin">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
+                                alt="Avatar"
+                                class="avatar-circle-admin">
+                        {% endif %}
                     </div>
                     
                     <h5 class="admin-name">{{ current_user.username }}</h5>
@@ -438,11 +413,17 @@
 
         if (!isValid) {
             // Show error notification
-            showNotification('error', 'Vui lòng điền đầy đủ thông tin!');
+            showNotification('validation-error');
             return false;
         }
 
         return true;
+    }
+
+    // Add this to your existing showNotification function in base.html
+    if (type === 'validation-error') {
+        successDiv.style.backgroundColor = '#dc3545';
+        successDiv.innerHTML = `<i class="bi bi-exclamation-circle me-2" style="font-size: 16px;"></i><span>Vui lòng điền đầy đủ thông tin!</span>`;
     }
     </script>
     
@@ -484,11 +465,17 @@
                 <div class="card-body text-center">
                     <!-- Avatar -->
                     <div class="avatar-container" style="width: 220px; height: 220px; border: 3px solid #ddd; border-radius: 50%; padding: 10px; margin: 0 auto 20px; background: #f8f9fa;">
-                        {{ render_image(current_user.avatar, 
-                                        'images/default-avatar.png', 
-                                        'Avatar',
-                                        'avatar-circle',
-                                        'width: 100%; height: 100%; object-fit: cover; border-radius: 50%;') }}
+                        {% if current_user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
+                                alt="Avatar"
+                                class="avatar-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% endif %}
                     </div>
                     
                     <h5 class="card-title">{{ current_user.display_name }}</h5>
@@ -609,11 +596,10 @@
                                 <label for="cccd_front" class="form-label" data-translate="cccd-front">Mặt trước CCCD</label>
                                 {% if current_user.cccd_front_image %}
                                     <div class="mb-2">
-                                        {{ render_image(current_user.cccd_front_image, 
-                                                        'images/default-cccd.png', 
-                                                        'CCCD Mặt trước',
-                                                        'img-thumbnail',
-                                                        'max-width: 200px;') }}
+                                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.cccd_front_image) }}" 
+                                             alt="CCCD Mặt trước" 
+                                             class="img-thumbnail" 
+                                             style="max-width: 200px;">
                                     </div>
                                 {% endif %}
                                 <input type="file" 
@@ -628,11 +614,10 @@
                                 <label for="cccd_back" class="form-label" data-translate="cccd-back">Mặt sau CCCD</label>
                                 {% if current_user.cccd_back_image %}
                                     <div class="mb-2">
-                                        {{ render_image(current_user.cccd_back_image, 
-                                                        'images/default-cccd.png', 
-                                                        'CCCD Mặt sau',
-                                                        'img-thumbnail',
-                                                        'max-width: 200px;') }}
+                                        <img src="{{ url_for('static', filename='uploads/' ~ current_user.cccd_back_image) }}" 
+                                             alt="CCCD Mặt sau" 
+                                             class="img-thumbnail" 
+                                             style="max-width: 200px;">
                                     </div>
                                 {% endif %}
                                 <input type="file" 

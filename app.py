@@ -17,7 +17,6 @@ def create_app():
 
     # Initialize database, migrations, login manager
     db.init_app(app)
-    migrate = Migrate(app, db)
     login_manager = LoginManager(app)
     login_manager.login_view = 'auth.login'
     app.jinja_env.filters['rank_info'] = get_rank_info
