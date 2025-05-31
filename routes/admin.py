@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from utils.s3_utils import S3Handler
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -12,6 +13,44 @@ def allowed_file(filename):
     """Check if the file extension is allowed"""
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def handle_file_upload(file, folder=""):
+    """Handle file upload using either S3 or local storage"""
+    if current_app.config['USE_S3']:
+        s3 = S3Handler(
+            aws_access_key_id=current_app.config['AWS_ACCESS_KEY_ID'],
+            aws_secret_access_key=current_app.config['AWS_SECRET_ACCESS_KEY'],
+            region_name=current_app.config['AWS_REGION'],
+            bucket_name=current_app.config['S3_BUCKET']
+        )
+        return s3.upload_file(file, folder)
+    else:
+        # Fallback to local storage
+        filename = secure_filename(file.filename)
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        filename = f"{timestamp}_{filename}"
+        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        return f"uploads/{filename}"
+
+def delete_file(file_path):
+    """Delete file from either S3 or local storage"""
+    if current_app.config['USE_S3']:
+        s3 = S3Handler(
+            aws_access_key_id=current_app.config['AWS_ACCESS_KEY_ID'],
+            aws_secret_access_key=current_app.config['AWS_SECRET_ACCESS_KEY'],
+            region_name=current_app.config['AWS_REGION'],
+            bucket_name=current_app.config['S3_BUCKET']
+        )
+        return s3.delete_file(file_path)
+    else:
+        # Delete from local storage
+        if file_path:
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], os.path.basename(file_path))
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                return True
+    return False
 
 @admin_bp.route('/dashboard')
 @login_required
@@ -69,61 +108,27 @@ def profile():
             # Handle avatar upload
             if 'avatar' in request.files:
                 avatar = request.files['avatar']
-                print(f"Received file: {avatar.filename}")
-                print(f"File content type: {avatar.content_type}")
-                print(f"File size: {len(avatar.read())} bytes")
-                avatar.seek(0)  # Reset file pointer after reading
-                
                 if avatar and avatar.filename != '':
                     if not allowed_file(avatar.filename):
-                        print(f"File type not allowed: {avatar.filename}")
                         flash("File type not allowed. Please use: png, jpg, jpeg, gif, or webp", "danger")
                         return redirect(url_for('admin.profile'))
                     
                     try:
-                        # Ensure upload folder exists
-                        upload_folder = current_app.config['UPLOAD_FOLDER']
-                        print(f"Upload folder path: {upload_folder}")
-                        abs_upload_folder = os.path.abspath(upload_folder)
-                        print(f"Absolute upload folder path: {abs_upload_folder}")
-                        
-                        if not os.path.exists(abs_upload_folder):
-                            print(f"Creating upload folder: {abs_upload_folder}")
-                            os.makedirs(abs_upload_folder, exist_ok=True)
-                        
-                        # Generate secure filename and save file
-                        filename = secure_filename(avatar.filename)
-                        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-                        filename = f"{timestamp}_{filename}"
-                        filepath = os.path.join(abs_upload_folder, filename)
-                        print(f"Saving file to: {filepath}")
-                        
-                        # Save file
-                        avatar.save(filepath)
-                        
-                        if not os.path.exists(filepath):
-                            raise Exception(f"File was not saved successfully to {filepath}")
-                        
-                        print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
-                        
                         # Delete old avatar if exists
                         if current_user.avatar:
-                            old_avatar_path = os.path.join(abs_upload_folder, current_user.avatar)
-                            if os.path.exists(old_avatar_path):
-                                os.remove(old_avatar_path)
-                                print(f"Deleted old avatar: {old_avatar_path}")
+                            delete_file(current_user.avatar)
                         
-                        # Update the avatar field in the user's profile
-                        current_user.avatar = filename
-                        print(f"Updated user avatar in database: {filename}")
-                        
-                        # Commit changes to database
-                        db.session.commit()
-                        flash("Avatar updated successfully!", "success")
-                        
+                        # Upload new avatar
+                        file_path = handle_file_upload(avatar, 'avatars')
+                        if file_path:
+                            current_user.avatar = file_path
+                            flash("Avatar updated successfully!", "success")
+                        else:
+                            flash("Error uploading avatar", "danger")
+                            return redirect(url_for('admin.profile'))
+                            
                     except Exception as e:
                         print(f"Error during file operations: {str(e)}")
-                        print(f"Current working directory: {os.getcwd()}")
                         flash(f"Error saving avatar: {str(e)}", "danger")
                         return redirect(url_for('admin.profile'))
 
@@ -131,10 +136,6 @@ def profile():
             db.session.commit()
             flash("Cập nhật thông tin thành công!", "success")
             
-        except IntegrityError as e:
-            print(f"IntegrityError: {str(e)}")
-            db.session.rollback()
-            flash("Lỗi: Username hoặc Email đã tồn tại. Vui lòng thử lại với thông tin khác.", "danger")
         except Exception as e:
             print(f"Error updating profile: {str(e)}")
             db.session.rollback()

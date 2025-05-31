@@ -284,16 +284,27 @@
 
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown ms-3">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #333333; border: 1px solid rgba(51, 51, 51, 0.3) !important; border-radius: 25px !important; padding: 4px 12px !important; background: rgba(255, 255, 255, 0.1) !important;">
-                                {% if current_user.avatar %}
-                                    <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
-                                {% else %}
-                                    <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
-                                {% endif %}
-                                <span>{{ current_user.display_name }}</span>
-                                <i class="fas fa-bars ms-2" style="font-size: 14px;"></i>
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="avatar-container-small me-2" style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden;">
+                                    {% if current_user.avatar %}
+                                        {% if config.USE_S3 %}
+                                            <img src="{{ current_user.avatar }}" 
+                                                 alt="Avatar" 
+                                                 style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <img src="{{ url_for('static', filename=current_user.avatar) }}" 
+                                                 alt="Avatar" 
+                                                 style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% endif %}
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/default-avatar.png') }}" 
+                                             alt="Avatar" 
+                                             style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% endif %}
+                                </div>
+                                <span>{{ current_user.username }}</span>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
                                     {% if current_user.role == 'admin' %}
                                     <a class="dropdown-item" href="{{ url_for('admin.profile') }}">
