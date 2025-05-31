@@ -2,5 +2,6 @@ __pycache__/
 migrations/versions/__pycache__/
 migrations/README
 routes/__pycache__/
-static/uploads/
+static/uploads/*
+!static/uploads/.gitkeep
 instance/homestay.db
