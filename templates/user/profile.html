@@ -30,22 +30,18 @@
                     </div>
                     
                     <h5 class="admin-name">{{ current_user.username }}</h5>
-                    <div class="admin-badge-modern">
-                        <i class="fas fa-shield-alt me-2"></i>
-                        <span>Quản Trị Viên</span>
-                    </div>
                     
                     <div class="admin-status">
                         <div class="status-dot"></div>
-                        <span class="status-text">Đang hoạt động</span>
+                        <span class="status-text">Quản trị viên hệ thống</span>
                     </div>
-                    
-                    <div class="admin-description">
-                        <small class="text-muted">
-                            <i class="fas fa-cog me-1"></i>
-                            Quản trị viên hệ thống
-                        </small>
+
+                    {% if current_user.is_super_admin %}
+                    <div class="super-admin-badge">
+                        <i class="fas fa-crown me-2"></i>
+                        Super Admin
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -153,7 +149,7 @@
     .title-underline {
         width: 80px;
         height: 4px;
-        background: linear-gradient(90deg, #000000, #000000);
+        background: linear-gradient(90deg, #9ed649, #8ab82f);
         border-radius: 2px;
         margin: 0 auto;
     }
@@ -248,35 +244,82 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        margin-bottom: 15px;
+        margin: 15px auto;
+        background: rgba(255,255,255,0.2);
+        padding: 10px 20px;
+        border-radius: 20px;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255,255,255,0.3);
+        width: fit-content;
     }
     
     .status-dot {
         width: 8px;
         height: 8px;
-        background: #b2e254;
+        background: #ffffff;
         border-radius: 50%;
         animation: pulse-status 2s infinite;
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0.4);
     }
     
     .status-text {
-        color: rgba(255,255,255,0.9);
-        font-size: 0.9rem;
+        color: white;
+        font-size: 0.95rem;
         font-weight: 500;
+        letter-spacing: 0.5px;
     }
-    
+
+    .super-admin-badge {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(45deg, #ff4757, #ff6b81);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 10px auto;
+        box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .super-admin-badge i {
+        color: #FFD700;
+        text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    }
+
     @keyframes pulse-status {
-        0% { box-shadow: 0 0 0 0 rgba(158, 214, 73, 0.7); }
-        70% { box-shadow: 0 0 0 8px rgba(158, 214, 73, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(158, 214, 73, 0); }
+        0% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        }
     }
     
     .admin-description {
-        margin-top: 10px;
+        margin-top: 15px;
     }
     
-    .admin-description .text-muted {
-        color: rgba(255,255,255,0.8) !important;
+    .admin-description .badge {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+        border-radius: 15px;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .admin-description .badge.bg-danger {
+        background: linear-gradient(45deg, #ff4757, #ff6b81) !important;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .admin-description .badge.bg-primary {
+        background: linear-gradient(45deg, #1e90ff, #70a1ff) !important;
+        border: 1px solid rgba(255,255,255,0.2);
     }
     
     .form-card-admin {
@@ -540,14 +583,17 @@
                                 {% set next_min_formatted = xp_formatted %}
                             {% endif %}
                             
-                            <div class="progress-bar 
-                                {% if percentage < 25 %} bg-secondary
-                                {% elif percentage < 50 %} bg-info
-                                {% elif percentage < 75 %} bg-warning
-                                {% else %} bg-success
-                                {% endif %}
-                            " role="progressbar"
-                              style="width: {{ percentage|round(0, 'floor') }}%;">
+                            {% set progress_class = 'progress-bar ' %}
+                            {% if percentage < 25 %}
+                                {% set progress_class = progress_class ~ ' bg-secondary' %}
+                            {% elif percentage < 50 %}
+                                {% set progress_class = progress_class ~ ' bg-info' %}
+                            {% elif percentage < 75 %}
+                                {% set progress_class = progress_class ~ ' bg-warning' %}
+                            {% else %}
+                                {% set progress_class = progress_class ~ ' bg-success' %}
+                            {% endif %}
+                            <div class="{{ progress_class }}" role="progressbar" style="width: {{ percentage|round(0, 'floor') }}%;">
                                 {{ xp_formatted }} XP
                             </div>
                         </div>

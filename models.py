@@ -18,6 +18,25 @@ class Admin(UserMixin, db.Model):
     full_name = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     avatar = db.Column(db.String(200))
+    is_super_admin = db.Column(db.Boolean, default=False)
+    can_manage_admins = db.Column(db.Boolean, default=False)
+    can_approve_changes = db.Column(db.Boolean, default=False)
+    can_view_all_stats = db.Column(db.Boolean, default=True)
+    can_manage_users = db.Column(db.Boolean, default=True)
+    last_login = db.Column(db.DateTime)
+
+    def __init__(self, username, email, full_name=None, is_super_admin=False):
+        self.username = username
+        self.email = email
+        self.full_name = full_name or username
+        self.is_super_admin = is_super_admin
+        
+        # Tự động set quyền dựa vào loại admin
+        if is_super_admin:
+            self.can_manage_admins = True
+            self.can_approve_changes = True
+            self.can_view_all_stats = True
+            self.can_manage_users = True
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -37,7 +56,24 @@ class Admin(UserMixin, db.Model):
         
     @property
     def display_name(self):
-        return self.username
+        return self.full_name or self.username
+
+    def update_last_login(self):
+        self.last_login = datetime.utcnow()
+        db.session.commit()
+    
+    # Kiểm tra các quyền
+    def can_create_admin(self):
+        return self.is_super_admin and self.can_manage_admins
+    
+    def can_delete_admin(self):
+        return self.is_super_admin and self.can_manage_admins
+    
+    def can_modify_admin(self):
+        return self.is_super_admin and self.can_manage_admins
+    
+    def can_approve_system_changes(self):
+        return self.is_super_admin and self.can_approve_changes
         
     def __repr__(self):
         return f'<Admin {self.username}>'

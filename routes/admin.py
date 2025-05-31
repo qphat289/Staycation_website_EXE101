@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from functools import wraps
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -262,3 +263,125 @@ def toggle_homestay_status(homestay_id):
         flash(f"Có lỗi xảy ra: {str(e)}", "danger")
     
     return redirect(url_for('admin.homestay_details', homestay_id=homestay.id))
+
+# Decorator để kiểm tra super admin
+def super_admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_super_admin:
+            flash('Bạn không có quyền truy cập trang này.', 'danger')
+            return redirect(url_for('admin.dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@admin_bp.route('/manage-admins')
+@login_required
+@super_admin_required
+def manage_admins():
+    admins = Admin.query.all()
+    return render_template('admin/manage_admins.html', admins=admins)
+
+@admin_bp.route('/create-admin', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def create_admin():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        full_name = request.form.get('full_name')
+        is_super_admin = request.form.get('is_super_admin') == 'on'
+        
+        # Kiểm tra username và email đã tồn tại chưa
+        if Admin.query.filter_by(username=username).first():
+            flash('Username đã tồn tại.', 'danger')
+            return redirect(url_for('admin.create_admin'))
+            
+        if Admin.query.filter_by(email=email).first():
+            flash('Email đã tồn tại.', 'danger')
+            return redirect(url_for('admin.create_admin'))
+        
+        # Tạo admin mới
+        new_admin = Admin(username=username, email=email, full_name=full_name, is_super_admin=is_super_admin)
+        new_admin.set_password(password)
+        
+        db.session.add(new_admin)
+        db.session.commit()
+        
+        flash('Tạo admin mới thành công!', 'success')
+        return redirect(url_for('admin.manage_admins'))
+        
+    return render_template('admin/create_admin.html')
+
+@admin_bp.route('/edit-admin/<int:admin_id>', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def edit_admin(admin_id):
+    admin = Admin.query.get_or_404(admin_id)
+    
+    # Không cho phép sửa chính mình
+    if admin.id == current_user.id:
+        flash('Không thể sửa tài khoản của chính mình.', 'danger')
+        return redirect(url_for('admin.manage_admins'))
+    
+    if request.method == 'POST':
+        admin.full_name = request.form.get('full_name')
+        admin.is_super_admin = request.form.get('is_super_admin') == 'on'
+        
+        # Cập nhật các quyền
+        if admin.is_super_admin:
+            admin.can_manage_admins = True
+            admin.can_approve_changes = True
+            admin.can_view_all_stats = True
+            admin.can_manage_users = True
+        else:
+            admin.can_manage_admins = False
+            admin.can_approve_changes = False
+            
+        db.session.commit()
+        flash('Cập nhật admin thành công!', 'success')
+        return redirect(url_for('admin.manage_admins'))
+        
+    return render_template('admin/edit_admin.html', admin=admin)
+
+@admin_bp.route('/delete-admin/<int:admin_id>', methods=['POST'])
+@login_required
+@super_admin_required
+def delete_admin(admin_id):
+    admin = Admin.query.get_or_404(admin_id)
+    
+    # Không cho phép xóa chính mình
+    if admin.id == current_user.id:
+        flash('Không thể xóa tài khoản của chính mình.', 'danger')
+        return redirect(url_for('admin.manage_admins'))
+    
+    db.session.delete(admin)
+    db.session.commit()
+    
+    flash('Xóa admin thành công!', 'success')
+    return redirect(url_for('admin.manage_admins'))
+
+@admin_bp.route('/set-super-admin')
+@login_required
+def set_super_admin():
+    if not isinstance(current_user, Admin):
+        flash('Bạn không có quyền thực hiện thao tác này!', 'danger')
+        return redirect(url_for('home'))
+    
+    # Kiểm tra xem đã có super admin nào chưa
+    existing_super_admin = Admin.query.filter_by(is_super_admin=True).first()
+    
+    if not existing_super_admin:
+        # Nếu chưa có super admin nào, set tài khoản hiện tại thành super admin
+        current_user.is_super_admin = True
+        current_user.can_manage_admins = True
+        current_user.can_approve_changes = True
+        current_user.can_view_all_stats = True
+        current_user.can_manage_users = True
+        
+        db.session.commit()
+        flash('Bạn đã được set làm Super Admin!', 'success')
+    else:
+        flash('Đã có Super Admin trong hệ thống!', 'warning')
+    
+    return redirect(url_for('admin.dashboard'))

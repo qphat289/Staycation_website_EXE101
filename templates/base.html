@@ -290,18 +290,23 @@
                                 {% else %}
                                     <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% endif %}
-                                <span>{{ current_user.display_name }}</span>
+                                <span>{{ current_user.username }}</span>
                                 <i class="fas fa-bars ms-2" style="font-size: 14px;"></i>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
                                 <li>
                                     {% if current_user.role == 'admin' %}
                                     <a class="dropdown-item" href="{{ url_for('admin.profile') }}">
-                                        <i class="bi bi-person-circle me-2"></i><span data-translate="my-profile">My Profile</span>
+                                        <i class="bi bi-person-circle me-2"></i><span data-translate="my-profile">Hồ sơ của tôi</span>
                                     </a>
+                                    {% if current_user.is_super_admin %}
+                                    <a class="dropdown-item" href="{{ url_for('admin.manage_admins') }}">
+                                        <i class="bi bi-people-fill me-2"></i><span>Quản lý Admin</span>
+                                    </a>
+                                    {% endif %}
                                     {% else %}
                                     <a class="dropdown-item" href="{{ url_for('renter.profile') }}">
-                                        <i class="bi bi-person-circle me-2"></i><span data-translate="my-profile">My Profile</span>
+                                        <i class="bi bi-person-circle me-2"></i><span data-translate="my-profile">Hồ sơ của tôi</span>
                                     </a>
                                     {% endif %}
                                 </li>
@@ -325,11 +330,13 @@
                                     </a>
                                 </li>
                                 {% endif %}
+                                {% if current_user.role != 'admin' %}
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('renter.settings') }}">
                                         <i class="bi bi-gear-fill me-2"></i><span data-translate="settings">Settings</span>
                                     </a>
                                 </li>
+                                {% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">

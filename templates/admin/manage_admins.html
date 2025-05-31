@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Quản lý Admin</h2>
+        {% if current_user.is_super_admin %}
+        <a href="{{ url_for('admin.create_admin') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Thêm Admin Mới
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Tên đầy đủ</th>
+                            <th>Phân quyền</th>
+                            <th>Ngày tạo</th>
+                            <th>Đăng nhập cuối</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admin in admins %}
+                        <tr>
+                            <td>{{ admin.username }}</td>
+                            <td>{{ admin.email }}</td>
+                            <td>{{ admin.full_name }}</td>
+                            <td>
+                                {% if admin.is_super_admin %}
+                                <span class="badge" style="background-color: #f39c12;">Super Admin</span>
+                                {% else %}
+                                <span class="badge" style="background-color: #27ae60;">Admin</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ admin.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                {% if admin.last_login %}
+                                {{ admin.last_login.strftime('%d/%m/%Y %H:%M') }}
+                                {% else %}
+                                Chưa đăng nhập
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if current_user.is_super_admin and admin.id != current_user.id %}
+                                <div class="btn-group">
+                                    <a href="{{ url_for('admin.edit_admin', admin_id=admin.id) }}" 
+                                       class="btn btn-sm btn-warning me-2">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-danger"
+                                            onclick="confirmDelete({{ admin.id }})">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa admin này không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(adminId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('deleteForm');
+    form.action = `/admin/delete-admin/${adminId}`;
+    modal.show();
+}
+</script>
+{% endblock %} 
