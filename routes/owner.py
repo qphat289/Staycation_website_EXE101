@@ -1004,3 +1004,31 @@ def manage_rooms(homestay_id):
 
     # Pass the dictionary to the template
     return render_template('owner/manage_rooms.html', homestay=homestay, rooms_by_floor=rooms_by_floor, all_floors=all_floors)
+
+def handle_file_upload(file, folder=""):
+    """Handle file upload using either S3 or local storage"""
+    if not file or not file.filename:
+        return None
+        
+    if not allowed_file(file.filename):
+        raise ValueError("File type not allowed")
+        
+    filename = secure_filename(file.filename)
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    filename = f"{timestamp}_{filename}"
+    
+    if current_app.config.get('USE_S3'):
+        s3 = S3Handler(
+            aws_access_key_id=current_app.config['AWS_ACCESS_KEY_ID'],
+            aws_secret_access_key=current_app.config['AWS_SECRET_ACCESS_KEY'],
+            region_name=current_app.config['AWS_REGION'],
+            bucket_name=current_app.config['S3_BUCKET']
+        )
+        return s3.upload_file(file, folder)
+    else:
+        # Fallback to local storage
+        upload_path = os.path.join('static', 'uploads', folder) if folder else os.path.join('static', 'uploads')
+        os.makedirs(upload_path, exist_ok=True)
+        filepath = os.path.join(upload_path, filename)
+        file.save(filepath)
+        return os.path.join('uploads', folder, filename) if folder else os.path.join('uploads', filename)

@@ -16,7 +16,17 @@ def allowed_file(filename):
 
 def handle_file_upload(file, folder=""):
     """Handle file upload using either S3 or local storage"""
-    if current_app.config['USE_S3']:
+    if not file or not file.filename:
+        return None
+        
+    if not allowed_file(file.filename):
+        raise ValueError("File type not allowed")
+        
+    filename = secure_filename(file.filename)
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    filename = f"{timestamp}_{filename}"
+    
+    if current_app.config.get('USE_S3'):
         s3 = S3Handler(
             aws_access_key_id=current_app.config['AWS_ACCESS_KEY_ID'],
             aws_secret_access_key=current_app.config['AWS_SECRET_ACCESS_KEY'],
@@ -26,12 +36,11 @@ def handle_file_upload(file, folder=""):
         return s3.upload_file(file, folder)
     else:
         # Fallback to local storage
-        filename = secure_filename(file.filename)
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        filename = f"{timestamp}_{filename}"
-        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        upload_path = os.path.join('static', 'uploads', folder) if folder else os.path.join('static', 'uploads')
+        os.makedirs(upload_path, exist_ok=True)
+        filepath = os.path.join(upload_path, filename)
         file.save(filepath)
-        return f"uploads/{filename}"
+        return os.path.join('uploads', folder, filename) if folder else os.path.join('uploads', filename)
 
 def delete_file(file_path):
     """Delete file from either S3 or local storage"""

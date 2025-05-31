@@ -8,10 +8,17 @@
                  class="img-fluid {{ additional_class }}"
                  style="{{ style }}">
         {% else %}
-            <img src="{{ url_for('static', filename=image_url) }}" 
-                 alt="{{ alt_text }}" 
-                 class="img-fluid {{ additional_class }}"
-                 style="{{ style }}">
+            {% if image_url.startswith('http') %}
+                <img src="{{ image_url }}" 
+                     alt="{{ alt_text }}" 
+                     class="img-fluid {{ additional_class }}"
+                     style="{{ style }}">
+            {% else %}
+                <img src="{{ url_for('static', filename=image_url) if not image_url.startswith('/') else url_for('static', filename=image_url[1:]) }}" 
+                     alt="{{ alt_text }}" 
+                     class="img-fluid {{ additional_class }}"
+                     style="{{ style }}">
+            {% endif %}
         {% endif %}
     {% else %}
         <img src="{{ url_for('static', filename=default_image) }}" 
