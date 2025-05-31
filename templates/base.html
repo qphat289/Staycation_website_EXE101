@@ -227,6 +227,7 @@
     {% endif %}
     
     <!-- Navigation -->
+    {% if not (current_user.is_authenticated and current_user.role == 'admin' and request.endpoint == 'admin.dashboard') %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand fw-bold" href="{{ url_for('home') }}" style="color: #333333;">
@@ -367,6 +368,7 @@
             </div>
         </div>
     </nav>
+    {% endif %}
     
     <!-- Flash messages -->
     <div class="container mt-3">
