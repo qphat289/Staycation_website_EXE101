@@ -33,13 +33,34 @@
                     
                     <div class="admin-status">
                         <div class="status-dot"></div>
+                        {% if current_user.role == 'admin' %}
                         <span class="status-text">Quản trị viên hệ thống</span>
+                        {% elif current_user.role == 'owner' %}
+                        <span class="status-text">Chủ nhà</span>
+                        {% elif current_user.role == 'renter' %}
+                        <span class="status-text">Khách hàng</span>
+                        {% endif %}
                     </div>
 
                     {% if current_user.is_super_admin %}
                     <div class="super-admin-badge">
                         <i class="fas fa-crown me-2"></i>
                         Super Admin
+                    </div>
+                    {% elif current_user.role == 'admin' %}
+                    <div class="admin-badge">
+                        <i class="fas fa-user-shield me-2"></i>
+                        Admin
+                    </div>
+                    {% elif current_user.role == 'owner' %}
+                    <div class="owner-badge">
+                        <i class="fas fa-home me-2"></i>
+                        Chủ nhà
+                    </div>
+                    {% elif current_user.role == 'renter' %}
+                    <div class="renter-badge">
+                        <i class="fas fa-user me-2"></i>
+                        Khách hàng
                     </div>
                     {% endif %}
                 </div>
@@ -444,6 +465,63 @@
     .avatar-section {
         margin-bottom: 1rem !important;
     }
+
+    .admin-badge {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(45deg, #f2de47, #db347f);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 10px auto;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .admin-badge i {
+        color: #f74f4f;
+        text-shadow: 0 0 5px rgba(239, 79, 247, 0.957);
+    }
+
+    .owner-badge {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(45deg, #6f42c1, #8250df);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 10px auto;
+        box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .owner-badge i {
+        color: white;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+
+    .renter-badge {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(45deg, #0dcaf0, #31d2f2);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 10px auto;
+        box-shadow: 0 4px 15px rgba(13, 202, 240, 0.3);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .renter-badge i {
+        color: white;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
     </style>
     
     <script>
@@ -583,19 +661,8 @@
                                 {% set next_min_formatted = xp_formatted %}
                             {% endif %}
                             
-                            {% set progress_class = 'progress-bar ' %}
-                            {% if percentage < 25 %}
-                                {% set progress_class = progress_class ~ ' bg-secondary' %}
-                            {% elif percentage < 50 %}
-                                {% set progress_class = progress_class ~ ' bg-info' %}
-                            {% elif percentage < 75 %}
-                                {% set progress_class = progress_class ~ ' bg-warning' %}
-                            {% else %}
-                                {% set progress_class = progress_class ~ ' bg-success' %}
-                            {% endif %}
-                            <div class="{{ progress_class }}" role="progressbar" style="width: {{ percentage|round(0, 'floor') }}%;">
-                                {{ xp_formatted }} XP
-                            </div>
+                            {% set bg_class = 'bg-success' if percentage >= 75 else 'bg-warning' if percentage >= 50 else 'bg-info' if percentage >= 25 else 'bg-secondary' %}
+                            <div class="progress-bar {{ bg_class }}" role="progressbar" style="width: {{ percentage|round(0, 'floor') }}%">{{ xp_formatted }} XP</div>
                         </div>
                         
                         <!-- Level-up Text -->
