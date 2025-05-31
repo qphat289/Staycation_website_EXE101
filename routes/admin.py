@@ -4,6 +4,7 @@ from models import db, Admin, Owner, Renter, Homestay
 from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -69,9 +70,13 @@ def profile():
             if 'avatar' in request.files:
                 avatar = request.files['avatar']
                 print(f"Received file: {avatar.filename}")
+                print(f"File content type: {avatar.content_type}")
+                print(f"File size: {len(avatar.read())} bytes")
+                avatar.seek(0)  # Reset file pointer after reading
                 
                 if avatar and avatar.filename != '':
                     if not allowed_file(avatar.filename):
+                        print(f"File type not allowed: {avatar.filename}")
                         flash("File type not allowed. Please use: png, jpg, jpeg, gif, or webp", "danger")
                         return redirect(url_for('admin.profile'))
                     
@@ -79,14 +84,18 @@ def profile():
                         # Ensure upload folder exists
                         upload_folder = current_app.config['UPLOAD_FOLDER']
                         print(f"Upload folder path: {upload_folder}")
+                        abs_upload_folder = os.path.abspath(upload_folder)
+                        print(f"Absolute upload folder path: {abs_upload_folder}")
                         
-                        if not os.path.exists(upload_folder):
-                            print(f"Creating upload folder: {upload_folder}")
-                            os.makedirs(upload_folder, exist_ok=True)
+                        if not os.path.exists(abs_upload_folder):
+                            print(f"Creating upload folder: {abs_upload_folder}")
+                            os.makedirs(abs_upload_folder, exist_ok=True)
                         
                         # Generate secure filename and save file
                         filename = secure_filename(avatar.filename)
-                        filepath = os.path.join(upload_folder, filename)
+                        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                        filename = f"{timestamp}_{filename}"
+                        filepath = os.path.join(abs_upload_folder, filename)
                         print(f"Saving file to: {filepath}")
                         
                         # Save file
@@ -99,17 +108,22 @@ def profile():
                         
                         # Delete old avatar if exists
                         if current_user.avatar:
-                            old_avatar_path = os.path.join(upload_folder, current_user.avatar)
+                            old_avatar_path = os.path.join(abs_upload_folder, current_user.avatar)
                             if os.path.exists(old_avatar_path):
                                 os.remove(old_avatar_path)
                                 print(f"Deleted old avatar: {old_avatar_path}")
                         
-                        # Update the avatar field in the admin's profile
+                        # Update the avatar field in the user's profile
                         current_user.avatar = filename
-                        print(f"Updated admin avatar in database: {filename}")
+                        print(f"Updated user avatar in database: {filename}")
+                        
+                        # Commit changes to database
+                        db.session.commit()
+                        flash("Avatar updated successfully!", "success")
                         
                     except Exception as e:
                         print(f"Error during file operations: {str(e)}")
+                        print(f"Current working directory: {os.getcwd()}")
                         flash(f"Error saving avatar: {str(e)}", "danger")
                         return redirect(url_for('admin.profile'))
 

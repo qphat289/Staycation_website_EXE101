@@ -366,13 +366,13 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
                             let type = '{{ category }}';
                             if (type === 'danger') type = 'error';
                             showNotification(type, '{{ message }}');
-                        });
-                    </script>
+                            });
+                        </script>
                 {% endfor %}
             {% endif %}
         {% endwith %}
@@ -532,7 +532,7 @@
             // Set background color based on type
             switch(type) {
                 case 'success':
-                    successDiv.style.background = 'linear-gradient(135deg, rgba(40, 167, 69, 0.95), rgba(40, 167, 69, 0.9))';
+            successDiv.style.background = 'linear-gradient(135deg, rgba(40, 167, 69, 0.95), rgba(40, 167, 69, 0.9))';
                     break;
                 case 'error':
                     successDiv.style.background = 'linear-gradient(135deg, rgba(220, 53, 69, 0.95), rgba(220, 53, 69, 0.9))';
@@ -567,14 +567,14 @@
                     icon = 'bi-bell-fill';
             }
             
-            successDiv.innerHTML = `
-                <div style="display: flex; align-items: center;">
+                successDiv.innerHTML = `
+                    <div style="display: flex; align-items: center;">
                     <i class="bi ${icon} me-2" style="font-size: 18px;"></i>
-                    <div>
+                        <div>
                         ${title ? `<div style="font-weight: 600;">${title}</div>` : ''}
                         <div style="font-size: ${title ? '13px' : '14px'}; opacity: 0.9;">${message}</div>
-                    </div>
-                </div>`;
+                        </div>
+                    </div>`;
             
             // Add to body
             document.body.appendChild(successDiv);

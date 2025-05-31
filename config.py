@@ -20,7 +20,7 @@ class Config:
     FACEBOOK_CALLBACK_URL = os.environ.get('FACEBOOK_CALLBACK_URL', 'http://localhost:5000/auth/facebook/callback')
 
     # Upload folder for homestay images
-    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/uploads')
+    UPLOAD_FOLDER = os.path.join('static', 'uploads')
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
     DEBUG_REVIEW = False
