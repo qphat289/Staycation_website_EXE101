@@ -2,6 +2,8 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block extra_css %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 /* Reset & Base */
 * {
@@ -144,6 +146,7 @@ body {
     margin-left: 280px;
     padding: 1rem 1rem;
     background: #f0f2f5;
+    margin-top: -3.5rem;
 }
 
 /* Page Title */
@@ -169,10 +172,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
     background: #f8f9fa;
-    border-radius: 8px;
+    border-radius: 12px;
     border: 1px solid #e2e8f0;
 }
 
@@ -184,10 +187,10 @@ body {
 .filter-pill {
     display: inline-flex;
     align-items: center;
-    padding: 0.75rem 1.25rem;
+    padding: 8px 16px;
     background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
     color: #64748b;
     text-decoration: none;
     font-size: 0.875rem;
@@ -198,57 +201,58 @@ body {
 .filter-pill:hover {
     border-color: #9ed649;
     color: #9ed649;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.1);
+    text-decoration: none;
 }
 
 .filter-pill.active {
     background: #9ed649;
     border-color: #9ed649;
     color: white;
+    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.2);
 }
 
 .filter-pill .count {
-    margin-left: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 6px;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 600;
 }
 
-/* Search Bar */
-.search-bar {
+.filter-pill:not(.active) .count {
+    background: rgba(100, 116, 139, 0.1);
+}
+
+.filter-pill.active .count {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.search-box {
     display: flex;
     gap: 0.75rem;
 }
 
-.search-input {
-    padding: 0.75rem 1.25rem;
-    width: 300px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    transition: all 0.3s ease;
+.search-box .form-control {
+    border-radius: 20px;
+    border: 1px solid #dee2e6;
+    padding: 8px 16px;
+    min-width: 240px;
 }
 
-.search-input:focus {
-    outline: none;
-    border-color: #9ed649;
-    box-shadow: 0 0 0 3px rgba(158, 214, 73, 0.2);
-}
-
-.search-button {
-    padding: 0.75rem 1.5rem;
+.search-box .btn {
+    border-radius: 20px;
+    padding: 8px 16px;
     background: #9ed649;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    border-color: #9ed649;
 }
 
-.search-button:hover {
+.search-box .btn:hover {
     background: #8ab82f;
+    border-color: #8ab82f;
 }
 
 /* Table Section */
@@ -386,13 +390,371 @@ body {
     background-color: #9ed649;
     border-color: #9ed649;
 }
+
+/* Modal Styles */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+.modal-dialog {
+    max-width: 400px !important;
+    margin: 1.5rem auto !important;
+}
+
+.modal.fade .modal-dialog {
+    transform: translate(0, 0);
+    transition: transform .3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+.modal-content {
+    background-color: #fff !important;
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.modal-header {
+    background-color: #fff !important;
+    border-bottom: none !important;
+    padding: 1rem 1rem 0.5rem !important;
+}
+
+.modal-title {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
+.btn-close {
+    padding: 0.5rem !important;
+    margin: -0.5rem -0.5rem -0.5rem auto !important;
+}
+
+.modal-body {
+    padding: 0.75rem 1rem !important;
+}
+
+.modal-footer {
+    background-color: #fff !important;
+    border-top: none !important;
+    padding: 0.5rem 1rem 1rem !important;
+}
+
+/* Form Styles */
+.form-label {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #4a5568 !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.form-control {
+    height: 38px !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    background-color: #f8fafc !important;
+}
+
+.form-control::placeholder {
+    color: #a0aec0 !important;
+    font-size: 0.875rem !important;
+}
+
+.mb-3 {
+    margin-bottom: 1rem !important;
+}
+
+/* Button Styles */
+.modal .btn {
+    padding: 0.375rem 1rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modal .btn-primary {
+    min-width: 100px !important;
+}
+
+.modal .btn-secondary {
+    min-width: 80px !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 1rem !important;
+        max-width: calc(100% - 2rem) !important;
+    }
+}
+
+.pagination {
+    gap: 0.25rem;
+}
+
+.page-link {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    color: #495057;
+    border-color: #dee2e6;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-link:hover {
+    color: #9ed649;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    transform: translateY(-2px);
+}
+
+.page-item.active .page-link {
+    background-color: #9ed649;
+    border-color: #9ed649;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(158, 214, 73, 0.3);
+}
+
+.page-item.active .page-link:hover {
+    background-color: #8ab82f;
+    border-color: #8ab82f;
+    color: white;
+}
+
+.page-item:not(.active) .page-link:focus {
+    box-shadow: 0 0 0 0.25rem rgba(158, 214, 73, 0.25);
+}
+
+/* Thêm hiệu ứng ripple khi click */
+.page-link::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: radial-gradient(circle, rgba(255,255,255,.7) 0%, rgba(255,255,255,.3) 40%, transparent 70%);
+    transform: scale(0);
+    transition: transform .3s ease-in-out, opacity .3s ease-in-out;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.page-link:active::after {
+    transform: scale(2);
+    opacity: 1;
+    transition: 0s;
+}
+
+/* Thêm animation cho loading state */
+@keyframes fadeInOut {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.page-item.loading .page-link {
+    animation: fadeInOut 1s infinite;
+}
+
+.badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-inactive {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.bg-success {
+    background-color: #9ed649 !important;
+    color: white !important;
+}
+
+/* Pagination Custom Styles */
+.pagination-custom {
+    display: flex;
+    gap: 8px;
+}
+
+.pagination-custom .page-item {
+    margin: 0;
+}
+
+.pagination-custom .page-link {
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    background-color: white;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    font-weight: 500;
+}
+
+.pagination-custom .page-link:hover {
+    transform: translateY(-2px);
+    background-color: #f8f9fa;
+    color: #9ed649;
+    border-color: #9ed649;
+    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.2);
+}
+
+.pagination-custom .page-item.active .page-link {
+    background-color: #9ed649;
+    border-color: #9ed649;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(158, 214, 73, 0.3);
+}
+
+.pagination-custom .page-item:not(.active) .page-link:focus {
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+}
+
+/* Loading Animation */
+@keyframes pulseScale {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+.pagination-custom .page-item.loading .page-link {
+    animation: pulseScale 0.5s infinite;
+    background-color: #f8f9fa;
+}
+
+/* Bootstrap Toast Override */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1060;
+}
+
+.toast {
+    background-color: white;
+    border: none !important;
+    opacity: 1 !important;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.toast.showing {
+    transform: translateX(0);
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.hide {
+    transform: translateX(100%);
+}
+
+.toast.success {
+    border-left: 4px solid #9ed649 !important;
+    box-shadow: 0 4px 12px rgba(158, 214, 73, 0.15);
+}
+
+.toast.error {
+    border-left: 4px solid #dc3545 !important;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+}
+
+.toast-header {
+    background-color: transparent;
+    border-bottom: none;
+    padding: 0.75rem 1rem;
+}
+
+.toast-body {
+    padding: 0.75rem 1rem;
+    color: #64748b;
+}
+
+.toast-icon {
+    font-size: 1.25rem;
+    margin-right: 0.5rem;
+}
+
+.toast.success .toast-icon {
+    color: #9ed649;
+}
+
+.toast.error .toast-icon {
+    color: #dc3545;
+}
+
+.btn-close {
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+/* Custom Animation */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.toast.showing {
+    animation: slideInRight 0.3s ease-in-out forwards;
+}
+
+.toast.hiding {
+    animation: slideOutRight 0.3s ease-in-out forwards;
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="admin-layout">
-    <!-- Sidebar -->
-    <div class="admin-sidebar">
+    <aside class="admin-sidebar">
         <a href="{{ url_for('home') }}" class="admin-brand">
             <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Logo">
             <span>Horin</span>
@@ -405,170 +767,420 @@ body {
                 </a>
             </li>
         </ul>
-    </div>
+    </aside>
 
-    <!-- Main Content -->
-    <div class="admin-main">
-        <h1 class="page-title">Quản lý tài khoản</h1>
-        
+    <main class="admin-main">
         <div class="content-card">
-            <!-- Filters -->
+            <!-- Filter Section -->
             <div class="filter-section">
                 <div class="filter-pills">
-                    <a href="#" class="filter-pill active" data-status="all">
-                        Tất cả <span class="count">4</span>
+                    <a href="{{ url_for('admin.dashboard') }}" 
+                       class="filter-pill {% if not current_filter %}active{% endif %}"
+                       data-status="all">
+                        Tất cả <span class="count">{{ total_count }}</span>
                     </a>
-                    <a href="#" class="filter-pill" data-status="active">
-                        Active <span class="count">3</span>
+                    <a href="{{ url_for('admin.dashboard', status='active') }}" 
+                       class="filter-pill {% if current_filter == 'active' %}active{% endif %}"
+                       data-status="active">
+                        Đang hoạt động <span class="count">{{ active_count }}</span>
                     </a>
-                    <a href="#" class="filter-pill" data-status="inactive">
-                        Inactive <span class="count">1</span>
+                    <a href="{{ url_for('admin.dashboard', status='inactive') }}" 
+                       class="filter-pill {% if current_filter == 'inactive' %}active{% endif %}"
+                       data-status="inactive">
+                        Đã khóa <span class="count">{{ inactive_count }}</span>
                     </a>
                 </div>
-                
-                <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Tìm kiếm...">
-                    <button class="search-button">
-                        <i class="fas fa-search"></i>
-                    </button>
+                <div class="search-box">
+                    <form method="GET" action="{{ url_for('admin.dashboard') }}" class="d-flex">
+                        {% if current_filter %}
+                        <input type="hidden" name="status" value="{{ current_filter }}">
+                        {% endif %}
+                        <input type="text" 
+                               name="search" 
+                               value="{{ search_query }}" 
+                               class="form-control" 
+                               placeholder="Tìm kiếm..."
+                               autocomplete="off">
+                        <button type="submit" class="btn btn-primary ms-2">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
 
             <!-- Table Header -->
             <div class="table-header">
                 <h2 class="table-title">Danh sách tài khoản</h2>
-                <button class="add-button">
+                <button class="add-button" data-bs-toggle="modal" data-bs-target="#addOwnerModal">
                     <i class="fas fa-plus"></i>
                     Thêm tài khoản
                 </button>
             </div>
 
             <!-- Table -->
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Tên</th>
-                        <th>Email</th>
-                        <th>Phone number</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr data-status="active">
-                        <td>Nguyễn Văn An</td>
-                        <td>nguyenvanan@gmail.com</td>
-                        <td>+84 912-345-678</td>
-                        <td>Owner</td>
-                        <td>
-                            <span class="status-badge status-active">Active</span>
-                        </td>
-                        <td>
-                            <button class="action-button">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr data-status="inactive">
-                        <td>Trần Thị Bình</td>
-                        <td>tranthib@gmail.com</td>
-                        <td>+84 923-456-789</td>
-                        <td>Owner</td>
-                        <td>
-                            <span class="status-badge status-inactive">Inactive</span>
-                        </td>
-                        <td>
-                            <button class="action-button">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr data-status="active">
-                        <td>Lê Hoàng Cường</td>
-                        <td>lehoangc@gmail.com</td>
-                        <td>+84 934-567-890</td>
-                        <td>Renter</td>
-                        <td>
-                            <span class="status-badge status-active">Active</span>
-                        </td>
-                        <td>
-                            <button class="action-button">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr data-status="active">
-                        <td>Phạm Thị Dung</td>
-                        <td>phamthid@gmail.com</td>
-                        <td>+84 945-678-901</td>
-                        <td>Admin</td>
-                        <td>
-                            <span class="status-badge status-active">Active</span>
-                        </td>
-                        <td>
-                            <button class="action-button">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Tên</th>
+                            <th>Email</th>
+                            <th>Phone number</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for owner in owners.items %}
+                        <tr data-status="{{ 'active' if owner.is_active else 'inactive' }}">
+                            <td>{{ owner.username }}</td>
+                            <td>{{ owner.email }}</td>
+                            <td>{{ owner.phone }}</td>
+                            <td>Owner</td>
+                            <td>
+                                <span class="badge {% if owner.is_active %}bg-success{% else %}badge-inactive{% endif %}">
+                                    {{ 'ACTIVE' if owner.is_active else 'INACTIVE' }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-link" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">Xem chi tiết</a></li>
+                                        <li><a class="dropdown-item" href="#">Chỉnh sửa</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{{ url_for('admin.toggle_owner_status', owner_id=owner.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="dropdown-item text-{{ 'danger' if owner.is_active else 'success' }}">
+                                                    {{ 'Vô hiệu hóa' if owner.is_active else 'Kích hoạt' }}
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if owners.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.dashboard', page=owners.prev_num, status=current_filter, search=search_query) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in range(1, owners.pages + 1) %}
+                    <li class="page-item {% if page_num == owners.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.dashboard', page=page_num, status=current_filter, search=search_query) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if owners.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.dashboard', page=owners.next_num, status=current_filter, search=search_query) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </main>
+</div>
+
+<!-- Add Owner Modal -->
+<div class="modal fade" id="addOwnerModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addOwnerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addOwnerModalLabel">Thêm tài khoản Owner mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addOwnerForm" autocomplete="off" spellcheck="false">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="username" 
+                               name="username" 
+                               required
+                               autocomplete="off"
+                               autocorrect="off"
+                               autocapitalize="off"
+                               spellcheck="false"
+                               data-form-type="other"
+                               placeholder="Nhập username">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" 
+                               class="form-control" 
+                               id="email" 
+                               name="email" 
+                               required
+                               autocomplete="off"
+                               autocorrect="off"
+                               autocapitalize="off"
+                               spellcheck="false"
+                               data-form-type="other"
+                               placeholder="Nhập email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="password" 
+                               name="password" 
+                               required
+                               autocomplete="new-password"
+                               data-form-type="other"
+                               placeholder="Nhập mật khẩu">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="confirm_password" 
+                               name="confirm_password" 
+                               required
+                               autocomplete="new-password"
+                               data-form-type="other"
+                               placeholder="Xác nhận mật khẩu">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Thêm
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <!-- Success Toast -->
+    <div id="successToast" class="toast success" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-check-circle toast-icon"></i>
+            <strong class="me-auto">Thành công</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Tạo tài khoản owner mới thành công!
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast" class="toast error" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-exclamation-circle toast-icon"></i>
+            <strong class="me-auto">Lỗi</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Đã xảy ra lỗi!
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
+<!-- Bootstrap Dependencies -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý tìm kiếm
-    const searchInput = document.querySelector('.search-input');
-    const searchButton = document.querySelector('.search-button');
+    // Toast Notification System
+    function showToast(type, message) {
+        const toastElement = document.getElementById(type + 'Toast');
+        if (!toastElement) {
+            console.error('Không tìm thấy phần tử toast:', type + 'Toast');
+            return;
+        }
 
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase().trim();
-        const rows = document.querySelectorAll('.data-table tbody tr');
-        
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        // Cập nhật nội dung
+        const toastBody = toastElement.querySelector('.toast-body');
+        if (toastBody) {
+            toastBody.textContent = message;
+        }
+
+        // Khởi tạo toast Bootstrap với animation tùy chỉnh
+        const toast = new bootstrap.Toast(toastElement, {
+            animation: true,
+            autohide: true,
+            delay: 3000
         });
+
+        // Thêm event listeners cho animation
+        toastElement.addEventListener('show.bs.toast', function () {
+            this.classList.add('showing');
+        });
+
+        toastElement.addEventListener('shown.bs.toast', function () {
+            this.classList.remove('showing');
+            this.classList.add('show');
+        });
+
+        toastElement.addEventListener('hide.bs.toast', function () {
+            this.classList.add('hiding');
+            this.classList.remove('show');
+        });
+
+        toastElement.addEventListener('hidden.bs.toast', function () {
+            this.classList.remove('hiding');
+        });
+
+        // Hiển thị toast
+        toast.show();
+    }
+
+    // Khởi tạo các elements
+    const modalElement = document.getElementById('addOwnerModal');
+    const addOwnerForm = document.getElementById('addOwnerForm');
+    const addOwnerModal = new bootstrap.Modal(modalElement, {
+        backdrop: 'static',
+        keyboard: false
     });
 
-    // Xử lý filter
-    const filterPills = document.querySelectorAll('.filter-pill');
-    const tableRows = document.querySelectorAll('.data-table tbody tr');
+    // Xử lý form submit
+    if (addOwnerForm) {
+        addOwnerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Kiểm tra mật khẩu khớp
+            const password = addOwnerForm.querySelector('input[name="password"]').value;
+            const confirmPassword = addOwnerForm.querySelector('input[name="confirm_password"]').value;
+            
+            if (password !== confirmPassword) {
+                showToast('error', 'Mật khẩu xác nhận không khớp!');
+                return;
+            }
+            
+            const formData = {
+                username: addOwnerForm.querySelector('input[name="username"]').value,
+                email: addOwnerForm.querySelector('input[name="email"]').value,
+                password: password
+            };
+            
+            try {
+                const response = await fetch('/admin/add-owner', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showToast('success', 'Tạo tài khoản owner mới thành công!');
+                    addOwnerModal.hide();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 3000);
+                } else {
+                    let errorMessage = 'Đã xảy ra lỗi khi tạo tài khoản';
+                    
+                    // Xử lý các loại lỗi cụ thể
+                    if (result.error === 'Username already exists') {
+                        errorMessage = 'Tên người dùng đã tồn tại';
+                    } else if (result.error === 'Email already exists') {
+                        errorMessage = 'Email đã được sử dụng';
+                    } else if (result.error === 'Invalid email format') {
+                        errorMessage = 'Định dạng email không hợp lệ';
+                    } else if (result.error === 'Password too short') {
+                        errorMessage = 'Mật khẩu quá ngắn';
+                    }
+                    
+                    showToast('error', errorMessage);
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                showToast('error', 'Đã xảy ra lỗi khi tạo tài khoản');
+            }
+        });
+    }
 
+    // Filter handling
+    const filterPills = document.querySelectorAll('.filter-pill');
+    
     filterPills.forEach(pill => {
         pill.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Cập nhật active state cho pills
-            filterPills.forEach(p => p.classList.remove('active'));
-            this.classList.add('active');
+            const status = this.getAttribute('data-status');
             
-            const status = this.dataset.status;
+            // Nếu click vào "Tất cả", chỉ chuyển về trang dashboard
+            if (status === 'all') {
+                window.location.href = '/admin/dashboard';
+                return;
+            }
             
-            // Hiển thị/ẩn các dòng theo status
-            tableRows.forEach(row => {
-                if (status === 'all') {
-                    row.style.display = '';
-                } else {
-                    row.style.display = row.dataset.status === status ? '' : 'none';
-                }
-            });
+            // Nếu click vào filter khác, giữ lại tham số search nếu có
+            const searchInput = document.querySelector('input[name="search"]');
+            const searchQuery = searchInput ? searchInput.value.trim() : '';
+            
+            // Tạo URL mới với các tham số
+            const url = new URL(window.location.origin + '/admin/dashboard');
+            url.searchParams.set('status', status);
+            if (searchQuery) {
+                url.searchParams.set('search', searchQuery);
+            }
+            
+            // Chuyển hướng đến URL mới
+            window.location.href = url.toString();
         });
     });
 
-    // Xử lý action button
-    const actionButtons = document.querySelectorAll('.action-button');
-    actionButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            // Implement action menu
-            console.log('Action clicked');
+    // Search handling
+    const searchForm = document.querySelector('.search-box form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const searchInput = this.querySelector('input[name="search"]');
+            const searchTerm = searchInput ? searchInput.value.trim() : '';
+            const currentFilter = document.querySelector('.filter-pill.active');
+            const currentStatus = currentFilter ? currentFilter.getAttribute('data-status') : null;
+            
+            // Tạo URL mới với các tham số
+            const url = new URL(window.location.origin + '/admin/dashboard');
+            
+            // Thêm tham số search nếu có
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            }
+            
+            // Thêm tham số status nếu đang filter và không phải 'all'
+            if (currentStatus && currentStatus !== 'all') {
+                url.searchParams.set('status', currentStatus);
+            }
+            
+            // Chuyển hướng đến URL mới
+            window.location.href = url.toString();
         });
-    });
+    }
+
+    // Pagination handling - Đã có sẵn trong template Jinja
 });
 </script>
 {% endblock %}

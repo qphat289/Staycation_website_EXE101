@@ -6,6 +6,7 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from functools import wraps
+import uuid
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -20,8 +21,48 @@ def dashboard():
     if not isinstance(current_user, Admin):
         flash("You are not authorized!", "danger")
         return redirect(url_for('auth.login'))
-    owners = Owner.query.all()
-    return render_template('admin/dashboard.html', owners=owners)
+    
+    # Get page number from query string, default to 1
+    page = request.args.get('page', 1, type=int)
+    per_page = 5  # Number of items per page
+    
+    # Get filter parameters
+    status_filter = request.args.get('status', 'all')
+    search_query = request.args.get('search', '')
+    
+    # Base query
+    query = Owner.query
+    
+    # Apply filters
+    if status_filter == 'active':
+        query = query.filter_by(is_active=True)
+    elif status_filter == 'inactive':
+        query = query.filter_by(is_active=False)
+        
+    # Apply search if provided
+    if search_query:
+        search_term = f"%{search_query}%"
+        query = query.filter(
+            (Owner.username.ilike(search_term)) |
+            (Owner.email.ilike(search_term)) |
+            (Owner.phone.ilike(search_term))
+        )
+    
+    # Get paginated results
+    owners = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    # Get counts for filter pills
+    total_count = Owner.query.count()
+    active_count = Owner.query.filter_by(is_active=True).count()
+    inactive_count = Owner.query.filter_by(is_active=False).count()
+    
+    return render_template('admin/dashboard.html',
+                         owners=owners,
+                         total_count=total_count,
+                         active_count=active_count,
+                         inactive_count=inactive_count,
+                         current_filter=status_filter,
+                         search_query=search_query)
 
 @admin_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -383,5 +424,88 @@ def set_super_admin():
         flash('Bạn đã được set làm Super Admin!', 'success')
     else:
         flash('Đã có Super Admin trong hệ thống!', 'warning')
+    
+    return redirect(url_for('admin.dashboard'))
+
+@admin_bp.route('/add-owner', methods=['POST'])
+@login_required
+def add_owner():
+    if not isinstance(current_user, Admin):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.json
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    
+    # Kiểm tra dữ liệu đầu vào
+    if not all([username, email, password]):
+        return jsonify({'error': 'Missing required fields'}), 400
+        
+    # Kiểm tra username và email đã tồn tại chưa
+    if Owner.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already exists'}), 400
+        
+    if Owner.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already exists'}), 400
+    
+    try:
+        # Tạo owner mới
+        new_owner = Owner(
+            username=username,
+            email=email,
+            full_name=username,  # Tạm thời dùng username làm full_name
+            personal_id='temp_' + str(uuid.uuid4())[:8]  # Tạo temporary personal_id
+        )
+        new_owner.set_password(password)
+        
+        db.session.add(new_owner)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Owner created successfully',
+            'owner': {
+                'id': new_owner.id,
+                'username': new_owner.username,
+                'email': new_owner.email
+            }
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/seed-owners')
+@login_required
+def seed_owners():
+    if not isinstance(current_user, Admin):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        from scripts.seed_data import seed_owners
+        seed_owners()
+        return jsonify({'message': 'Đã thêm dữ liệu mẫu thành công!'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/owner/<int:owner_id>/toggle-status', methods=['POST'])
+@login_required
+def toggle_owner_status(owner_id):
+    if not isinstance(current_user, Admin):
+        flash("Bạn không có quyền thực hiện thao tác này!", "danger")
+        return redirect(url_for('auth.login'))
+    
+    owner = Owner.query.get_or_404(owner_id)
+    
+    # Đảo ngược trạng thái hoạt động
+    owner.is_active = not owner.is_active
+    
+    try:
+        db.session.commit()
+        status_message = "Đã kích hoạt" if owner.is_active else "Đã vô hiệu hóa"
+        flash(f"{status_message} tài khoản '{owner.username}' thành công!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Có lỗi xảy ra: {str(e)}", "danger")
     
     return redirect(url_for('admin.dashboard'))
