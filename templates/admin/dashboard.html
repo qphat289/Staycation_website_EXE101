@@ -160,6 +160,7 @@ body {
     border-radius: 12px;
     padding: 1rem;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    overflow: visible !important;
 }
 
 /* Filter Section */
@@ -384,70 +385,52 @@ body {
 }
 
 /* Dropdown Menu Styles */
-.table td:last-child {
-    position: relative !important;
-}
-
-.dropdown {
-    position: static !important;
-}
-
 .dropdown-menu {
+    padding: 0.35rem;
+    min-width: 180px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    background: white;
+    margin-top: 0.5rem;
+    z-index: 1060 !important;
     position: absolute !important;
-    right: 63px !important;
-    min-width: 160px !important;
-    max-width: 160px !important;
-    padding: 0.4rem !important;
-    border: none !important;
-    background: white !important;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1) !important;
-    border-radius: 8px !important;
-    margin: 0 !important;
-    transform: none !important;
-    z-index: 1050 !important;
-}
-
-.dropdown-menu.show {
-    display: block !important;
 }
 
 .dropdown-item {
-    padding: 0.5rem 0.75rem !important;
-    border-radius: 6px !important;
-    transition: all 0.2s !important;
-    font-size: 0.875rem !important;
-    color: #64748b !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    white-space: nowrap !important;
-}
-
-.dropdown-item i {
-    font-size: 0.875rem !important;
-    width: 16px !important;
-    text-align: center !important;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #64748b;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
 }
 
 .dropdown-item:hover {
-    background-color: #f8f9fa !important;
-    color: #2c3e50 !important;
-    transform: translateX(3px) !important;
+    background: #f1f5f9;
+    color: #2c3e50;
 }
 
-.dropdown-item.text-danger:hover {
-    background-color: #fee2e2 !important;
-    color: #dc2626 !important;
-}
-
-.dropdown-item.text-success:hover {
-    background-color: #dcfce7 !important;
-    color: #16a34a !important;
+.dropdown-item i {
+    font-size: 0.875rem;
+    width: 16px;
+    text-align: center;
 }
 
 .dropdown-divider {
-    margin: 0.4rem 0 !important;
-    border-color: #e2e8f0 !important;
+    margin: 0.5rem 0;
+    border-color: #e2e8f0;
+}
+
+.dropdown-item.text-danger:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.dropdown-item.text-success:hover {
+    background: #dcfce7;
+    color: #16a34a;
 }
 
 /* Checkbox */
@@ -966,18 +949,6 @@ td:contains('Chưa cập nhật') {
     font-weight: 500;
 }
 
-/* Card Styles */
-.card {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.card-subtitle {
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
 /* Table Styles in Modal */
 .modal .table {
     margin-bottom: 0;
@@ -1091,6 +1062,28 @@ td:contains('Chưa cập nhật') {
     border-radius: 8px;
     font-size: 0.875rem;
 }
+
+/* Table Container */
+.table-responsive {
+    overflow: visible !important;  /* Không cho phép cuộn */
+}
+
+/* Pagination Container */
+nav[aria-label="Page navigation"] {
+    margin-top: 2rem;
+    position: relative;
+    z-index: 1050;
+}
+
+/* Table Row Position */
+.table > tbody > tr {
+    position: relative;
+}
+
+/* Action Column */
+.table td:last-child {
+    position: relative;
+}
 </style>
 {% endblock %}
 
@@ -1188,11 +1181,10 @@ td:contains('Chưa cập nhật') {
                                 <div class="dropdown">
                                     <button type="button" 
                                             class="action-button" 
-                                            data-bs-toggle="dropdown"
-                                            data-bs-auto-close="outside">
+                                            data-bs-toggle="dropdown">
                                         <i class="fas fa-ellipsis-vertical"></i>
                                     </button>
-                                    <div class="dropdown-menu dropdown-menu-end">
+                                    <div class="dropdown-menu dropdown-menu-end shadow">
                                         <li>
                                             <a class="dropdown-item" href="{{ url_for('admin.owner_detail', owner_id=owner.id) }}">
                                                 <i class="fas fa-eye me-2"></i>
@@ -1639,59 +1631,42 @@ td:contains('Chưa cập nhật') {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý dropdown menu
-    document.querySelectorAll('.action-button').forEach(button => {
-        const dropdown = new bootstrap.Dropdown(button, {
-            autoClose: true
-        });
+    // Lưu trữ dropdown đang mở
+    let currentDropdown = null;
 
+    // Xử lý sự kiện click cho tất cả các nút action
+    document.querySelectorAll('.action-button').forEach(button => {
         button.addEventListener('click', function(e) {
             e.stopPropagation();
-            const dropdownMenu = this.nextElementSibling;
-            const buttonRect = this.getBoundingClientRect();
-            const viewportHeight = window.innerHeight;
-            const menuHeight = dropdownMenu.offsetHeight || 150;
-
-            // Tính toán vị trí
-            if (buttonRect.top + menuHeight > viewportHeight) {
-                dropdownMenu.style.top = 'auto';
-                dropdownMenu.style.bottom = '100%';
-                dropdownMenu.style.marginBottom = '5px';
-            } else {
-                dropdownMenu.style.top = '100%';
-                dropdownMenu.style.bottom = 'auto';
-                dropdownMenu.style.marginTop = '5px';
+            
+            // Đóng dropdown hiện tại nếu đang mở
+            if (currentDropdown && currentDropdown !== this) {
+                const dropdown = bootstrap.Dropdown.getInstance(currentDropdown);
+                if (dropdown) {
+                    dropdown.hide();
+                }
             }
-
-            // Toggle dropdown
-            if (dropdownMenu.classList.contains('show')) {
-                dropdown.hide();
-            } else {
-                // Đóng tất cả các dropdown khác
-                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-                    if (menu !== dropdownMenu) {
-                        bootstrap.Dropdown.getInstance(menu.previousElementSibling)?.hide();
-                    }
-                });
-                dropdown.show();
-            }
+            
+            // Toggle dropdown hiện tại
+            const dropdown = bootstrap.Dropdown.getOrCreateInstance(this);
+            dropdown.toggle();
+            
+            // Cập nhật dropdown hiện tại
+            currentDropdown = this;
         });
     });
 
     // Đóng dropdown khi click ra ngoài
     document.addEventListener('click', function(e) {
-        if (!e.target.matches('.action-button')) {
-            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-                bootstrap.Dropdown.getInstance(menu.previousElementSibling)?.hide();
-            });
+        if (!e.target.closest('.dropdown')) {
+            if (currentDropdown) {
+                const dropdown = bootstrap.Dropdown.getInstance(currentDropdown);
+                if (dropdown) {
+                    dropdown.hide();
+                }
+                currentDropdown = null;
+            }
         }
-    });
-
-    // Đóng dropdown khi scroll
-    document.querySelector('.table-responsive').addEventListener('scroll', function() {
-        document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-            bootstrap.Dropdown.getInstance(menu.previousElementSibling)?.hide();
-        });
     });
 
     // Toast Notification System
