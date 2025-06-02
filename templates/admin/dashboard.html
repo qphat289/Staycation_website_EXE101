@@ -4,6 +4,8 @@
 {% block extra_css %}
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 /* Reset & Base */
 * {
@@ -26,7 +28,7 @@ body {
 
 /* Sidebar */
 .admin-sidebar {
-    width: 280px;
+    width: 250px;
     background: linear-gradient(180deg, #9ed649 0%, #8ab82f 100%);
     min-height: 100vh;
     padding: 1.5rem;
@@ -42,12 +44,12 @@ body {
     align-items: center;
     gap: 0.75rem;
     text-decoration: none;
-    margin-bottom: 3.5rem;
+    margin-bottom: 2.5rem;
     padding: 0.75rem 1rem;
     position: relative;
     background: #f5ece0;
-    margin: -2rem -1.5rem 3.5rem -1.5rem;
-    padding: 2rem 1.5rem 1rem 1.5rem;
+    margin: -1.5rem -1.5rem 2.5rem -1.5rem;
+    padding: 1.5rem;
 }
 
 .admin-brand::after {
@@ -61,12 +63,12 @@ body {
 }
 
 .admin-brand img {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
 }
 
 .admin-brand span {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 600;
     color: #333;
     letter-spacing: 0.5px;
@@ -75,20 +77,22 @@ body {
 /* Sidebar Menu */
 .sidebar-menu {
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .sidebar-menu-item {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .sidebar-menu-link {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
-    padding: 0.875rem 1rem;
+    padding: 0.75rem 1rem;
     color: white;
     text-decoration: none;
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 500;
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.1);
@@ -98,46 +102,37 @@ body {
     overflow: hidden;
 }
 
-.sidebar-menu-link:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
+.sidebar-menu-link i {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+    opacity: 0.9;
+    margin-top: 3px;
+}
+
+.sidebar-menu-link span {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    opacity: 0.9;
+    display: block;
 }
 
 .sidebar-menu-link:hover {
+    background: rgba(255, 255, 255, 0.15);
     transform: translateX(5px);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.sidebar-menu-link:hover:before {
-    transform: translateX(0);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-menu-link.active {
     background: white;
     color: #8ab82f;
     border-color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.sidebar-menu-link i {
-    font-size: 1.25rem;
-    width: 24px;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-}
-
-.sidebar-menu-link span {
-    flex: 1;
-    position: relative;
-    z-index: 1;
+.sidebar-menu-link.active i,
+.sidebar-menu-link.active span {
+    opacity: 1;
 }
 
 /* Main Content */
@@ -187,10 +182,10 @@ body {
 .filter-pill {
     display: inline-flex;
     align-items: center;
-    padding: 8px 16px;
+    padding: 0.35rem 0.75rem;
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 20px;
+    border-radius: 15px;
     color: #64748b;
     text-decoration: none;
     font-size: 0.875rem;
@@ -215,7 +210,7 @@ body {
 
 .filter-pill .count {
     margin-left: 8px;
-    padding: 2px 8px;
+    padding: 0.15rem 0.5rem;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     font-size: 0.75rem;
@@ -241,13 +236,16 @@ body {
     border: 1px solid #dee2e6;
     padding: 8px 16px;
     min-width: 240px;
+    height: 36px;
+    font-size: 0.875rem;
 }
 
 .search-box .btn {
     border-radius: 20px;
-    padding: 8px 16px;
+    padding: 0 1rem;
     background: #9ed649;
     border-color: #9ed649;
+    height: 36px;
 }
 
 .search-box .btn:hover {
@@ -260,15 +258,15 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem;
+    padding: 1rem;
     background: #f8f9fa;
     border-radius: 8px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     border: 1px solid #e2e8f0;
 }
 
 .table-title {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: #2c3e50;
 }
@@ -277,7 +275,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1rem;
     background: #9ed649;
     color: white;
     border: none;
@@ -302,15 +300,15 @@ body {
 
 .data-table th,
 .data-table td {
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1rem;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
+    font-size: 0.875rem;
 }
 
 .data-table th {
-    font-weight: 600;
+    font-weight: 500;
     color: #64748b;
-    font-size: 0.875rem;
     background: #f8f9fa;
 }
 
@@ -343,10 +341,10 @@ body {
 /* Status Badge */
 .status-badge {
     display: inline-block;
-    padding: 0.375rem 1rem;
-    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
 }
 
@@ -360,20 +358,96 @@ body {
     color: #64748b;
 }
 
-/* Action Button */
+/* Action Button Styles */
 .action-button {
-    padding: 0.5rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #64748b;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border: 1px solid #e2e8f0;
     border-radius: 6px;
-    transition: all 0.3s ease;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .action-button:hover {
-    background: #f1f5f9;
+    background: #e2e8f0;
     color: #2c3e50;
+    transform: translateY(-1px);
+}
+
+.action-button i {
+    font-size: 14px;
+}
+
+/* Dropdown Menu Styles */
+.table td:last-child {
+    position: relative !important;
+}
+
+.dropdown {
+    position: static !important;
+}
+
+.dropdown-menu {
+    position: absolute !important;
+    right: 63px !important;
+    min-width: 160px !important;
+    max-width: 160px !important;
+    padding: 0.4rem !important;
+    border: none !important;
+    background: white !important;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1) !important;
+    border-radius: 8px !important;
+    margin: 0 !important;
+    transform: none !important;
+    z-index: 1050 !important;
+}
+
+.dropdown-menu.show {
+    display: block !important;
+}
+
+.dropdown-item {
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 6px !important;
+    transition: all 0.2s !important;
+    font-size: 0.875rem !important;
+    color: #64748b !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    white-space: nowrap !important;
+}
+
+.dropdown-item i {
+    font-size: 0.875rem !important;
+    width: 16px !important;
+    text-align: center !important;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa !important;
+    color: #2c3e50 !important;
+    transform: translateX(3px) !important;
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: #fee2e2 !important;
+    color: #dc2626 !important;
+}
+
+.dropdown-item.text-success:hover {
+    background-color: #dcfce7 !important;
+    color: #16a34a !important;
+}
+
+.dropdown-divider {
+    margin: 0.4rem 0 !important;
+    border-color: #e2e8f0 !important;
 }
 
 /* Checkbox */
@@ -486,11 +560,29 @@ body {
 }
 
 .modal .btn-primary {
+    background-color: #9ed649 !important;
+    border-color: #9ed649 !important;
+    color: white !important;
     min-width: 100px !important;
+    transition: all 0.3s ease !important;
+}
+
+.modal .btn-primary:hover {
+    background-color: #8ab82f !important;
+    border-color: #8ab82f !important;
+    transform: translateY(-1px) !important;
 }
 
 .modal .btn-secondary {
+    background-color: #64748b !important;
+    border-color: #64748b !important;
+    color: white !important;
     min-width: 80px !important;
+}
+
+.modal .btn-secondary:hover {
+    background-color: #475569 !important;
+    border-color: #475569 !important;
 }
 
 /* Responsive Adjustments */
@@ -574,9 +666,9 @@ body {
 
 .badge {
     display: inline-block;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.875rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
     font-weight: 500;
 }
 
@@ -749,6 +841,256 @@ body {
 .toast.hiding {
     animation: slideOutRight 0.3s ease-in-out forwards;
 }
+
+/* Thêm style cho text placeholder */
+td {
+    color: #2c3e50;
+}
+
+td:empty::before,
+td:contains('Chưa cập nhật'),
+td:contains('Chưa cập nhật') {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Dropdown Menu Styles */
+.action-dropdown .btn-link {
+    color: #64748b;
+    padding: 0.5rem;
+    transition: all 0.2s;
+}
+
+.action-dropdown .btn-link:hover {
+    color: #2c3e50;
+    background: #f1f5f9;
+    border-radius: 6px;
+}
+
+.action-dropdown .dropdown-menu {
+    min-width: 160px;
+    padding: 0.5rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.action-dropdown .dropdown-item {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+.action-dropdown .dropdown-item:hover {
+    background-color: #f8fafc;
+    color: #2c3e50;
+}
+
+.action-dropdown .dropdown-item.text-danger:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.action-dropdown .dropdown-item.text-success:hover {
+    background-color: #dcfce7;
+    color: #16a34a;
+}
+
+.action-dropdown .dropdown-divider {
+    margin: 0.5rem 0;
+    border-color: #e2e8f0;
+}
+
+/* Timeline Styles */
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 30px;
+}
+
+.timeline-icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    position: relative;
+}
+
+.timeline-content::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 12px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid #f8f9fa;
+}
+
+/* Tab Styles */
+.nav-tabs .nav-link {
+    color: #64748b;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #2c3e50;
+    background: #f1f5f9;
+}
+
+.nav-tabs .nav-link.active {
+    color: #9ed649;
+    background: #f0f9e6;
+    font-weight: 500;
+}
+
+/* Card Styles */
+.card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.card-subtitle {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Table Styles in Modal */
+.modal .table {
+    margin-bottom: 0;
+}
+
+.modal .table td {
+    padding: 0.75rem 0;
+    vertical-align: middle;
+}
+
+.modal .table-borderless td {
+    border: none;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.35rem 0.75rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+/* Style cho modal xác nhận */
+#deleteConfirmModal .modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+#deleteConfirmModal .modal-body {
+    padding: 2rem;
+}
+
+#deleteConfirmModal .fa-exclamation-circle {
+    color: #ffc107;
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+}
+
+#deleteConfirmModal .btn {
+    padding: 0.5rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#deleteConfirmModal .btn-secondary {
+    background-color: #f1f5f9;
+    border-color: #f1f5f9;
+    color: #64748b;
+}
+
+#deleteConfirmModal .btn-secondary:hover {
+    background-color: #e2e8f0;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+#deleteConfirmModal .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+#deleteConfirmModal .btn-danger:hover {
+    background-color: #bb2d3b;
+    border-color: #bb2d3b;
+    transform: translateY(-1px);
+}
+
+/* Style cho modal toggle status */
+#toggleStatusModal .modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+#toggleStatusModal .modal-body {
+    padding: 2rem;
+}
+
+#toggleStatusModal .form-control {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+}
+
+#toggleStatusModal .form-control:focus {
+    border-color: #9ed649;
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+}
+
+#toggleStatusModal .btn {
+    padding: 0.5rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#toggleStatusModal .btn-primary {
+    background-color: #9ed649;
+    border-color: #9ed649;
+}
+
+#toggleStatusModal .btn-primary:hover {
+    background-color: #8ab82f;
+    border-color: #8ab82f;
+    transform: translateY(-1px);
+}
+
+#toggleStatusModal .alert {
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
 </style>
 {% endblock %}
 
@@ -763,7 +1105,7 @@ body {
             <li class="sidebar-menu-item">
                 <a href="#" class="sidebar-menu-link active">
                     <i class="fas fa-user-plus"></i>
-                    <span>Thêm tài khoản</span>
+                    <span>Thêm tài khoản &<br>Quản lý Owner</span>
                 </a>
             </li>
         </ul>
@@ -822,11 +1164,11 @@ body {
                 <table class="table align-middle">
                     <thead>
                         <tr>
-                            <th>Tên</th>
+                            <th>Tên tài khoản</th>
+                            <th>Họ & tên</th>
                             <th>Email</th>
-                            <th>Phone number</th>
-                            <th>Role</th>
-                            <th>Status</th>
+                            <th>Số điện thoại</th>
+                            <th>Trạng thái</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -834,9 +1176,9 @@ body {
                         {% for owner in owners.items %}
                         <tr data-status="{{ 'active' if owner.is_active else 'inactive' }}">
                             <td>{{ owner.username }}</td>
+                            <td>{{ owner.fullname if owner.fullname else 'Chưa cập nhật' }}</td>
                             <td>{{ owner.email }}</td>
-                            <td>{{ owner.phone }}</td>
-                            <td>Owner</td>
+                            <td>{{ owner.phone if owner.phone else 'Chưa cập nhật' }}</td>
                             <td>
                                 <span class="badge {% if owner.is_active %}bg-success{% else %}badge-inactive{% endif %}">
                                     {{ 'ACTIVE' if owner.is_active else 'INACTIVE' }}
@@ -844,21 +1186,44 @@ body {
                             </td>
                             <td class="text-end">
                                 <div class="dropdown">
-                                    <button class="btn btn-link" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots-vertical"></i>
+                                    <button type="button" 
+                                            class="action-button" 
+                                            data-bs-toggle="dropdown"
+                                            data-bs-auto-close="outside">
+                                        <i class="fas fa-ellipsis-vertical"></i>
                                     </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#">Xem chi tiết</a></li>
-                                        <li><a class="dropdown-item" href="#">Chỉnh sửa</a></li>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ url_for('admin.owner_detail', owner_id=owner.id) }}">
+                                                <i class="fas fa-eye me-2"></i>
+                                                <span>Xem chi tiết</span>
+                                            </a>
+                                        </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <form action="{{ url_for('admin.toggle_owner_status', owner_id=owner.id) }}" method="POST" style="display: inline;">
-                                                <button type="submit" class="dropdown-item text-{{ 'danger' if owner.is_active else 'success' }}">
-                                                    {{ 'Vô hiệu hóa' if owner.is_active else 'Kích hoạt' }}
+                                            <form action="{{ url_for('admin.toggle_owner_status', owner_id=owner.id) }}" 
+                                                  method="POST" 
+                                                  class="d-block">
+                                                <button type="button" 
+                                                        class="dropdown-item text-{{ 'danger' if owner.is_active else 'success' }}"
+                                                        data-action="toggle-status"
+                                                        data-owner-id="{{ owner.id }}">
+                                                    <i class="fas fa-{{ 'ban' if owner.is_active else 'check-circle' }} me-2"></i>
+                                                    <span>{{ 'Vô hiệu hóa' if owner.is_active else 'Kích hoạt' }}</span>
                                                 </button>
                                             </form>
                                         </li>
-                                    </ul>
+                                        <li>
+                                            <form action="{{ url_for('admin.delete_owner', owner_id=owner.id) }}" 
+                                                  method="POST" 
+                                                  class="d-block">
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="fas fa-trash-alt me-2"></i>
+                                                    <span>Xóa tài khoản</span>
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -961,7 +1326,6 @@ body {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Thêm
                     </button>
@@ -998,16 +1362,338 @@ body {
     </div>
 </div>
 
+<!-- Modal Chi tiết Owner -->
+{% for owner in owners.items %}
+<div class="modal fade" id="ownerDetailModal{{ owner.id }}" tabindex="-1" aria-labelledby="ownerDetailModalLabel{{ owner.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ownerDetailModalLabel{{ owner.id }}">
+                    Chi tiết tài khoản Owner
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs mb-4" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#info{{ owner.id }}">
+                            <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#rooms{{ owner.id }}">
+                            <i class="fas fa-home me-2"></i>Danh sách phòng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#activities{{ owner.id }}">
+                            <i class="fas fa-history me-2"></i>Lịch sử hoạt động
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#payments{{ owner.id }}">
+                            <i class="fas fa-money-bill me-2"></i>Lịch sử thanh toán
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Tabs Content -->
+                <div class="tab-content">
+                    <!-- Thông tin cá nhân -->
+                    <div class="tab-pane fade show active" id="info{{ owner.id }}">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-subtitle mb-3 text-muted">Thông tin cơ bản</h6>
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td class="text-muted" width="40%">Username:</td>
+                                                <td>{{ owner.username }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Họ & tên:</td>
+                                                <td>{{ owner.fullname if owner.fullname else 'Chưa cập nhật' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Email:</td>
+                                                <td>{{ owner.email }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Số điện thoại:</td>
+                                                <td>{{ owner.phone if owner.phone else 'Chưa cập nhật' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Ngày tham gia:</td>
+                                                <td>{{ owner.created_at.strftime('%d/%m/%Y') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Trạng thái:</td>
+                                                <td>
+                                                    <span class="badge {% if owner.is_active %}bg-success{% else %}badge-inactive{% endif %}">
+                                                        {{ 'Đang hoạt động' if owner.is_active else 'Đã khóa' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-subtitle mb-3 text-muted">Thông tin bổ sung</h6>
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td class="text-muted" width="40%">Địa chỉ:</td>
+                                                <td>{{ owner.address if owner.address else 'Chưa cập nhật' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Ngân hàng:</td>
+                                                <td>{{ owner.bank_name if owner.bank_name else 'Chưa cập nhật' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Số tài khoản:</td>
+                                                <td>{{ owner.bank_account if owner.bank_account else 'Chưa cập nhật' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Số phòng đã đăng:</td>
+                                                <td>{{ owner.rooms|length if owner.rooms else '0' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Đánh giá trung bình:</td>
+                                                <td>
+                                                    {% if owner.average_rating %}
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-star text-warning me-1"></i>
+                                                        <span>{{ owner.average_rating }}/5</span>
+                                                    </div>
+                                                    {% else %}
+                                                    <span class="text-muted">Chưa có đánh giá</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách phòng -->
+                    <div class="tab-pane fade" id="rooms{{ owner.id }}">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên phòng</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Giá/đêm</th>
+                                        <th>Trạng thái</th>
+                                        <th>Đánh giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for room in owner.rooms %}
+                                    <tr>
+                                        <td>{{ room.name }}</td>
+                                        <td>{{ room.address }}</td>
+                                        <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VNĐ</td>
+                                        <td>
+                                            <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ 'Còn trống' if room.is_available else 'Đã đặt' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-star text-warning me-1"></i>
+                                                <span>{{ room.average_rating|default('Chưa có đánh giá', true) }}</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">Chưa có phòng nào được đăng</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Lịch sử hoạt động -->
+                    <div class="tab-pane fade" id="activities{{ owner.id }}">
+                        <div class="timeline">
+                            {% for activity in owner.activities %}
+                            <div class="timeline-item">
+                                <div class="timeline-icon {% if activity.type == 'room' %}bg-primary{% elif activity.type == 'comment' %}bg-info{% else %}bg-success{% endif %}">
+                                    <i class="fas {% if activity.type == 'room' %}fa-home{% elif activity.type == 'comment' %}fa-comment{% else %}fa-check{% endif %}"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">{{ activity.title }}</h6>
+                                    <p class="mb-0 text-muted">{{ activity.description }}</p>
+                                    <small class="text-muted">{{ activity.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                </div>
+                            </div>
+                            {% else %}
+                            <p class="text-center">Chưa có hoạt động nào</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Lịch sử thanh toán -->
+                    <div class="tab-pane fade" id="payments{{ owner.id }}">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã giao dịch</th>
+                                        <th>Ngày</th>
+                                        <th>Loại</th>
+                                        <th>Số tiền</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in owner.payments %}
+                                    <tr>
+                                        <td>{{ payment.transaction_id }}</td>
+                                        <td>{{ payment.created_at.strftime('%d/%m/%Y') }}</td>
+                                        <td>{{ payment.type }}</td>
+                                        <td>{{ '{:,.0f}'.format(payment.amount|float) }} VNĐ</td>
+                                        <td>
+                                            <span class="badge {% if payment.status == 'success' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ payment.status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">Chưa có giao dịch nào</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal Xác nhận xóa -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <i class="fas fa-exclamation-circle text-warning mb-3" style="font-size: 3rem;"></i>
+                <h5 class="modal-title mb-3" id="deleteConfirmModalLabel">Xác nhận xóa</h5>
+                <p class="mb-4">Bạn có chắc chắn muốn xóa tài khoản này không?</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-danger px-4" id="confirmDeleteBtn">Xóa</button>
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Vô hiệu hóa/Kích hoạt tài khoản -->
+<div class="modal fade" id="toggleStatusModal" tabindex="-1" aria-labelledby="toggleStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div id="deactivateContent">
+                    <i class="fas fa-ban text-danger mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="modal-title mb-3">Vô hiệu hóa tài khoản</h5>
+                    <p class="mb-4">Vui lòng nhập lý do vô hiệu hóa tài khoản này:</p>
+                    <div class="form-group mb-4">
+                        <textarea class="form-control" name="reason" rows="3" placeholder="Ví dụ: Vi phạm điều khoản sử dụng..." required></textarea>
+                    </div>
+                </div>
+                <div id="activateContent" style="display: none;">
+                    <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="modal-title mb-3">Kích hoạt tài khoản</h5>
+                    <p class="mb-4">Lý do tài khoản bị vô hiệu hóa trước đó:</p>
+                    <div class="alert alert-info mb-4" id="previousReason"></div>
+                </div>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-primary px-4" id="confirmToggleBtn">Xác nhận</button>
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <!-- Bootstrap Dependencies -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý dropdown menu
+    document.querySelectorAll('.action-button').forEach(button => {
+        const dropdown = new bootstrap.Dropdown(button, {
+            autoClose: true
+        });
+
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdownMenu = this.nextElementSibling;
+            const buttonRect = this.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const menuHeight = dropdownMenu.offsetHeight || 150;
+
+            // Tính toán vị trí
+            if (buttonRect.top + menuHeight > viewportHeight) {
+                dropdownMenu.style.top = 'auto';
+                dropdownMenu.style.bottom = '100%';
+                dropdownMenu.style.marginBottom = '5px';
+            } else {
+                dropdownMenu.style.top = '100%';
+                dropdownMenu.style.bottom = 'auto';
+                dropdownMenu.style.marginTop = '5px';
+            }
+
+            // Toggle dropdown
+            if (dropdownMenu.classList.contains('show')) {
+                dropdown.hide();
+            } else {
+                // Đóng tất cả các dropdown khác
+                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                    if (menu !== dropdownMenu) {
+                        bootstrap.Dropdown.getInstance(menu.previousElementSibling)?.hide();
+                    }
+                });
+                dropdown.show();
+            }
+        });
+    });
+
+    // Đóng dropdown khi click ra ngoài
+    document.addEventListener('click', function(e) {
+        if (!e.target.matches('.action-button')) {
+            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                bootstrap.Dropdown.getInstance(menu.previousElementSibling)?.hide();
+            });
+        }
+    });
+
+    // Đóng dropdown khi scroll
+    document.querySelector('.table-responsive').addEventListener('scroll', function() {
+        document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+            bootstrap.Dropdown.getInstance(menu.previousElementSibling)?.hide();
+        });
+    });
+
     // Toast Notification System
     function showToast(type, message) {
         const toastElement = document.getElementById(type + 'Toast');
@@ -1181,6 +1867,120 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Pagination handling - Đã có sẵn trong template Jinja
+
+    // Thêm xử lý click cho dropdown items
+    document.querySelectorAll('.action-dropdown .dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (!this.closest('form')) {
+                e.preventDefault();
+                const action = this.getAttribute('data-action');
+                if (action) {
+                    // Xử lý các hành động khác nhau
+                    console.log('Action:', action);
+                }
+            }
+        });
+    });
+
+    let deleteForm;
+    const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    
+    // Khi click vào nút xóa trong dropdown
+    document.querySelectorAll('form[action*="/delete"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            deleteForm = this;
+            deleteConfirmModal.show();
+        });
+    });
+    
+    // Khi click nút xác nhận xóa trong modal
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (deleteForm) {
+            deleteForm.submit();
+        }
+        deleteConfirmModal.hide();
+    });
+
+    // Xử lý toggle status
+    const toggleStatusModal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
+    const deactivateContent = document.getElementById('deactivateContent');
+    const activateContent = document.getElementById('activateContent');
+    const previousReason = document.getElementById('previousReason');
+    const reasonTextarea = document.querySelector('textarea[name="reason"]');
+    let currentForm = null;
+
+    // Khi click vào nút toggle status trong dropdown
+    document.querySelectorAll('button[data-action="toggle-status"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const row = this.closest('tr');
+            const isActive = row.getAttribute('data-status') === 'active';
+            const ownerId = this.getAttribute('data-owner-id');
+            currentForm = this.closest('form');
+
+            // Reset form
+            reasonTextarea.value = '';
+            
+            if (isActive) {
+                // Hiển thị form vô hiệu hóa
+                deactivateContent.style.display = 'block';
+                activateContent.style.display = 'none';
+                reasonTextarea.required = true;
+            } else {
+                // Hiển thị form kích hoạt và lấy lý do trước đó
+                deactivateContent.style.display = 'none';
+                activateContent.style.display = 'block';
+                reasonTextarea.required = false;
+                
+                // Lấy lý do vô hiệu hóa trước đó
+                fetch(`/admin/owner/${ownerId}/reason`)
+                    .then(response => response.json())
+                    .then(data => {
+                        previousReason.textContent = data.reason || 'Không có lý do';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        previousReason.textContent = 'Không thể lấy lý do';
+                    });
+            }
+
+            toggleStatusModal.show();
+        });
+    });
+
+    // Khi click nút xác nhận trong modal
+    document.getElementById('confirmToggleBtn').addEventListener('click', function() {
+        if (currentForm) {
+            const formData = new FormData();
+            formData.append('reason', reasonTextarea.value);
+            
+            fetch(currentForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', data.message);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast('error', data.error || 'Có lỗi xảy ra');
+                }
+                toggleStatusModal.hide();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Có lỗi xảy ra khi xử lý yêu cầu');
+                toggleStatusModal.hide();
+            });
+        }
+    });
 });
 </script>
 {% endblock %}

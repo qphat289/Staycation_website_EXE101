@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+{% block title %}Chi tiết tài khoản Owner{% endblock %}
+
+{% block extra_css %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #9ed649 0%, #8ab82f 100%);
+    min-height: 100vh;
+    padding: 1.5rem;
+    position: fixed;
+    left: 0;
+    top: 0;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    margin-bottom: 2rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.admin-brand img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.admin-brand span {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.admin-main {
+    flex: 1;
+    margin-left: 280px;
+    padding: 2rem;
+    background: #f0f2f5;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #64748b;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.back-button:hover {
+    background: #f8fafc;
+    color: #2c3e50;
+    transform: translateY(-1px);
+}
+
+.nav-tabs {
+    border: none;
+    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-tabs .nav-link:hover {
+    background: #f1f5f9;
+    color: #2c3e50;
+}
+
+.nav-tabs .nav-link.active {
+    background: #9ed649;
+    color: white;
+}
+
+.info-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 1.5rem;
+}
+
+.info-card-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.info-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.info-card-body {
+    padding: 1.25rem;
+}
+
+.info-table {
+    width: 100%;
+}
+
+.info-table td {
+    padding: 0.75rem 0;
+}
+
+.info-table td:first-child {
+    color: #64748b;
+    width: 35%;
+}
+
+.badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.timeline {
+    padding: 1.5rem;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-left: 2px solid #e2e8f0;
+}
+
+.timeline-item:last-child {
+    border-left: none;
+}
+
+.timeline-icon {
+    position: absolute;
+    left: -1rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #9ed649;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.timeline-content {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.timeline-title {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-date {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <a href="{{ url_for('home') }}" class="admin-brand">
+            <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Logo">
+            <span>Horin</span>
+        </a>
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-menu-link">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Quản lý Owner</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="admin-main">
+        <div class="page-header">
+            <h1 class="page-title">Chi tiết tài khoản Owner</h1>
+            <a href="{{ url_for('admin.dashboard') }}" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                <span>Quay lại</span>
+            </a>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#info">
+                    <i class="fas fa-user"></i>
+                    <span>Thông tin cá nhân</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#rooms">
+                    <i class="fas fa-home"></i>
+                    <span>Danh sách phòng</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#activities">
+                    <i class="fas fa-history"></i>
+                    <span>Lịch sử hoạt động</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#payments">
+                    <i class="fas fa-money-bill"></i>
+                    <span>Lịch sử thanh toán</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Tabs Content -->
+        <div class="tab-content">
+            <!-- Thông tin cá nhân -->
+            <div class="tab-pane fade show active" id="info">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <h3 class="info-card-title">Thông tin cơ bản</h3>
+                            </div>
+                            <div class="info-card-body">
+                                <table class="info-table">
+                                    <tr>
+                                        <td>Username:</td>
+                                        <td>{{ owner.username }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Họ & tên:</td>
+                                        <td>{{ owner.fullname if owner.fullname else 'Chưa cập nhật' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Email:</td>
+                                        <td>{{ owner.email }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Số điện thoại:</td>
+                                        <td>{{ owner.phone if owner.phone else 'Chưa cập nhật' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ngày tham gia:</td>
+                                        <td>{{ owner.created_at.strftime('%d/%m/%Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Trạng thái:</td>
+                                        <td>
+                                            <span class="badge {% if owner.is_active %}bg-success{% else %}badge-inactive{% endif %}">
+                                                {{ 'Đang hoạt động' if owner.is_active else 'Đã khóa' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <h3 class="info-card-title">Thông tin bổ sung</h3>
+                            </div>
+                            <div class="info-card-body">
+                                <table class="info-table">
+                                    <tr>
+                                        <td>Địa chỉ:</td>
+                                        <td>{{ owner.address if owner.address else 'Chưa cập nhật' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ngân hàng:</td>
+                                        <td>{{ owner.bank_name if owner.bank_name else 'Chưa cập nhật' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Số tài khoản:</td>
+                                        <td>{{ owner.bank_account if owner.bank_account else 'Chưa cập nhật' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Số phòng đã đăng:</td>
+                                        <td>{{ owner.rooms|length if owner.rooms else '0' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Đánh giá trung bình:</td>
+                                        <td>
+                                            {% if owner.average_rating %}
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-star text-warning me-1"></i>
+                                                <span>{{ owner.average_rating }}/5</span>
+                                            </div>
+                                            {% else %}
+                                            <span class="text-muted">Chưa có đánh giá</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách phòng -->
+            <div class="tab-pane fade" id="rooms">
+                <div class="info-card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tên phòng</th>
+                                    <th>Địa chỉ</th>
+                                    <th>Giá/đêm</th>
+                                    <th>Trạng thái</th>
+                                    <th>Đánh giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for room in owner.rooms %}
+                                <tr>
+                                    <td>{{ room.name }}</td>
+                                    <td>{{ room.address }}</td>
+                                    <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VNĐ</td>
+                                    <td>
+                                        <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ 'Còn trống' if room.is_available else 'Đã đặt' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-star text-warning me-1"></i>
+                                            <span>{{ room.average_rating|default('Chưa có đánh giá', true) }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Chưa có phòng nào được đăng</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lịch sử hoạt động -->
+            <div class="tab-pane fade" id="activities">
+                <div class="info-card">
+                    <div class="timeline">
+                        {% for activity in owner.activities %}
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas {% if activity.type == 'room' %}fa-home{% elif activity.type == 'comment' %}fa-comment{% else %}fa-check{% endif %}"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">{{ activity.title }}</h6>
+                                <p class="mb-1">{{ activity.description }}</p>
+                                <small class="timeline-date">{{ activity.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-center">Chưa có hoạt động nào</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lịch sử thanh toán -->
+            <div class="tab-pane fade" id="payments">
+                <div class="info-card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Mã giao dịch</th>
+                                    <th>Ngày</th>
+                                    <th>Loại</th>
+                                    <th>Số tiền</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in owner.payments %}
+                                <tr>
+                                    <td>{{ payment.transaction_id }}</td>
+                                    <td>{{ payment.created_at.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ payment.type }}</td>
+                                    <td>{{ '{:,.0f}'.format(payment.amount|float) }} VNĐ</td>
+                                    <td>
+                                        <span class="badge {% if payment.status == 'success' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ payment.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Chưa có giao dịch nào</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %} 

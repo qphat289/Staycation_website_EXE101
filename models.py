@@ -81,15 +81,16 @@ class Admin(UserMixin, db.Model):
 class Owner(UserMixin, db.Model):
     __tablename__ = 'owner'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    full_name = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(12))
-    personal_id = db.Column(db.String(12), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    full_name = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
+    personal_id = db.Column(db.String(20))
+    is_active = db.Column(db.Boolean, default=True)
+    reason = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     avatar = db.Column(db.String(200))
-    is_active = db.Column(db.Boolean, default=True)
     # Một owner có nhiều homestays
     homestays = db.relationship('Homestay', backref='owner', lazy=True)
 

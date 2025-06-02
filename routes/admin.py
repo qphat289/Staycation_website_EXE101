@@ -24,7 +24,7 @@ def dashboard():
     
     # Get page number from query string, default to 1
     page = request.args.get('page', 1, type=int)
-    per_page = 5  # Number of items per page
+    per_page = 6  # Thay đổi từ 5 thành 6 user mỗi trang
     
     # Get filter parameters
     status_filter = request.args.get('status', 'all')
@@ -492,20 +492,61 @@ def seed_owners():
 @login_required
 def toggle_owner_status(owner_id):
     if not isinstance(current_user, Admin):
-        flash("Bạn không có quyền thực hiện thao tác này!", "danger")
+        return jsonify({'error': 'Bạn không có quyền thực hiện thao tác này'}), 401
+    
+    owner = Owner.query.get_or_404(owner_id)
+    reason = request.form.get('reason')
+    
+    try:
+        owner.is_active = not owner.is_active
+        if not owner.is_active:  # Nếu vô hiệu hóa
+            if not reason:
+                return jsonify({'error': 'Vui lòng nhập lý do vô hiệu hóa'}), 400
+            owner.reason = reason
+        
+        db.session.commit()
+        message = 'Kích hoạt tài khoản thành công!' if owner.is_active else 'Vô hiệu hóa tài khoản thành công!'
+        return jsonify({
+            'success': True,
+            'message': message
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/owner/<int:owner_id>/reason')
+@login_required
+def get_owner_reason(owner_id):
+    if not isinstance(current_user, Admin):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    owner = Owner.query.get_or_404(owner_id)
+    return jsonify({'reason': owner.reason})
+
+@admin_bp.route('/owner/<int:owner_id>')
+@login_required
+def owner_detail(owner_id):
+    if not isinstance(current_user, Admin):
+        flash("You are not authorized!", "danger")
         return redirect(url_for('auth.login'))
     
     owner = Owner.query.get_or_404(owner_id)
+    return render_template('admin/owner_detail.html', owner=owner)
+
+@admin_bp.route('/owner/<int:owner_id>/delete', methods=['POST'])
+@login_required
+def delete_owner(owner_id):
+    if not isinstance(current_user, Admin):
+        flash("You are not authorized!", "danger")
+        return redirect(url_for('auth.login'))
     
-    # Đảo ngược trạng thái hoạt động
-    owner.is_active = not owner.is_active
-    
+    owner = Owner.query.get_or_404(owner_id)
     try:
+        db.session.delete(owner)
         db.session.commit()
-        status_message = "Đã kích hoạt" if owner.is_active else "Đã vô hiệu hóa"
-        flash(f"{status_message} tài khoản '{owner.username}' thành công!", "success")
+        flash('Tài khoản đã được xóa thành công', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f"Có lỗi xảy ra: {str(e)}", "danger")
+        flash(f'Lỗi khi xóa tài khoản: {str(e)}', 'danger')
     
     return redirect(url_for('admin.dashboard'))
