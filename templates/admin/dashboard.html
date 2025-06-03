@@ -232,12 +232,14 @@ body {
 /* Content Card */
 .content-card {
     background: white;
-    border-radius: 12px;
-    padding: 0.75rem;
+    border-radius: 15px;
+    padding: 1.5rem;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     overflow: hidden !important;
-    margin-top: -1rem;
-    height: calc(100vh - 2rem);
+    margin-top: 0rem;
+    height: calc(100vh - 12rem);
+    display: flex;
+    flex-direction: column;
 }
 
 /* Filter Section */
@@ -245,25 +247,27 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
-    padding: 0.5rem 1rem;
-    background: #f8f9fa;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: #ffffff;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .filter-pills {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
 }
 
 .filter-pill {
     display: inline-flex;
     align-items: center;
-    padding: 0.25rem 0.75rem;
+    padding: 0.4rem 0.75rem;
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 15px;
+    border-radius: 8px;
     color: #64748b;
     text-decoration: none;
     font-size: 0.875rem;
@@ -306,29 +310,40 @@ body {
 
 .search-box {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .search-box .form-control {
-    border-radius: 20px;
-    border: 1px solid #dee2e6;
-    padding: 8px 16px;
-    min-width: 240px;
+    width: 200px;
     height: 36px;
+    padding: 0.4rem 1rem;
     font-size: 0.875rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
 }
 
 .search-box .btn {
-    border-radius: 20px;
-    padding: 0 1rem;
-    background: #9ed649;
-    border-color: #9ed649;
     height: 36px;
+    padding: 0 1rem;
+    border-radius: 8px;
+    background: #8ab82f;
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
 }
 
 .search-box .btn:hover {
-    background: #8ab82f;
-    border-color: #8ab82f;
+    background: #9ed649;
+    transform: translateY(-1px);
+}
+
+.search-box .btn i {
+    font-size: 0.875rem;
 }
 
 /* Table Header */
@@ -338,23 +353,30 @@ body {
     align-items: center;
     padding: 0.75rem 1rem;
     background: #f8f9fa;
-    border-radius: 8px;
-    margin-bottom: 0.75rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
     border: 1px solid #e2e8f0;
 }
 
 .table-title {
-    font-size: 1.3rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 600;
     color: #2c3e50;
+    margin: 0;
 }
 
-.add-button {
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.stats-button {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
     padding: 0.6rem 1.2rem;
-    background: #9ed649;
+    background: #64748b;
     color: white;
     border: none;
     border-radius: 8px;
@@ -364,16 +386,41 @@ body {
     transition: all 0.3s ease;
 }
 
-.add-button:hover {
-    background: #8ab82f;
+.stats-button:hover {
+    background: #475569;
     transform: translateY(-1px);
 }
 
+/* Table Container */
+.table-responsive {
+    flex: 1;
+    overflow-y: auto !important;
+    margin: -1px;
+    padding: 1px;
+}
+
+.table-responsive::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
 /* Table */
-.data-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+.table {
+    margin-bottom: 0;
 }
 
 .data-table th,
@@ -1162,6 +1209,172 @@ nav[aria-label="Page navigation"] {
 .table td:last-child {
     position: relative;
 }
+
+/* Stats Button */
+.stats-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1.2rem;
+    background: #64748b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.stats-button:hover {
+    background: #475569;
+    transform: translateY(-1px);
+}
+
+/* Stats Overview */
+.stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    height: 100%;
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    color: #8bc34a;
+    margin-bottom: 0.5rem;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 0.875rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+/* Chart Card */
+.chart-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.chart-title {
+    font-size: 1rem;
+    color: #1e293b;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Homestay Stats Table */
+.homestay-stats .table th {
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.homestay-stats .table td {
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.rating .fa-star {
+    color: #fbbf24;
+}
+
+/* Modal Customization */
+#statsModal .modal-content {
+    border: none;
+    border-radius: 15px;
+}
+
+#statsModal .modal-header {
+    padding: 1.5rem;
+}
+
+#statsModal .modal-body {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+#statsModal .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Sidebar Menu Link for Stats */
+.sidebar-menu-link[data-bs-toggle="modal"] {
+    background: #ffffff;
+    margin-bottom: 1rem;
+    color: #8ab82f;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-menu-link[data-bs-toggle="modal"]:hover {
+    background: #f8f9fa;
+    transform: translateX(5px);
+    color: #8ab82f;
+}
+
+.sidebar-menu-link[data-bs-toggle="modal"] i {
+    font-size: 1.2rem;
+    margin-top: 0;
+    color: #8ab82f;
+}
+
+.sidebar-menu-link[data-bs-toggle="modal"]:hover i {
+    color: #8ab82f;
+}
+
+.sidebar-menu-link[data-bs-toggle="modal"]:hover i {
+    color: #8ab82f;
+}
+
+.add-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #8ab82f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(138, 184, 47, 0.2);
+}
+
+.add-button:hover {
+    background: #9ed649;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(138, 184, 47, 0.3);
+}
+
+.add-button i {
+    font-size: 1rem;
+}
 </style>
 {% endblock %}
 
@@ -1173,6 +1386,12 @@ nav[aria-label="Page navigation"] {
             <span>Horin</span>
         </a>
         <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link" data-bs-toggle="modal" data-bs-target="#statsModal">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Thống kê</span>
+                </a>
+            </li>
             <li class="sidebar-menu-item">
                 <a href="#" class="sidebar-menu-link active">
                     <i class="fas fa-user-plus"></i>
@@ -1699,6 +1918,193 @@ nav[aria-label="Page navigation"] {
     </div>
 </div>
 
+<!-- Modal Thống kê -->
+<div class="modal fade" id="statsModal" tabindex="-1" aria-labelledby="statsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="statsModalLabel">Thống kê tổng quan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Stats Overview -->
+                <div class="stats-overview mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Số người</span>
+                                    <span class="stat-value">12,400/3004</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Số dư tài khoản</span>
+                                    <span class="stat-value">320 giờ</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-home"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Số đơn thuê</span>
+                                    <span class="stat-value">86 đơn</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Tỷ lệ thuê</span>
+                                    <span class="stat-value">78%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Thời gian</span>
+                                    <span class="stat-value">Theo giờ</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Đánh giá trung bình</span>
+                                    <span class="stat-value">4.5/5.0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="chart-card">
+                            <h6 class="chart-title">Tổng thuế theo giờ</h6>
+                            <canvas id="hourlyTaxChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-card">
+                            <h6 class="chart-title">Tổng thuế qua đêm</h6>
+                            <canvas id="overnightTaxChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Homestay Table -->
+                <div class="homestay-stats">
+                    <h6 class="mb-3">Các homestay nổi bật</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tên</th>
+                                    <th>Hình thức</th>
+                                    <th>Doanh thu tháng</th>
+                                    <th>Số đơn thuê</th>
+                                    <th>Tỷ lệ thuê</th>
+                                    <th>Đánh giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Thới Lai Apartment</td>
+                                    <td>Theo giờ</td>
+                                    <td>4,500,000đ</td>
+                                    <td>25</td>
+                                    <td>83%</td>
+                                    <td>
+                                        <div class="rating">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <span>4.7</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Nordic Signature The View</td>
+                                    <td>Qua đêm</td>
+                                    <td>3,900,000đ</td>
+                                    <td>22</td>
+                                    <td>75%</td>
+                                    <td>
+                                        <div class="rating">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <span>4.5</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>LoveNStay</td>
+                                    <td>Theo giờ</td>
+                                    <td>2,500,000đ</td>
+                                    <td>18</td>
+                                    <td>68%</td>
+                                    <td>
+                                        <div class="rating">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <span>4.2</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>UniNice</td>
+                                    <td>Qua đêm</td>
+                                    <td>1,800,000đ</td>
+                                    <td>15</td>
+                                    <td>65%</td>
+                                    <td>
+                                        <div class="rating">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <span>4.1</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Kimtho Thai Binh</td>
+                                    <td>Theo giờ</td>
+                                    <td>1,500,000đ</td>
+                                    <td>12</td>
+                                    <td>60%</td>
+                                    <td>
+                                        <div class="rating">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <span>4.3</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -1707,6 +2113,7 @@ nav[aria-label="Page navigation"] {
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Lưu trữ dropdown đang mở
@@ -2034,6 +2441,76 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Dữ liệu cho biểu đồ thuế theo giờ
+    const hourlyTaxData = {
+        labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+        datasets: [{
+            label: 'Thuế theo giờ',
+            data: [1000, 1200, 1400, 1300, 1500, 1600, 1700],
+            backgroundColor: 'rgba(139, 195, 74, 0.2)',
+            borderColor: '#8bc34a',
+            borderWidth: 2,
+            tension: 0.4
+        }]
+    };
+
+    // Dữ liệu cho biểu đồ thuế qua đêm
+    const overnightTaxData = {
+        labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+        datasets: [{
+            label: 'Thuế qua đêm',
+            data: [800, 750, 900, 1000, 950, 850, 900],
+            backgroundColor: 'rgba(100, 116, 139, 0.2)',
+            borderColor: '#64748b',
+            borderWidth: 2,
+            tension: 0.4
+        }]
+    };
+
+    // Cấu hình chung cho biểu đồ
+    const chartConfig = {
+        type: 'line',
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    };
+
+    // Khởi tạo biểu đồ
+    const hourlyTaxChart = new Chart(
+        document.getElementById('hourlyTaxChart'),
+        {
+            ...chartConfig,
+            data: hourlyTaxData
+        }
+    );
+
+    const overnightTaxChart = new Chart(
+        document.getElementById('overnightTaxChart'),
+        {
+            ...chartConfig,
+            data: overnightTaxData
+        }
+    );
 });
 </script>
 {% endblock %}

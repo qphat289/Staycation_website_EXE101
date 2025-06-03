@@ -24,7 +24,7 @@ def dashboard():
     
     # Get page number from query string, default to 1
     page = request.args.get('page', 1, type=int)
-    per_page = 6  # Thay đổi từ 5 thành 6 user mỗi trang
+    per_page = 6  # Thay đổi từ 5 thành 7 user mỗi trang
     
     # Get filter parameters
     status_filter = request.args.get('status', 'all')
