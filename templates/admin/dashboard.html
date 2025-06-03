@@ -235,9 +235,8 @@ body {
     border-radius: 15px;
     padding: 1.5rem;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    overflow: hidden !important;
+    /* overflow: hidden !important; */ /* Xóa để dropdown không bị che */
     margin-top: 0rem;
-    height: calc(100vh - 12rem);
     display: flex;
     flex-direction: column;
 }
@@ -393,8 +392,6 @@ body {
 
 /* Table Container */
 .table-responsive {
-    flex: 1;
-    overflow-y: auto !important;
     margin: -1px;
     padding: 1px;
 }
@@ -511,25 +508,15 @@ body {
 
 /* Dropdown Menu Styles */
 .dropdown-menu {
-    padding: 0.35rem;
-    min-width: 180px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    background: white;
-    margin-top: 0.5rem;
-    z-index: 1060 !important;
+    min-width: 140px !important;
+    padding: 0.25rem 0.25rem !important;
+    z-index: 2000 !important;
     position: absolute !important;
 }
 
 .dropdown-item {
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: #64748b;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
+    padding: 0.22rem 0.5rem !important;
+    font-size: 0.95rem !important;
 }
 
 .dropdown-item:hover {
@@ -1476,12 +1463,10 @@ nav[aria-label="Page navigation"] {
                             </td>
                             <td class="text-end">
                                 <div class="dropdown">
-                                    <button type="button" 
-                                            class="action-button" 
-                                            data-bs-toggle="dropdown">
+                                    <button type="button" class="action-button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-ellipsis-vertical"></i>
                                     </button>
-                                    <div class="dropdown-menu dropdown-menu-end shadow">
+                                    <ul class="dropdown-menu dropdown-menu-end shadow">
                                         <li>
                                             <a class="dropdown-item" href="{{ url_for('admin.owner_detail', owner_id=owner.id) }}">
                                                 <i class="fas fa-eye me-2"></i>
@@ -1490,29 +1475,22 @@ nav[aria-label="Page navigation"] {
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <form action="{{ url_for('admin.toggle_owner_status', owner_id=owner.id) }}" 
-                                                  method="POST" 
-                                                  class="d-block">
-                                                <button type="button" 
-                                                        class="dropdown-item text-{{ 'danger' if owner.is_active else 'success' }}"
-                                                        data-action="toggle-status"
-                                                        data-owner-id="{{ owner.id }}">
+                                            <form action="{{ url_for('admin.toggle_owner_status', owner_id=owner.id) }}" method="POST" class="d-block">
+                                                <button type="button" class="dropdown-item text-{{ 'danger' if owner.is_active else 'success' }}" data-action="toggle-status" data-owner-id="{{ owner.id }}">
                                                     <i class="fas fa-{{ 'ban' if owner.is_active else 'check-circle' }} me-2"></i>
                                                     <span>{{ 'Vô hiệu hóa' if owner.is_active else 'Kích hoạt' }}</span>
                                                 </button>
                                             </form>
                                         </li>
                                         <li>
-                                            <form action="{{ url_for('admin.delete_owner', owner_id=owner.id) }}" 
-                                                  method="POST" 
-                                                  class="d-block">
+                                            <form action="{{ url_for('admin.delete_owner', owner_id=owner.id) }}" method="POST" class="d-block">
                                                 <button type="submit" class="dropdown-item text-danger">
                                                     <i class="fas fa-trash-alt me-2"></i>
                                                     <span>Xóa tài khoản</span>
                                                 </button>
                                             </form>
                                         </li>
-                                    </div>
+                                    </ul>
                                 </div>
                             </td>
                         </tr>
@@ -2106,7 +2084,6 @@ nav[aria-label="Page navigation"] {
 </div>
 
 {% endblock %}
-
 {% block extra_js %}
 <!-- Bootstrap Dependencies -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
