@@ -126,17 +126,18 @@ def login():
                     user.can_manage_users = True
                     db.session.commit()
                     flash('Bạn đã được set làm Super Admin!', 'success')
+                
             elif isinstance(user, Owner):
                 session['user_role'] = 'owner'
+                
             elif isinstance(user, Renter):
                 session['user_role'] = 'renter'
                 
-            # Redirect to the appropriate page with success parameter
+            # Redirect to homepage first, then user can choose to go to dashboard
             next_page = request.args.get('next')
             if not next_page or urlparse(next_page).netloc != '':
                 next_page = url_for('home', login_success='1')
             else:
-                # Add login success parameter to the next page URL
                 separator = '&' if '?' in next_page else '?'
                 next_page = next_page + separator + 'login_success=1'
                 

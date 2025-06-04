@@ -663,7 +663,7 @@ def settings():
     return render_template('owner/settings.html')
 
 @owner_bp.route('/profile')
-@login_required
+@owner_required
 def profile():
     return render_template('owner/profile.html')
 

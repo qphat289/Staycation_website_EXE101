@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Thông tin cá nhân
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <!-- Avatar -->
+                            <div class="mb-3">
+                                {% if current_user.avatar %}
+                                    <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" 
+                                         class="rounded-circle" width="150" height="150" alt="Avatar">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
+                                         style="width: 150px; height: 150px; margin: 0 auto;">
+                                        <i class="fas fa-user text-white" style="font-size: 60px;"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-camera me-1"></i>
+                                Thay đổi ảnh
+                            </button>
+                        </div>
+                        <div class="col-md-8">
+                            <!-- Personal Information -->
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Tên đăng nhập:</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {{ current_user.username }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Họ và tên:</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {{ current_user.full_name or 'Chưa cập nhật' }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Email:</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {{ current_user.email }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Số điện thoại:</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {{ current_user.phone or 'Chưa cập nhật' }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Vai trò:</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    <span class="badge bg-success">Chủ nhà</span>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Trạng thái:</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {% if current_user.is_active %}
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Không hoạt động</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Ngày tham gia:</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {{ current_user.created_at.strftime('%d/%m/%Y') if current_user.created_at else 'Không rõ' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <hr>
+                    <div class="text-center">
+                        <button class="btn btn-primary me-2">
+                            <i class="fas fa-edit me-1"></i>
+                            Chỉnh sửa thông tin
+                        </button>
+                        <button class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-key me-1"></i>
+                            Đổi mật khẩu
+                        </button>
+                        <a href="{{ url_for('owner.dashboard') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Quay lại Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistics Card -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Thống kê hoạt động
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-home text-primary" style="font-size: 2rem;"></i>
+                                    <h4 class="mt-2">{{ current_user.homestays|length }}</h4>
+                                    <p class="text-muted">Homestay</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-bed text-success" style="font-size: 2rem;"></i>
+                                    <h4 class="mt-2">
+                                        {% set total_rooms = 0 %}
+                                        {% for homestay in current_user.homestays %}
+                                            {% set total_rooms = total_rooms + homestay.rooms|length %}
+                                        {% endfor %}
+                                        {{ total_rooms }}
+                                    </h4>
+                                    <p class="text-muted">Phòng</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-calendar-check text-warning" style="font-size: 2rem;"></i>
+                                    <h4 class="mt-2">
+                                        {% set total_bookings = 0 %}
+                                        {% for homestay in current_user.homestays %}
+                                            {% set total_bookings = total_bookings + homestay.bookings|length %}
+                                        {% endfor %}
+                                        {{ total_bookings }}
+                                    </h4>
+                                    <p class="text-muted">Đặt phòng</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-star text-info" style="font-size: 2rem;"></i>
+                                    <h4 class="mt-2">
+                                        {% set total_reviews = 0 %}
+                                        {% for homestay in current_user.homestays %}
+                                            {% set total_reviews = total_reviews + homestay.reviews|length %}
+                                        {% endfor %}
+                                        {{ total_reviews }}
+                                    </h4>
+                                    <p class="text-muted">Đánh giá</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+    
+    .card-header {
+        border-bottom: none;
+    }
+    
+    .badge {
+        font-size: 0.9em;
+    }
+    
+    .rounded-circle {
+        object-fit: cover;
+    }
+</style>
+{% endblock %} 

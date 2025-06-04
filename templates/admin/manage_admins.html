@@ -7,9 +7,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Quản lý Admin</h2>
         {% if current_user.is_super_admin %}
-        <a href="{{ url_for('admin.create_admin') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-2"></i>Thêm Admin Mới
-        </a>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAdminModal">
+            <i class="bi bi-plus-circle me-2"></i>Tạo Admin
+        </button>
         {% endif %}
     </div>
 
@@ -73,6 +73,67 @@
     </div>
 </div>
 
+<!-- Modal Tạo Admin -->
+<div class="modal fade" id="createAdminModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-plus me-2"></i>Tạo Admin
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createAdminForm" autocomplete="off">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username" name="username" required autocomplete="off">
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email" required autocomplete="off">
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label for="full_name" class="form-label">Tên đầy đủ <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="full_name" name="full_name" required autocomplete="off">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <label for="password" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password" required autocomplete="new-password">
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label for="confirm_password" class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required autocomplete="new-password">
+                            </div>
+                            
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" id="is_super_admin" name="is_super_admin">
+                                <label class="form-check-label" for="is_super_admin">
+                                    <strong>Super Admin</strong>
+                                </label>
+                                <small class="text-muted d-block">Super Admin có toàn quyền quản lý hệ thống</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Tạo Admin
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Xác nhận xóa -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
@@ -103,5 +164,76 @@ function confirmDelete(adminId) {
     form.action = `/admin/delete-admin/${adminId}`;
     modal.show();
 }
+
+// Reset form when modal is opened
+document.getElementById('createAdminModal').addEventListener('show.bs.modal', function (event) {
+    // Reset the form completely
+    document.getElementById('createAdminForm').reset();
+    
+    // Clear all input values explicitly
+    document.getElementById('username').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('full_name').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('confirm_password').value = '';
+    document.getElementById('is_super_admin').checked = false;
+    
+    // Remove any validation classes
+    const inputs = document.querySelectorAll('#createAdminForm input');
+    inputs.forEach(input => {
+        input.classList.remove('is-valid', 'is-invalid');
+    });
+});
+
+// Handle create admin form submission
+document.getElementById('createAdminForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        username: formData.get('username'),
+        email: formData.get('email'),
+        full_name: formData.get('full_name'),
+        password: formData.get('password'),
+        confirm_password: formData.get('confirm_password'),
+        is_super_admin: formData.get('is_super_admin') === 'on'
+    };
+    
+    // Validate passwords match
+    if (data.password !== data.confirm_password) {
+        showNotification('error', 'Mật khẩu xác nhận không khớp!');
+        return;
+    }
+    
+    // Send AJAX request
+    fetch('/admin/create-admin-ajax', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('success', data.message);
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createAdminModal'));
+            modal.hide();
+            // Reset form
+            document.getElementById('createAdminForm').reset();
+            // Reload page to show new admin
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showNotification('error', data.message || 'Có lỗi xảy ra!');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('error', 'Có lỗi xảy ra khi tạo admin!');
+    });
+});
 </script>
 {% endblock %} 

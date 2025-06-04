@@ -758,3 +758,62 @@ def delete_owner(owner_id):
         flash(f'Lỗi khi xóa tài khoản: {str(e)}', 'danger')
     
     return redirect(url_for('admin.dashboard'))
+
+@admin_bp.route('/create-admin-ajax', methods=['POST'])
+@login_required
+@super_admin_required
+def create_admin_ajax():
+    try:
+        data = request.get_json()
+        
+        username = data.get('username')
+        email = data.get('email')
+        full_name = data.get('full_name')
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+        is_super_admin = data.get('is_super_admin', False)
+        
+        # Validate required fields
+        if not all([username, email, full_name, password, confirm_password]):
+            return jsonify({'success': False, 'message': 'Vui lòng điền đầy đủ thông tin!'}), 400
+        
+        # Validate password match
+        if password != confirm_password:
+            return jsonify({'success': False, 'message': 'Mật khẩu xác nhận không khớp!'}), 400
+        
+        # Check if username exists
+        if Admin.query.filter_by(username=username).first():
+            return jsonify({'success': False, 'message': 'Username đã tồn tại!'}), 400
+        
+        # Check if email exists
+        if Admin.query.filter_by(email=email).first():
+            return jsonify({'success': False, 'message': 'Email đã được sử dụng!'}), 400
+        
+        # Create new admin
+        new_admin = Admin(
+            username=username,
+            email=email,
+            full_name=full_name,
+            is_super_admin=is_super_admin
+        )
+        
+        # Set admin permissions based on super admin status
+        if is_super_admin:
+            new_admin.can_manage_admins = True
+            new_admin.can_approve_changes = True
+            new_admin.can_view_all_stats = True
+            new_admin.can_manage_users = True
+        
+        new_admin.set_password(password)
+        
+        db.session.add(new_admin)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Tạo admin {username} thành công!'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
