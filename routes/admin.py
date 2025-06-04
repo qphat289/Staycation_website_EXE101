@@ -1,12 +1,14 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
-from models import db, Admin, Owner, Renter, Homestay
+from models import db, Admin, Owner, Renter, Homestay, Booking, Statistics, Review
 from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 import uuid
+import json
+import random
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -24,13 +26,13 @@ def dashboard():
     
     # Get page number from query string, default to 1
     page = request.args.get('page', 1, type=int)
-    per_page = 6  # Thay đổi từ 5 thành 7 user mỗi trang
+    per_page = 6
     
     # Get filter parameters
     status_filter = request.args.get('status', 'all')
     search_query = request.args.get('search', '')
     
-    # Base query
+    # Base query for owners
     query = Owner.query
     
     # Apply filters
@@ -55,6 +57,216 @@ def dashboard():
     total_count = Owner.query.count()
     active_count = Owner.query.filter_by(is_active=True).count()
     inactive_count = Owner.query.filter_by(is_active=False).count()
+
+    # Get or create today's statistics with error handling
+    today = datetime.now().date()
+    stats = None
+    
+    try:
+        stats = Statistics.query.filter_by(date=today).first()
+        
+        # Nếu đã có stats cho hôm nay, cập nhật lại số liệu
+        if stats:
+            # 1. User statistics
+            total_owners = Owner.query.count() or random.randint(5, 15)  # Fake nếu chưa có
+            total_renters = Renter.query.count() or random.randint(20, 50)  # Fake nếu chưa có
+            total_users = total_owners + total_renters
+            
+            # 2. Booking statistics
+            # Lấy tất cả booking đã hoàn thành
+            completed_bookings = Booking.query.filter_by(status='completed').all()
+            
+            if completed_bookings:
+                # Tính tổng số giờ thuê và số lần thuê từ dữ liệu thật
+                total_hours = 0
+                total_bookings = len(completed_bookings)
+                hourly_count = 0
+                overnight_count = 0
+                
+                for booking in completed_bookings:
+                    duration = (booking.end_time - booking.start_time).total_seconds() / 3600
+                    total_hours += duration
+                    
+                    if duration <= 24:
+                        hourly_count += 1
+                    else:
+                        overnight_count += 1
+                        
+                common_type = "Theo giờ" if hourly_count >= overnight_count else "Qua đêm"
+            else:
+                # Fake data nếu chưa có booking
+                total_hours = random.randint(100, 500)
+                total_bookings = random.randint(20, 100)
+                hourly_count = random.randint(10, 50)
+                overnight_count = random.randint(10, 50)
+                common_type = random.choice(["Theo giờ", "Qua đêm"])
+            
+            # 3. Rating statistics
+            avg_rating = db.session.query(func.avg(Review.rating)).scalar()
+            if avg_rating is None:
+                # Fake rating nếu chưa có đánh giá
+                avg_rating = round(random.uniform(4.0, 5.0), 1)
+            
+            # Cập nhật số liệu
+            stats.total_owners = total_owners
+            stats.total_renters = total_renters
+            stats.total_users = total_users
+            stats.total_hours = int(total_hours)
+            stats.total_bookings = total_bookings
+            stats.hourly_bookings = hourly_count
+            stats.overnight_bookings = overnight_count
+            stats.common_type = common_type
+            stats.average_rating = avg_rating
+            
+            # Fake data cho biểu đồ nếu chưa có
+            if not stats.hourly_stats:
+                stats.hourly_stats = json.dumps({
+                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    'data': [random.randint(5, 20) for _ in range(7)]
+                })
+            
+            if not stats.overnight_stats:
+                stats.overnight_stats = json.dumps({
+                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    'data': [random.randint(3, 15) for _ in range(7)]
+                })
+            
+            if not stats.top_homestays:
+                # Fake data cho homestay nổi bật
+                stats.top_homestays = json.dumps([
+                    {
+                        'name': 'Thới Lai Apartment',
+                        'type': 'Theo giờ',
+                        'revenue': random.randint(3000000, 5000000),
+                        'bookings': random.randint(20, 30),
+                        'rate': random.randint(70, 90),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    },
+                    {
+                        'name': 'Nordic Signature The View',
+                        'type': 'Qua đêm',
+                        'revenue': random.randint(2500000, 4000000),
+                        'bookings': random.randint(15, 25),
+                        'rate': random.randint(60, 85),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    },
+                    {
+                        'name': 'LoveNStay',
+                        'type': 'Theo giờ',
+                        'revenue': random.randint(1500000, 2500000),
+                        'bookings': random.randint(10, 20),
+                        'rate': random.randint(50, 75),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    },
+                    {
+                        'name': 'GoNow',
+                        'type': 'Qua đêm',
+                        'revenue': random.randint(1000000, 2000000),
+                        'bookings': random.randint(8, 15),
+                        'rate': random.randint(40, 70),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    },
+                    {
+                        'name': 'Bonita Thái Bình',
+                        'type': 'Theo giờ',
+                        'revenue': random.randint(1000000, 2000000),
+                        'bookings': random.randint(10, 18),
+                        'rate': random.randint(45, 65),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    }
+                ])
+            
+            # Commit changes
+            db.session.commit()
+            print(f"Updated statistics with real/fake data successfully")
+            
+    except Exception as e:
+        print(f"Error querying/updating statistics: {e}")
+        db.session.rollback()
+    
+    if not stats:
+        try:
+            # Tạo thống kê mới với fake data
+            total_owners = Owner.query.count() or random.randint(5, 15)
+            total_renters = Renter.query.count() or random.randint(20, 50)
+            total_users = total_owners + total_renters
+            total_hours = random.randint(100, 500)
+            total_bookings = random.randint(20, 100)
+            hourly_bookings = random.randint(10, 50)
+            overnight_bookings = random.randint(10, 50)
+            common_type = random.choice(["Theo giờ", "Qua đêm"])
+            avg_rating = round(random.uniform(4.0, 5.0), 1)
+            
+            stats = Statistics(
+                date=today,
+                total_users=total_users,
+                total_owners=total_owners,
+                total_renters=total_renters,
+                total_bookings=total_bookings,
+                hourly_bookings=hourly_bookings,
+                overnight_bookings=overnight_bookings,
+                total_hours=total_hours,
+                booking_rate=round(random.uniform(60, 90), 1),
+                common_type=common_type,
+                average_rating=avg_rating,
+                hourly_stats=json.dumps({
+                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    'data': [random.randint(5, 20) for _ in range(7)]
+                }),
+                overnight_stats=json.dumps({
+                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    'data': [random.randint(3, 15) for _ in range(7)]
+                }),
+                top_homestays=json.dumps([
+                    {
+                        'name': 'Thới Lai Apartment',
+                        'type': 'Theo giờ',
+                        'revenue': random.randint(3000000, 5000000),
+                        'bookings': random.randint(20, 30),
+                        'rate': random.randint(70, 90),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    },
+                    {
+                        'name': 'Nordic Signature The View',
+                        'type': 'Qua đêm',
+                        'revenue': random.randint(2500000, 4000000),
+                        'bookings': random.randint(15, 25),
+                        'rate': random.randint(60, 85),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    },
+                    {
+                        'name': 'LoveNStay',
+                        'type': 'Theo giờ',
+                        'revenue': random.randint(1500000, 2500000),
+                        'bookings': random.randint(10, 20),
+                        'rate': random.randint(50, 75),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    },
+                    {
+                        'name': 'GoNow',
+                        'type': 'Qua đêm',
+                        'revenue': random.randint(1000000, 2000000),
+                        'bookings': random.randint(8, 15),
+                        'rate': random.randint(40, 70),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    },
+                    {
+                        'name': 'Bonita Thái Bình',
+                        'type': 'Theo giờ',
+                        'revenue': random.randint(1000000, 2000000),
+                        'bookings': random.randint(10, 18),
+                        'rate': random.randint(45, 65),
+                        'rating': round(random.uniform(4.0, 5.0), 1)
+                    }
+                ])
+            )
+            db.session.add(stats)
+            db.session.commit()
+            print(f"Created new statistics with fake data successfully")
+        except Exception as e:
+            print(f"Error creating statistics: {e}")
+            db.session.rollback()
+            return redirect(url_for('admin.dashboard'))
     
     return render_template('admin/dashboard.html',
                          owners=owners,
@@ -62,7 +274,8 @@ def dashboard():
                          active_count=active_count,
                          inactive_count=inactive_count,
                          current_filter=status_filter,
-                         search_query=search_query)
+                         search_query=search_query,
+                         stats=stats)
 
 @admin_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -196,43 +409,34 @@ def profile():
 @login_required
 def create_owner():
     if not isinstance(current_user, Admin):
-        flash("You are not authorized!", "danger")
-        return redirect(url_for('auth.login'))
-    
+        flash("Unauthorized access", "danger")
+        return redirect(url_for('home'))
+        
     form_data = {}
     
     if request.method == 'POST':
-        full_name   = request.form.get('full_name')
-        username    = request.form.get('username')
-        email       = request.form.get('email')
-        phone       = request.form.get('phone')
-        personal_id = request.form.get('personal_id')
-        password    = request.form.get('password')
-        confirm_pw  = request.form.get('confirm_password')
+        # Get form data
+        full_name = request.form.get('full_name')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        password = request.form.get('password')
         
-        # Lưu dữ liệu đã nhập vào form_data
+        # Store form data for repopulating the form
         form_data = {
             'full_name': full_name,
             'username': username,
             'email': email,
-            'phone': phone,
-            'personal_id': personal_id
+            'phone': phone
         }
         
-        # Kiểm tra tất cả các trường bắt buộc
-        if not all([full_name, username, email, phone, personal_id, password, confirm_pw]):
-            flash("All required fields must be filled!", "danger")
+        # Validate required fields
+        if not all([full_name, username, email, phone, password]):
+            flash("All fields are required", "danger")
             return render_template('admin/create_owner.html', form_data=form_data)
         
-        # Kiểm tra mật khẩu khớp
-        if password != confirm_pw:
-            flash("Passwords do not match", "danger")
-            return render_template('admin/create_owner.html', form_data=form_data)
-        
-        # Kiểm tra trùng lặp trên toàn hệ thống
-        if (Admin.query.filter_by(username=username).first() or 
-            Owner.query.filter_by(username=username).first() or 
-            Renter.query.filter_by(username=username).first()):
+        # Check if username exists
+        if Owner.query.filter_by(username=username).first():
             flash("Username already exists", "danger")
             return render_template('admin/create_owner.html', form_data=form_data)
         
@@ -247,18 +451,12 @@ def create_owner():
             flash("Phone number already exists", "danger")
             return render_template('admin/create_owner.html', form_data=form_data)
         
-        if (Owner.query.filter_by(personal_id=personal_id).first() or 
-            Renter.query.filter_by(personal_id=personal_id).first()):
-            flash("Personal ID already exists", "danger")
-            return render_template('admin/create_owner.html', form_data=form_data)
-        
         try:
             new_owner = Owner(
                 full_name=full_name,
                 username=username,
                 email=email,
-                phone=phone,
-                personal_id=personal_id
+                phone=phone
             )
             new_owner.set_password(password)
             db.session.add(new_owner)
@@ -431,31 +629,41 @@ def set_super_admin():
 @login_required
 def add_owner():
     if not isinstance(current_user, Admin):
-        return jsonify({'error': 'Unauthorized'}), 401
+        return jsonify({'error': 'Bạn không có quyền thực hiện thao tác này'}), 401
     
     data = request.json
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
+    confirm_password = data.get('confirm_password')
     
     # Kiểm tra dữ liệu đầu vào
-    if not all([username, email, password]):
-        return jsonify({'error': 'Missing required fields'}), 400
+    if not username:
+        return jsonify({'error': 'Vui lòng nhập tên đăng nhập'}), 400
+    if not email:
+        return jsonify({'error': 'Vui lòng nhập email'}), 400
+    if not password:
+        return jsonify({'error': 'Vui lòng nhập mật khẩu'}), 400
+    if not confirm_password:
+        return jsonify({'error': 'Vui lòng xác nhận mật khẩu'}), 400
+    
+    # Kiểm tra mật khẩu khớp nhau
+    if password != confirm_password:
+        return jsonify({'error': 'Mật khẩu xác nhận không khớp'}), 400
         
     # Kiểm tra username và email đã tồn tại chưa
     if Owner.query.filter_by(username=username).first():
-        return jsonify({'error': 'Username already exists'}), 400
+        return jsonify({'error': 'Tên đăng nhập đã tồn tại'}), 400
         
     if Owner.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email already exists'}), 400
+        return jsonify({'error': 'Email đã được sử dụng'}), 400
     
     try:
         # Tạo owner mới
         new_owner = Owner(
             username=username,
             email=email,
-            full_name=username,  # Tạm thời dùng username làm full_name
-            personal_id='temp_' + str(uuid.uuid4())[:8]  # Tạo temporary personal_id
+            full_name=username  # Tạm thời dùng username làm full_name
         )
         new_owner.set_password(password)
         
@@ -463,7 +671,7 @@ def add_owner():
         db.session.commit()
         
         return jsonify({
-            'message': 'Owner created successfully',
+            'message': 'Tạo tài khoản owner thành công',
             'owner': {
                 'id': new_owner.id,
                 'username': new_owner.username,
@@ -473,7 +681,7 @@ def add_owner():
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Lỗi khi tạo tài khoản: {str(e)}'}), 500
 
 @admin_bp.route('/seed-owners')
 @login_required

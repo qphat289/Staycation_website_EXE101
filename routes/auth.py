@@ -9,84 +9,78 @@ from flask import current_app
 from urllib.parse import urlencode
 import secrets
 from urllib.parse import urlparse
+from sqlalchemy.exc import IntegrityError
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    # Nếu đã đăng nhập thì về trang home
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-
-    # Tạo sẵn một dict rỗng
+    # Initialize empty form_data
     form_data = {}
-
+    
     if request.method == 'POST':
-        full_name   = request.form.get('full_name')
-        username    = request.form.get('username')
-        email       = request.form.get('email')
-        phone       = request.form.get('phone')
-        personal_id = request.form.get('personal_id')
-        password    = request.form.get('password')
-        confirm_pw  = request.form.get('confirm_password')
-
-        # Gán lại vào form_data để nếu lỗi thì template giữ nguyên
+        # Get form data
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # Store form data for repopulating the form
         form_data = {
-            'full_name': full_name,
+            'first_name': first_name,
+            'last_name': last_name,
             'username': username,
             'email': email,
-            'phone': phone,
-            'personal_id': personal_id,
+            'phone': phone
         }
-
-        # Kiểm tra trường trống
-        if not all([full_name, username, email, phone, personal_id, password, confirm_pw]):
-            flash("All fields are required", "danger")
+        
+        # Validate required fields
+        if not all([first_name, last_name, username, email, phone, password, confirm_password]):
+            flash('Vui lòng điền đầy đủ thông tin bắt buộc', 'danger')
             return render_template('auth/register.html', form_data=form_data)
-
-        # Kiểm tra khớp password
-        if password != confirm_pw:
-            flash("Passwords do not match", "danger")
+        
+        # Validate password match
+        if password != confirm_password:
+            flash('Mật khẩu xác nhận không khớp', 'danger')
             return render_template('auth/register.html', form_data=form_data)
-
-        # Kiểm tra tính duy nhất username, email, phone, personal_id
-        if (Admin.query.filter_by(username=username).first() or
-            Owner.query.filter_by(username=username).first() or
-            Renter.query.filter_by(username=username).first()):
-            flash("Username already exists", "danger")
+        
+        # Check if username exists
+        if Renter.query.filter_by(username=username).first():
+            flash('Tên đăng nhập đã tồn tại', 'danger')
             return render_template('auth/register.html', form_data=form_data)
-
-        if (Admin.query.filter_by(email=email).first() or
-            Owner.query.filter_by(email=email).first() or
-            Renter.query.filter_by(email=email).first()):
-            flash("Email already exists", "danger")
+        
+        # Check if email exists
+        if Renter.query.filter_by(email=email).first():
+            flash('Email đã được sử dụng', 'danger')
             return render_template('auth/register.html', form_data=form_data)
-
-        if (Owner.query.filter_by(phone=phone).first() or
-            Renter.query.filter_by(phone=phone).first()):
-            flash("Phone number already exists", "danger")
+        
+        # Check if phone exists
+        if phone and Renter.query.filter_by(phone=phone).first():
+            flash('Số điện thoại đã được sử dụng', 'danger')
             return render_template('auth/register.html', form_data=form_data)
-
-        if (Owner.query.filter_by(personal_id=personal_id).first() or
-            Renter.query.filter_by(personal_id=personal_id).first()):
-            flash("Personal ID already exists", "danger")
-            return render_template('auth/register.html', form_data=form_data)
-
-        # Tạo tài khoản Renter
+        
+        # Create new renter
         new_renter = Renter(
             username=username,
             email=email,
-            full_name=full_name,
             phone=phone,
-            personal_id=personal_id
+            full_name=f"{first_name} {last_name}"
         )
         new_renter.set_password(password)
-        db.session.add(new_renter)
-        db.session.commit()
-
-        flash("Registration successful! Please log in.", "success")
-        return redirect(url_for('auth.login'))
-
-    # Nếu là GET, chưa có gì -> form_data rỗng
+        
+        try:
+            db.session.add(new_renter)
+            db.session.commit()
+            flash('Đăng ký thành công! Vui lòng đăng nhập.', 'success')
+            return redirect(url_for('auth.login'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Có lỗi xảy ra. Vui lòng thử lại.', 'danger')
+            return render_template('auth/register.html', form_data=form_data)
+    
+    # GET request - render form with empty form_data
     return render_template('auth/register.html', form_data=form_data)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -120,11 +114,21 @@ def login():
             login_user(user)
             
             # Set the user role in session
-            if admin:
+            if isinstance(user, Admin):
                 session['user_role'] = 'admin'
-            elif owner:
+                # Kiểm tra và set super admin nếu chưa có super admin nào
+                existing_super_admin = Admin.query.filter_by(is_super_admin=True).first()
+                if not existing_super_admin:
+                    user.is_super_admin = True
+                    user.can_manage_admins = True
+                    user.can_approve_changes = True
+                    user.can_view_all_stats = True
+                    user.can_manage_users = True
+                    db.session.commit()
+                    flash('Bạn đã được set làm Super Admin!', 'success')
+            elif isinstance(user, Owner):
                 session['user_role'] = 'owner'
-            elif renter:
+            elif isinstance(user, Renter):
                 session['user_role'] = 'renter'
                 
             # Redirect to the appropriate page with success parameter

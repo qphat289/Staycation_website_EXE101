@@ -33,26 +33,13 @@
              value="{{ form_data.phone|default('') }}">
     </div>
     
-    <!-- Personal ID -->
-    <div class="mb-3">
-      <label for="personal_id" class="form-label" data-translate="personal-id">Personal ID</label>
-      <input type="text" name="personal_id" id="personal_id" class="form-control" required
-             value="{{ form_data.personal_id|default('') }}">
-    </div>
-    
     <!-- Password -->
     <div class="mb-3">
       <label for="password" class="form-label" data-translate="password">Password</label>
-      <input type="password" name="password" id="password" class="form-control" required autocomplete="new-password">
+      <input type="password" name="password" id="password" class="form-control" required>
     </div>
     
-    <!-- Confirm Password -->
-    <div class="mb-3">
-      <label for="confirm_password" class="form-label" data-translate="confirm-password">Confirm Password</label>
-      <input type="password" name="confirm_password" id="confirm_password" class="form-control" required autocomplete="new-password">
-    </div>
-    
-    <button type="submit" class="btn btn-primary w-100" data-translate="create-owner">Create Owner</button>
+    <button type="submit" class="btn btn-primary" data-translate="create">Create</button>
   </form>
 </div>
 {% endblock %}

@@ -147,7 +147,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register:ho
                      id="first_name" 
                      class="form-control" 
                      required
-                     value="{{ form_data.first_name|default('') }}"
+                     value="{{ form_data.get('first_name', '') }}"
                      placeholder=""
               >
             </div>
@@ -160,7 +160,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register:ho
                      id="last_name" 
                      class="form-control" 
                      required
-                     value="{{ form_data.last_name|default('') }}"
+                     value="{{ form_data.get('last_name', '') }}"
                      placeholder=""
               >
             </div>
@@ -176,7 +176,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register:ho
                  class="form-control" 
                  required 
                  autocomplete="off"
-                 value="{{ form_data.username|default('') }}"
+                 value="{{ form_data.get('username', '') }}"
                  placeholder=""
           >
         </div>
@@ -189,7 +189,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register:ho
                  id="email" 
                  class="form-control" 
                  required
-                 value="{{ form_data.email|default('') }}"
+                 value="{{ form_data.get('email', '') }}"
                  placeholder=""
           >
         </div>
@@ -202,20 +202,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .auth-link.register:ho
                  id="phone" 
                  class="form-control" 
                  required
-                 value="{{ form_data.phone|default('') }}"
-                 placeholder=""
-          >
-        </div>
-        
-        <!-- CCCD/CMND -->
-        <div class="form-group">
-          <label for="personal_id" class="form-label">CCCD/CMND*</label>
-          <input type="text" 
-                 name="personal_id" 
-                 id="personal_id" 
-                 class="form-control" 
-                 required
-                 value="{{ form_data.personal_id|default('') }}"
+                 value="{{ form_data.get('phone', '') }}"
                  placeholder=""
           >
         </div>

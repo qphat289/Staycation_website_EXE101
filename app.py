@@ -4,9 +4,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
 from config import Config
-from models import db, Admin, Owner, Renter, Homestay
+from models import db, Admin, Owner, Renter, Homestay, Statistics
 from utils import get_rank_info
 from dotenv import load_dotenv
+import json
+from datetime import datetime, timedelta
 
 # Load environment variables from .env file for google login
 load_dotenv()
@@ -15,14 +17,25 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Initialize database, migrations, login manager
+    # Initialize database and login manager
     db.init_app(app)
     migrate = Migrate(app, db)
     login_manager = LoginManager(app)
     login_manager.login_view = 'auth.login'
     app.jinja_env.filters['rank_info'] = get_rank_info
 
-    # The force_https function has been removed to prevent redirect loops
+    # Add custom filter
+    @app.template_filter('from_json')
+    def from_json_filter(value):
+        try:
+            if value is None or value == '':
+                return []
+            if isinstance(value, str):
+                return json.loads(value)
+            return value  # If already parsed
+        except (json.JSONDecodeError, TypeError, AttributeError) as e:
+            print(f"Error parsing JSON in template filter: {e}, value: {value}")
+            return []
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -52,6 +65,39 @@ def create_app():
             print("Default admin user created with username='admin', password='123'")
             print("Please login and update the admin information immediately!")
 
+        # Create initial statistics if not exist
+        today = datetime.now().date()
+        try:
+            stats = Statistics.query.filter_by(date=today).first()
+            if not stats:
+                stats = Statistics(
+                    date=today,
+                    total_users=0,
+                    total_owners=0,
+                    total_renters=0,
+                    total_bookings=0,
+                    hourly_bookings=0,
+                    overnight_bookings=0,
+                    total_hours=0,
+                    booking_rate=0,
+                    common_type="Theo giờ",
+                    average_rating=0,
+                    hourly_stats=json.dumps({
+                        'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                        'data': [0, 0, 0, 0, 0, 0, 0]
+                    }),
+                    overnight_stats=json.dumps({
+                        'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                        'data': [0, 0, 0, 0, 0, 0, 0]
+                    }),
+                    top_homestays=json.dumps([])
+                )
+                db.session.add(stats)
+                db.session.commit()
+                print("Initial statistics created.")
+        except Exception as e:
+            print(f"Error creating statistics: {e}")
+
     # Import and register blueprints
     from routes.auth import auth_bp
     from routes.owner import owner_bp
@@ -68,7 +114,7 @@ def create_app():
     # Home route
     @app.route('/')
     def home():
-        # Nếu người dùng đã đăng nhập và là owner thì hiển thị homestay của họ
+        # If user is logged in and is owner, show their homestays
         if current_user.is_authenticated and current_user.is_owner():
             homestays = Homestay.query.filter_by(owner_id=current_user.id).all()
             return render_template('home.html', homestays=homestays)

@@ -2,6 +2,7 @@ from flask_login import UserMixin
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
+import json
 
 db = SQLAlchemy()
 
@@ -80,97 +81,77 @@ class Admin(UserMixin, db.Model):
 
 class Owner(UserMixin, db.Model):
     __tablename__ = 'owner'
+    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     full_name = db.Column(db.String(100))
     phone = db.Column(db.String(20))
-    personal_id = db.Column(db.String(20))
-    is_active = db.Column(db.Boolean, default=True)
-    reason = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     avatar = db.Column(db.String(200))
-    # Một owner có nhiều homestays
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
     homestays = db.relationship('Homestay', backref='owner', lazy=True)
-
+    
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
         
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-    
-    @property
-    def role(self):
-        return 'renter' if self.temp_role == 'renter' else 'owner'
-    
-    def is_owner(self):
-        return self.temp_role != 'renter'
-    
-    def is_renter(self):
-        return self.temp_role == 'renter'
         
     @property
-    def display_name(self):
-        return self.username
+    def role(self):
+        return 'owner'
+        
+    def is_owner(self):
+        return True
+        
+    def is_renter(self):
+        return False
         
     def __repr__(self):
         return f'<Owner {self.username}>'
 
 class Renter(UserMixin, db.Model):
     __tablename__ = 'renter'
+    
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    full_name = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(12))
-    personal_id = db.Column(db.String(12), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    experience_points = db.Column(db.Integer, default=0)
+    password_hash = db.Column(db.String(128))
+    full_name = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
     avatar = db.Column(db.String(200))
-    cccd_front_image = db.Column(db.String(200))
-    cccd_back_image = db.Column(db.String(200))
-    temp_role = db.Column(db.String(20))
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    temp_role = db.Column(db.String(20), default='renter')
     
-    # Cài đặt thông báo
-    email_notifications = db.Column(db.Boolean, default=True)
-    booking_reminders = db.Column(db.Boolean, default=True)
+    # Social login fields
+    is_google = db.Column(db.Boolean, default=False)
+    is_facebook = db.Column(db.Boolean, default=False)
+    facebook_id = db.Column(db.String(100), unique=True)
     
-    # Cài đặt quyền riêng tư
-    show_profile = db.Column(db.Boolean, default=True)
-    show_booking_history = db.Column(db.Boolean, default=True)
-        
-    google_id = db.Column(db.String(120), unique=True, nullable=True)
-    google_username = db.Column(db.String(100), unique=False, nullable=True)
-
-    facebook_id = db.Column(db.String(100), unique=True, nullable=True)
-    facebook_username = db.Column(db.String(100), unique=False, nullable=True)
-
-    # Một renter có nhiều booking và reviews
+    # Relationships
     bookings = db.relationship('Booking', backref='renter', lazy=True)
     reviews = db.relationship('Review', backref='renter', lazy=True)
-
+    
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-
-    @property
-    def role(self):
-        return 'owner' if self.temp_role == 'owner' else 'renter'
-    
-    def is_renter(self):
-        return self.temp_role != 'owner'
-    
-    def is_owner(self):
-        return self.temp_role == 'owner'
-    
-    @property
-    def display_name(self):
-        """Return the username for display regardless of login method"""
-        return self.username or self.google_username or self.facebook_username or "User"
-    
+        
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+        
+    @property
+    def role(self):
+        return 'renter'
+        
+    def is_owner(self):
+        return False
+        
+    def is_renter(self):
+        return True
         
     def __repr__(self):
         return f'<Renter {self.username}>'
@@ -293,3 +274,31 @@ class Review(db.Model):
     
     def __repr__(self):
         return f'<Review {self.id} for Homestay {self.homestay.title}>'
+
+class Statistics(db.Model):
+    __tablename__ = 'statistics'
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, nullable=False)  # Ngày thống kê
+    
+    # Thống kê tổng quan
+    total_users = db.Column(db.Integer, default=0)  # Tổng số người dùng (owner + renter)
+    total_owners = db.Column(db.Integer, default=0)  # Số lượng owner
+    total_renters = db.Column(db.Integer, default=0)  # Số lượng renter
+    
+    # Thống kê đặt phòng
+    total_bookings = db.Column(db.Integer, default=0)  # Tổng số lượt đặt
+    hourly_bookings = db.Column(db.Integer, default=0)  # Số lượt đặt theo giờ
+    overnight_bookings = db.Column(db.Integer, default=0)  # Số lượt đặt qua đêm
+    total_hours = db.Column(db.Integer, default=0)  # Tổng số giờ đã thuê
+    
+    # Tỷ lệ và đánh giá
+    booking_rate = db.Column(db.Float, default=0)  # Tỷ lệ đặt phòng thành công
+    common_type = db.Column(db.String(50))  # Hình thức thuê phổ biến
+    average_rating = db.Column(db.Float, default=0)  # Đánh giá trung bình
+    
+    # Thống kê theo thời gian (7 ngày)
+    hourly_stats = db.Column(db.Text)  # Dữ liệu biểu đồ thuê theo giờ
+    overnight_stats = db.Column(db.Text)  # Dữ liệu biểu đồ thuê qua đêm
+    
+    # Thống kê homestay nổi bật
+    top_homestays = db.Column(db.Text)  # Danh sách homestay nổi bật

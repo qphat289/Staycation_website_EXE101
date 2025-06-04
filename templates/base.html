@@ -294,57 +294,25 @@
                                 <span>{{ current_user.username }}</span>
                                 <i class="fas fa-bars ms-2" style="font-size: 14px;"></i>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
-                                <li>
-                                    {% if current_user.role == 'admin' %}
-                                    <a class="dropdown-item" href="{{ url_for('admin.profile') }}">
-                                        <i class="bi bi-person-circle me-2"></i><span data-translate="my-profile">Hồ sơ của tôi</span>
-                                    </a>
-                                    {% if current_user.is_super_admin %}
-                                    <a class="dropdown-item" href="{{ url_for('admin.manage_admins') }}">
-                                        <i class="bi bi-people-fill me-2"></i><span>Quản lý Admin</span>
-                                    </a>
-                                    {% endif %}
-                                    {% else %}
-                                    <a class="dropdown-item" href="{{ url_for('renter.profile') }}">
-                                        <i class="bi bi-person-circle me-2"></i><span data-translate="my-profile">Hồ sơ của tôi</span>
-                                    </a>
-                                    {% endif %}
-                                </li>
-                                {% if current_user.is_owner() %}
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('renter.switch_to_renter') }}">
-                                        <i class="bi bi-arrow-repeat me-2"></i><span data-translate="switch-to-renter">Switch to Renter</span>
-                                    </a>
-                                </li>
-                                {% elif current_user.role == 'renter' %}
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('owner.switch_to_owner') }}">
-                                        <i class="bi bi-arrow-repeat me-2"></i><span data-translate="switch-to-owner">Switch to Owner</span>
-                                    </a>
-                                </li>
-                                {% endif %}
-                                {% if current_user.role != 'admin' %}
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('renter.booking_history') }}">
-                                        <i class="bi bi-clock-history me-2"></i><span data-translate="booking-history">Booking History</span>
-                                    </a>
-                                </li>
-                                {% endif %}
-                                {% if current_user.role != 'admin' %}
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('renter.settings') }}">
-                                        <i class="bi bi-gear-fill me-2"></i><span data-translate="settings">Settings</span>
-                                    </a>
-                                </li>
-                                {% endif %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
-                                        <i class="bi bi-box-arrow-right me-2"></i><span data-translate="logout">Logout</span>
-                                    </a>
-                                </li>
-                            </ul>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="{{ url_for('owner.profile') }}">
+                                    <i class="bi bi-person-circle me-2"></i>
+                                    Hồ sơ của tôi
+                                </a>
+                                <a class="dropdown-item" href="{{ url_for('owner.view_bookings') }}">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    Lịch sử đặt phòng
+                                </a>
+                                <a class="dropdown-item" href="{{ url_for('owner.settings') }}">
+                                    <i class="bi bi-gear me-2"></i>
+                                    Cài đặt
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right me-2"></i>
+                                    Đăng xuất
+                                </a>
+                            </div>
                         </li>
                     {% else %}
                         <li class="nav-item">
