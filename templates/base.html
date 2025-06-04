@@ -45,6 +45,20 @@
             z-index: 1030;
             background-color: var(--bs-primary) !important;
         }
+        
+        /* Căn giữa navbar items */
+        .navbar-collapse {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        
+        .navbar-nav.mx-auto {
+            position: absolute !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            flex-direction: row !important;
+        }
 
         .navbar .nav-link {
             border: 1px solid rgba(51, 51, 51, 0.3);
@@ -230,20 +244,32 @@
     {% if not (current_user.is_authenticated and current_user.role == 'admin' and request.endpoint == 'admin.dashboard') %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}" style="color: #333333;">
-                <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
-                <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Horin</span>
-            </a>
+            {% if current_user.is_authenticated and current_user.is_owner() %}
+                <span class="navbar-brand fw-bold" style="color: #333333;">
+                    <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
+                    <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Horin</span>
+                </span>
+            {% else %}
+                <a class="navbar-brand fw-bold" href="{{ url_for('home') }}" style="color: #333333;">
+                    <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
+                    <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Horin</span>
+                </a>
+            {% endif %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-3">
+                <ul class="navbar-nav mx-auto justify-content-center">
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_owner() %}
                             <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('owner.profile') }}" style="color: #333333;">
+                                    <i class="bi bi-person-circle me-1"></i><span data-translate="profile">Hồ sơ</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('owner.dashboard') }}" style="color: #333333;">
-                                    <i class="bi bi-speedometer2 me-1"></i><span data-translate="owner-dashboard">Owner Dashboard</span>
+                                    <i class="bi bi-speedometer2 me-1"></i><span data-translate="admin">Quản trị viên</span>
                                 </a>
                             </li>
                         {% elif current_user.role == 'renter' %}
@@ -252,9 +278,6 @@
                                     <i class="bi bi-person-workspace me-1"></i><span data-translate="renter-dashboard">Renter Dashboard</span>
                                 </a>
                             </li>
-                        {% endif %}
-                        
-                        {% if current_user.role != 'admin' %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('renter.search') }}" style="color: #333333;">
                                     <i class="bi bi-search me-1"></i><span data-translate="search">Search</span>
@@ -307,10 +330,6 @@
                                         </a>
                                     {% endif %}
                                 {% elif current_user.is_owner() %}
-                                    <a class="dropdown-item" href="{{ url_for('owner.profile') }}">
-                                        <i class="bi bi-person-circle me-2"></i>
-                                        Hồ sơ của tôi
-                                    </a>
                                     <a class="dropdown-item" href="{{ url_for('owner.view_bookings') }}">
                                         <i class="bi bi-clock-history me-2"></i>
                                         Lịch sử đặt phòng
@@ -389,39 +408,6 @@
         {% endblock %}
     </main>
     
-    <!-- Footer -->
-    {% if not (current_user.is_authenticated and current_user.role == 'admin' and request.endpoint != 'home') %}
-    <footer class="bg-light text-center text-lg-start mt-5">
-        <div class="container p-4">
-            <div class="row">
-                <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
-                    <h5 data-translate="about-homestay">About Horin</h5>
-                    <p data-translate="platform-desc">
-                        A platform connecting homestay owners with travelers looking for unique accommodations.
-                    </p>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5 data-translate="links">Links</h5>
-                    <ul class="list-unstyled mb-0">
-                        <li><a href="{{ url_for('home') }}" class="text-dark" data-translate="home">Home</a></li>
-                        <li><a href="{{ url_for('renter.search') }}" class="text-dark" data-translate="search">Search</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5 data-translate="contact">Contact</h5>
-                    <ul class="list-unstyled">
-                        <li><span data-translate="email">Email</span>: contact@example.com</li>
-                        <li><span data-translate="phone">Phone</span>: +1 234 567 8901</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);" data-translate="copyright">
-            © 2025 Horin - School Project
-        </div>
-    </footer>
-    {% endif %}
-    
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -491,17 +477,32 @@
         if (loginSuccess) {
             console.log('Login success detected, showing notification');
             showNotification('success', 'Chúc mừng bạn đăng nhập thành công!');
+            // Remove login_success parameter from URL
+            removeURLParameter('login_success');
         } else if (logoutSuccess) {
             console.log('Logout success detected, showing notification');
             showNotification('success', 'Bạn đã đăng xuất');
+            // Remove logout_success parameter from URL
+            removeURLParameter('logout_success');
         } else if (loginError) {
             console.log('Login error detected, showing notification');
             showNotification('error', 'Tên đăng nhập hoặc mật khẩu không chính xác!');
+            // Remove login_error parameter from URL
+            removeURLParameter('login_error');
         } else if (message === 'Profile updated successfully!') {
             console.log('Profile update success detected, showing notification');
             showNotification('success', 'Thông tin của bạn đã được cập nhật');
         } else {
             console.log('No success/error parameter found');
+        }
+        
+        // Function to remove URL parameter without page reload
+        function removeURLParameter(param) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete(param);
+            // Update URL without reloading the page
+            history.replaceState({}, document.title, url.toString());
+            console.log('Removed parameter:', param, 'New URL:', url.toString());
         }
         
         function showNotification(type, message, title = '') {

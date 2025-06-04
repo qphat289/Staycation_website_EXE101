@@ -1,215 +1,781 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="profile-title" data-translate="my-profile">
                         <i class="fas fa-user-circle me-2"></i>
-                        Thông tin cá nhân
-                    </h4>
+            Hồ Sơ Của Tôi
+        </h2>
+        <div class="title-underline"></div>
                 </div>
-                <div class="card-body">
+    
+    <!-- OWNER LAYOUT: Avatar bên trái, Form bên phải -->
                     <div class="row">
-                        <div class="col-md-4 text-center">
+        <!-- LEFT COLUMN: Avatar Display -->
+        <div class="col-md-4">
+            <div class="owner-profile-card mt-2">
+                <div class="card-body text-center">
                             <!-- Avatar -->
-                            <div class="mb-3">
+                    <div class="avatar-container-owner">
                                 {% if current_user.avatar %}
-                                    <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" 
-                                         class="rounded-circle" width="150" height="150" alt="Avatar">
+                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                                alt="Avatar"
+                                class="avatar-circle-owner">
                                 {% else %}
-                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
-                                         style="width: 150px; height: 150px; margin: 0 auto;">
-                                        <i class="fas fa-user text-white" style="font-size: 60px;"></i>
-                                    </div>
+                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
+                                alt="Avatar"
+                                class="avatar-circle-owner">
                                 {% endif %}
                             </div>
-                            <button class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-camera me-1"></i>
-                                Thay đổi ảnh
-                            </button>
-                        </div>
-                        <div class="col-md-8">
-                            <!-- Personal Information -->
-                            <div class="row mb-3">
-                                <div class="col-sm-4">
-                                    <strong>Tên đăng nhập:</strong>
-                                </div>
-                                <div class="col-sm-8">
-                                    {{ current_user.username }}
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-sm-4">
-                                    <strong>Họ và tên:</strong>
-                                </div>
-                                <div class="col-sm-8">
-                                    {{ current_user.full_name or 'Chưa cập nhật' }}
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-sm-4">
-                                    <strong>Email:</strong>
-                                </div>
-                                <div class="col-sm-8">
-                                    {{ current_user.email }}
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-sm-4">
-                                    <strong>Số điện thoại:</strong>
-                                </div>
-                                <div class="col-sm-8">
-                                    {{ current_user.phone or 'Chưa cập nhật' }}
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-sm-4">
-                                    <strong>Vai trò:</strong>
-                                </div>
-                                <div class="col-sm-8">
-                                    <span class="badge bg-success">Chủ nhà</span>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-sm-4">
-                                    <strong>Trạng thái:</strong>
-                                </div>
-                                <div class="col-sm-8">
-                                    {% if current_user.is_active %}
-                                        <span class="badge bg-success">Hoạt động</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Không hoạt động</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-sm-4">
-                                    <strong>Ngày tham gia:</strong>
-                                </div>
-                                <div class="col-sm-8">
-                                    {{ current_user.created_at.strftime('%d/%m/%Y') if current_user.created_at else 'Không rõ' }}
-                                </div>
-                            </div>
-                        </div>
+                    
+                    <h5 class="owner-name">{{ current_user.username }}</h5>
+                    
+                    <div class="owner-status">
+                        <div class="status-dot"></div>
+                        <span class="status-text">Chủ kinh doanh lưu trú</span>
                     </div>
                     
-                    <!-- Action Buttons -->
-                    <hr>
-                    <div class="text-center">
-                        <button class="btn btn-primary me-2">
-                            <i class="fas fa-edit me-1"></i>
-                            Chỉnh sửa thông tin
-                        </button>
-                        <button class="btn btn-outline-secondary me-2">
-                            <i class="fas fa-key me-1"></i>
-                            Đổi mật khẩu
-                        </button>
-                        <a href="{{ url_for('owner.dashboard') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-arrow-left me-1"></i>
-                            Quay lại Dashboard
-                        </a>
+                    <div class="owner-badge">
+                        <i class="fas fa-home me-2"></i>
+                        Chủ nhà
+                    </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Statistics Card -->
-            <div class="card mt-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        Thống kê hoạt động
-                    </h5>
-                </div>
+        <!-- RIGHT COLUMN: Owner Profile Form -->
+        <div class="col-md-8">
+            <div class="form-card-owner">
                 <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-3">
-                            <div class="card bg-light h-100">
-                                <div class="card-body">
-                                    <i class="fas fa-home text-primary" style="font-size: 2rem;"></i>
-                                    <h4 class="mt-2">{{ current_user.homestays|length }}</h4>
-                                    <p class="text-muted">Homestay</p>
+                    <h5 class="form-title-owner">
+                        <i class="fas fa-edit me-2"></i>
+                        Thông Tin Chủ Sở Hữu
+                    </h5>
+                    <form method="POST" enctype="multipart/form-data" id="profileForm" onsubmit="return validateForm()">
+                        <!-- Tên đăng nhập, Họ, Tên và Giới tính cùng hàng -->
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Tên đăng nhập
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-input-owner" 
+                                       id="username" 
+                                       name="username" 
+                                       value="{{ current_user.username }}"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập tên đăng nhập
                                 </div>
                             </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="first_name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Họ
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-input-owner" 
+                                       id="first_name" 
+                                       name="first_name" 
+                                       value="{{ current_user.first_name or '' }}"
+                                       placeholder="Nguyễn"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập họ
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="last_name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Tên
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-input-owner" 
+                                       id="last_name" 
+                                       name="last_name" 
+                                       value="{{ current_user.last_name or '' }}"
+                                       placeholder="Văn A"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập tên
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="gender" class="form-label">
+                                    <i class="fas fa-venus-mars me-1"></i>
+                                    Giới tính
+                                </label>
+                                <select class="form-control form-input-owner" id="gender" name="gender">
+                                    <option value="Nam" {{ 'selected' if current_user.gender == 'Nam' else '' }}>Nam</option>
+                                    <option value="Nữ" {{ 'selected' if current_user.gender == 'Nữ' else '' }}>Nữ</option>
+                                    <option value="Khác" {{ 'selected' if current_user.gender == 'Khác' else '' }}>Khác</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="card bg-light h-100">
-                                <div class="card-body">
-                                    <i class="fas fa-bed text-success" style="font-size: 2rem;"></i>
-                                    <h4 class="mt-2">
-                                        {% set total_rooms = 0 %}
-                                        {% for homestay in current_user.homestays %}
-                                            {% set total_rooms = total_rooms + homestay.rooms|length %}
+
+                        <!-- Ngày sinh -->
+                        <div class="mb-2">
+                            <label for="birth_date" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>
+                                Ngày sinh
+                            </label>
+                            <div class="row">
+                                <div class="col-4">
+                                    <select class="form-control form-input-owner" name="birth_day">
+                                        <option value="">Ngày</option>
+                                        {% for day in range(1, 32) %}
+                                            <option value="{{ day }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.day == day else '' }}>
+                                                {{ day }}
+                                            </option>
                                         {% endfor %}
-                                        {{ total_rooms }}
-                                    </h4>
-                                    <p class="text-muted">Phòng</p>
+                                    </select>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card bg-light h-100">
-                                <div class="card-body">
-                                    <i class="fas fa-calendar-check text-warning" style="font-size: 2rem;"></i>
-                                    <h4 class="mt-2">
-                                        {% set total_bookings = 0 %}
-                                        {% for homestay in current_user.homestays %}
-                                            {% set total_bookings = total_bookings + homestay.bookings|length %}
+                                <div class="col-4">
+                                    <select class="form-control form-input-owner" name="birth_month">
+                                        <option value="">Tháng</option>
+                                        {% for month in range(1, 13) %}
+                                            <option value="{{ month }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.month == month else '' }}>
+                                                {{ month }}
+                                            </option>
                                         {% endfor %}
-                                        {{ total_bookings }}
-                                    </h4>
-                                    <p class="text-muted">Đặt phòng</p>
+                                    </select>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card bg-light h-100">
-                                <div class="card-body">
-                                    <i class="fas fa-star text-info" style="font-size: 2rem;"></i>
-                                    <h4 class="mt-2">
-                                        {% set total_reviews = 0 %}
-                                        {% for homestay in current_user.homestays %}
-                                            {% set total_reviews = total_reviews + homestay.reviews|length %}
+                                <div class="col-4">
+                                    <select class="form-control form-input-owner" name="birth_year">
+                                        <option value="">Năm</option>
+                                        {% for year in range(1950, 2010) %}
+                                            <option value="{{ year }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.year == year else '' }}>
+                                                {{ year }}
+                                            </option>
                                         {% endfor %}
-                                        {{ total_reviews }}
-                                    </h4>
-                                    <p class="text-muted">Đánh giá</p>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                    </div>
+
+                        <!-- Email và Phone cùng hàng -->
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    Email
+                                </label>
+                                <input type="email" 
+                                       class="form-control form-input-owner" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ current_user.email }}"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập email hợp lệ
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>
+                                    Số điện thoại
+                                </label>
+                                <input type="tel" 
+                                       class="form-control form-input-owner" 
+                                       id="phone" 
+                                       name="phone" 
+                                       value="{{ current_user.phone or '' }}"
+                                       placeholder="0937956211">
+                            </div>
+                        </div>
+
+                        <!-- Địa chỉ -->
+                        <div class="mb-2">
+                            <label for="address" class="form-label">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                Địa chỉ
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-input-owner" 
+                                   id="address" 
+                                   name="address" 
+                                   value="{{ current_user.address or '' }}"
+                                   placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố">
+                        </div>
+                        
+                        <!-- Ảnh đại diện và Đổi mật khẩu -->
+                        <div class="row">
+                            <div class="col-md-8 mb-2">
+                                <label for="avatar" class="form-label">
+                                    <i class="fas fa-camera me-1"></i>
+                                    Ảnh đại diện
+                                </label>
+                                <input type="file" 
+                                       class="form-control form-input-owner" 
+                                       id="avatar" 
+                                       name="avatar" 
+                                       accept="image/*"
+                                       onchange="previewImage(this)">
+                                <div class="form-text">
+                                    Chọn ảnh có kích thước tối đa 5MB
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">
+                                    <i class="fas fa-lock me-1"></i>
+                                    Bảo mật
+                                </label>
+                                <div>
+                                    <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                        <i class="fas fa-key me-1"></i>
+                                        Đổi mật khẩu
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-start mt-3">
+                            <button type="submit" class="btn btn-owner-primary">
+                                <i class="fas fa-save me-1"></i>
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_css %}
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
+                <h5 class="modal-title" id="changePasswordModalLabel">
+                    <i class="fas fa-lock me-2"></i>
+                    Thông báo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="fas fa-tools text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Chức năng đang được phát triển</h6>
+                <p class="text-muted mb-0">
+                    Tính năng đổi mật khẩu sẽ sớm được cập nhật trong phiên bản tiếp theo.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-1"></i>
+                    Đã hiểu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
-    .card {
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.profile-title {
+    color: #000000;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.container.py-4 {
+    margin-top: -85px;
+}
+
+.title-underline {
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #9ed649, #8ab82f);
+    border-radius: 2px;
+    margin: 0 auto;
+}
+
+.owner-profile-card {
+    background: linear-gradient(135deg, #9ed649 0%, #8ab82f 100%);
+    background-size: 200% 200%;
+    animation: rotateBackground 15s ease infinite;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(158, 214, 73, 0.2);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.owner-profile-card:hover {
+    transform: translateY(-5px);
+    animation: glowAnimation 2s ease-in-out infinite;
+}
+
+@keyframes rotateBackground {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes glowAnimation {
+    0%, 100% { box-shadow: 0 10px 30px rgba(158, 214, 73, 0.2); }
+    50% { box-shadow: 0 15px 40px rgba(158, 214, 73, 0.4); }
+}
+
+@keyframes floatAnimation {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.avatar-container-owner {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 20px;
+    position: relative;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    padding: 8px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    animation: floatAnimation 3s ease-in-out infinite;
+}
+
+.avatar-container-owner:hover {
+    transform: scale(1.05) translateY(-5px);
+    background: rgba(255,255,255,0.3);
+}
+
+.avatar-circle-owner {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.avatar-circle-owner:hover {
+    transform: rotate(5deg);
+    border-width: 5px;
+}
+
+.owner-name {
+    color: white;
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.owner-name:hover {
+    transform: scale(1.05);
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.owner-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 15px auto;
+    background: rgba(255,255,255,0.2);
+    padding: 10px 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.3);
+    width: fit-content;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #ffffff;
+    border-radius: 50%;
+    animation: pulse-status 2s infinite;
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0.4);
+}
+
+@keyframes pulse-status {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+.status-text {
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.owner-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(45deg, #ea580c, #fb923c);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 10px auto;
+    box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.owner-badge i {
+    color: white;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.form-card-owner {
+    background: white;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid rgba(158, 214, 73, 0.1);
+}
+
+.form-card-owner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    border-color: rgba(158, 214, 73, 0.3);
+}
+
+.form-title-owner {
+    color: #8ab82f;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f8f9fa;
+    display: flex;
+    align-items: center;
+}
+
+.form-label {
+    color: #8ab82f;
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.form-input-owner {
+    border: 2px solid #E5E9FA;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #F5F9F2;
+}
+
+.form-input-owner:focus {
+    border-color: #8ab82f;
+    box-shadow: 0 0 0 3px rgba(138, 184, 47, 0.1);
+    background: white;
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.form-input-owner:hover {
+    border-color: #9ed649;
+    background: white;
+}
+
+.btn-owner-primary {
+    background: linear-gradient(135deg, #9ed649 0%, #b2e254 100%);
+    color: #18282C;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(158, 214, 73, 0.4);
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-owner-primary:hover {
+    background: linear-gradient(135deg, #b2e254 0%, #9ed649 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(158, 214, 73, 0.6);
+    color: #18282C;
+}
+
+.btn-owner-primary:active {
+    transform: translateY(0);
+}
+
+.btn-owner-secondary {
+    background: linear-gradient(45deg, #6c757d, #5a6268);
+    color: white;
         border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.btn-owner-secondary:hover {
+    background: linear-gradient(45deg, #5a6268, #6c757d);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    color: white;
+}
+
+.avatar-section {
+    margin-bottom: 1rem !important;
+}
+
+.form-control-plaintext {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px 15px;
+    color: #6c757d;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+@media (max-width: 768px) {
+    .profile-title {
+        font-size: 1.8rem;
     }
     
-    .card-header {
-        border-bottom: none;
+    .owner-profile-card .card-body {
+        padding: 20px;
     }
     
-    .badge {
-        font-size: 0.9em;
+    .avatar-container-owner {
+        width: 120px;
+        height: 120px;
     }
-    
-    .rounded-circle {
-        object-fit: cover;
+}
+
+/* Thêm style mới để giảm khoảng cách */
+.form-control {
+    padding: 8px 12px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.mb-2 {
+    margin-bottom: 0.75rem !important;
+}
+
+/* Keyframes cho các animation */
+@keyframes floatAnimation {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes glowAnimation {
+    0% {
+        box-shadow: 0 5px 15px rgba(158, 214, 73, 0.2);
+    }
+    50% {
+        box-shadow: 0 5px 25px rgba(158, 214, 73, 0.4);
+    }
+    100% {
+        box-shadow: 0 5px 15px rgba(158, 214, 73, 0.2);
+    }
     }
 </style>
+
+<script>
+function validateForm() {
+    let isValid = true;
+    const form = document.getElementById('profileForm');
+    const inputs = form.querySelectorAll('input[required]');
+    
+    inputs.forEach(input => {
+        if (!input.value.trim()) {
+            input.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            input.classList.remove('is-invalid');
+        }
+    });
+    
+    // Email validation
+    const emailInput = document.getElementById('email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailInput.value)) {
+        emailInput.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function resetForm() {
+    const form = document.getElementById('profileForm');
+    form.reset();
+    
+    // Remove validation classes
+    const inputs = form.querySelectorAll('.form-control');
+    inputs.forEach(input => {
+        input.classList.remove('is-invalid', 'is-valid');
+    });
+}
+
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatar = document.querySelector('.avatar-circle-owner');
+            avatar.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.form-input-owner');
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.hasAttribute('required') && this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+    
+    // Username validation
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            const username = this.value.trim();
+            if (username && username !== '{{ current_user.username }}') {
+                checkUsernameAvailability(username, this);
+            } else if (username === '{{ current_user.username }}') {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+    
+    // Email validation
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const email = this.value.trim();
+            if (email && email !== '{{ current_user.email }}') {
+                checkEmailAvailability(email, this);
+            } else if (email === '{{ current_user.email }}') {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+});
+
+// Check username availability
+function checkUsernameAvailability(username, inputElement) {
+    fetch('/owner/check-username', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({username: username})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.available) {
+            inputElement.classList.remove('is-invalid');
+            inputElement.classList.add('is-valid');
+        } else {
+            inputElement.classList.remove('is-valid');
+            inputElement.classList.add('is-invalid');
+            const feedback = inputElement.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.textContent = 'Tên đăng nhập đã tồn tại';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking username:', error);
+    });
+}
+
+// Check email availability
+function checkEmailAvailability(email, inputElement) {
+    fetch('/owner/check-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({email: email})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.available) {
+            inputElement.classList.remove('is-invalid');
+            inputElement.classList.add('is-valid');
+        } else {
+            inputElement.classList.remove('is-valid');
+            inputElement.classList.add('is-invalid');
+            const feedback = inputElement.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.textContent = 'Email đã tồn tại';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking email:', error);
+    });
+}
+
+// Toggle password visibility
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.nextElementSibling.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        button.classList.remove('fa-eye');
+        button.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        button.classList.remove('fa-eye-slash');
+        button.classList.add('fa-eye');
+    }
+}
+</script>
 {% endblock %} 

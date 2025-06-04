@@ -86,7 +86,12 @@ def register():
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        if current_user.is_owner():
+            return redirect(url_for('owner.profile'))
+        elif current_user.role == 'admin':
+            return redirect(url_for('home'))
+        else:
+            return redirect(url_for('home'))
     
     # Initialize form_data, check for username from URL parameters
     username_param = request.args.get('username', '')
@@ -133,10 +138,15 @@ def login():
             elif isinstance(user, Renter):
                 session['user_role'] = 'renter'
                 
-            # Redirect to homepage first, then user can choose to go to dashboard
+            # Redirect based on user role
             next_page = request.args.get('next')
             if not next_page or urlparse(next_page).netloc != '':
-                next_page = url_for('home', login_success='1')
+                if isinstance(user, Admin):
+                    next_page = url_for('home', login_success='1')
+                elif isinstance(user, Owner):
+                    next_page = url_for('owner.profile', login_success='1')
+                else:
+                    next_page = url_for('home', login_success='1')
             else:
                 separator = '&' if '?' in next_page else '?'
                 next_page = next_page + separator + 'login_success=1'

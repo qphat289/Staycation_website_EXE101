@@ -1,5 +1,5 @@
 # routes/owner.py
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from models import db, Homestay, Room, Booking, RoomImage, Renter, Admin, Owner
@@ -662,9 +662,109 @@ def booking_details(booking_id):
 def settings():
     return render_template('owner/settings.html')
 
-@owner_bp.route('/profile')
+@owner_bp.route('/profile', methods=['GET', 'POST'])
 @owner_required
 def profile():
+    if request.method == 'POST':
+        try:
+            # Lấy dữ liệu từ form
+            new_username = request.form.get('username')
+            new_email = request.form.get('email')
+            
+            # Kiểm tra username đã tồn tại (ngoại trừ user hiện tại)
+            existing_owner = Owner.query.filter(
+                Owner.username == new_username, 
+                Owner.id != current_user.id
+            ).first()
+            
+            existing_admin = Admin.query.filter_by(username=new_username).first()
+            existing_renter = Renter.query.filter_by(username=new_username).first()
+            
+            if existing_owner or existing_admin or existing_renter:
+                flash('Tên đăng nhập đã tồn tại. Vui lòng chọn tên khác.', 'danger')
+                return redirect(url_for('owner.profile'))
+            
+            # Kiểm tra email đã tồn tại (ngoại trừ user hiện tại)
+            existing_owner_email = Owner.query.filter(
+                Owner.email == new_email, 
+                Owner.id != current_user.id
+            ).first()
+            
+            existing_admin_email = Admin.query.filter_by(email=new_email).first()
+            existing_renter_email = Renter.query.filter_by(email=new_email).first()
+            
+            if existing_owner_email or existing_admin_email or existing_renter_email:
+                flash('Email đã tồn tại. Vui lòng chọn email khác.', 'danger')
+                return redirect(url_for('owner.profile'))
+            
+            # Cập nhật thông tin cơ bản
+            current_user.first_name = request.form.get('first_name')
+            current_user.last_name = request.form.get('last_name')
+            current_user.gender = request.form.get('gender')
+            current_user.address = request.form.get('address')
+            current_user.username = new_username
+            current_user.email = new_email
+            current_user.phone = request.form.get('phone')
+            
+            # Tự động tạo full_name từ first_name và last_name
+            if current_user.first_name and current_user.last_name:
+                current_user.full_name = f"{current_user.first_name} {current_user.last_name}"
+            elif current_user.first_name:
+                current_user.full_name = current_user.first_name
+            elif current_user.last_name:
+                current_user.full_name = current_user.last_name
+            else:
+                current_user.full_name = current_user.username  # Fallback to username
+            
+            # Xử lý ngày sinh
+            birth_day = request.form.get('birth_day')
+            birth_month = request.form.get('birth_month')
+            birth_year = request.form.get('birth_year')
+            
+            if birth_day and birth_month and birth_year:
+                try:
+                    from datetime import date
+                    current_user.birth_date = date(int(birth_year), int(birth_month), int(birth_day))
+                except ValueError:
+                    flash('Ngày sinh không hợp lệ', 'warning')
+            
+            # Xử lý upload avatar
+            if 'avatar' in request.files:
+                avatar_file = request.files['avatar']
+                if avatar_file and avatar_file.filename and allowed_file(avatar_file.filename):
+                    # Tạo tên file unique
+                    filename = secure_filename(avatar_file.filename)
+                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                    filename = f"avatar_{current_user.id}_{timestamp}_{filename}"
+                    
+                    # Tạo thư mục uploads nếu chưa có
+                    upload_folder = os.path.join('static', 'uploads')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    
+                    # Lưu file
+                    file_path = os.path.join(upload_folder, filename)
+                    avatar_file.save(file_path)
+                    
+                    # Xóa avatar cũ nếu có
+                    if current_user.avatar:
+                        old_avatar_path = os.path.join('static', 'uploads', current_user.avatar)
+                        if os.path.exists(old_avatar_path):
+                            os.remove(old_avatar_path)
+                    
+                    # Cập nhật avatar trong database
+                    current_user.avatar = filename
+            
+            # Lưu thay đổi
+            db.session.commit()
+            flash('Cập nhật thông tin thành công!', 'success')
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.', 'danger')
+            
+        return redirect(url_for('owner.profile'))
+    
+    # GET request
     return render_template('owner/profile.html')
 
 @owner_bp.route('/book-room/<int:homestay_id>', methods=['GET', 'POST'])
@@ -809,3 +909,39 @@ def manage_rooms(homestay_id):
 
     # Pass the dictionary to the template
     return render_template('owner/manage_rooms.html', homestay=homestay, rooms_by_floor=rooms_by_floor, all_floors=all_floors)
+
+@owner_bp.route('/check-username', methods=['POST'])
+@login_required
+def check_username():
+    data = request.get_json()
+    username = data.get('username')
+    
+    # Kiểm tra nếu username này là của user hiện tại thì available
+    if username == current_user.username:
+        return jsonify({'available': True})
+    
+    existing_owner = Owner.query.filter_by(username=username).first()
+    existing_admin = Admin.query.filter_by(username=username).first()
+    existing_renter = Renter.query.filter_by(username=username).first()
+    
+    return jsonify({
+        'available': not bool(existing_owner or existing_admin or existing_renter)
+    })
+
+@owner_bp.route('/check-email', methods=['POST'])
+@login_required
+def check_email():
+    data = request.get_json()
+    email = data.get('email')
+    
+    # Kiểm tra nếu email này là của user hiện tại thì available
+    if email == current_user.email:
+        return jsonify({'available': True})
+    
+    existing_owner = Owner.query.filter_by(email=email).first()
+    existing_admin = Admin.query.filter_by(email=email).first()
+    existing_renter = Renter.query.filter_by(email=email).first()
+    
+    return jsonify({
+        'available': not bool(existing_owner or existing_admin or existing_renter)
+    })
