@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user, logout_user
-from models import Homestay, Booking, Review, db, Room, RoomImage, Admin, Owner, Renter
+from models import Booking, Review, db, Room, RoomImage, Admin, Owner, Renter
 from datetime import datetime, timedelta
 from PIL import Image
 import io
@@ -19,7 +19,7 @@ def renter_required(f):
         
         # Kiểm tra nếu là owner đang dùng chế độ xem renter
         # Chỉ ngăn chặn các chức năng booking/đặt phòng
-        if current_user.__class__.__name__ == 'Owner' and current_user.is_renter() and request.endpoint in ['renter.book_homestay', 'renter.cancel_booking']:
+        if current_user.__class__.__name__ == 'Owner' and current_user.is_renter() and request.endpoint in ['renter.book_room', 'renter.cancel_booking']:
             flash('Bạn đang ở chế độ xem, không thể thực hiện đặt phòng', 'warning')
             return redirect(url_for('home'))
             
@@ -53,117 +53,107 @@ def dashboard():
 
 @renter_bp.route('/search')
 def search():
-    """Search for homestays with filters"""
+    """Search for rooms with filters"""
     # Get search parameters
     city = request.args.get('city', '')
     district = request.args.get('district', '')
     min_price = request.args.get('min_price', type=float)
     max_price = request.args.get('max_price', type=float)
-    bedrooms = request.args.get('bedrooms', type=int)
+    room_type = request.args.get('room_type', '')
     
     # Build query
-    query = Homestay.query.filter_by(is_active=True)
+    query = Room.query.filter_by(is_active=True)
     
     if city:
-        query = query.filter(Homestay.city.ilike(f'%{city}%'))
+        query = query.filter(Room.city.ilike(f'%{city}%'))
     if district:
-        query = query.filter(Homestay.district.ilike(f'%{district}%'))
+        query = query.filter(Room.district.ilike(f'%{district}%'))
     if min_price is not None:
-        query = query.filter(Homestay.price_per_hour >= min_price)
+        query = query.filter(Room.price_per_night >= min_price)
     if max_price is not None:
-        query = query.filter(Homestay.price_per_hour <= max_price)
-    if bedrooms is not None:
-        query = query.filter(Homestay.bedrooms >= bedrooms)
+        query = query.filter(Room.price_per_night <= max_price)
+    if room_type:
+        query = query.filter(Room.room_type == room_type)
     
     # Execute query
-    homestays = query.all()
+    rooms = query.all()
     
     # Get unique cities and districts for filter dropdowns
-    cities = db.session.query(Homestay.city).distinct().all()
-    districts = db.session.query(Homestay.district).distinct().all()
+    cities = db.session.query(Room.city).distinct().all()
+    districts = db.session.query(Room.district).distinct().all()
+    room_types = db.session.query(Room.room_type).distinct().all()
     
     return render_template('renter/search.html', 
-                          homestays=homestays,
+                          rooms=rooms,
                           cities=[city[0] for city in cities],
                           districts=[district[0] for district in districts],
+                          room_types=[rt[0] for rt in room_types if rt[0]],
                           search_params=request.args)
 
-@renter_bp.route('/view-homestay/<int:id>')
-def view_homestay(id):
-    homestay = Homestay.query.get_or_404(id)
+@renter_bp.route('/view-room/<int:id>')
+def view_room(id):
+    room = Room.query.get_or_404(id)
     
-    # Kiểm tra nếu homestay đã bị khóa
-    if not homestay.is_active:
-        flash("Homestay này hiện tại đã ngừng hoạt động và không khả dụng để đặt phòng.", "warning")
+    # Kiểm tra nếu phòng đã bị khóa
+    if not room.is_active:
+        flash("Phòng này hiện tại đã ngừng hoạt động và không khả dụng để đặt.", "warning")
         return redirect(url_for('home'))
     
-    rooms = Room.query.filter_by(homestay_id=id).all()
+    # Load room images
+    room_images = RoomImage.query.filter_by(room_id=room.id).all()
     
-    # Load images for each room
-    for room in rooms:
-        room.images = RoomImage.query.filter_by(room_id=room.id).all()
+    # Load reviews for this room
+    reviews = Review.query.filter_by(room_id=id).order_by(Review.created_at.desc()).all()
     
-    reviews = Review.query.filter_by(homestay_id=id).order_by(Review.created_at.desc()).all()
-    
-    return render_template('renter/view_homestay.html', 
-                          homestay=homestay, 
-                          rooms=rooms, 
+    return render_template('renter/view_room.html', 
+                          room=room,
+                          room_images=room_images,
                           reviews=reviews)
 
 
-@renter_bp.route('/book/<int:homestay_id>', methods=['GET', 'POST'])
+@renter_bp.route('/book/<int:room_id>', methods=['GET', 'POST'])
 @renter_required
-def book_homestay(homestay_id):
-    homestay = Homestay.query.get_or_404(homestay_id)
-    # Get room_id from query string (or form data)
-    room_id = request.args.get('room_id') or request.form.get('room_id')
-    if not room_id:
-        flash("Please select a room.", "warning")
-        return redirect(url_for('renter.view_homestay', id=homestay.id))
+def book_room(room_id):
     room = Room.query.get_or_404(room_id)
     
     if request.method == 'POST':
+        start_date = request.form.get('start_date')
+        start_time = request.form.get('start_time')
         duration_str = request.form.get('duration')
-        if not duration_str:
-            flash("Duration is required", "warning")
-            return redirect(url_for('renter.book_homestay', homestay_id=homestay.id, room_id=room_id))
+        
+        if not start_date or not start_time or not duration_str:
+            flash("You must select date, time and duration.", "warning")
+            return redirect(url_for('renter.book_room', room_id=room.id))
         
         try:
             duration = int(duration_str)
         except ValueError:
             flash("Invalid duration value.", "danger")
-            return redirect(url_for('renter.book_homestay', homestay_id=homestay.id, room_id=room_id))
+            return redirect(url_for('renter.book_room', room_id=room.id))
         
         if duration < 1:
-            flash("Minimum duration is 1 minute.", "warning")
-            return redirect(url_for('renter.book_homestay', homestay_id=homestay.id, room_id=room_id))
-        
-        start_date = request.form.get('start_date')
-        start_time = request.form.get('start_time')
-        if not start_date or not start_time:
-            flash("You must select both date and time.", "warning")
-            return redirect(url_for('renter.book_homestay', homestay_id=homestay.id, room_id=room_id))
+            flash("Minimum duration is 1 night.", "warning")
+            return redirect(url_for('renter.book_room', room_id=room.id))
         
         start_str = f"{start_date} {start_time}"
         try:
             start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
         except ValueError:
             flash("Invalid date or time format.", "danger")
-            return redirect(url_for('renter.book_homestay', homestay_id=homestay.id, room_id=room_id))
+            return redirect(url_for('renter.book_room', room_id=room.id))
         
-        end_datetime = start_datetime + timedelta(minutes=duration)
-        # Calculate total price using the room's price; convert minutes to hours.
-        total_price = room.price_per_hour * (duration / 60)
+        end_datetime = start_datetime + timedelta(days=duration)
+        # Calculate total price using the room's price per night
+        total_price = room.price_per_night * duration
         
         # Check for overlapping bookings for this room
         existing_bookings = Booking.query.filter_by(room_id=room.id).all()
         for booking in existing_bookings:
             if start_datetime < booking.end_time and end_datetime > booking.start_time:
                 flash('This room is not available during the selected time period.', 'danger')
-                return redirect(url_for('renter.book_homestay', homestay_id=homestay.id, room_id=room_id))
+                return redirect(url_for('renter.book_room', room_id=room.id))
         
         new_booking = Booking(
-            homestay_id=homestay.id,
             room_id=room.id,
             renter_id=current_user.id,
             start_time=start_datetime,
@@ -171,17 +161,15 @@ def book_homestay(homestay_id):
             total_price=total_price,
             status='pending'
         )
-        db.session.add(new_booking)
-        db.session.commit()
-        current_user.experience_points += total_price * 10  # Update user XP based on total price
         
         db.session.add(new_booking)
+        current_user.experience_points += total_price * 10  # Update user XP based on total price
         db.session.commit()
 
         flash('Booking request submitted successfully!', 'success')
         return redirect(url_for('renter.dashboard'))
 
-    return render_template('renter/book_homestay.html', homestay=homestay, room=room)
+    return render_template('renter/book_room.html', room=room)
   
 
 

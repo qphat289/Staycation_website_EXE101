@@ -97,8 +97,11 @@ class Owner(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationships
-    homestays = db.relationship('Homestay', backref='owner', lazy=True)
+    # Thêm các trường mới
+    business_name = db.Column(db.String(200))  # Tên doanh nghiệp/thương hiệu (nếu có)
+    tax_code = db.Column(db.String(50))  # Mã số thuế (nếu có)
+    bank_account = db.Column(db.String(50))  # Số tài khoản ngân hàng
+    bank_name = db.Column(db.String(100))  # Tên ngân hàng
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -161,59 +164,68 @@ class Renter(UserMixin, db.Model):
     def __repr__(self):
         return f'<Renter {self.username}>'
 
-###########################################
-# 2. Các bảng liên quan đến Homestay       #
-###########################################
+#######################################
+# 2. Các bảng liên quan đến Room      #
+#######################################
 
-class Homestay(db.Model):
-    __tablename__ = 'homestay'
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    address = db.Column(db.String(200), nullable=False)
-    city = db.Column(db.String(50), nullable=False)
-    district = db.Column(db.String(50), nullable=False)
-    floor_count = db.Column(db.Integer, nullable=False, default=1)
-    image_path = db.Column(db.String(200))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    is_active = db.Column(db.Boolean, default=True)
-    
-    # Liên kết với Owner
-    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
-    
-    # Quan hệ với cascade delete:
-    rooms = db.relationship('Room', backref='homestay', lazy=True, cascade="all, delete-orphan")
-    bookings = db.relationship('Booking', backref='homestay', lazy=True, cascade="all, delete-orphan")
-    reviews = db.relationship('Review', backref='homestay', lazy=True, cascade="all, delete-orphan")
-    
-    def __repr__(self):
-        return f'<Homestay {self.title}>'
-
+# Bảng liên kết nhiều-nhiều giữa Room và Amenity
+room_amenities = db.Table('room_amenities',
+    db.Column('room_id', db.Integer, db.ForeignKey('room.id'), primary_key=True),
+    db.Column('amenity_id', db.Integer, db.ForeignKey('amenity.id'), primary_key=True)
+)
 
 class Room(db.Model):
     __tablename__ = 'room'
     id = db.Column(db.Integer, primary_key=True)
-    homestay_id = db.Column(db.Integer, db.ForeignKey('homestay.id'), nullable=False)
-    room_number = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    room_type = db.Column(db.String(50), nullable=False)  # Loại phòng: Standard, Deluxe, Suite, etc.
+    
+    # Thông tin địa chỉ
+    address = db.Column(db.String(200), nullable=False)
+    city = db.Column(db.String(50), nullable=False)
+    district = db.Column(db.String(50), nullable=False)
     floor_number = db.Column(db.Integer, nullable=False, default=1)
+    
+    # Thông tin phòng
+    room_number = db.Column(db.String(100), nullable=True)  # Có thể không cần số phòng
     bed_count = db.Column(db.Integer, nullable=False)
     bathroom_count = db.Column(db.Integer, nullable=False)
     max_guests = db.Column(db.Integer, nullable=False)
+    room_size = db.Column(db.Float, nullable=True)  # Diện tích phòng (m2)
+    
+    # Giá và mô tả
     price_per_hour = db.Column(db.Float, nullable=False)
+    price_per_night = db.Column(db.Float, nullable=True)  # Thêm giá theo đêm
     description = db.Column(db.Text, nullable=True)
+    
+    # Trạng thái và thời gian
+    is_active = db.Column(db.Boolean, default=True)
     is_booked = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Quan hệ với cascade delete cho RoomImage:
+    # Liên kết với Owner
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
+    owner = db.relationship('Owner', backref=db.backref('rooms', lazy=True))
+    
+    # Relationships
     images = db.relationship('RoomImage', backref='room', lazy=True, cascade="all, delete-orphan")
-    
+    bookings = db.relationship('Booking', backref='room', lazy=True, cascade="all, delete-orphan")
+    reviews = db.relationship('Review', backref='room', lazy=True)
+    amenities = db.relationship('Amenity', secondary=room_amenities, backref=db.backref('rooms', lazy='dynamic'))
+
     @property
     def display_price(self):
         """Return the price formatted for display (multiplied by 1000 and converted to integer)"""
         return int(self.price_per_hour * 1000)
 
+    @property
+    def display_price_per_night(self):
+        """Return the night price formatted for display (multiplied by 1000 and converted to integer)"""
+        return int(self.price_per_night * 1000) if self.price_per_night else None
+
     def __repr__(self):
-        return f'<Room {self.room_number} in {self.homestay.title}>'
+        return f'<Room {self.title}>'
 
 class RoomImage(db.Model):
     __tablename__ = 'room_image'
@@ -225,36 +237,28 @@ class RoomImage(db.Model):
     def __repr__(self):
         return f'<RoomImage {self.id} for Room {self.room_id}>'
 
-# Bảng liên kết nhiều-nhiều giữa Room và Amenity
-room_amenities = db.Table('room_amenities',
-    db.Column('room_id', db.Integer, db.ForeignKey('room.id'), primary_key=True),
-    db.Column('amenity_id', db.Integer, db.ForeignKey('amenity.id'), primary_key=True)
-)
-
 class Amenity(db.Model):
     __tablename__ = 'amenity'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     icon = db.Column(db.String(100), nullable=False)  # Tên biểu tượng Bootstrap
-    category = db.Column(db.String(50), default='general')  # Phân loại: general, bathroom, entertainment, etc.
-    
-    # Quan hệ nhiều-nhiều với Room
-    rooms = db.relationship('Room', secondary=room_amenities, backref=db.backref('amenities', lazy='dynamic'))
+    category = db.Column(db.String(50), nullable=False)  # Phân loại: common (phổ biến), room (phòng), unique (độc đáo)
+    description = db.Column(db.Text, nullable=True)  # Mô tả thêm về tiện nghi
     
     def __repr__(self):
-        return f'<Amenity {self.name}>'
+        return f'<Amenity {self.name} ({self.category})>'
 
 class Booking(db.Model):
     __tablename__ = 'booking'
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
+    total_hours = db.Column(db.Integer)
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    homestay_id = db.Column(db.Integer, db.ForeignKey('homestay.id'), nullable=False)
-    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)  # Có thể không chỉ định phòng
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
     renter_id = db.Column(db.Integer, db.ForeignKey('renter.id'), nullable=False)
     
     payment_status = db.Column(db.String(20), default='pending')
@@ -262,10 +266,10 @@ class Booking(db.Model):
     payment_method = db.Column(db.String(50), nullable=True)
     payment_reference = db.Column(db.String(100), nullable=True)
     
-    room = db.relationship('Room', backref='bookings', lazy=True)
+    booking_type = db.Column(db.String(20), default='hourly')  # 'hourly' hoặc 'nightly'
     
     def __repr__(self):
-        return f'<Booking {self.id} for Homestay {self.homestay.title}>'
+        return f'<Booking {self.id}>'
 
 class Review(db.Model):
     __tablename__ = 'review'
@@ -274,36 +278,40 @@ class Review(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    homestay_id = db.Column(db.Integer, db.ForeignKey('homestay.id'))
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
     renter_id = db.Column(db.Integer, db.ForeignKey('renter.id'))
     
     def __repr__(self):
-        return f'<Review {self.id} for Homestay {self.homestay.title}>'
+        return f'<Review {self.id} for Room {self.room_id}>'
 
 class Statistics(db.Model):
     __tablename__ = 'statistics'
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, nullable=False)  # Ngày thống kê
+    date = db.Column(db.Date, nullable=False)
     
     # Thống kê tổng quan
-    total_users = db.Column(db.Integer, default=0)  # Tổng số người dùng (owner + renter)
-    total_owners = db.Column(db.Integer, default=0)  # Số lượng owner
-    total_renters = db.Column(db.Integer, default=0)  # Số lượng renter
+    total_users = db.Column(db.Integer, default=0)
+    total_owners = db.Column(db.Integer, default=0)
+    total_renters = db.Column(db.Integer, default=0)
+    total_rooms = db.Column(db.Integer, default=0)
     
     # Thống kê đặt phòng
-    total_bookings = db.Column(db.Integer, default=0)  # Tổng số lượt đặt
-    hourly_bookings = db.Column(db.Integer, default=0)  # Số lượt đặt theo giờ
-    overnight_bookings = db.Column(db.Integer, default=0)  # Số lượt đặt qua đêm
-    total_hours = db.Column(db.Integer, default=0)  # Tổng số giờ đã thuê
+    total_bookings = db.Column(db.Integer, default=0)
+    hourly_bookings = db.Column(db.Integer, default=0)
+    overnight_bookings = db.Column(db.Integer, default=0)
+    total_hours = db.Column(db.Integer, default=0)
     
     # Tỷ lệ và đánh giá
-    booking_rate = db.Column(db.Float, default=0)  # Tỷ lệ đặt phòng thành công
-    common_type = db.Column(db.String(50))  # Hình thức thuê phổ biến
-    average_rating = db.Column(db.Float, default=0)  # Đánh giá trung bình
+    booking_rate = db.Column(db.Float, default=0)
+    common_type = db.Column(db.String(50))
+    average_rating = db.Column(db.Float, default=0)
     
-    # Thống kê theo thời gian (7 ngày)
-    hourly_stats = db.Column(db.Text)  # Dữ liệu biểu đồ thuê theo giờ
-    overnight_stats = db.Column(db.Text)  # Dữ liệu biểu đồ thuê qua đêm
+    # Thống kê theo thời gian
+    hourly_stats = db.Column(db.Text)
+    overnight_stats = db.Column(db.Text)
     
-    # Thống kê homestay nổi bật
-    top_homestays = db.Column(db.Text)  # Danh sách homestay nổi bật
+    # Thống kê phòng nổi bật
+    top_rooms = db.Column(db.Text)
+    
+    def __repr__(self):
+        return f'<Statistics for {self.date}>'

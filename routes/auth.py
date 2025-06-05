@@ -87,9 +87,9 @@ def register():
 def login():
     if current_user.is_authenticated:
         if current_user.is_owner():
-            return redirect(url_for('owner.profile'))
+            return redirect(url_for('owner.dashboard'))
         elif current_user.role == 'admin':
-            return redirect(url_for('home'))
+            return redirect(url_for('admin.dashboard'))
         else:
             return redirect(url_for('home'))
     
@@ -110,7 +110,7 @@ def login():
         owner = (Owner.query.filter_by(username=username).first() or 
                 Owner.query.filter_by(email=username).first())
         renter = (Renter.query.filter_by(username=username).first() or 
-                 Renter.query.filter_by(email=username).first())  # Only finds regular users, not Google users
+                 Renter.query.filter_by(email=username).first())
         
         user = admin or owner or renter
         
@@ -131,25 +131,21 @@ def login():
                     user.can_manage_users = True
                     db.session.commit()
                     flash('Bạn đã được set làm Super Admin!', 'success')
+                next_page = url_for('admin.dashboard', login_success='1')
                 
             elif isinstance(user, Owner):
                 session['user_role'] = 'owner'
+                next_page = url_for('owner.dashboard', login_success='1')
                 
-            elif isinstance(user, Renter):
+            else:  # Renter
                 session['user_role'] = 'renter'
+                next_page = url_for('home', login_success='1')
                 
-            # Redirect based on user role
-            next_page = request.args.get('next')
-            if not next_page or urlparse(next_page).netloc != '':
-                if isinstance(user, Admin):
-                    next_page = url_for('home', login_success='1')
-                elif isinstance(user, Owner):
-                    next_page = url_for('owner.profile', login_success='1')
-                else:
-                    next_page = url_for('home', login_success='1')
-            else:
-                separator = '&' if '?' in next_page else '?'
-                next_page = next_page + separator + 'login_success=1'
+            # Override next_page if 'next' parameter exists and is safe
+            next_param = request.args.get('next')
+            if next_param and not urlparse(next_param).netloc:
+                separator = '&' if '?' in next_param else '?'
+                next_page = next_param + separator + 'login_success=1'
                 
             return redirect(next_page)
         else:

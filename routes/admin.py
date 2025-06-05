@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
-from models import db, Admin, Owner, Renter, Homestay, Booking, Statistics, Review
+from models import db, Admin, Owner, Renter, Room, Booking, Statistics, Review
 from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
@@ -9,6 +9,7 @@ from functools import wraps
 import uuid
 import json
 import random
+from sqlalchemy import func
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -399,7 +400,7 @@ def profile():
 
     # Calculate statistics for dashboard
     total_users = (Admin.query.count() or 0) + (Owner.query.count() or 0) + (Renter.query.count() or 0)
-    total_homestays = Homestay.query.count() or 0
+    total_homestays = Room.query.count() or 0
     
     return render_template("user/profile.html", 
                           total_users=total_users,
@@ -478,7 +479,7 @@ def homestay_details(homestay_id):
         flash("Bạn không có quyền truy cập!", "danger")
         return redirect(url_for('auth.login'))
     
-    homestay = Homestay.query.get_or_404(homestay_id)
+    homestay = Room.query.get_or_404(homestay_id)
     return render_template('admin/homestay_details.html', homestay=homestay)
 
 @admin_bp.route('/homestay/<int:homestay_id>/toggle-status', methods=['POST'])
@@ -488,7 +489,7 @@ def toggle_homestay_status(homestay_id):
         flash("Bạn không có quyền thực hiện thao tác này!", "danger")
         return redirect(url_for('auth.login'))
     
-    homestay = Homestay.query.get_or_404(homestay_id)
+    homestay = Room.query.get_or_404(homestay_id)
     
     # Đảo ngược trạng thái hoạt động
     homestay.is_active = not homestay.is_active
