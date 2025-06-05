@@ -1,48 +1,1012 @@
 {% extends 'base.html' %}
-{% block title %}<span data-translate="add-room-to">Add Room to</span> {{ homestay.title }}{% endblock %}
+{% block title %}<span data-translate="add-room">Thêm phòng mới</span>{% endblock %}
 
 {% block content %}
-<h2><span data-translate="add-room-for-homestay">Add Room for Homestay</span>: {{ homestay.title }}</h2>
+<div class="container-fluid">
+    <div class="add-room-wizard">
 
-<form method="post">  <!-- Bỏ enctype="multipart/form-data" nếu không còn upload hình -->
-  <div class="mb-3">
-    <label for="room_number" class="form-label" data-translate="room-name">Room name</label>
-    <input type="text" class="form-control" id="room_number" name="room_number" required>
+
+                <div class="wizard-layout">
+            <!-- Sidebar Steps -->
+            <div class="steps-sidebar">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Thông tin cơ bản</div>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Thông tin chi tiết</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Thêm hình ảnh và giá</div>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <div class="wizard-content">
+                <form method="post" enctype="multipart/form-data" class="wizard-form" onsubmit="prepareFormData()">
+            <!-- Hidden inputs for counter values -->
+            <input type="hidden" name="bathroom_count" id="bathroom_count_input" value="2">
+            <input type="hidden" name="bed_count" id="bed_count_input" value="1">
+            <input type="hidden" name="guest_count" id="guest_count_input" value="1">
+            <!-- Step 1: Basic Information -->
+            <div class="step-content active" id="step-1">
+                <div class="form-section">
+                    <h3>Tiêu đề phòng</h3>
+                    <div class="form-content">
+                        <input type="text" name="room_title" placeholder="Thêm tiêu đề" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Mô tả phòng</h3>
+                    <div class="form-content">
+                        <div class="textarea-container">
+                            <textarea name="room_description" placeholder="Thêm miêu tả homestay" class="form-textarea" required></textarea>
+                            <div class="char-count">0/500</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Mô hình phòng</h3>
+                    <div class="form-content">
+                        <div class="room-specs">
+                            <div class="spec-item">
+                                <i class="icon-bed"></i>
+                                <span>Nhà</span>
+                            </div>
+                            <div class="spec-item">
+                                <i class="icon-bath"></i>
+                                <span>Căn hộ</span>
+                            </div>
+                            <div class="spec-item">
+                                <i class="icon-guests"></i>
+                                <span>Khách sạn</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Địa chỉ phòng</h3>
+                    <div class="form-content">
+                        <div class="location-inputs">
+                            <select name="province" class="form-select">
+                                <option>Tỉnh/Thành phố</option>
+                                <option>TP. Hồ Chí Minh</option>
+                                <option>Hà Nội</option>
+                            </select>
+                            <select name="district" class="form-select">
+                                <option>Quận/Huyện</option>
+                                <option>Quận 1</option>
+                                <option>Quận 2</option>
+                            </select>
+                            <select name="ward" class="form-select">
+                                <option>Phường/Xã</option>
+                                <option>Phường 1</option>
+                                <option>Phường 2</option>
+                            </select>
+                            <select name="street" class="form-select">
+                                <option>Tên đường, số nhà/tòa nhà</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="goBack()">Quay lại</button>
+                    <button type="button" class="btn-primary" onclick="nextStep()">Tiếp theo</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Detailed Information -->
+            <div class="step-content" id="step-2">
+                <div class="form-section">
+                    <h3>Đặc chủng của phòng</h3>
+                    <div class="form-content">
+                        <div class="room-details">
+                            <div class="detail-row">
+                                <span>Số lượng phòng tắm trong phòng</span>
+                                <div class="counter">
+                                    <button type="button" class="counter-btn" onclick="decreaseCount('bathroom')">-</button>
+                                    <span id="bathroom-count">2</span>
+                                    <button type="button" class="counter-btn" onclick="increaseCount('bathroom')">+</button>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <span>Số lượng giường trong phòng</span>
+                                <div class="counter">
+                                    <button type="button" class="counter-btn" onclick="decreaseCount('bed')">-</button>
+                                    <span id="bed-count">1</span>
+                                    <button type="button" class="counter-btn" onclick="increaseCount('bed')">+</button>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <span>Số lượng khách tối đa</span>
+                                <div class="counter">
+                                    <button type="button" class="counter-btn" onclick="decreaseCount('guest')">-</button>
+                                    <span id="guest-count">1</span>
+                                    <button type="button" class="counter-btn" onclick="increaseCount('guest')">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Nội quy tại phòng</h3>
+                    <div class="form-content">
+                        <div class="rules-section">
+                            <div class="rule-item">
+                                <span>Khách được hút thuốc</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="smoking" name="smoking">
+                                    <label for="smoking"></label>
+                                </div>
+                            </div>
+                            <div class="rule-item">
+                                <span>Khách được mang thú cưng</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="pets" name="pets">
+                                    <label for="pets"></label>
+                                </div>
+                            </div>
+                            <div class="rule-item">
+                                <span>Khách được mang trẻ em</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="children" name="children">
+                                    <label for="children"></label>
+                                </div>
+                            </div>
+                            <div class="rule-item">
+                                <span>Khách được tổ chức tiệc/ăn mừng</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="party" name="party">
+                                    <label for="party"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Tiện ích cho thuê</h3>
+                    <div class="form-content">
+                        <div class="amenities-section">
+                            <div class="amenity-category">
+                                <i class="icon-clock"></i>
+                                <span>Theo giờ</span>
+                            </div>
+                            <div class="amenity-category">
+                                <i class="icon-night"></i>
+                                <span>Qua đêm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                <div class="form-section">
+                    <h3>Thêm tiện nghi</h3>
+                    <div class="form-content">
+                        <div class="amenities-grid">
+                            <button type="button" class="amenity-btn" onclick="showAmenityModal()">
+                                <i class="icon-plus"></i>
+                                <span>Thêm tiện nghi</span>
+                            </button>
+                        </div>
+                    </div>
   </div>
 
-  <div class="mb-3">
-    <label for="bed_count" class="form-label" data-translate="bed-count-label">Bed Count</label>
-    <input type="number" class="form-control" id="bed_count" name="bed_count" required min="1">
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="prevStep()">Quay lại</button>
+                    <button type="button" class="btn-primary" onclick="nextStep()">Tiếp theo</button>
+                </div>
   </div>
 
-  <div class="mb-3">
-    <label for="bathroom_count" class="form-label" data-translate="bathroom-count-label">Bathroom Count</label>
-    <input type="number" class="form-control" id="bathroom_count" name="bathroom_count" required min="1">
+            <!-- Step 3: Images and Pricing -->
+            <div class="step-content" id="step-3">
+                                <div class="form-section">
+                    <h3>Thêm ảnh phòng</h3>
+                    <div class="form-content">
+                        <div class="upload-grid">
+                            <div class="upload-item main-upload">
+                                <span>Ảnh bìa</span>
+                                <input type="file" id="main-image" name="main_image" accept="image/*">
+                                <div class="upload-placeholder">
+                                    <i class="icon-camera"></i>
+                                    <span>Chọn ảnh</span>
+                                </div>
+                            </div>
+                            <div class="upload-item">
+                                <input type="file" name="images[]" accept="image/*" multiple>
+                                <div class="upload-placeholder">
+                                    <i class="icon-camera"></i>
+                                </div>
+                            </div>
+                            <div class="upload-item">
+                                <input type="file" name="images[]" accept="image/*" multiple>
+                                <div class="upload-placeholder">
+                                    <i class="icon-camera"></i>
+                                </div>
+                            </div>
+                            <div class="upload-item">
+                                <input type="file" name="images[]" accept="image/*" multiple>
+                                <div class="upload-placeholder">
+                                    <i class="icon-camera"></i>
+                                </div>
+                            </div>
+                            <div class="upload-item">
+                                <input type="file" name="images[]" accept="image/*" multiple>
+                                <div class="upload-placeholder">
+                                    <i class="icon-camera"></i>
+                                </div>
+                            </div>
+                            <div class="upload-item add-more">
+                                <div class="upload-placeholder">
+                                    <i class="icon-plus"></i>
+                                    <span>Thêm ảnh</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
   </div>
 
-  <div class="mb-3">
-    <label for="max_guests" class="form-label" data-translate="max-guests">Max Guests</label>
-    <input type="number" class="form-control" id="max_guests" name="max_guests" required min="1">
+                                <div class="form-section">
+                    <h3>Thêm giá dịch vụ</h3>
+                    <div class="form-content">
+                        <div class="pricing-section">
+                            <div class="pricing-option">
+                                <h4>Theo giờ</h4>
+                                <p>Giá thuê theo giờ với giá gốc homestay ban đầu từ 50.000đ</p>
+                                <div class="price-input">
+                                    <span class="currency">VND</span>
+                                    <input type="number" name="hourly_price" placeholder="Gợi ý 200.000đ" class="price-field">
+                                </div>
+                            </div>
+                            <div class="pricing-option">
+                                <h4>Theo đêm</h4>
+                                <p>Giá thuê theo đêm với giá gốc homestay ban đầu từ 400.000đ</p>
+                                <div class="price-input">
+                                    <span class="currency">VND</span>
+                                    <input type="number" name="nightly_price" placeholder="Gợi ý 400.000đ" class="price-field">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
   </div>
 
-  <div class="mb-3">
-    <label for="price_per_hour" class="form-label" data-translate="price-per-hour-label">Price per Hour</label>
-    <input type="number" class="form-control" id="price_per_hour" name="price_per_hour" min="0" step="0.01" required>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="prevStep()">Quay lại</button>
+                    <button type="submit" class="btn-primary">Hoàn thành</button>
+                </div>
+            </div>
+        </form>
   </div>
 
-  <div class="mb-3">
-    <label for="description" class="form-label" data-translate="description">Description</label>
-    <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+    <!-- Amenity Modal -->
+    <div id="amenityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Các tiện nghi cơ bản</h3>
+                <button type="button" class="close-btn" onclick="closeAmenityModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="amenity-categories">
+                    <div class="category-tabs">
+                        <button class="tab-btn active" data-tab="basic">Cơ bản</button>
+                        <button class="tab-btn" data-tab="room">Phòng</button>
+                        <button class="tab-btn" data-tab="bathroom">Phòng tắm</button>
+                        <button class="tab-btn" data-tab="kitchen">Bếp</button>
+                        <button class="tab-btn" data-tab="safety">An toàn</button>
   </div>
 
-  <!-- Floor Selection -->
-  <div class="mb-3">
-    <label for="floor_number" class="form-label" data-translate="floor-number">Floor Number</label>
-    <input type="number" name="floor_number" id="floor_number" class="form-control" value="1" required min="1">
+                    <div class="amenity-grid" id="basic-amenities">
+                        <div class="amenity-item">
+                            <input type="checkbox" id="wifi" name="amenities[]" value="wifi">
+                            <label for="wifi">Wifi miễn phí</label>
+                        </div>
+                        <div class="amenity-item">
+                            <input type="checkbox" id="ac" name="amenities[]" value="ac">
+                            <label for="ac">Điều hòa không khí</label>
+                        </div>
+                        <div class="amenity-item">
+                            <input type="checkbox" id="tv" name="amenities[]" value="tv">
+                            <label for="tv">Tivi</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div>
+    </div>
   </div>
 
-  <!-- Xóa phần Featured Image & Additional Gallery Images -->
+<style>
+.add-room-wizard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    background: #f8fdf4;
+    height: calc(100vh - 70px); /* 70px là chiều cao header */
+    overflow: hidden;
+}
+body.add-room-no-scroll, html.add-room-no-scroll {
+    overflow: hidden;
+    height: 100vh;
+    position: fixed;
+    width: 100%;
+}
 
-  <button type="submit" class="btn btn-primary" data-translate="add-room-button">Add Room</button>
-</form>
+.wizard-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    height: calc(100vh - 20px);
+}
+
+.steps-sidebar {
+    flex: 0 0 250px;
+    background: transparent;
+    padding: 20px;
+    height: 100%;
+}
+
+.steps-sidebar .step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+    position: relative;
+}
+
+/* .steps-sidebar .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 32px;
+    top: 50px;
+    width: 2px;
+    height: 40px;
+    background: #ddd;
+    z-index: 0;
+} */
+
+.steps-sidebar .step.active {
+    opacity: 3;
+}
+
+.steps-sidebar .step.active:not(:last-child)::after {
+    background: #9ed649;
+}
+
+.step-number {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #ddd;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 0;
+}
+
+.step.active .step-number {
+    background: #9ed649;
+}
+
+.step-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.wizard-content {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #9ed649 #f1f1f1;
+    margin-top: -35px;
+}
+
+.wizard-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.wizard-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.wizard-content::-webkit-scrollbar-thumb {
+    background: #9ed649;
+    border-radius: 4px;
+}
+
+.wizard-content::-webkit-scrollbar-thumb:hover {
+    background: #8bc441;
+}
+
+.wizard-form {
+    background: transparent;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: none;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.step-content {
+    display: none;
+}
+
+.step-content.active {
+    display: block;
+}
+
+.form-section {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    margin-bottom: 0;
+    color: #333;
+    font-size: 16px;
+    flex: 0 0 150px;
+    padding-top: 8px;
+}
+
+.form-section .form-content {
+    flex: 1;
+}
+
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.form-textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+.textarea-container {
+    position: relative;
+}
+
+.char-count {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 11px;
+    color: #000000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.room-specs {
+    display: flex;
+    gap: 12px;
+}
+
+.spec-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.spec-item:hover {
+    border-color: #9ed649;
+}
+
+.location-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+}
+
+.room-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.counter-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.counter-btn:hover {
+    background: #f5f5f5;
+}
+
+.rules-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rule-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 25px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 25px;
+    transition: 0.4s;
+}
+
+.toggle-switch label:before {
+    position: absolute;
+    content: "";
+    height: 19px;
+    width: 19px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
+}
+
+.toggle-switch input:checked + label {
+    background-color: #9ed649;
+}
+
+.toggle-switch input:checked + label:before {
+    transform: translateX(25px);
+}
+
+.amenities-section {
+    display: flex;
+    gap: 12px;
+}
+
+.amenity-category {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.amenity-btn {
+    padding: 25px 15px;
+    border: 2px dashed #ddd;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.amenity-btn:hover {
+    border-color: #9ed649;
+}
+
+.upload-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.upload-item {
+    position: relative;
+    aspect-ratio: 1;
+    border: 2px dashed #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.upload-item.main-upload {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.upload-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.upload-item input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.upload-item.add-more {
+    background: #f9f9f9;
+    border-color: #9ed649;
+}
+
+.pricing-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pricing-option {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.pricing-option h4 {
+    margin-bottom: 6px;
+    color: #333;
+    font-size: 15px;
+}
+
+.pricing-option p {
+    margin-bottom: 12px;
+    color: #666;
+    font-size: 13px;
+}
+
+.price-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.currency {
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-right: 1px solid #ddd;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.price-field {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    outline: none;
+    font-size: 13px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+.btn-secondary, .btn-primary {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary {
+    background: white;
+    color: #030303;
+    border-color: #000000;
+}
+
+.btn-secondary:hover {
+    background: #d6f2c3;
+    border-color: #bbb;
+}
+
+.btn-primary {
+    background: #9ed649;
+    color: rgb(0, 0, 0);
+    border-color: #000000;
+}
+
+.btn-primary:hover {
+    background: #8bc441;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.category-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    background: #9ed649;
+    color: white;
+    border-color: #9ed649;
+}
+
+.amenity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.amenity-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+}
+
+.amenity-item input[type="checkbox"] {
+    margin: 0;
+}
+</style>
+
+<script>
+let currentStep = 1;
+const totalSteps = 3;
+
+// Ngăn cuộn trang khi tải trang
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('add-room-no-scroll');
+    document.documentElement.classList.add('add-room-no-scroll');
+});
+
+// Cho phép cuộn trở lại khi rời khỏi trang
+window.addEventListener('beforeunload', function() {
+    document.body.classList.remove('add-room-no-scroll');
+    document.documentElement.classList.remove('add-room-no-scroll');
+});
+
+function nextStep() {
+    if (currentStep < totalSteps) {
+        // Hide current step
+        document.getElementById(`step-${currentStep}`).classList.remove('active');
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        
+        currentStep++;
+        
+        // Show next step
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+    }
+}
+
+function prevStep() {
+    if (currentStep > 1) {
+        // Hide current step
+        document.getElementById(`step-${currentStep}`).classList.remove('active');
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        
+        currentStep--;
+        
+        // Show previous step
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+    }
+}
+
+function goBack() {
+    // Cho phép cuộn trở lại trước khi rời khỏi trang
+    document.body.classList.remove('add-room-no-scroll');
+    document.documentElement.classList.remove('add-room-no-scroll');
+    window.history.back();
+}
+
+function increaseCount(type) {
+    const element = document.getElementById(`${type}-count`);
+    let count = parseInt(element.textContent);
+    count++;
+    element.textContent = count;
+    // Update hidden input
+    document.getElementById(`${type}_count_input`).value = count;
+}
+
+function decreaseCount(type) {
+    const element = document.getElementById(`${type}-count`);
+    let count = parseInt(element.textContent);
+    if (count > 1) {
+        count--;
+        element.textContent = count;
+        // Update hidden input
+        document.getElementById(`${type}_count_input`).value = count;
+    }
+}
+
+function prepareFormData() {
+    // Make sure all counter values are updated in hidden inputs
+    const bathroomCount = document.getElementById('bathroom-count').textContent;
+    const bedCount = document.getElementById('bed-count').textContent;
+    const guestCount = document.getElementById('guest-count').textContent;
+    
+    document.getElementById('bathroom_count_input').value = bathroomCount;
+    document.getElementById('bed_count_input').value = bedCount;
+    document.getElementById('guest_count_input').value = guestCount;
+    
+    return true;
+}
+
+function showAmenityModal() {
+    document.getElementById('amenityModal').style.display = 'block';
+    // Đảm bảo body vẫn không cuộn được khi modal mở
+    document.body.classList.add('add-room-no-scroll');
+    document.documentElement.classList.add('add-room-no-scroll');
+}
+
+function closeAmenityModal() {
+    document.getElementById('amenityModal').style.display = 'none';
+    // Giữ nguyên trạng thái không cuộn của trang chính
+    document.body.classList.add('add-room-no-scroll');
+    document.documentElement.classList.add('add-room-no-scroll');
+}
+
+// Tab switching in amenity modal
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+// Character count for textarea
+document.querySelector('.form-textarea').addEventListener('input', function() {
+    const count = this.value.length;
+    document.querySelector('.char-count').textContent = `${count}/500`;
+});
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('amenityModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+        // Giữ nguyên trạng thái không cuộn của trang chính
+        document.body.classList.add('add-room-no-scroll');
+        document.documentElement.classList.add('add-room-no-scroll');
+    }
+}
+</script>
+
 {% endblock %}

@@ -15,7 +15,7 @@
     --text-secondary: #666666;      /* Màu chữ phụ */
     --text-light: #FFFDFA;          /* Màu chữ sáng */
     --border-color: #e0e0e0;        /* Màu viền */
-    --background-light: #FFFDFA;    /* Màu nền sáng */
+    --background-light: #f8fdf4;    /* Màu nền sáng */
     --background-warning: #FFDBA8;  /* Màu nền cảnh báo */
     --white: #ffffff;               /* Màu trắng */
 }

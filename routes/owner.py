@@ -55,8 +55,56 @@ def manage_rooms():
 @login_required
 def add_room():
     if request.method == 'POST':
-        # Xử lý thêm phòng mới
-        pass
+        try:
+            # Lấy dữ liệu từ form wizard
+            room_title = request.form.get('room_title')
+            room_description = request.form.get('room_description')
+            province = request.form.get('province')
+            district = request.form.get('district')
+            ward = request.form.get('ward')
+            street = request.form.get('street')
+            
+            # Số lượng từ counter
+            bathroom_count = int(request.form.get('bathroom_count', 2))
+            bed_count = int(request.form.get('bed_count', 1))
+            guest_count = int(request.form.get('guest_count', 1))
+            
+            # Giá cả
+            hourly_price = request.form.get('hourly_price')
+            nightly_price = request.form.get('nightly_price')
+            
+            # Xử lý giá theo giờ
+            price_per_hour = float(hourly_price) if hourly_price else 0.0
+            price_per_night = float(nightly_price) if nightly_price else None
+            
+            # Tạo room mới
+            new_room = Room(
+                title=room_title,
+                room_type="Standard",  # Mặc định
+                address=f"{street}, {ward}" if street and ward else "Chưa cập nhật",
+                city=province if province else "Chưa cập nhật",
+                district=district if district else "Chưa cập nhật",
+                room_number=room_title,  # Sử dụng title làm room number
+                bed_count=bed_count,
+                bathroom_count=bathroom_count,
+                max_guests=guest_count,
+                price_per_hour=price_per_hour,
+                price_per_night=price_per_night,
+                description=room_description,
+                floor_number=1,  # Mặc định
+                owner_id=current_user.id
+            )
+            
+            db.session.add(new_room)
+            db.session.commit()
+            
+            flash('Đã thêm phòng thành công!', 'success')
+            return redirect(url_for('owner.dashboard'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Có lỗi xảy ra khi thêm phòng: {str(e)}', 'danger')
+            
     return render_template('owner/add_room.html')
 
 @owner_bp.route('/edit-room/<int:room_id>', methods=['GET', 'POST'])

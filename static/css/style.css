@@ -3,7 +3,7 @@
     --primary-light: #D0E508; /* Màu nhạt hơn */
     --primary-dark: #18282C;  /* Màu đậm hơn */
     --primary-bg: #F2F49F;    /* Nền sáng */
-    --primary-bg-light: #F5F9F2; /* Nền sáng hơn */
+    --primary-bg-light: #f8fdf4; /* Nền sáng hơn */
     --primary-black: #181D1D; /* Đen chủ đạo */
     --accent-1: #D1E518;
     --accent-2: #C2D500;
@@ -16,7 +16,7 @@
     --text-primary: #18282C;
     --text-secondary: #273A24;
     --border-color: #C2D500;
-    --background-light: #F5F9F2;
+    --background-light: #f8fdf4;
     --white: #ffffff;
 }
 
