@@ -87,9 +87,9 @@ def register():
 def login():
     if current_user.is_authenticated:
         if current_user.is_owner():
-            return redirect(url_for('owner.dashboard'))
+            return redirect(url_for('owner.profile'))
         elif current_user.role == 'admin':
-            return redirect(url_for('admin.dashboard'))
+            return redirect(url_for('home'))
         else:
             return redirect(url_for('home'))
     
@@ -131,11 +131,11 @@ def login():
                     user.can_manage_users = True
                     db.session.commit()
                     flash('Bạn đã được set làm Super Admin!', 'success')
-                next_page = url_for('admin.dashboard', login_success='1')
+                next_page = url_for('home', login_success='1')
                 
             elif isinstance(user, Owner):
                 session['user_role'] = 'owner'
-                next_page = url_for('owner.dashboard', login_success='1')
+                next_page = url_for('owner.profile', login_success='1')
                 
             else:  # Renter
                 session['user_role'] = 'renter'

@@ -36,30 +36,12 @@ def owner_required(f):
 
 
 @owner_bp.route('/dashboard')
-@owner_required
+@login_required
 def dashboard():
+    # Lấy tất cả phòng của owner hiện tại
     rooms = Room.query.filter_by(owner_id=current_user.id).all()
     
-    # Get room IDs owned by current owner
-    room_ids = [r.id for r in rooms]
-    
-    # Get pending bookings count for notifications
-    pending_bookings = Booking.query.filter(
-        Booking.room_id.in_(room_ids),
-        Booking.status == 'pending'
-    ).all()
-    
-    # Get recent bookings (last 5) for quick access
-    recent_bookings = Booking.query.filter(
-        Booking.room_id.in_(room_ids)
-    ).order_by(Booking.created_at.desc()).limit(5).all()
-    
-    return render_template(
-        'owner/dashboard.html', 
-        rooms=rooms, 
-        pending_bookings=pending_bookings,
-        recent_bookings=recent_bookings
-    )
+    return render_template('owner/dashboard.html', rooms=rooms)
 
 
 @owner_bp.route('/manage-rooms')
@@ -72,128 +54,31 @@ def manage_rooms():
 @owner_bp.route('/add-room', methods=['GET', 'POST'])
 @login_required
 def add_room():
-    """Add a new room"""
     if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        address = request.form.get('address')
-        city = request.form.get('city')
-        district = request.form.get('district')
-        room_type = request.form.get('room_type')
-        price_per_night = request.form.get('price_per_night')
-        
-        # Handle image upload (optional)
-        image_path = None
-        if 'image' in request.files:
-            image = request.files['image']
-            if image.filename:
-                filename = secure_filename(image.filename)
-                timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-                filename = f"{timestamp}_{filename}"
-                
-                # Make sure uploads folder exists inside static
-                upload_folder = os.path.join('static', 'uploads')
-                os.makedirs(upload_folder, exist_ok=True)
-                
-                # Save image to static/uploads folder
-                save_path = os.path.join(upload_folder, filename)
-                image.save(save_path)
-                
-                # Store path relative to static folder for url_for
-                image_path = f"uploads/{filename}"
-        
-        room = Room(
-            title=title,
-            description=description,
-            address=address,
-            city=city,
-            district=district,
-            image_path=image_path,
-            owner_id=current_user.id,
-            room_type=room_type,
-            price_per_night=price_per_night
-        )
-        
-        db.session.add(room)
-        db.session.commit()
-        flash("Room added successfully!", "success")
-
-        return redirect(url_for('owner.dashboard'))
-
+        # Xử lý thêm phòng mới
+        pass
     return render_template('owner/add_room.html')
 
 @owner_bp.route('/edit-room/<int:room_id>', methods=['GET', 'POST'])
 @login_required
 def edit_room(room_id):
-    # 1) Fetch the room by ID
     room = Room.query.get_or_404(room_id)
-    
-    # Kiểm tra quyền sở hữu phòng
     if room.owner_id != current_user.id:
-        flash('Bạn không có quyền chỉnh sửa phòng này.', 'danger')
+        flash('Bạn không có quyền chỉnh sửa phòng này!', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     if request.method == 'POST':
-        # 1) Update basic fields
-        room.title = request.form.get('title')
-        room.description = request.form.get('description')
-        room.city = request.form.get('city')
-        room.district = request.form.get('district')
-        room.address = request.form.get('address')
-        room.room_type = request.form.get('room_type')
-        room.price_per_night = request.form.get('price_per_night')
-
-        # 2) Handle new image upload (if provided)
-        image_file = request.files.get('image')
-        if image_file and image_file.filename != '':
-            # Tuỳ chọn: xoá ảnh cũ nếu muốn
-            if room.image_path:
-                old_path = os.path.join(
-                    current_app.config['UPLOAD_FOLDER'],
-                    os.path.basename(room.image_path)
-                )
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-
-            # Lưu file mới
-            filename = secure_filename(image_file.filename)
-            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-            filename = f"{timestamp}_{filename}"
-
-            # Tạo đường dẫn lưu file trong 'static/uploads'
-            save_path = os.path.join(
-                current_app.config['UPLOAD_FOLDER'], 
-                filename
-            )
-            image_file.save(save_path)
-
-            # **QUAN TRỌNG**: Gán vào `image_path`, không phải `image`
-            room.image_path = f"uploads/{filename}"
-
-        # 3) Commit changes to DB
-        db.session.commit()
-        flash('Room updated successfully!', 'success')
-        return redirect(url_for('owner.dashboard'))
-    
-    # For GET requests, display the edit form with existing data
+        # Xử lý chỉnh sửa phòng
+        pass
     return render_template('owner/edit_room.html', room=room)
 
-@owner_bp.route('/delete-room/<int:id>')
-@owner_required
-def delete_room(id):
-    room = Room.query.get_or_404(id)
-    
-    # Ensure the current user owns this room
+@owner_bp.route('/delete-room/<int:room_id>', methods=['POST'])
+@login_required
+def delete_room(room_id):
+    room = Room.query.get_or_404(room_id)
     if room.owner_id != current_user.id:
-        flash('Bạn không có quyền xóa phòng này', 'danger')
+        flash('Bạn không có quyền xóa phòng này!', 'danger')
         return redirect(url_for('owner.dashboard'))
-    
-    # Delete image file if it exists
-    if room.image_path:
-        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'],
-                                  os.path.basename(room.image_path))
-        if os.path.exists(image_path):
-            os.remove(image_path)
     
     db.session.delete(room)
     db.session.commit()
@@ -352,14 +237,12 @@ def delete_room_image(image_id):
 
 @owner_bp.route('/room-detail/<int:room_id>', methods=['GET', 'POST'])
 @login_required
-def owner_room_detail(room_id):
+def room_detail(room_id):
     room = Room.query.get_or_404(room_id)
-    
-    # Kiểm tra quyền sở hữu - Owner chỉ xem được phòng của mình
-    if room.homestay.owner_id != current_user.id:
-        flash("Bạn không có quyền xem hoặc chỉnh sửa phòng này.", "danger")
+    if room.owner_id != current_user.id:
+        flash('Bạn không có quyền xem phòng này!', 'danger')
         return redirect(url_for('owner.dashboard'))
-
+    
     if request.method == 'POST':
         # Handle form submission to edit
         room.room_number = request.form.get('room_number', room.room_number)
@@ -423,10 +306,10 @@ def owner_room_detail(room_id):
 
         db.session.commit()
         flash("Phòng đã được cập nhật thành công!", "success")
-        return redirect(url_for('owner.owner_room_detail', room_id=room.id))
+        return redirect(url_for('owner.room_detail', room_id=room.id))
 
     # For GET requests, display the edit form
-    return render_template('owner/room_detail_owner.html', room=room)
+    return render_template('owner/room_detail.html', room=room)
 
 @owner_bp.route('/booking/confirm/<int:id>')
 @owner_required
@@ -647,3 +530,18 @@ def check_email():
     return jsonify({
         'available': not bool(existing_owner or existing_admin or existing_renter)
     })
+
+@owner_bp.route('/toggle-room-status/<int:room_id>', methods=['POST'])
+@login_required
+def toggle_room_status(room_id):
+    room = Room.query.get_or_404(room_id)
+    if room.owner_id != current_user.id:
+        flash('Bạn không có quyền thay đổi trạng thái phòng này!', 'danger')
+        return redirect(url_for('owner.dashboard'))
+    
+    room.is_available = not room.is_available
+    db.session.commit()
+    
+    status = 'mở khóa' if room.is_available else 'khóa'
+    flash(f'Đã {status} phòng thành công!', 'success')
+    return redirect(url_for('owner.dashboard'))
