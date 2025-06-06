@@ -29,7 +29,7 @@ def owner_required(f):
         
         if not current_user.is_owner():
             flash('You must be an owner to access this page', 'danger')
-            return redirect(url_for('home'))
+            return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
     return decorated_function

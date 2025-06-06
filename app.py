@@ -154,10 +154,9 @@ app.register_blueprint(api_bp)
 # Home route
 @app.route('/')
 def home():
-    # If user is logged in and is owner, show their homestays
+    # If user is logged in and is owner, redirect to their dashboard instead of showing home page
     if current_user.is_authenticated and current_user.is_owner():
-        homestays = Room.query.filter_by(owner_id=current_user.id).all()
-        return render_template('home.html', homestays=homestays)
+        return redirect(url_for('owner.dashboard'))
     # Retrieve featured homestays to display on the homepage
     homestays = Room.query.filter_by(is_active=True).limit(6).all()
     return render_template('home.html', homestays=homestays)
