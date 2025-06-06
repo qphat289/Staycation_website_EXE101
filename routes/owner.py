@@ -56,62 +56,117 @@ def manage_rooms():
 def add_room():
     if request.method == 'POST':
         try:
-            # Lấy dữ liệu từ form wizard
-            room_title = request.form.get('room_title')
-            room_description = request.form.get('room_description')
-            province = request.form.get('province')
-            district = request.form.get('district')
-            ward = request.form.get('ward')
-            street = request.form.get('street')
+            # Lưu dữ liệu vào session để preview
+            room_data = {
+                'room_title': request.form.get('room_title'),
+                'room_description': request.form.get('room_description'),
+                'province': request.form.get('province'),
+                'district': request.form.get('district'),
+                'ward': request.form.get('ward'),
+                'street': request.form.get('street'),
+                'bathroom_count': int(request.form.get('bathroom_count', 2)),
+                'bed_count': int(request.form.get('bed_count', 1)),
+                'guest_count': int(request.form.get('guest_count', 1)),
+                'selected_rental_type': request.form.get('selected_rental_type'),
+                'hourly_price': request.form.get('hourly_price'),
+                'nightly_price': request.form.get('nightly_price')
+            }
             
-            # Số lượng từ counter
-            bathroom_count = int(request.form.get('bathroom_count', 2))
-            bed_count = int(request.form.get('bed_count', 1))
-            guest_count = int(request.form.get('guest_count', 1))
-            
-            # Lấy rental type được chọn
-            selected_rental_type = request.form.get('selected_rental_type')
-            
-            # Xử lý giá dựa theo rental type được chọn
-            price_per_hour = None
-            price_per_night = None
-            
-            if selected_rental_type == 'hourly':
-                hourly_price = request.form.get('hourly_price')
-                price_per_hour = float(hourly_price) if hourly_price else 0.0
-            elif selected_rental_type == 'nightly':
-                nightly_price = request.form.get('nightly_price')
-                price_per_night = float(nightly_price) if nightly_price else 0.0
-            
-            # Tạo room mới
-            new_room = Room(
-                title=room_title,
-                room_type="Standard",  # Mặc định
-                address=f"{street}, {ward}" if street and ward else "Chưa cập nhật",
-                city=province if province else "Chưa cập nhật",
-                district=district if district else "Chưa cập nhật",
-                room_number=room_title,  # Sử dụng title làm room number
-                bed_count=bed_count,
-                bathroom_count=bathroom_count,
-                max_guests=guest_count,
-                price_per_hour=price_per_hour,
-                price_per_night=price_per_night,
-                description=room_description,
-                floor_number=1,  # Mặc định
-                owner_id=current_user.id
-            )
-            
-            db.session.add(new_room)
-            db.session.commit()
-            
-            flash('Đã thêm phòng thành công!', 'success')
-            return redirect(url_for('owner.dashboard'))
+            session['room_preview_data'] = room_data
+            return redirect(url_for('owner.room_preview'))
             
         except Exception as e:
-            db.session.rollback()
-            flash(f'Có lỗi xảy ra khi thêm phòng: {str(e)}', 'danger')
-            
-    return render_template('owner/add_room.html')
+            flash(f'Có lỗi xảy ra: {str(e)}', 'danger')
+    
+    # Lấy dữ liệu từ session nếu có (khi quay lại từ preview)
+    room_data = session.get('room_preview_data', {})
+    print(f"DEBUG: Loading add_room with room_data: {room_data}")
+    return render_template('owner/add_room.html', room_data=room_data)
+
+@owner_bp.route('/room-preview')
+@login_required
+def room_preview():
+    # Lấy dữ liệu từ session
+    room_data = session.get('room_preview_data')
+    if not room_data:
+        flash('Không tìm thấy dữ liệu phòng để xem trước.', 'warning')
+        return redirect(url_for('owner.add_room'))
+    
+    return render_template('owner/room_preview.html', room_data=room_data)
+
+@owner_bp.route('/back-to-edit')
+@login_required
+def back_to_edit():
+    # Dữ liệu đã được lưu trong session từ lúc tạo preview
+    # Chỉ cần redirect về add_room, dữ liệu sẽ được load tự động
+    return redirect(url_for('owner.add_room'))
+
+@owner_bp.route('/clear-room-data')
+@login_required
+def clear_room_data():
+    # Xóa dữ liệu tạm thời khỏi session khi owner thoát khỏi giao diện tạo phòng
+    session.pop('room_preview_data', None)
+    flash('Đã hủy quá trình tạo phòng.', 'info')
+    return redirect(url_for('owner.dashboard'))
+
+@owner_bp.route('/clear-room-session', methods=['POST'])
+@login_required
+def clear_room_session():
+    # API endpoint để xóa session data qua AJAX
+    session.pop('room_preview_data', None)
+    print("DEBUG: Cleared room_preview_data from session")
+    return jsonify({'status': 'success'})
+
+@owner_bp.route('/confirm-room', methods=['POST'])
+@login_required
+def confirm_room():
+    # Lấy dữ liệu từ session
+    room_data = session.get('room_preview_data')
+    if not room_data:
+        flash('Không tìm thấy dữ liệu phòng để tạo.', 'warning')
+        return redirect(url_for('owner.add_room'))
+    
+    try:
+        # Xử lý giá dựa theo rental type được chọn
+        price_per_hour = None
+        price_per_night = None
+        
+        if room_data['selected_rental_type'] == 'hourly':
+            price_per_hour = float(room_data['hourly_price']) if room_data['hourly_price'] else 0.0
+        elif room_data['selected_rental_type'] == 'nightly':
+            price_per_night = float(room_data['nightly_price']) if room_data['nightly_price'] else 0.0
+        
+        # Tạo room mới
+        new_room = Room(
+            title=room_data['room_title'],
+            room_type="Standard",  # Mặc định
+            address=f"{room_data['street']}, {room_data['ward']}" if room_data['street'] and room_data['ward'] else "Chưa cập nhật",
+            city=room_data['province'] if room_data['province'] else "Chưa cập nhật",
+            district=room_data['district'] if room_data['district'] else "Chưa cập nhật",
+            room_number=room_data['room_title'],  # Sử dụng title làm room number
+            bed_count=room_data['bed_count'],
+            bathroom_count=room_data['bathroom_count'],
+            max_guests=room_data['guest_count'],
+            price_per_hour=price_per_hour,
+            price_per_night=price_per_night,
+            description=room_data['room_description'],
+            floor_number=1,  # Mặc định
+            owner_id=current_user.id
+        )
+        
+        db.session.add(new_room)
+        db.session.commit()
+        
+        # Xóa dữ liệu preview khỏi session
+        session.pop('room_preview_data', None)
+        
+        flash('Đã tạo phòng thành công!', 'success')
+        return redirect(url_for('owner.dashboard'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Có lỗi xảy ra khi tạo phòng: {str(e)}', 'danger')
+        return redirect(url_for('owner.room_preview'))
 
 @owner_bp.route('/edit-room/<int:room_id>', methods=['GET', 'POST'])
 @login_required

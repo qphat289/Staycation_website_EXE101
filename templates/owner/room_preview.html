@@ -1,0 +1,480 @@
+{% extends 'base.html' %}
+{% block title %}Thông tin Phòng{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    body {
+        background: #f8fdf4;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .preview-container {
+        max-width: 1400px;
+        margin: -50px auto 0 auto;
+        padding: 20px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .back-link {
+        display: flex;
+        align-items: center;
+        color: #666;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .back-link i {
+        margin-right: 8px;
+    }
+
+    .confirm-btn {
+        background: #9ed649;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(158, 214, 73, 0.3);
+    }
+
+    .confirm-btn:hover {
+        background: #8bc441;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(158, 214, 73, 0.4);
+    }
+
+    .confirm-btn i {
+        font-size: 16px;
+    }
+
+    .main-content {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 30px;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #f8f9fa;
+        color: #666;
+        pointer-events: none;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #f8f9fa;
+        color: #666;
+        pointer-events: none;
+    }
+
+    .counter-group {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 20px;
+    }
+
+    .counter-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .counter-label {
+        font-size: 14px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    .counter-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        background: #f8f9fa;
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .amenities-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .amenity-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .toggle {
+        width: 44px;
+        height: 24px;
+        background: #9ed649;
+        border-radius: 12px;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .toggle::after {
+        content: '';
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        transition: all 0.3s ease;
+    }
+
+    .price-input-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .price-input {
+        flex: 1;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #f8f9fa;
+        color: #666;
+        pointer-events: none;
+    }
+
+    .currency-label {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .textarea {
+        width: 100%;
+        min-height: 80px;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        resize: vertical;
+        background: #f8f9fa;
+        color: #666;
+        pointer-events: none;
+    }
+
+    .image-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        height: fit-content;
+    }
+
+    .image-counter {
+        text-align: right;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 16px;
+    }
+
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .image-item {
+        aspect-ratio: 1;
+        background: #f8f9fa;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .image-item:hover {
+        border-color: #9ed649;
+        background: #f0f8f0;
+    }
+
+    .image-item.add-more {
+        border-style: dashed;
+        background: #fffde7;
+        border-color: #9ed649;
+    }
+
+    .add-icon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .add-icon i {
+        font-size: 24px;
+        color: #9ed649;
+    }
+
+    .featured-badge {
+        background: #9ed649;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        position: absolute;
+        top: 8px;
+        left: 8px;
+    }
+
+
+
+    @media (max-width: 1024px) {
+        .main-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="preview-container">
+    <div class="header">
+        <a href="{{ url_for('owner.back_to_edit') }}" class="back-link">
+            <i class="fas fa-chevron-left"></i>
+            Chỉnh sửa phòng
+        </a>
+        <form method="POST" action="{{ url_for('owner.confirm_room') }}" style="display: inline;">
+            <button type="submit" class="confirm-btn">
+                <i class="fas fa-check"></i>
+                Xác nhận tạo phòng
+            </button>
+        </form>
+    </div>
+
+    <div class="main-content">
+        <div class="form-section">
+            <h2 class="section-title">Thông tin Phòng</h2>
+            
+            <!-- Thông tin cơ bản -->
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">Thông tin cơ bản</h3>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Tên phòng</label>
+                        <input type="text" class="form-input" value="{{ room_data.room_title or '' }}" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Mô hình</label>
+                        <select class="form-select" disabled>
+                            <option>Nhà</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Hình thức cho thuê</label>
+                        <select class="form-select" disabled>
+                            <option>
+                                {% if room_data.selected_rental_type == 'hourly' %}
+                                    Theo giờ
+                                {% elif room_data.selected_rental_type == 'nightly' %}
+                                    Theo đêm
+                                {% else %}
+                                    Chưa chọn
+                                {% endif %}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Địa chỉ -->
+            <div class="form-group">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Tỉnh/Thành phố</label>
+                        <select class="form-select" disabled>
+                            <option>{{ room_data.province or 'Chưa chọn' }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Quận/Huyện</label>
+                        <select class="form-select" disabled>
+                            <option>{{ room_data.district or 'Chưa chọn' }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Phường/Xã</label>
+                        <select class="form-select" disabled>
+                            <option>{{ room_data.ward or 'Chưa chọn' }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Tên đường, Tòa nhà, Số nhà</label>
+                    <input type="text" class="form-input" value="{{ room_data.street or '' }}" readonly>
+                </div>
+            </div>
+
+            <!-- Chi tiết -->
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">Chi tiết</h3>
+                <div class="counter-group">
+                    <div class="counter-item">
+                        <span class="counter-label">Số giường</span>
+                        <div class="counter-value">{{ room_data.bed_count or 1 }}</div>
+                    </div>
+                    <div class="counter-item">
+                        <span class="counter-label">Số phòng tắm</span>
+                        <div class="counter-value">{{ room_data.bathroom_count or 1 }}</div>
+                    </div>
+                    <div class="counter-item">
+                        <span class="counter-label">Số lượng khách</span>
+                        <div class="counter-value">{{ room_data.guest_count or 1 }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tiện nghi -->
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">Tiện nghi</h3>
+                <div class="amenities-list">
+                    <div class="amenity-item">
+                        <span>Khách được hút thuốc</span>
+                        <div class="toggle"></div>
+                    </div>
+                    <div class="amenity-item">
+                        <span>Khách được mang thú cưng</span>
+                        <div class="toggle"></div>
+                    </div>
+                    <div class="amenity-item">
+                        <span>Khách được mang trẻ em</span>
+                        <div class="toggle"></div>
+                    </div>
+                    <div class="amenity-item">
+                        <span>Khách được tổ chức tiệc/ăn mừng</span>
+                        <div class="toggle"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Giá mỗi giờ -->
+            <div class="form-group">
+                <label class="form-label">Giá mỗi giờ</label>
+                <div class="price-input-group">
+                    <span class="currency-label">VND</span>
+                    <input type="text" class="price-input" 
+                           value="{% if room_data.selected_rental_type == 'hourly' and room_data.hourly_price %}{{ room_data.hourly_price }}{% elif room_data.selected_rental_type == 'nightly' and room_data.nightly_price %}{{ room_data.nightly_price }}{% endif %}" 
+                           readonly>
+                </div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="form-group">
+                <label class="form-label">Mô tả</label>
+                <textarea class="textarea" readonly>{{ room_data.room_description or '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="image-section">
+            <div class="image-counter">5/10</div>
+            <h3 class="section-title">Ảnh</h3>
+            
+            <div class="image-grid">
+                <div class="image-item" style="position: relative;">
+                    <div class="featured-badge">Ảnh bìa</div>
+                    <span>Ảnh bìa</span>
+                </div>
+                <div class="image-item"></div>
+                <div class="image-item"></div>
+                <div class="image-item"></div>
+                <div class="image-item"></div>
+                <div class="image-item add-more">
+                    <div class="add-icon">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Thêm ảnh</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+{% endblock %}
+
+ 

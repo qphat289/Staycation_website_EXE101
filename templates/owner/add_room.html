@@ -27,16 +27,16 @@
             <div class="wizard-content">
                 <form method="post" enctype="multipart/form-data" class="wizard-form" onsubmit="prepareFormData()">
             <!-- Hidden inputs for counter values -->
-            <input type="hidden" name="bathroom_count" id="bathroom_count_input" value="2">
-            <input type="hidden" name="bed_count" id="bed_count_input" value="1">
-            <input type="hidden" name="guest_count" id="guest_count_input" value="1">
+            <input type="hidden" name="bathroom_count" id="bathroom_count_input" value="{{ room_data.bathroom_count or 2 }}">
+            <input type="hidden" name="bed_count" id="bed_count_input" value="{{ room_data.bed_count or 1 }}">
+            <input type="hidden" name="guest_count" id="guest_count_input" value="{{ room_data.guest_count or 1 }}">
             <input type="hidden" name="selected_rental_type" id="selected_rental_type" value="">
             <!-- Step 1: Basic Information -->
             <div class="step-content active" id="step-1">
                 <div class="form-section">
                     <h3>Tiêu đề phòng</h3>
                     <div class="form-content">
-                        <input type="text" name="room_title" placeholder="Thêm tiêu đề" class="form-input" required>
+                        <input type="text" name="room_title" id="room_title" placeholder="Thêm tiêu đề" class="form-input" value="{{ room_data.room_title or '' }}" required>
                     </div>
                 </div>
                 
@@ -44,7 +44,7 @@
                     <h3>Mô tả phòng</h3>
                     <div class="form-content">
                         <div class="textarea-container">
-                            <textarea name="room_description" placeholder="Thêm miêu tả homestay" class="form-textarea" required></textarea>
+                            <textarea name="room_description" id="room_description" placeholder="Thêm miêu tả homestay" class="form-textarea" required>{{ room_data.room_description or '' }}</textarea>
                             <div class="char-count">0/500</div>
                         </div>
                     </div>
@@ -89,18 +89,18 @@
                     <h3>Địa chỉ phòng</h3>
                     <div class="form-content">
                         <div class="location-inputs">
-                            <select name="province" id="provinceSelect" class="form-select" onchange="updateDistricts()">
-                                <option value="" disabled selected>Tỉnh/Thành phố</option>
-                                <option value="hcm">TP. Hồ Chí Minh</option>
-                                <option value="hanoi">Hà Nội</option>
+                            <select name="province" id="province" class="form-select" onchange="updateDistricts()">
+                                <option value="" disabled {% if not room_data.province %}selected{% endif %}>Tỉnh/Thành phố</option>
+                                <option value="hcm" {% if room_data.province == 'hcm' %}selected{% endif %}>TP. Hồ Chí Minh</option>
+                                <option value="hanoi" {% if room_data.province == 'hanoi' %}selected{% endif %}>Hà Nội</option>
                             </select>
-                            <select name="district" id="districtSelect" class="form-select" onchange="updateWards()" disabled>
+                            <select name="district" id="district" class="form-select" onchange="updateWards()" disabled>
                                 <option value="" disabled selected>Quận/Huyện</option>
                             </select>
-                            <select name="ward" id="wardSelect" class="form-select" disabled>
+                            <select name="ward" id="ward" class="form-select" disabled>
                                 <option value="" disabled selected>Phường/Xã</option>
                             </select>
-                            <input type="text" name="street" class="form-input" placeholder="Tên đường, số nhà/tòa nhà" required>
+                            <input type="text" name="street" id="street" class="form-input" placeholder="Tên đường, số nhà/tòa nhà" value="{{ room_data.street or '' }}" required>
                         </div>
                     </div>
                 </div>
@@ -121,7 +121,7 @@
                                 <span>Số lượng phòng tắm trong phòng</span>
                                 <div class="counter">
                                     <button type="button" class="counter-btn" onclick="decreaseCount('bathroom')">-</button>
-                                    <span id="bathroom-count">2</span>
+                                    <span id="bathroom-count">{{ room_data.bathroom_count or 2 }}</span>
                                     <button type="button" class="counter-btn" onclick="increaseCount('bathroom')">+</button>
                                 </div>
                             </div>
@@ -129,7 +129,7 @@
                                 <span>Số lượng giường trong phòng</span>
                                 <div class="counter">
                                     <button type="button" class="counter-btn" onclick="decreaseCount('bed')">-</button>
-                                    <span id="bed-count">1</span>
+                                    <span id="bed-count">{{ room_data.bed_count or 1 }}</span>
                                     <button type="button" class="counter-btn" onclick="increaseCount('bed')">+</button>
                                 </div>
                             </div>
@@ -137,7 +137,7 @@
                                 <span>Số lượng khách tối đa</span>
                                 <div class="counter">
                                     <button type="button" class="counter-btn" onclick="decreaseCount('guest')">-</button>
-                                    <span id="guest-count">1</span>
+                                    <span id="guest-count">{{ room_data.guest_count or 1 }}</span>
                                     <button type="button" class="counter-btn" onclick="increaseCount('guest')">+</button>
                                 </div>
                             </div>
@@ -165,14 +165,14 @@
                     <div class="form-content">
                         <div class="rental-type-selection">
                             <div class="rental-option">
-                                <input type="radio" id="hourly" name="rental_type" value="hourly" class="rental-radio">
+                                <input type="radio" id="hourly" name="rental_type" value="hourly" class="rental-radio" {% if room_data.selected_rental_type == 'hourly' %}checked{% endif %}>
                                 <label for="hourly" class="rental-label">
                                     <i class="rental-icon bi bi-clock"></i>
                                     <span class="rental-text">Theo giờ</span>
                                 </label>
                             </div>
                             <div class="rental-option">
-                                <input type="radio" id="nightly" name="rental_type" value="nightly" class="rental-radio">
+                                <input type="radio" id="nightly" name="rental_type" value="nightly" class="rental-radio" {% if room_data.selected_rental_type == 'nightly' %}checked{% endif %}>
                                 <label for="nightly" class="rental-label">
                                     <i class="rental-icon bi bi-moon"></i>
                                     <span class="rental-text">Qua đêm</span>
@@ -261,7 +261,7 @@
                                 <p>Giá thuê theo giờ với giá gốc homestay ban đầu từ 50.000đ</p>
                                 <div class="price-input">
                                     <span class="currency">VND</span>
-                                    <input type="number" name="hourly_price" placeholder="Gợi ý 200.000đ" class="price-field">
+                                    <input type="number" name="hourly_price" placeholder="Gợi ý 200.000đ" class="price-field" value="{{ room_data.hourly_price or '' }}">
                                 </div>
                             </div>
                             <div class="pricing-option" id="nightly-pricing" style="display: none;">
@@ -269,7 +269,7 @@
                                 <p>Giá thuê theo đêm với giá gốc homestay ban đầu từ 400.000đ</p>
                                 <div class="price-input">
                                     <span class="currency">VND</span>
-                                    <input type="number" name="nightly_price" placeholder="Gợi ý 400.000đ" class="price-field">
+                                    <input type="number" name="nightly_price" placeholder="Gợi ý 400.000đ" class="price-field" value="{{ room_data.nightly_price or '' }}">
                                 </div>
                             </div>
                             <div class="no-rental-type-selected" id="no-pricing-selected">
@@ -406,8 +406,6 @@
 body.add-room-no-scroll, html.add-room-no-scroll {
     overflow: hidden;
     height: 100vh;
-    position: fixed;
-    width: 100%;
 }
 
 .wizard-layout {
@@ -415,6 +413,7 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     gap: 30px;
     align-items: flex-start;
     height: calc(100vh - 20px);
+    max-height: calc(100vh - 20px);
 }
 
 .steps-sidebar {
@@ -483,7 +482,7 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 
 .wizard-content {
     flex: 1;
-    height: 100%;
+    height: calc(100vh - 100px);
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #9ed649 #f1f1f1;
@@ -491,21 +490,27 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 }
 
 .wizard-content::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
 }
 
 .wizard-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin: 10px 0;
 }
 
 .wizard-content::-webkit-scrollbar-thumb {
     background: #9ed649;
-    border-radius: 4px;
+    border-radius: 5px;
+    border: 2px solid #f8f9fa;
 }
 
 .wizard-content::-webkit-scrollbar-thumb:hover {
     background: #8bc441;
+}
+
+.wizard-content::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 .wizard-form {
@@ -513,8 +518,7 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     border-radius: 12px;
     padding: 25px;
     box-shadow: none;
-    height: 100%;
-    overflow-y: auto;
+    min-height: 100%;
 }
 
 .step-content {
@@ -523,6 +527,7 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 
 .step-content.active {
     display: block;
+    padding-bottom: 50px;
 }
 
 .form-section {
@@ -893,6 +898,8 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     justify-content: center;
     gap: 6px;
     cursor: pointer;
+    z-index: 5;
+    pointer-events: auto;
 }
 
 .upload-placeholder i {
@@ -912,12 +919,14 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     width: 100%;
     height: 100%;
     cursor: pointer;
+    z-index: 10;
 }
 
 .upload-item.add-more {
     background: #f9f9f9;
     border-color: #9ed649;
     border-style: dashed;
+    cursor: pointer;
 }
 
 .upload-item.add-more .upload-placeholder {
@@ -985,10 +994,16 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 .form-actions {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-top: 25px;
+    gap: 10px;
 }
 
-.btn-secondary, .btn-primary {
+.form-actions .btn-danger {
+    margin: 0 auto;
+}
+
+.btn-secondary, .btn-primary, .btn-danger {
     padding: 12px 24px;
     border-radius: 8px;
     font-size: 14px;
@@ -996,6 +1011,9 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     cursor: pointer;
     border: 1px solid;
     transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }
 
 .btn-secondary {
@@ -1017,6 +1035,19 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 
 .btn-primary:hover {
     background: #8bc441;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    border-color: #bd2130;
+    color: white;
+    text-decoration: none;
 }
 
 .modal {
@@ -1953,9 +1984,9 @@ async function loadAmenitiesData() {
 }
 
 function updateDistricts() {
-    const provinceSelect = document.getElementById('provinceSelect');
-    const districtSelect = document.getElementById('districtSelect');
-    const wardSelect = document.getElementById('wardSelect');
+    const provinceSelect = document.getElementById('province');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
     
     // Reset districts and wards
     districtSelect.innerHTML = '<option value="" disabled selected>Quận/Huyện</option>';
@@ -2004,9 +2035,9 @@ function updateDistricts() {
 }
 
 function updateWards() {
-    const provinceSelect = document.getElementById('provinceSelect');
-    const districtSelect = document.getElementById('districtSelect');
-    const wardSelect = document.getElementById('wardSelect');
+    const provinceSelect = document.getElementById('province');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
     
     // Reset wards
     wardSelect.innerHTML = '<option value="" disabled selected>Phường/Xã</option>';
@@ -2122,7 +2153,201 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Setup upload functionality
+    setupUploadHandlers();
 });
+
+// Setup upload click handlers
+function setupUploadHandlers() {
+    // Handle upload item clicks
+    document.querySelectorAll('.upload-item').forEach(item => {
+        const fileInput = item.querySelector('input[type="file"]');
+        const placeholder = item.querySelector('.upload-placeholder');
+        
+        if (fileInput && placeholder) {
+            // When clicking on placeholder, trigger file input
+            placeholder.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    handleFilePreview(this, item);
+                }
+            });
+        } else if (item.classList.contains('add-more')) {
+            // Handle "Thêm ảnh" button - create new file input
+            placeholder.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Create temporary file input
+                const tempInput = document.createElement('input');
+                tempInput.type = 'file';
+                tempInput.accept = 'image/*';
+                tempInput.multiple = true;
+                tempInput.style.display = 'none';
+                
+                tempInput.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        // Add files to existing upload items or create new ones
+                        Array.from(this.files).forEach((file, index) => {
+                            addImageToUploadGrid(file);
+                        });
+                    }
+                    // Remove temporary input
+                    tempInput.remove();
+                });
+                
+                document.body.appendChild(tempInput);
+                tempInput.click();
+            });
+        }
+    });
+}
+
+// Handle file preview
+function handleFilePreview(input, uploadItem) {
+    const file = input.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Create preview image
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 1;
+            `;
+            
+            // Add remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '×';
+            removeBtn.type = 'button';
+            removeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: 20px;
+                height: 20px;
+                border: none;
+                background: rgba(220, 53, 69, 0.8);
+                color: white;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 12px;
+                z-index: 15;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            removeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Clear the input
+                input.value = '';
+                // Remove preview elements
+                img.remove();
+                removeBtn.remove();
+                // Show placeholder again
+                uploadItem.querySelector('.upload-placeholder').style.display = 'flex';
+            });
+            
+            // Hide placeholder and add preview
+            uploadItem.querySelector('.upload-placeholder').style.display = 'none';
+            uploadItem.appendChild(img);
+            uploadItem.appendChild(removeBtn);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Add image to upload grid
+function addImageToUploadGrid(file) {
+    // Find first empty upload slot (not including the "add-more" button)
+    const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+    let emptySlot = null;
+    
+    for (let item of uploadItems) {
+        const fileInput = item.querySelector('input[type="file"]');
+        const placeholder = item.querySelector('.upload-placeholder');
+        
+        if (fileInput && (!fileInput.files || fileInput.files.length === 0) && 
+            placeholder && placeholder.style.display !== 'none') {
+            emptySlot = item;
+            break;
+        }
+    }
+    
+    if (emptySlot) {
+        // Use existing empty slot
+        const fileInput = emptySlot.querySelector('input[type="file"]');
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        
+        // Trigger preview
+        handleFilePreview(fileInput, emptySlot);
+    } else {
+        // Create new upload item if no empty slots
+        const uploadGrid = document.querySelector('.upload-grid');
+        const addMoreButton = uploadGrid.querySelector('.add-more');
+        
+        const newUploadItem = document.createElement('div');
+        newUploadItem.className = 'upload-item';
+        newUploadItem.innerHTML = `
+            <input type="file" name="images[]" accept="image/*" multiple>
+            <div class="upload-placeholder">
+                <i class="bi bi-camera"></i>
+            </div>
+        `;
+        
+        // Insert before the "add more" button
+        uploadGrid.insertBefore(newUploadItem, addMoreButton);
+        
+        // Set up the file for the new item
+        const fileInput = newUploadItem.querySelector('input[type="file"]');
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        
+        // Trigger preview
+        handleFilePreview(fileInput, newUploadItem);
+        
+        // Setup handlers for the new item
+        setupUploadHandlersForItem(newUploadItem);
+    }
+}
+
+// Setup handlers for a specific upload item
+function setupUploadHandlersForItem(item) {
+    const fileInput = item.querySelector('input[type="file"]');
+    const placeholder = item.querySelector('.upload-placeholder');
+    
+    if (fileInput && placeholder) {
+        placeholder.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                handleFilePreview(this, item);
+            }
+        });
+    }
+}
 
 // ================================
 // Rules Modal Functions
@@ -2262,6 +2487,191 @@ function removeSelectedRule(ruleId) {
     updateSelectedRulesDisplay();
 }
 
+// Load saved data from sessionStorage or server
+function loadSavedData() {
+    let roomData = null;
+    
+    // Check server session data first
+    {% if room_data and room_data.room_title %}
+    roomData = {{ room_data|tojson }};
+    console.log('✅ Loading saved data from server session:', roomData);
+    {% else %}
+    console.log('❌ No server session data available');
+    // Try sessionStorage as backup
+    roomData = loadFormDataFromSession();
+    if (roomData) {
+        console.log('✅ Loading saved data from sessionStorage:', roomData);
+    } else {
+        console.log('❌ No sessionStorage data available');
+        return;
+    }
+    {% endif %}
+    
+    if (!roomData || !roomData.room_title) {
+        console.log('❌ No valid room data to load');
+        return;
+    }
+    
+    // Fill basic info
+    console.log('🔄 Starting to fill form fields...');
+    
+    if (roomData.room_title) {
+        const titleInput = document.getElementById('room_title');
+        if (titleInput) {
+            titleInput.value = roomData.room_title;
+            console.log('✅ Filled room title:', roomData.room_title);
+        } else {
+            console.log('❌ room_title input not found');
+        }
+    }
+    
+    if (roomData.room_description) {
+        const descInput = document.getElementById('room_description');
+        if (descInput) {
+            descInput.value = roomData.room_description;
+            console.log('✅ Filled room description');
+        } else {
+            console.log('❌ room_description textarea not found');
+        }
+    }
+    
+    // Fill street first
+    if (roomData.street) {
+        const streetInput = document.getElementById('street');
+        if (streetInput) {
+            streetInput.value = roomData.street;
+            console.log('✅ Filled street:', roomData.street);
+        } else {
+            console.log('❌ street input not found');
+        }
+    }
+    
+    // Fill counters immediately
+    console.log('🔄 Filling counters...');
+    if (roomData.bed_count) {
+        updateCounterValue('bed_count', roomData.bed_count);
+        console.log('✅ Set bed count:', roomData.bed_count);
+    }
+    if (roomData.bathroom_count) {
+        updateCounterValue('bathroom_count', roomData.bathroom_count);
+        console.log('✅ Set bathroom count:', roomData.bathroom_count);
+    }
+    if (roomData.guest_count) {
+        updateCounterValue('guest_count', roomData.guest_count);
+        console.log('✅ Set guest count:', roomData.guest_count);
+    }
+    
+    // Fill rental type
+    if (roomData.selected_rental_type) {
+        const rentalTypeInput = document.querySelector(`input[name="rental_type"][value="${roomData.selected_rental_type}"]`);
+        if (rentalTypeInput) {
+            rentalTypeInput.checked = true;
+            console.log('Set rental type:', roomData.selected_rental_type);
+            // Trigger pricing display update
+            setTimeout(() => {
+                updatePricingDisplay();
+                
+                // Fill prices after pricing display is updated
+                if (roomData.hourly_price && roomData.selected_rental_type === 'hourly') {
+                    const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
+                    if (hourlyPriceInput) {
+                        hourlyPriceInput.value = roomData.hourly_price;
+                        console.log('Filled hourly price:', roomData.hourly_price);
+                    }
+                }
+                if (roomData.nightly_price && roomData.selected_rental_type === 'nightly') {
+                    const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
+                    if (nightlyPriceInput) {
+                        nightlyPriceInput.value = roomData.nightly_price;
+                        console.log('Filled nightly price:', roomData.nightly_price);
+                    }
+                }
+            }, 300);
+        }
+    }
+    
+    // Fill location with proper cascade
+    fillLocationData(roomData);
+}
+
+function fillLocationData(roomData) {
+    console.log('🔄 Filling location data...', {
+        province: roomData.province,
+        district: roomData.district,
+        ward: roomData.ward
+    });
+    
+    // Fill province
+    if (roomData.province) {
+        const provinceSelect = document.getElementById('province');
+        if (provinceSelect) {
+            provinceSelect.value = roomData.province;
+            console.log('✅ Set province:', roomData.province);
+            
+            // Trigger change event to load districts
+            provinceSelect.dispatchEvent(new Event('change'));
+            
+            // Wait for districts to load, then set district
+            setTimeout(() => {
+                if (roomData.district) {
+                    const districtSelect = document.getElementById('district');
+                    if (districtSelect) {
+                        districtSelect.value = roomData.district;
+                        console.log('✅ Set district:', roomData.district);
+                        
+                        // Trigger change to load wards
+                        districtSelect.dispatchEvent(new Event('change'));
+                        
+                        // Wait for wards to load, then set ward
+                        setTimeout(() => {
+                            if (roomData.ward) {
+                                const wardSelect = document.getElementById('ward');
+                                if (wardSelect) {
+                                    wardSelect.value = roomData.ward;
+                                    console.log('✅ Set ward:', roomData.ward);
+                                } else {
+                                    console.log('❌ ward select not found');
+                                }
+                            }
+                        }, 500); // Increase timeout
+                    } else {
+                        console.log('❌ district select not found');
+                    }
+                }
+            }, 500); // Increase timeout
+        } else {
+            console.log('❌ province select not found');
+        }
+    }
+}
+
+function updateCounterValue(counterId, value) {
+    // Update hidden input
+    const input = document.getElementById(counterId + '_input');
+    if (input) {
+        input.value = value;
+    }
+    
+    // Update display value - map counterId to actual element ID
+    let displayId;
+    if (counterId === 'bed_count') {
+        displayId = 'bed-count';
+    } else if (counterId === 'bathroom_count') {
+        displayId = 'bathroom-count';
+    } else if (counterId === 'guest_count') {
+        displayId = 'guest-count';
+    }
+    
+    const display = document.getElementById(displayId);
+    if (display) {
+        display.textContent = value;
+    }
+    
+    console.log(`Updated counter ${counterId} to ${value}`);
+}
+
+
+
 // Close modal when clicking outside
 window.onclick = function(event) {
     const amenityModal = document.getElementById('amenityModal');
@@ -2279,6 +2689,158 @@ window.onclick = function(event) {
         document.documentElement.classList.add('add-room-no-scroll');
     }
 }
+
+// ================================
+// Session Storage Management
+// ================================
+
+// Save form data to sessionStorage
+function saveFormDataToSession() {
+    const formData = {
+        room_title: document.getElementById('room_title')?.value || '',
+        room_description: document.getElementById('room_description')?.value || '',
+        province: document.getElementById('province')?.value || '',
+        district: document.getElementById('district')?.value || '',
+        ward: document.getElementById('ward')?.value || '',
+        street: document.getElementById('street')?.value || '',
+        bed_count: parseInt(document.getElementById('bed-count')?.textContent || document.getElementById('bed_count_input')?.value || 1),
+        bathroom_count: parseInt(document.getElementById('bathroom-count')?.textContent || document.getElementById('bathroom_count_input')?.value || 2),
+        guest_count: parseInt(document.getElementById('guest-count')?.textContent || document.getElementById('guest_count_input')?.value || 1),
+        selected_rental_type: document.querySelector('input[name="rental_type"]:checked')?.value || '',
+        hourly_price: document.querySelector('input[name="hourly_price"]')?.value || '',
+        nightly_price: document.querySelector('input[name="nightly_price"]')?.value || ''
+    };
+    
+    sessionStorage.setItem('room_form_data', JSON.stringify(formData));
+    console.log('Saved form data to session:', formData);
+}
+
+// Load form data from sessionStorage
+function loadFormDataFromSession() {
+    const savedData = sessionStorage.getItem('room_form_data');
+    if (savedData) {
+        try {
+            const formData = JSON.parse(savedData);
+            console.log('Loading form data from session:', formData);
+            return formData;
+        } catch (e) {
+            console.error('Error parsing saved form data:', e);
+            sessionStorage.removeItem('room_form_data');
+        }
+    }
+    return null;
+}
+
+// Clear session storage
+function clearFormSession() {
+    sessionStorage.removeItem('room_form_data');
+    console.log('Cleared form session data');
+}
+
+// Setup auto-save listeners
+function setupAutoSave() {
+    // Save on input changes
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('input', debounce(saveFormDataToSession, 500));
+        input.addEventListener('change', saveFormDataToSession);
+    });
+    
+    // Save on counter changes
+    const counterButtons = document.querySelectorAll('.counter-btn');
+    counterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            setTimeout(saveFormDataToSession, 100);
+        });
+    });
+}
+
+// Debounce function to limit save frequency
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Call loadSavedData when everything is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM Content Loaded - Starting initialization...');
+    
+    // Try to load saved data immediately for basic fields
+    loadSavedData();
+    
+    // Load tất cả dữ liệu khi trang load
+    Promise.all([loadProvinces(), loadAmenities(), loadRules()]).then(() => {
+        console.log('✅ All API data loaded successfully');
+        
+        // Setup rental type change listeners
+        const rentalTypeInputs = document.querySelectorAll('input[name="rental_type"]');
+        rentalTypeInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                updatePricingDisplay();
+                saveFormDataToSession(); // Save after rental type change
+            });
+        });
+        
+        // Load saved data again after APIs are loaded (for location selects)
+        setTimeout(() => {
+            console.log('🔄 Re-loading saved data after API data loaded...');
+            loadSavedData();
+            // Setup auto-save after loading data
+            setupAutoSave();
+        }, 500);
+    }).catch(error => {
+        console.error('❌ Error loading API data:', error);
+        // Still try to load saved data even if APIs fail
+        setTimeout(() => {
+            loadSavedData();
+            setupAutoSave();
+        }, 500);
+    });
+    
+    // Setup upload functionality
+    setupUploadHandlers();
+});
+
+// Clear both sessionStorage and server session
+function clearAllRoomData() {
+    // Clear sessionStorage
+    clearFormSession();
+    
+    // Clear server session via AJAX
+    fetch('/owner/clear-room-session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        console.log('✅ Cleared server session data');
+    }).catch(error => {
+        console.error('❌ Error clearing server session:', error);
+    });
+}
+
+// Auto-clear when navigating away from add-room (not to preview)
+window.addEventListener('beforeunload', function(e) {
+    // Save current form data before leaving
+    saveFormDataToSession();
+    console.log('💾 Saved form data before page unload');
+});
+
+// Clear when successfully creating room
+window.addEventListener('load', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('created') === 'success') {
+        clearAllRoomData();
+        console.log('🗑️ Room created successfully - cleared data');
+    }
+});
 </script>
 
 {% endblock %}
