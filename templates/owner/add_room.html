@@ -55,7 +55,7 @@
                     <div class="form-content">
                         <div class="property-type-selection">
                             <div class="property-option">
-                                <input type="radio" id="house" name="property_type" value="house" class="property-radio">
+                                <input type="radio" id="house" name="property_type" value="house" class="property-radio" {% if room_data.property_type == 'house' %}checked{% endif %}>
                                 <label for="house" class="property-label">
                                     <div class="property-icon">
                                         <i class="bi bi-house-door"></i>
@@ -64,7 +64,7 @@
                                 </label>
                             </div>
                             <div class="property-option">
-                                <input type="radio" id="apartment" name="property_type" value="apartment" class="property-radio">
+                                <input type="radio" id="apartment" name="property_type" value="apartment" class="property-radio" {% if room_data.property_type == 'apartment' %}checked{% endif %}>
                                 <label for="apartment" class="property-label">
                                     <div class="property-icon">
                                         <i class="bi bi-building"></i>
@@ -73,7 +73,7 @@
                                 </label>
                             </div>
                             <div class="property-option">
-                                <input type="radio" id="hotel" name="property_type" value="hotel" class="property-radio">
+                                <input type="radio" id="hotel" name="property_type" value="hotel" class="property-radio" {% if room_data.property_type == 'hotel' %}checked{% endif %}>
                                 <label for="hotel" class="property-label">
                                     <div class="property-icon">
                                         <i class="bi bi-building-fill"></i>
@@ -258,18 +258,18 @@
                         <div class="pricing-section">
                             <div class="pricing-option" id="hourly-pricing" style="display: none;">
                                 <h4>Theo giờ</h4>
-                                <p>Giá thuê theo giờ với giá gốc homestay ban đầu từ 50.000đ</p>
                                 <div class="price-input">
                                     <span class="currency">VND</span>
-                                    <input type="number" name="hourly_price" placeholder="Gợi ý 200.000đ" class="price-field" value="{{ room_data.hourly_price or '' }}">
+                                    <input type="text" name="hourly_price" placeholder="Nhập giá theo giờ (VD: 200000)" class="price-field" value="{{ room_data.hourly_price or '' }}" 
+                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'hourly')">
                                 </div>
                             </div>
                             <div class="pricing-option" id="nightly-pricing" style="display: none;">
                                 <h4>Theo đêm</h4>
-                                <p>Giá thuê theo đêm với giá gốc homestay ban đầu từ 400.000đ</p>
                                 <div class="price-input">
                                     <span class="currency">VND</span>
-                                    <input type="number" name="nightly_price" placeholder="Gợi ý 400.000đ" class="price-field" value="{{ room_data.nightly_price or '' }}">
+                                    <input type="text" name="nightly_price" placeholder="Nhập giá theo đêm (VD: 800000)" class="price-field" value="{{ room_data.nightly_price or '' }}" 
+                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'nightly')">
                                 </div>
                             </div>
                             <div class="no-rental-type-selected" id="no-pricing-selected">
@@ -989,6 +989,35 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     border: none;
     outline: none;
     font-size: 13px;
+}
+
+.price-hint {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0f9ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+}
+
+.price-hint small {
+    color: #1e40af;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.price-error {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    color: #dc2626;
+    font-size: 12px;
+    display: none;
+}
+
+.price-input.error {
+    border-color: #dc3545;
 }
 
 .form-actions {
@@ -1777,7 +1806,59 @@ function prepareFormData() {
     document.getElementById('bed_count_input').value = bedCount;
     document.getElementById('guest_count_input').value = guestCount;
     
+    // Convert base64 images từ sessionStorage thành file inputs
+    convertSessionStorageImagesToFiles();
+    
     return true;
+}
+
+// Convert ảnh từ sessionStorage thành file inputs để gửi lên server
+function convertSessionStorageImagesToFiles() {
+    const sessionData = loadFormDataFromSession();
+    if (!sessionData || !sessionData.uploadedImages) return;
+    
+    console.log('🔄 Converting sessionStorage images to file inputs...');
+    
+    sessionData.uploadedImages.forEach((imageData, index) => {
+        // Tìm upload item tương ứng
+        const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+        if (index < uploadItems.length) {
+            const uploadItem = uploadItems[index];
+            const fileInput = uploadItem.querySelector('input[type="file"]');
+            const img = uploadItem.querySelector('img');
+            
+            // Chỉ convert nếu có ảnh hiển thị nhưng file input trống
+            if (img && fileInput && (!fileInput.files || fileInput.files.length === 0)) {
+                try {
+                    // Convert base64 to blob
+                    const base64Data = imageData.src.split(',')[1];
+                    const byteCharacters = atob(base64Data);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: 'image/jpeg' });
+                    
+                    // Create file object
+                    const file = new File([blob], imageData.fileName || `image_${index}.jpg`, {
+                        type: 'image/jpeg'
+                    });
+                    
+                    // Assign to file input
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                    
+                    console.log('✅ Converted image to file:', imageData.fileName);
+                } catch (error) {
+                    console.error('❌ Error converting image:', error);
+                }
+            }
+        }
+    });
 }
 
 function showAmenityModal() {
@@ -1864,6 +1945,9 @@ function toggleAmenitySelection(amenity, isSelected) {
     
     updateSelectedAmenitiesDisplay();
     console.log('Selected amenities:', selectedAmenities);
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
 }
 
 function updateSelectedAmenitiesDisplay() {
@@ -1922,6 +2006,9 @@ function removeAmenity(amenityId) {
     if (modalItem) {
         modalItem.classList.remove('selected');
     }
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
 }
 
 // Biến global để lưu dữ liệu từ API
@@ -2261,14 +2348,88 @@ function handleFilePreview(input, uploadItem) {
                 removeBtn.remove();
                 // Show placeholder again
                 uploadItem.querySelector('.upload-placeholder').style.display = 'flex';
+                // Auto-save after removing image
+                saveFormDataToSession();
             });
             
             // Hide placeholder and add preview
             uploadItem.querySelector('.upload-placeholder').style.display = 'none';
             uploadItem.appendChild(img);
             uploadItem.appendChild(removeBtn);
+            
+            // Auto-save after adding image
+            saveFormDataToSession();
         };
         reader.readAsDataURL(file);
+    }
+}
+
+// Restore image to upload item from sessionStorage
+function restoreImageToUploadItem(imageData) {
+    const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+    
+    if (imageData.index < uploadItems.length) {
+        const uploadItem = uploadItems[imageData.index];
+        const placeholder = uploadItem.querySelector('.upload-placeholder');
+        
+        if (placeholder && placeholder.style.display !== 'none') {
+            // Create preview image
+            const img = document.createElement('img');
+            img.src = imageData.src;
+            img.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 1;
+            `;
+            
+            // Add remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '×';
+            removeBtn.type = 'button';
+            removeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: 20px;
+                height: 20px;
+                border: none;
+                background: rgba(220, 53, 69, 0.8);
+                color: white;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 12px;
+                z-index: 15;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            const fileInput = uploadItem.querySelector('input[type="file"]');
+            removeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Clear the input
+                if (fileInput) fileInput.value = '';
+                // Remove preview elements
+                img.remove();
+                removeBtn.remove();
+                // Show placeholder again
+                placeholder.style.display = 'flex';
+                // Auto-save after removing image
+                saveFormDataToSession();
+            });
+            
+            // Hide placeholder and add preview
+            placeholder.style.display = 'none';
+            uploadItem.appendChild(img);
+            uploadItem.appendChild(removeBtn);
+            
+            console.log('✅ Restored image:', imageData.fileName);
+        }
     }
 }
 
@@ -2326,6 +2487,9 @@ function addImageToUploadGrid(file) {
         
         // Setup handlers for the new item
         setupUploadHandlersForItem(newUploadItem);
+        
+        // Auto-save after adding new image
+        saveFormDataToSession();
     }
 }
 
@@ -2434,11 +2598,17 @@ function toggleRuleSelection(ruleId, isChecked) {
     
     // Update selected rules display
     updateSelectedRulesDisplay();
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
 }
 
 function saveSelectedRules() {
     updateSelectedRulesDisplay();
     closeRulesModal();
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
 }
 
 function updateSelectedRulesDisplay() {
@@ -2485,27 +2655,40 @@ function updateSelectedRulesDisplay() {
 function removeSelectedRule(ruleId) {
     selectedRules = selectedRules.filter(r => r.id !== ruleId);
     updateSelectedRulesDisplay();
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
 }
 
 // Load saved data from sessionStorage or server
 function loadSavedData() {
     let roomData = null;
     
-    // Check server session data first
-    {% if room_data and room_data.room_title %}
-    roomData = {{ room_data|tojson }};
-    console.log('✅ Loading saved data from server session:', roomData);
-    {% else %}
-    console.log('❌ No server session data available');
-    // Try sessionStorage as backup
-    roomData = loadFormDataFromSession();
-    if (roomData) {
-        console.log('✅ Loading saved data from sessionStorage:', roomData);
+    console.log('🔍 LOADING SAVED DATA...');
+    
+    // Ưu tiên sessionStorage trước (dữ liệu mới nhất từ browser)
+    const sessionData = loadFormDataFromSession();
+    if (sessionData && sessionData.room_title) {
+        roomData = sessionData;
+        console.log('✅ Using SESSIONSTORAGE data (priority):', {
+            title: roomData.room_title,
+            amenitiesCount: (roomData.selectedAmenities || []).length,
+            rulesCount: (roomData.selectedRules || []).length
+        });
     } else {
-        console.log('❌ No sessionStorage data available');
+        // Fallback về server session data
+        {% if room_data and room_data.room_title %}
+        roomData = {{ room_data|tojson }};
+        console.log('✅ Using SERVER session data (fallback):', {
+            title: roomData.room_title,
+            amenitiesCount: (roomData.amenities || []).length,
+            rulesCount: (roomData.rules || []).length
+        });
+        {% else %}
+        console.log('❌ No data available from both sources');
         return;
+        {% endif %}
     }
-    {% endif %}
     
     if (!roomData || !roomData.room_title) {
         console.log('❌ No valid room data to load');
@@ -2561,12 +2744,23 @@ function loadSavedData() {
         console.log('✅ Set guest count:', roomData.guest_count);
     }
     
+    // Fill property type
+    if (roomData.property_type) {
+        const propertyTypeInput = document.querySelector(`input[name="property_type"][value="${roomData.property_type}"]`);
+        if (propertyTypeInput) {
+            propertyTypeInput.checked = true;
+            console.log('✅ Set property type:', roomData.property_type);
+        } else {
+            console.log('❌ property_type input not found for value:', roomData.property_type);
+        }
+    }
+
     // Fill rental type
     if (roomData.selected_rental_type) {
         const rentalTypeInput = document.querySelector(`input[name="rental_type"][value="${roomData.selected_rental_type}"]`);
         if (rentalTypeInput) {
             rentalTypeInput.checked = true;
-            console.log('Set rental type:', roomData.selected_rental_type);
+            console.log('✅ Set rental type:', roomData.selected_rental_type);
             // Trigger pricing display update
             setTimeout(() => {
                 updatePricingDisplay();
@@ -2592,6 +2786,9 @@ function loadSavedData() {
     
     // Fill location with proper cascade
     fillLocationData(roomData);
+    
+    // Load rules and amenities if available
+    loadRulesAndAmenities(roomData);
 }
 
 function fillLocationData(roomData) {
@@ -2642,6 +2839,17 @@ function fillLocationData(roomData) {
         } else {
             console.log('❌ province select not found');
         }
+    }
+    
+    // Restore ảnh từ sessionStorage
+    if (roomData.uploadedImages && roomData.uploadedImages.length > 0) {
+        console.log('🔄 Restoring uploaded images:', roomData.uploadedImages.length);
+        
+        setTimeout(() => {
+            roomData.uploadedImages.forEach(imageData => {
+                restoreImageToUploadItem(imageData);
+            });
+        }, 100);
     }
 }
 
@@ -2696,9 +2904,28 @@ window.onclick = function(event) {
 
 // Save form data to sessionStorage
 function saveFormDataToSession() {
+    // Lưu thông tin ảnh hiện tại
+    const uploadedImages = [];
+    const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+    
+    uploadItems.forEach((item, index) => {
+        const fileInput = item.querySelector('input[type="file"]');
+        const img = item.querySelector('img');
+        
+        if (fileInput && fileInput.files && fileInput.files[0] && img) {
+            uploadedImages.push({
+                index: index,
+                src: img.src,
+                fileName: fileInput.files[0].name,
+                isMainImage: index === 0 && item.querySelector('.upload-label')?.textContent.includes('Ảnh bìa')
+            });
+        }
+    });
+    
     const formData = {
         room_title: document.getElementById('room_title')?.value || '',
         room_description: document.getElementById('room_description')?.value || '',
+        property_type: document.querySelector('input[name="property_type"]:checked')?.value || '',
         province: document.getElementById('province')?.value || '',
         district: document.getElementById('district')?.value || '',
         ward: document.getElementById('ward')?.value || '',
@@ -2707,26 +2934,41 @@ function saveFormDataToSession() {
         bathroom_count: parseInt(document.getElementById('bathroom-count')?.textContent || document.getElementById('bathroom_count_input')?.value || 2),
         guest_count: parseInt(document.getElementById('guest-count')?.textContent || document.getElementById('guest_count_input')?.value || 1),
         selected_rental_type: document.querySelector('input[name="rental_type"]:checked')?.value || '',
-        hourly_price: document.querySelector('input[name="hourly_price"]')?.value || '',
-        nightly_price: document.querySelector('input[name="nightly_price"]')?.value || ''
+        hourly_price: getNumericPrice(document.querySelector('input[name="hourly_price"]')) || '',
+        nightly_price: getNumericPrice(document.querySelector('input[name="nightly_price"]')) || '',
+        // Lưu dữ liệu tiện nghi và nội quy đã chọn
+        selectedAmenities: selectedAmenities || [],
+        selectedRules: selectedRules || [],
+        // Lưu thông tin ảnh
+        uploadedImages: uploadedImages
     };
     
     sessionStorage.setItem('room_form_data', JSON.stringify(formData));
-    console.log('Saved form data to session:', formData);
+    console.log('💾 Saved images to sessionStorage:', uploadedImages.length, 'images');
 }
 
 // Load form data from sessionStorage
 function loadFormDataFromSession() {
     const savedData = sessionStorage.getItem('room_form_data');
+    console.log('🔍 RAW sessionStorage data:', savedData);
+    
     if (savedData) {
         try {
             const formData = JSON.parse(savedData);
-            console.log('Loading form data from session:', formData);
+            console.log('📦 PARSED sessionStorage data:', {
+                title: formData.room_title,
+                amenitiesCount: (formData.selectedAmenities || []).length,
+                rulesCount: (formData.selectedRules || []).length,
+                hasAmenities: !!formData.selectedAmenities,
+                hasRules: !!formData.selectedRules
+            });
             return formData;
         } catch (e) {
-            console.error('Error parsing saved form data:', e);
+            console.error('❌ Error parsing saved form data:', e);
             sessionStorage.removeItem('room_form_data');
         }
+    } else {
+        console.log('❌ No sessionStorage data found');
     }
     return null;
 }
@@ -2772,6 +3014,10 @@ function debounce(func, wait) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Content Loaded - Starting initialization...');
     
+    // Debug sessionStorage ngay khi load
+    const sessionData = sessionStorage.getItem('room_form_data');
+    console.log('🔍 RAW sessionStorage at page load:', sessionData);
+    
     // Try to load saved data immediately for basic fields
     loadSavedData();
     
@@ -2792,6 +3038,27 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             console.log('🔄 Re-loading saved data after API data loaded...');
             loadSavedData();
+            
+            // Load lại rules và amenities sau khi API data đã sẵn sàng
+            console.log('🔄 Re-loading rules and amenities after API data loaded...');
+            
+            // Chỉ load lại nếu chưa có dữ liệu được load từ sessionStorage
+            if (selectedRules.length === 0 && selectedAmenities.length === 0) {
+                // Load từ server session data nếu có
+                {% if room_data and (room_data.rules or room_data.amenities) %}
+                const serverData = {{ room_data|tojson }};
+                loadRulesAndAmenities(serverData);
+                {% else %}
+                // Load từ sessionStorage
+                const sessionData = loadFormDataFromSession();
+                if (sessionData) {
+                    loadRulesAndAmenities(sessionData);
+                }
+                {% endif %}
+            } else {
+                console.log('✅ Rules and amenities already loaded from sessionStorage');
+            }
+            
             // Setup auto-save after loading data
             setupAutoSave();
         }, 500);
@@ -2833,6 +3100,93 @@ window.addEventListener('beforeunload', function(e) {
     console.log('💾 Saved form data before page unload');
 });
 
+// ================================
+// Price Input Functions
+// ================================
+
+// Format giá tiền khi nhập
+function formatPriceInput(input) {
+    // Chỉ cho phép số và xóa ký tự không phải số
+    let value = input.value.replace(/[^\d]/g, '');
+    
+    // Format với dấu phẩy ngăn cách hàng nghìn
+    if (value) {
+        const formatted = new Intl.NumberFormat('vi-VN').format(value);
+        input.value = formatted;
+    }
+    
+    // Xóa error state nếu có
+    const priceInput = input.closest('.price-input');
+    const errorDiv = input.closest('.pricing-option').querySelector('.price-error');
+    
+    if (priceInput) {
+        priceInput.classList.remove('error');
+    }
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+// Validate giá tiền
+function validatePrice(input, type) {
+    const value = input.value.replace(/[^\d]/g, ''); // Lấy số thuần
+    const numValue = parseInt(value);
+    
+    const priceInput = input.closest('.price-input');
+    const pricingOption = input.closest('.pricing-option');
+    let errorDiv = pricingOption.querySelector('.price-error');
+    
+    // Tạo error div nếu chưa có
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'price-error';
+        pricingOption.appendChild(errorDiv);
+    }
+    
+    let isValid = true;
+    let errorMessage = '';
+    
+    if (!value || numValue <= 0) {
+        isValid = false;
+        errorMessage = 'Vui lòng nhập giá tiền hợp lệ';
+    } else if (type === 'hourly') {
+        if (numValue < 50000) {
+            isValid = false;
+            errorMessage = 'Giá theo giờ tối thiểu là 50.000đ';
+        } else if (numValue > 500000) {
+            isValid = false;
+            errorMessage = 'Giá theo giờ tối đa là 500.000đ';
+        }
+    } else if (type === 'nightly') {
+        if (numValue < 400000) {
+            isValid = false;
+            errorMessage = 'Giá qua đêm tối thiểu là 400.000đ';
+        } else if (numValue > 2000000) {
+            isValid = false;
+            errorMessage = 'Giá qua đêm tối đa là 2.000.000đ';
+        }
+    }
+    
+    if (!isValid) {
+        priceInput.classList.add('error');
+        errorDiv.textContent = errorMessage;
+        errorDiv.style.display = 'block';
+    } else {
+        priceInput.classList.remove('error');
+        errorDiv.style.display = 'none';
+        
+        // Lưu giá trị số thuần vào hidden input hoặc data attribute
+        input.setAttribute('data-value', value);
+    }
+    
+    return isValid;
+}
+
+// Lấy giá trị số thuần từ input đã format
+function getNumericPrice(input) {
+    return input.getAttribute('data-value') || input.value.replace(/[^\d]/g, '');
+}
+
 // Clear when successfully creating room
 window.addEventListener('load', function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -2841,6 +3195,63 @@ window.addEventListener('load', function() {
         console.log('🗑️ Room created successfully - cleared data');
     }
 });
+
+// Load rules and amenities from saved data
+function loadRulesAndAmenities(roomData) {
+    if (!roomData) return;
+    
+    console.log('🔄 Loading rules and amenities...', roomData);
+    
+    // Clear current selections
+    selectedRules = [];
+    selectedAmenities = [];
+    
+    // Ưu tiên load từ selectedAmenities và selectedRules trong sessionStorage
+    if (roomData.selectedAmenities && Array.isArray(roomData.selectedAmenities)) {
+        selectedAmenities = roomData.selectedAmenities;
+        console.log('✅ LOADED amenities from sessionStorage:', selectedAmenities.length, selectedAmenities.map(a => a.name));
+    } else if (roomData.amenities && Array.isArray(roomData.amenities)) {
+        // Fallback: Load từ server data (array ID)
+        roomData.amenities.forEach(amenityId => {
+            if (amenitiesData) {
+                Object.keys(amenitiesData).forEach(category => {
+                    const categoryData = amenitiesData[category];
+                    if (categoryData.amenities) {
+                        const amenity = categoryData.amenities.find(a => a.id == amenityId);
+                        if (amenity && !selectedAmenities.find(sa => sa.id === amenity.id)) {
+                            selectedAmenities.push(amenity);
+                        }
+                    }
+                });
+            }
+        });
+        console.log('✅ Loaded amenities from server data:', selectedAmenities.length);
+    }
+    
+    if (roomData.selectedRules && Array.isArray(roomData.selectedRules)) {
+        selectedRules = roomData.selectedRules;
+        console.log('✅ LOADED rules from sessionStorage:', selectedRules.length, selectedRules.map(r => r.name));
+    } else if (roomData.rules && Array.isArray(roomData.rules)) {
+        // Fallback: Load từ server data (array ID)
+        roomData.rules.forEach(ruleId => {
+            if (rulesData) {
+                Object.keys(rulesData).forEach(category => {
+                    const rule = rulesData[category].find(r => r.id == ruleId);
+                    if (rule && !selectedRules.find(sr => sr.id === rule.id)) {
+                        selectedRules.push(rule);
+                    }
+                });
+            }
+        });
+        console.log('✅ Loaded rules from server data:', selectedRules.length);
+    }
+    
+    // Update displays
+    updateSelectedRulesDisplay();
+    updateSelectedAmenitiesDisplay();
+}
+
+
 </script>
 
 {% endblock %}

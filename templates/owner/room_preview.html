@@ -84,6 +84,14 @@
 
     .form-group {
         margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .form-group:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
     }
 
     .form-row {
@@ -298,7 +306,277 @@
         left: 8px;
     }
 
+    /* Image Gallery Styles */
+    .image-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
 
+    .image-gallery {
+        width: 100%;
+    }
+
+    .main-image-container {
+        position: relative;
+        width: 100%;
+        height: 280px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .main-image {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .main-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .main-image img.fade-out {
+        opacity: 0;
+    }
+
+    .main-image img.fade-in {
+        opacity: 1;
+    }
+
+    .main-image-badge {
+        background: #9ed649;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 10;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .nav-btn:hover {
+        background: rgba(0, 0, 0, 0.7);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .nav-btn:active {
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    .prev-btn {
+        left: 12px;
+    }
+
+    .next-btn {
+        right: 12px;
+    }
+
+    .image-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ddd;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .dot.active {
+        background: #9ed649;
+        transform: scale(1.2);
+    }
+
+    .dot:hover {
+        background: #9ed649;
+        opacity: 0.7;
+    }
+
+    .no-images-placeholder {
+        width: 100%;
+        height: 280px;
+        background: #f8f9fa;
+        border: 2px dashed #ddd;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .no-images-content {
+        text-align: center;
+    }
+
+    /* Details Grid Styling */
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 12px;
+    }
+
+    .detail-card {
+        background: linear-gradient(135deg, #f8fdf4 0%, #f0f9e6 100%);
+        border: 1px solid #e5f3d3;
+        border-radius: 8px;
+        padding: 12px 10px;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(158, 214, 73, 0.1);
+    }
+
+    .detail-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(158, 214, 73, 0.15);
+        border-color: #9ed649;
+    }
+
+    .detail-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #9ed649, #7cb342);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 8px;
+        box-shadow: 0 1px 4px rgba(158, 214, 73, 0.3);
+    }
+
+    .detail-icon i {
+        font-size: 14px;
+        color: white;
+    }
+
+    .detail-number {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d3748;
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        color: #6b7280;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    /* Rules and Amenities Preview Styling */
+    .rules-preview, .amenities-preview {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .rule-preview-item, .amenity-preview-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background: #f8fdf4;
+        border: 1px solid #e5f3d3;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #2d3748;
+        transition: all 0.2s ease;
+    }
+
+    .rule-preview-item:hover, .amenity-preview-item:hover {
+        background: #f0f9e6;
+        border-color: #9ed649;
+    }
+
+    .more-rules-preview, .more-amenities-preview {
+        grid-column: span 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border: 1px dashed #d1d5db;
+        border-radius: 6px;
+        font-size: 13px;
+        font-style: italic;
+    }
+
+    /* Responsive cho details grid */
+    @media (max-width: 768px) {
+        .details-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .detail-card {
+            padding: 10px 8px;
+        }
+        
+        .detail-icon {
+            width: 28px;
+            height: 28px;
+        }
+        
+        .detail-icon i {
+            font-size: 12px;
+        }
+        
+        .detail-number {
+            font-size: 18px;
+        }
+        
+        .detail-label {
+            font-size: 11px;
+        }
+
+        .rules-preview, .amenities-preview {
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+
+        .more-rules-preview, .more-amenities-preview {
+            grid-column: span 1;
+        }
+
+        .rule-preview-item, .amenity-preview-item {
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+    }
 
     @media (max-width: 1024px) {
         .main-content {
@@ -306,7 +584,298 @@
             gap: 20px;
         }
     }
+
+    /* Modal Styles */
+    .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: auto;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .close:hover {
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    /* Rules Modal Styles */
+    .rule-category {
+        margin-bottom: 24px;
+    }
+
+    .rule-category:last-child {
+        margin-bottom: 0;
+    }
+
+    .category-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .category-title i {
+        color: #9ed649;
+    }
+
+    .rules-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .rule-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .rule-item i {
+        color: #9ed649;
+        font-size: 12px;
+    }
+
+    .rule-item span {
+        color: #555;
+        font-size: 14px;
+    }
+
+    /* Amenities Modal Styles */
+    .amenity-category {
+        margin-bottom: 24px;
+    }
+
+    .amenity-category:last-child {
+        margin-bottom: 0;
+    }
+
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .amenity-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    .amenity-item i {
+        color: #9ed649;
+        font-size: 14px;
+        min-width: 16px;
+    }
+
+    .amenity-item span {
+        color: #555;
+        font-size: 14px;
+    }
 </style>
+
+<script>
+// Functions để điều khiển modal
+function showAllRulesModal() {
+    document.getElementById('allRulesModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAllRulesModal() {
+    document.getElementById('allRulesModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function showAllAmenitiesModal() {
+    document.getElementById('allAmenitiesModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAllAmenitiesModal() {
+    document.getElementById('allAmenitiesModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Đóng modal khi click bên ngoài
+window.onclick = function(event) {
+    const rulesModal = document.getElementById('allRulesModal');
+    const amenitiesModal = document.getElementById('allAmenitiesModal');
+    
+    if (event.target === rulesModal) {
+        closeAllRulesModal();
+    }
+    
+    if (event.target === amenitiesModal) {
+        closeAllAmenitiesModal();
+    }
+}
+
+// Đóng modal khi nhấn ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeAllRulesModal();
+        closeAllAmenitiesModal();
+    }
+});
+
+// Image Gallery Functions
+let currentImageIndex = 0;
+let totalImages = 0;
+
+// Khởi tạo gallery khi trang load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeImageGallery();
+});
+
+function initializeImageGallery() {
+    // Lấy tất cả ảnh từ server data
+    const allImages = [
+        {% if room_data.main_image %}
+        { src: "{{ room_data.main_image }}", isMain: true },
+        {% endif %}
+        {% if room_data.images %}
+            {% for image_path in room_data.images %}
+            { src: "{{ image_path }}", isMain: false },
+            {% endfor %}
+        {% endif %}
+    ];
+    
+    totalImages = allImages.length;
+    
+    if (totalImages > 0) {
+        // Store images data globally
+        window.galleryImages = allImages;
+        currentImageIndex = 0;
+    }
+}
+
+function nextImage() {
+    if (totalImages <= 1) return;
+    
+    currentImageIndex = (currentImageIndex + 1) % totalImages;
+    updateImageDisplay();
+}
+
+function prevImage() {
+    if (totalImages <= 1) return;
+    
+    currentImageIndex = (currentImageIndex - 1 + totalImages) % totalImages;
+    updateImageDisplay();
+}
+
+function currentSlide(index) {
+    if (index >= 0 && index < totalImages) {
+        currentImageIndex = index;
+        updateImageDisplay();
+    }
+}
+
+function updateImageDisplay() {
+    if (!window.galleryImages || totalImages === 0) return;
+    
+    const currentImage = document.getElementById('currentImage');
+    const mainImageBadge = document.querySelector('.main-image-badge');
+    const dots = document.querySelectorAll('.dot');
+    
+    if (currentImage && window.galleryImages[currentImageIndex]) {
+        // Fade out hiệu ứng
+        currentImage.classList.add('fade-out');
+        
+        // Chờ fade out hoàn thành rồi mới thay đổi ảnh
+        setTimeout(() => {
+            // Cập nhật ảnh hiện tại
+            currentImage.src = window.galleryImages[currentImageIndex].src;
+            
+            // Hiển thị/ẩn badge "Ảnh bìa" với hiệu ứng
+            if (mainImageBadge) {
+                if (window.galleryImages[currentImageIndex].isMain) {
+                    mainImageBadge.style.opacity = '0';
+                    mainImageBadge.style.display = 'block';
+                    setTimeout(() => {
+                        mainImageBadge.style.opacity = '1';
+                    }, 50);
+                } else {
+                    mainImageBadge.style.opacity = '0';
+                    setTimeout(() => {
+                        mainImageBadge.style.display = 'none';
+                    }, 200);
+                }
+            }
+            
+            // Fade in hiệu ứng
+            currentImage.classList.remove('fade-out');
+            currentImage.classList.add('fade-in');
+            
+            // Loại bỏ fade-in class sau khi hoàn thành
+            setTimeout(() => {
+                currentImage.classList.remove('fade-in');
+            }, 300);
+            
+        }, 150); // Thời gian fade out
+        
+        // Cập nhật dots với hiệu ứng
+        dots.forEach((dot, index) => {
+            if (index === currentImageIndex) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
+}
+</script>
 {% endblock %}
 
 {% block content %}
@@ -328,6 +897,7 @@
     <div class="main-content">
         <div class="form-section">
             <h2 class="section-title">Thông tin Phòng</h2>
+
             
             <!-- Thông tin cơ bản -->
             <div class="form-group">
@@ -342,7 +912,17 @@
                     <div>
                         <label class="form-label">Mô hình</label>
                         <select class="form-select" disabled>
-                            <option>Nhà</option>
+                            <option>
+                                {% if room_data.property_type == 'house' %}
+                                    Nhà
+                                {% elif room_data.property_type == 'apartment' %}
+                                    Căn hộ
+                                {% elif room_data.property_type == 'hotel' %}
+                                    Khách sạn
+                                {% else %}
+                                    Chưa chọn
+                                {% endif %}
+                            </option>
                         </select>
                     </div>
                     <div>
@@ -360,27 +940,23 @@
                         </select>
                     </div>
                 </div>
-            </div>
-
-            <!-- Địa chỉ -->
-            <div class="form-group">
                 <div class="form-row">
                     <div>
                         <label class="form-label">Tỉnh/Thành phố</label>
                         <select class="form-select" disabled>
-                            <option>{{ room_data.province or 'Chưa chọn' }}</option>
+                            <option>{{ location_names.province_name or 'Chưa chọn' }}</option>
                         </select>
                     </div>
                     <div>
                         <label class="form-label">Quận/Huyện</label>
                         <select class="form-select" disabled>
-                            <option>{{ room_data.district or 'Chưa chọn' }}</option>
+                            <option>{{ location_names.district_name or 'Chưa chọn' }}</option>
                         </select>
                     </div>
                     <div>
                         <label class="form-label">Phường/Xã</label>
                         <select class="form-select" disabled>
-                            <option>{{ room_data.ward or 'Chưa chọn' }}</option>
+                            <option>{{ location_names.ward_name or 'Chưa chọn' }}</option>
                         </select>
                     </div>
                 </div>
@@ -392,49 +968,111 @@
 
             <!-- Chi tiết -->
             <div class="form-group">
-                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">Chi tiết</h3>
-                <div class="counter-group">
-                    <div class="counter-item">
-                        <span class="counter-label">Số giường</span>
-                        <div class="counter-value">{{ room_data.bed_count or 1 }}</div>
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-info-circle" style="color: #9ed649; margin-right: 8px;"></i>Chi tiết
+                </h3>
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <div class="detail-icon">
+                            <i class="fas fa-bed"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-number">{{ room_data.bed_count or 1 }}</div>
+                            <div class="detail-label">Giường</div>
+                        </div>
                     </div>
-                    <div class="counter-item">
-                        <span class="counter-label">Số phòng tắm</span>
-                        <div class="counter-value">{{ room_data.bathroom_count or 1 }}</div>
+                    <div class="detail-card">
+                        <div class="detail-icon">
+                            <i class="fas fa-bath"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-number">{{ room_data.bathroom_count or 1 }}</div>
+                            <div class="detail-label">Phòng tắm</div>
+                        </div>
                     </div>
-                    <div class="counter-item">
-                        <span class="counter-label">Số lượng khách</span>
-                        <div class="counter-value">{{ room_data.guest_count or 1 }}</div>
+                    <div class="detail-card">
+                        <div class="detail-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-number">{{ room_data.guest_count or 1 }}</div>
+                            <div class="detail-label">Khách</div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Nội quy -->
+            {% if room_data.rules and room_data.rules|length > 0 %}
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-clipboard-list" style="color: #9ed649; margin-right: 8px;"></i>Nội quy
+                </h3>
+                <div class="rules-preview">
+                    {% for rule in room_data.rules[:4] %}
+                    <div class="rule-preview-item">
+                        <i class="fas fa-check-circle" style="color: #9ed649; margin-right: 8px; font-size: 12px;"></i>
+                        <span>{{ rule.name }}</span>
+                    </div>
+                    {% endfor %}
+                    {% if room_data.rules|length > 4 %}
+                    <div class="more-rules-preview" onclick="showAllRulesModal()" style="cursor: pointer;">
+                        <i class="fas fa-eye" style="color: #9ed649; margin-right: 8px; font-size: 12px;"></i>
+                        <span style="color: #9ed649;">Xem tất cả</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-clipboard-list" style="color: #9ed649; margin-right: 8px;"></i>Nội quy
+                </h3>
+                <p style="color: #6b7280; font-style: italic; margin: 0;">Chưa thêm nội quy nào</p>
+            </div>
+            {% endif %}
 
             <!-- Tiện nghi -->
+            {% if room_data.amenities %}
             <div class="form-group">
-                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">Tiện nghi</h3>
-                <div class="amenities-list">
-                    <div class="amenity-item">
-                        <span>Khách được hút thuốc</span>
-                        <div class="toggle"></div>
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-star" style="color: #9ed649; margin-right: 8px;"></i>Tiện nghi
+                </h3>
+                <div class="amenities-preview">
+                    {% for amenity in room_data.amenities[:6] %}
+                    <div class="amenity-preview-item">
+                        <i class="{{ amenity.icon or 'fas fa-check' }}" style="color: #9ed649; margin-right: 8px; font-size: 12px;"></i>
+                        <span>{{ amenity.name }}</span>
                     </div>
-                    <div class="amenity-item">
-                        <span>Khách được mang thú cưng</span>
-                        <div class="toggle"></div>
+                    {% endfor %}
+                    {% if room_data.amenities|length > 6 %}
+                    <div class="more-amenities-preview" onclick="showAllAmenitiesModal()" style="cursor: pointer;">
+                        <i class="fas fa-eye" style="color: #9ed649; margin-right: 8px; font-size: 12px;"></i>
+                        <span style="color: #9ed649;">Xem tất cả</span>
                     </div>
-                    <div class="amenity-item">
-                        <span>Khách được mang trẻ em</span>
-                        <div class="toggle"></div>
-                    </div>
-                    <div class="amenity-item">
-                        <span>Khách được tổ chức tiệc/ăn mừng</span>
-                        <div class="toggle"></div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
-
-            <!-- Giá mỗi giờ -->
+            {% else %}
             <div class="form-group">
-                <label class="form-label">Giá mỗi giờ</label>
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-star" style="color: #9ed649; margin-right: 8px;"></i>Tiện nghi
+                </h3>
+                <p style="color: #6b7280; font-style: italic; margin: 0;">Chưa thêm tiện nghi nào</p>
+            </div>
+            {% endif %}
+
+            <!-- Giá -->
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    {% if room_data.selected_rental_type == 'hourly' %}
+                        Giá mỗi giờ
+                    {% elif room_data.selected_rental_type == 'nightly' %}
+                        Giá mỗi đêm
+                    {% else %}
+                        Giá
+                    {% endif %}
+                </h3>
                 <div class="price-input-group">
                     <span class="currency-label">VND</span>
                     <input type="text" class="price-input" 
@@ -445,35 +1083,171 @@
 
             <!-- Mô tả -->
             <div class="form-group">
-                <label class="form-label">Mô tả</label>
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">Mô tả</h3>
                 <textarea class="textarea" readonly>{{ room_data.room_description or '' }}</textarea>
             </div>
         </div>
 
         <div class="image-section">
-            <div class="image-counter">5/10</div>
-            <h3 class="section-title">Ảnh</h3>
+            {% set all_images = [] %}
+            {% if room_data.main_image %}
+                {% set _ = all_images.append({'src': room_data.main_image, 'is_main': true}) %}
+            {% endif %}
+            {% if room_data.images %}
+                {% for image_path in room_data.images %}
+                    {% set _ = all_images.append({'src': image_path, 'is_main': false}) %}
+                {% endfor %}
+            {% endif %}
             
-            <div class="image-grid">
-                <div class="image-item" style="position: relative;">
-                    <div class="featured-badge">Ảnh bìa</div>
-                    <span>Ảnh bìa</span>
-                </div>
-                <div class="image-item"></div>
-                <div class="image-item"></div>
-                <div class="image-item"></div>
-                <div class="image-item"></div>
-                <div class="image-item add-more">
-                    <div class="add-icon">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Thêm ảnh</span>
+            <div class="image-header">
+                <h3 class="section-title">Ảnh</h3>
+                <div class="image-counter">{{ all_images|length }}/10</div>
+            </div>
+            
+            {% if all_images|length > 0 %}
+            <div class="image-gallery">
+                <div class="main-image-container">
+                    <div class="main-image" id="mainImage">
+                        <img src="{{ all_images[0].src }}" alt="Room Image" id="currentImage">
+                        {% if all_images[0].is_main %}
+                        <div class="main-image-badge">Ảnh bìa</div>
+                        {% endif %}
                     </div>
+                    
+                    {% if all_images|length > 1 %}
+                    <button class="nav-btn prev-btn" onclick="prevImage()" id="prevBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="nav-btn next-btn" onclick="nextImage()" id="nextBtn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                
+                {% if all_images|length > 1 %}
+                <div class="image-dots">
+                    {% for image in all_images %}
+                    <span class="dot {% if loop.first %}active{% endif %}" onclick="currentSlide({{ loop.index0 }})" data-index="{{ loop.index0 }}"></span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="no-images-placeholder">
+                <div class="no-images-content">
+                    <i class="fas fa-camera" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+                    <p style="color: #666; margin: 0;">Chưa có ảnh nào được thêm</p>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 
 </div>
+
+<!-- Modal hiển thị tất cả nội quy -->
+<div id="allRulesModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-clipboard-list" style="color: #9ed649; margin-right: 8px;"></i>Tất cả nội quy</h3>
+            <span class="close" onclick="closeAllRulesModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            {% if room_data.rules and room_data.rules|length > 0 %}
+                {% set rules_by_category = {} %}
+                {% for rule in room_data.rules %}
+                    {% set category = rule.category %}
+                    {% if category not in rules_by_category %}
+                        {% set _ = rules_by_category.update({category: []}) %}
+                    {% endif %}
+                    {% set _ = rules_by_category[category].append(rule) %}
+                {% endfor %}
+
+                {% for category, rules in rules_by_category.items() %}
+                <div class="rule-category">
+                    <h4 class="category-title">
+                        {% if category == 'smoking' %}
+                            <i class="fas fa-smoking-ban"></i> Hút thuốc
+                        {% elif category == 'pets' %}
+                            <i class="fas fa-paw"></i> Thú cưng
+                        {% elif category == 'children' %}
+                            <i class="fas fa-child"></i> Trẻ em
+                        {% elif category == 'party' %}
+                            <i class="fas fa-music"></i> Tiệc tùng
+                        {% elif category == 'time' %}
+                            <i class="fas fa-clock"></i> Thời gian
+                        {% elif category == 'behavior' %}
+                            <i class="fas fa-user-check"></i> Hành vi
+                        {% else %}
+                            <i class="fas fa-list"></i> {{ category|title }}
+                        {% endif %}
+                    </h4>
+                    <div class="rules-list">
+                        {% for rule in rules %}
+                        <div class="rule-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>{{ rule.name }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #666;">Chưa có nội quy nào được thiết lập.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal hiển thị tất cả tiện nghi -->
+<div id="allAmenitiesModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-star" style="color: #9ed649; margin-right: 8px;"></i>Tất cả tiện nghi</h3>
+            <span class="close" onclick="closeAllAmenitiesModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            {% if room_data.amenities and room_data.amenities|length > 0 %}
+                {% set amenities_by_category = {} %}
+                {% for amenity in room_data.amenities %}
+                    {% set category = amenity.category_name %}
+                    {% if category not in amenities_by_category %}
+                        {% set _ = amenities_by_category.update({category: []}) %}
+                    {% endif %}
+                    {% set _ = amenities_by_category[category].append(amenity) %}
+                {% endfor %}
+
+                {% for category, amenities in amenities_by_category.items() %}
+                <div class="amenity-category">
+                    <h4 class="category-title">
+                        {% if 'phổ biến' in category.lower() %}
+                            <i class="fas fa-star"></i>
+                        {% elif 'phòng' in category.lower() %}
+                            <i class="fas fa-bed"></i>
+                        {% elif 'độc đáo' in category.lower() %}
+                            <i class="fas fa-gem"></i>
+                        {% else %}
+                            <i class="fas fa-check-circle"></i>
+                        {% endif %}
+                        {{ category }}
+                    </h4>
+                    <div class="amenities-grid">
+                        {% for amenity in amenities %}
+                        <div class="amenity-item">
+                            <i class="{{ amenity.icon or 'fas fa-check' }}"></i>
+                            <span>{{ amenity.name }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #666;">Chưa có tiện nghi nào được thêm.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 </div>
 {% endblock %}
 

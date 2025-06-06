@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, session
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, Room, Booking, RoomImage, Renter, Admin, Owner
+from models import db, Room, Booking, RoomImage, Renter, Admin, Owner, Province, District, Ward, Rule, Amenity
 import os
 from datetime import datetime, timedelta
 from PIL import Image
@@ -12,6 +12,74 @@ from sqlalchemy.exc import IntegrityError
 
 
 owner_bp = Blueprint('owner', __name__, url_prefix='/owner')
+
+def get_location_names(room_data):
+    """Lấy tên đầy đủ của địa chỉ từ database thay vì hard code"""
+    try:
+        result = {
+            'province_name': 'Chưa chọn',
+            'district_name': 'Chưa chọn', 
+            'ward_name': 'Chưa chọn'
+        }
+        
+        if room_data.get('province'):
+            province = Province.query.filter_by(code=room_data['province']).first()
+            if province:
+                result['province_name'] = province.name
+                
+                if room_data.get('district'):
+                    district = District.query.filter_by(code=room_data['district'], province_id=province.id).first()
+                    if district:
+                        result['district_name'] = district.name
+                        
+                        if room_data.get('ward'):
+                            # Ward có thể là tên đầy đủ hoặc code
+                            ward = Ward.query.filter(
+                                Ward.district_id == district.id,
+                                (Ward.name == room_data['ward']) | (Ward.code == room_data['ward'])
+                            ).first()
+                            if ward:
+                                result['ward_name'] = ward.name
+        
+        print(f"✅ Location lookup: {result}")
+        return result
+        
+    except Exception as e:
+        print(f"❌ Error in get_location_names: {e}")
+        return {
+            'province_name': 'Chưa chọn',
+            'district_name': 'Chưa chọn',
+            'ward_name': 'Chưa chọn'
+        }
+
+def get_rules_and_amenities(room_data):
+    """Lấy thông tin rules và amenities từ database"""
+    try:
+        result = {
+            'rules': [],
+            'amenities': []
+        }
+        
+        # Lấy rules nếu có
+        if room_data.get('rules'):
+            rule_ids = [int(id) for id in room_data['rules'] if id.isdigit()]
+            if rule_ids:
+                rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
+                result['rules'] = [rule.to_dict() for rule in rules]
+        
+        # Lấy amenities nếu có
+        if room_data.get('amenities'):
+            amenity_ids = [int(id) for id in room_data['amenities'] if id.isdigit()]
+            if amenity_ids:
+                amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
+                result['amenities'] = [amenity.to_dict() for amenity in amenities]
+        
+        print(f"✅ Rules & Amenities lookup: {len(result['rules'])} rules, {len(result['amenities'])} amenities")
+        return result
+        
+    except Exception as e:
+        print(f"❌ Error in get_rules_and_amenities: {e}")
+        return {'rules': [], 'amenities': []}
 
 def allowed_file(filename):
     """Check if the file extension is allowed"""
@@ -60,6 +128,7 @@ def add_room():
             room_data = {
                 'room_title': request.form.get('room_title'),
                 'room_description': request.form.get('room_description'),
+                'property_type': request.form.get('property_type'),
                 'province': request.form.get('province'),
                 'district': request.form.get('district'),
                 'ward': request.form.get('ward'),
@@ -69,10 +138,51 @@ def add_room():
                 'guest_count': int(request.form.get('guest_count', 1)),
                 'selected_rental_type': request.form.get('selected_rental_type'),
                 'hourly_price': request.form.get('hourly_price'),
-                'nightly_price': request.form.get('nightly_price')
+                'nightly_price': request.form.get('nightly_price'),
+                'rules': request.form.getlist('rules[]'),
+                'amenities': request.form.getlist('amenities[]')
             }
             
+            # Xử lý file ảnh tạm thời
+            image_paths = []
+            main_image_path = None
+            
+            # Tạo thư mục temp nếu chưa có
+            temp_folder = os.path.join('static', 'temp')
+            os.makedirs(temp_folder, exist_ok=True)
+            
+            # Xử lý ảnh bìa
+            if 'main_image' in request.files:
+                main_image = request.files['main_image']
+                if main_image and main_image.filename:
+                    filename = secure_filename(main_image.filename)
+                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                    filename = f"temp_main_{timestamp}_{filename}"
+                    save_path = os.path.join(temp_folder, filename)
+                    main_image.save(save_path)
+                    main_image_path = f"/static/temp/{filename}"
+            
+            # Xử lý các ảnh khác
+            for key in request.files:
+                if key.startswith('images'):
+                    files = request.files.getlist(key)
+                    for file in files:
+                        if file and file.filename:
+                            filename = secure_filename(file.filename)
+                            timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]  # microseconds to milliseconds
+                            filename = f"temp_{timestamp}_{filename}"
+                            save_path = os.path.join(temp_folder, filename)
+                            file.save(save_path)
+                            image_paths.append(f"/static/temp/{filename}")
+            
+            # Thêm đường dẫn ảnh vào room_data
+            room_data['main_image'] = main_image_path
+            room_data['images'] = image_paths
+            
             session['room_preview_data'] = room_data
+            print(f"DEBUG: Saving room_data to session with keys: {list(room_data.keys())}")
+            print(f"DEBUG: Main image: {main_image_path}")
+            print(f"DEBUG: Images: {image_paths}")
             return redirect(url_for('owner.room_preview'))
             
         except Exception as e:
@@ -80,7 +190,13 @@ def add_room():
     
     # Lấy dữ liệu từ session nếu có (khi quay lại từ preview)
     room_data = session.get('room_preview_data', {})
-    print(f"DEBUG: Loading add_room with room_data: {room_data}")
+    print(f"DEBUG: Loading add_room with room_data keys: {list(room_data.keys()) if room_data else 'None'}")
+    
+    # Nếu có rules/amenities trong session, chuẩn bị data cho JavaScript
+    if room_data.get('rules') or room_data.get('amenities'):
+        print(f"DEBUG: Found saved rules: {room_data.get('rules', [])}")
+        print(f"DEBUG: Found saved amenities: {room_data.get('amenities', [])}")
+    
     return render_template('owner/add_room.html', room_data=room_data)
 
 @owner_bp.route('/room-preview')
@@ -92,7 +208,24 @@ def room_preview():
         flash('Không tìm thấy dữ liệu phòng để xem trước.', 'warning')
         return redirect(url_for('owner.add_room'))
     
-    return render_template('owner/room_preview.html', room_data=room_data)
+    # Lookup tên đầy đủ từ database
+    location_names = get_location_names(room_data)
+    
+    # Lấy rules và amenities từ database
+    rules_amenities = get_rules_and_amenities(room_data)
+    
+    # Debug log - kiểm tra data trong session
+    print(f"DEBUG room_data keys: {list(room_data.keys())}")
+    print(f"DEBUG room_data rules: {room_data.get('rules', 'No rules')}")
+    print(f"DEBUG room_data amenities: {room_data.get('amenities', 'No amenities')}")
+    print(f"DEBUG lookup results: {rules_amenities}")
+    
+    # Chỉ hiển thị khi thực sự có data được chọn
+    
+    # Merge rules và amenities vào room_data
+    room_data.update(rules_amenities)
+    
+    return render_template('owner/room_preview.html', room_data=room_data, location_names=location_names)
 
 @owner_bp.route('/back-to-edit')
 @login_required
