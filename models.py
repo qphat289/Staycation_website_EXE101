@@ -174,6 +174,81 @@ room_amenities = db.Table('room_amenities',
     db.Column('amenity_id', db.Integer, db.ForeignKey('amenity.id'), primary_key=True)
 )
 
+#######################################
+# 3. Các bảng địa chỉ                 #
+#######################################
+
+class Province(db.Model):
+    __tablename__ = 'province'
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(10), unique=True, nullable=False)  # VD: 'hcm', 'hanoi'
+    name = db.Column(db.String(100), nullable=False)  # VD: 'TP. Hồ Chí Minh', 'Hà Nội'
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Relationships
+    districts = db.relationship('District', backref='province', lazy=True, cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f'<Province {self.name}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name
+        }
+
+class District(db.Model):
+    __tablename__ = 'district'
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(20), nullable=False)  # VD: 'quan1', 'quanbadinh'
+    name = db.Column(db.String(100), nullable=False)  # VD: 'Quận 1', 'Quận Ba Đình'
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Foreign Key
+    province_id = db.Column(db.Integer, db.ForeignKey('province.id'), nullable=False)
+    
+    # Relationships
+    wards = db.relationship('Ward', backref='district', lazy=True, cascade="all, delete-orphan")
+    
+    # Unique constraint để tránh trùng lặp trong cùng tỉnh
+    __table_args__ = (db.UniqueConstraint('code', 'province_id', name='_district_code_province_uc'),)
+    
+    def __repr__(self):
+        return f'<District {self.name}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+            'province_id': self.province_id
+        }
+
+class Ward(db.Model):
+    __tablename__ = 'ward'
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(30), nullable=False)  # VD: 'phuong_tan_dinh', 'phuong_phuc_xa'
+    name = db.Column(db.String(100), nullable=False)  # VD: 'Phường Tân Định', 'Phường Phúc Xá'
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Foreign Key
+    district_id = db.Column(db.Integer, db.ForeignKey('district.id'), nullable=False)
+    
+    # Unique constraint để tránh trùng lặp trong cùng quận
+    __table_args__ = (db.UniqueConstraint('code', 'district_id', name='_ward_code_district_uc'),)
+    
+    def __repr__(self):
+        return f'<Ward {self.name}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+            'district_id': self.district_id
+        }
+
 class Room(db.Model):
     __tablename__ = 'room'
     id = db.Column(db.Integer, primary_key=True)

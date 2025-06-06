@@ -142,12 +142,14 @@ from routes.owner import owner_bp
 from routes.renter import renter_bp
 from routes.admin import admin_bp
 from routes.payment import payment_bp
+from routes.api import api_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(owner_bp)
 app.register_blueprint(renter_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(payment_bp)
+app.register_blueprint(api_bp)
 
 # Home route
 @app.route('/')

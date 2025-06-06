@@ -50,20 +50,35 @@
                 </div>
 
                 <div class="form-section">
-                    <h3>Mô hình phòng</h3>
+                    <h3>Mô hình Phòng</h3>
                     <div class="form-content">
-                        <div class="room-specs">
-                            <div class="spec-item">
-                                <i class="icon-bed"></i>
-                                <span>Nhà</span>
+                        <div class="property-type-selection">
+                            <div class="property-option">
+                                <input type="radio" id="house" name="property_type" value="house" class="property-radio">
+                                <label for="house" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-house-door"></i>
+                                    </div>
+                                    <div class="property-text">Nhà</div>
+                                </label>
                             </div>
-                            <div class="spec-item">
-                                <i class="icon-bath"></i>
-                                <span>Căn hộ</span>
+                            <div class="property-option">
+                                <input type="radio" id="apartment" name="property_type" value="apartment" class="property-radio">
+                                <label for="apartment" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-building"></i>
+                                    </div>
+                                    <div class="property-text">Căn hộ</div>
+                                </label>
                             </div>
-                            <div class="spec-item">
-                                <i class="icon-guests"></i>
-                                <span>Khách sạn</span>
+                            <div class="property-option">
+                                <input type="radio" id="hotel" name="property_type" value="hotel" class="property-radio">
+                                <label for="hotel" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-building-fill"></i>
+                                    </div>
+                                    <div class="property-text">Khách sạn</div>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -73,24 +88,18 @@
                     <h3>Địa chỉ phòng</h3>
                     <div class="form-content">
                         <div class="location-inputs">
-                            <select name="province" class="form-select">
-                                <option>Tỉnh/Thành phố</option>
-                                <option>TP. Hồ Chí Minh</option>
-                                <option>Hà Nội</option>
+                            <select name="province" id="provinceSelect" class="form-select" onchange="updateDistricts()">
+                                <option value="" disabled selected>Tỉnh/Thành phố</option>
+                                <option value="hcm">TP. Hồ Chí Minh</option>
+                                <option value="hanoi">Hà Nội</option>
                             </select>
-                            <select name="district" class="form-select">
-                                <option>Quận/Huyện</option>
-                                <option>Quận 1</option>
-                                <option>Quận 2</option>
+                            <select name="district" id="districtSelect" class="form-select" onchange="updateWards()" disabled>
+                                <option value="" disabled selected>Quận/Huyện</option>
                             </select>
-                            <select name="ward" class="form-select">
-                                <option>Phường/Xã</option>
-                                <option>Phường 1</option>
-                                <option>Phường 2</option>
+                            <select name="ward" id="wardSelect" class="form-select" disabled>
+                                <option value="" disabled selected>Phường/Xã</option>
                             </select>
-                            <select name="street" class="form-select">
-                                <option>Tên đường, số nhà/tòa nhà</option>
-                            </select>
+                            <input type="text" name="street" class="form-input" placeholder="Tên đường, số nhà/tòa nhà" required>
                         </div>
                     </div>
                 </div>
@@ -883,16 +892,136 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 .amenity-item input[type="checkbox"] {
     margin: 0;
 }
+
+/* Property Type Selection Styles */
+.property-type-selection {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 8px;
+    max-width: 450px;
+    margin-left: 0;
+}
+
+.property-option {
+    position: relative;
+}
+
+.property-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.property-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 70px;
+    text-align: center;
+}
+
+.property-label:hover {
+    border-color: #9ed649;
+    background-color: #f8fff0;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.2);
+}
+
+.property-icon {
+    margin-bottom: 4px;
+    font-size: 20px;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.property-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.property-radio:checked + .property-label {
+    border-color: #9ed649;
+    background-color: #f0f9e8;
+    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.3);
+}
+
+.property-radio:checked + .property-label .property-icon {
+    color: #9ed649;
+}
+
+.property-radio:checked + .property-label .property-text {
+    color: #9ed649;
+    font-weight: 600;
+}
+
+/* Hide disabled options in dropdown */
+.form-select option:disabled {
+    display: none !important;
+}
+
+/* Placeholder styling for select elements */
+.form-select {
+    color: #6c757d; /* Màu mờ cho placeholder */
+}
+
+.form-select:focus {
+    color: #333; /* Màu đậm khi focus */
+}
+
+.form-select option {
+    color: #333; /* Màu đậm cho các option thật */
+}
+
+/* Styling khi có option được chọn */
+.form-select:valid {
+    color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .property-type-selection {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        max-width: 280px;
+    }
+    
+    .property-label {
+        padding: 10px 8px;
+        min-height: 60px;
+    }
+    
+    .property-icon {
+        font-size: 18px;
+    }
+    
+    .property-text {
+        font-size: 11px;
+    }
+}
 </style>
 
 <script>
 let currentStep = 1;
 const totalSteps = 3;
 
-// Ngăn cuộn trang khi tải trang
+// Ngăn cuộn trang khi tải trang và load dữ liệu địa chỉ
 document.addEventListener('DOMContentLoaded', function() {
     document.body.classList.add('add-room-no-scroll');
     document.documentElement.classList.add('add-room-no-scroll');
+    
+    // Load dữ liệu địa chỉ từ API
+    loadLocationData();
 });
 
 // Cho phép cuộn trở lại khi rời khỏi trang
@@ -981,6 +1110,127 @@ function closeAmenityModal() {
     // Giữ nguyên trạng thái không cuộn của trang chính
     document.body.classList.add('add-room-no-scroll');
     document.documentElement.classList.add('add-room-no-scroll');
+}
+
+// Biến global để lưu dữ liệu địa chỉ từ API
+let locationData = null;
+
+// Load dữ liệu địa chỉ từ API khi trang load
+async function loadLocationData() {
+    try {
+        const response = await fetch('/api/locations/all');
+        const result = await response.json();
+        
+        if (result.success) {
+            locationData = result.data;
+            console.log('Đã load dữ liệu địa chỉ từ API');
+        } else {
+            console.error('Lỗi khi load dữ liệu địa chỉ:', result.message);
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối API:', error);
+    }
+}
+
+function updateDistricts() {
+    const provinceSelect = document.getElementById('provinceSelect');
+    const districtSelect = document.getElementById('districtSelect');
+    const wardSelect = document.getElementById('wardSelect');
+    
+    // Reset districts and wards
+    districtSelect.innerHTML = '<option value="" disabled selected>Quận/Huyện</option>';
+    wardSelect.innerHTML = '<option value="" disabled selected>Phường/Xã</option>';
+    wardSelect.disabled = true;
+    
+    const selectedProvince = provinceSelect.value;
+    
+    if (selectedProvince && locationData && locationData[selectedProvince]) {
+        // Enable district dropdown
+        districtSelect.disabled = false;
+        
+        // Populate districts với sắp xếp theo thứ tự
+        const districts = locationData[selectedProvince].districts;
+        const sortedDistricts = Object.entries(districts).sort((a, b) => {
+            const nameA = a[1].name;
+            const nameB = b[1].name;
+            
+            // Tách số ra khỏi tên (ví dụ: "Quận 1" -> 1)
+            const getNumber = (name) => {
+                const match = name.match(/(\d+)/);
+                return match ? parseInt(match[1]) : 999; // 999 cho các quận không có số
+            };
+            
+            const numA = getNumber(nameA);
+            const numB = getNumber(nameB);
+            
+            // Nếu cả hai đều có số, sắp xếp theo số
+            if (numA !== 999 && numB !== 999) {
+                return numA - numB;
+            }
+            
+            // Nếu một trong hai không có số, sắp xếp theo alphabet
+            return nameA.localeCompare(nameB, 'vi');
+        });
+        
+        sortedDistricts.forEach(([key, district]) => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = district.name;
+            districtSelect.appendChild(option);
+        });
+    } else {
+        districtSelect.disabled = true;
+    }
+}
+
+function updateWards() {
+    const provinceSelect = document.getElementById('provinceSelect');
+    const districtSelect = document.getElementById('districtSelect');
+    const wardSelect = document.getElementById('wardSelect');
+    
+    // Reset wards
+    wardSelect.innerHTML = '<option value="" disabled selected>Phường/Xã</option>';
+    
+    const selectedProvince = provinceSelect.value;
+    const selectedDistrict = districtSelect.value;
+    
+    if (selectedProvince && selectedDistrict && 
+        locationData && locationData[selectedProvince] && 
+        locationData[selectedProvince].districts[selectedDistrict]) {
+        
+        // Enable ward dropdown
+        wardSelect.disabled = false;
+        
+        // Populate wards với sắp xếp theo thứ tự
+        const wards = locationData[selectedProvince].districts[selectedDistrict].wards;
+        const sortedWards = wards.slice().sort((a, b) => {
+            // Tách số ra khỏi tên (ví dụ: "Phường 1" -> 1)
+            const getNumber = (name) => {
+                const match = name.match(/(\d+)/);
+                return match ? parseInt(match[1]) : 999; // 999 cho các phường không có số
+            };
+            
+            const numA = getNumber(a);
+            const numB = getNumber(b);
+            
+            // Nếu cả hai đều có số, sắp xếp theo số
+            if (numA !== 999 && numB !== 999) {
+                return numA - numB;
+            }
+            
+            // Nếu một trong hai không có số, sắp xếp theo alphabet
+            return a.localeCompare(b, 'vi');
+        });
+        
+        sortedWards.forEach(ward => {
+            const option = document.createElement('option');
+            option.value = ward;
+            option.textContent = ward;
+            wardSelect.appendChild(option);
+        });
+    } else {
+        wardSelect.disabled = true;
+    }
 }
 
 // Tab switching in amenity modal
