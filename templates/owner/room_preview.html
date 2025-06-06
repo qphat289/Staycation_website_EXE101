@@ -64,7 +64,7 @@
 
     .main-content {
         display: grid;
-        grid-template-columns: 1fr 400px;
+        grid-template-columns: 6fr 4fr;
         gap: 30px;
     }
 
@@ -535,6 +535,164 @@
         font-style: italic;
     }
 
+    /* Modal styles */
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .image-modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        animation: zoomIn 0.3s ease;
+    }
+
+    .modal-image {
+        width: 100%;
+        height: auto;
+        max-height: 80vh;
+        object-fit: contain;
+        display: block;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 1001;
+    }
+
+    .modal-close:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.1);
+    }
+
+    .modal-close:active {
+        transform: scale(0.95);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes zoomIn {
+        from { 
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        to { 
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Cursor pointer cho ảnh có thể click */
+    .gallery-image {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .gallery-image:hover {
+        transform: scale(1.02);
+    }
+
+    /* Modal navigation buttons */
+    .modal-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        transition: all 0.3s ease;
+        z-index: 1002;
+    }
+
+    .modal-nav-btn:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .modal-nav-btn:active {
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    .modal-prev-btn {
+        left: 20px;
+    }
+
+    .modal-next-btn {
+        right: 20px;
+    }
+
+    /* Modal counter */
+    .modal-counter {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 1002;
+    }
+
+    /* Modal main image badge */
+    .modal-main-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: #9ed649;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 1002;
+        transition: opacity 0.3s ease;
+    }
+
     /* Responsive cho details grid */
     @media (max-width: 768px) {
         .details-grid {
@@ -875,6 +1033,101 @@ function updateImageDisplay() {
         });
     }
 }
+
+// Modal functions
+function openImageModal(imageSrc) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    
+    modal.classList.add('show');
+    modalImage.src = imageSrc;
+    
+    // Sync modal với gallery hiện tại
+    if (window.galleryImages) {
+        // Tìm index của ảnh hiện tại
+        const currentIndex = window.galleryImages.findIndex(img => img.src === imageSrc);
+        if (currentIndex !== -1) {
+            currentImageIndex = currentIndex;
+        }
+        
+        updateModalDisplay();
+        
+        // Hiển thị/ẩn nút navigation
+        const prevBtn = document.getElementById('modalPrevBtn');
+        const nextBtn = document.getElementById('modalNextBtn');
+        
+        if (window.galleryImages.length <= 1) {
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+        } else {
+            prevBtn.style.display = 'flex';
+            nextBtn.style.display = 'flex';
+        }
+    }
+    
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal(event) {
+    // Only close if clicked outside modal content or explicitly called
+    if (!event || event.target.classList.contains('image-modal') || event.target.classList.contains('modal-close')) {
+        const modal = document.getElementById('imageModal');
+        modal.classList.remove('show');
+        
+        // Restore body scroll
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function nextImageInModal() {
+    if (!window.galleryImages || window.galleryImages.length <= 1) return;
+    
+    currentImageIndex = (currentImageIndex + 1) % window.galleryImages.length;
+    updateModalDisplay();
+    updateImageDisplay(); // Sync với gallery bên ngoài
+}
+
+function prevImageInModal() {
+    if (!window.galleryImages || window.galleryImages.length <= 1) return;
+    
+    currentImageIndex = (currentImageIndex - 1 + window.galleryImages.length) % window.galleryImages.length;
+    updateModalDisplay();
+    updateImageDisplay(); // Sync với gallery bên ngoài
+}
+
+function updateModalDisplay() {
+    if (!window.galleryImages || window.galleryImages.length === 0) return;
+    
+    const modalImage = document.getElementById('modalImage');
+    const modalCounter = document.getElementById('modalCounter');
+    const modalMainBadge = document.getElementById('modalMainBadge');
+    
+    const currentImage = window.galleryImages[currentImageIndex];
+    
+    if (modalImage && currentImage) {
+        modalImage.src = currentImage.src;
+    }
+    
+    if (modalCounter) {
+        modalCounter.textContent = `${currentImageIndex + 1}/${window.galleryImages.length}`;
+    }
+    
+    if (modalMainBadge) {
+        if (currentImage.isMain) {
+            modalMainBadge.style.display = 'block';
+        } else {
+            modalMainBadge.style.display = 'none';
+        }
+    }
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
 </script>
 {% endblock %}
 
@@ -1108,7 +1361,7 @@ function updateImageDisplay() {
             <div class="image-gallery">
                 <div class="main-image-container">
                     <div class="main-image" id="mainImage">
-                        <img src="{{ all_images[0].src }}" alt="Room Image" id="currentImage">
+                        <img src="{{ all_images[0].src }}" alt="Room Image" id="currentImage" class="gallery-image" onclick="openImageModal(this.src)">
                         {% if all_images[0].is_main %}
                         <div class="main-image-badge">Ảnh bìa</div>
                         {% endif %}
@@ -1245,6 +1498,28 @@ function updateImageDisplay() {
                 <p style="text-align: center; color: #666;">Chưa có tiện nghi nào được thêm.</p>
             {% endif %}
         </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="image-modal" onclick="closeImageModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeImageModal()">&times;</button>
+        <img id="modalImage" class="modal-image" src="" alt="Ảnh phòng">
+        
+        <!-- Navigation buttons in modal -->
+        <button class="modal-nav-btn modal-prev-btn" onclick="prevImageInModal()" id="modalPrevBtn">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="modal-nav-btn modal-next-btn" onclick="nextImageInModal()" id="modalNextBtn">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
+        <!-- Image counter in modal -->
+        <div class="modal-counter" id="modalCounter">1/1</div>
+        
+        <!-- Main image badge in modal -->
+        <div class="modal-main-badge" id="modalMainBadge" style="display: none;">Ảnh bìa</div>
     </div>
 </div>
 

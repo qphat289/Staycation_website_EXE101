@@ -2798,46 +2798,79 @@ function fillLocationData(roomData) {
         ward: roomData.ward
     });
     
+    // Check if location data is loaded
+    if (!locationData) {
+        console.log('⏳ Location data not loaded yet, retrying in 1 second...');
+        setTimeout(() => fillLocationData(roomData), 1000);
+        return;
+    }
+    
     // Fill province
     if (roomData.province) {
         const provinceSelect = document.getElementById('province');
-        if (provinceSelect) {
+        if (provinceSelect && locationData[roomData.province]) {
             provinceSelect.value = roomData.province;
             console.log('✅ Set province:', roomData.province);
             
             // Trigger change event to load districts
-            provinceSelect.dispatchEvent(new Event('change'));
+            updateDistricts();
             
             // Wait for districts to load, then set district
             setTimeout(() => {
                 if (roomData.district) {
                     const districtSelect = document.getElementById('district');
-                    if (districtSelect) {
-                        districtSelect.value = roomData.district;
-                        console.log('✅ Set district:', roomData.district);
-                        
-                        // Trigger change to load wards
-                        districtSelect.dispatchEvent(new Event('change'));
-                        
-                        // Wait for wards to load, then set ward
-                        setTimeout(() => {
-                            if (roomData.ward) {
-                                const wardSelect = document.getElementById('ward');
-                                if (wardSelect) {
-                                    wardSelect.value = roomData.ward;
-                                    console.log('✅ Set ward:', roomData.ward);
-                                } else {
-                                    console.log('❌ ward select not found');
-                                }
+                    if (districtSelect && districtSelect.options.length > 1) {
+                        // Check if district option exists
+                        let districtFound = false;
+                        for (let option of districtSelect.options) {
+                            if (option.value === roomData.district) {
+                                districtFound = true;
+                                break;
                             }
-                        }, 500); // Increase timeout
+                        }
+                        
+                        if (districtFound) {
+                            districtSelect.value = roomData.district;
+                            console.log('✅ Set district:', roomData.district);
+                            
+                            // Trigger change to load wards
+                            updateWards();
+                            
+                            // Wait for wards to load, then set ward
+                            setTimeout(() => {
+                                if (roomData.ward) {
+                                    const wardSelect = document.getElementById('ward');
+                                    if (wardSelect && wardSelect.options.length > 1) {
+                                        // Check if ward option exists
+                                        let wardFound = false;
+                                        for (let option of wardSelect.options) {
+                                            if (option.value === roomData.ward) {
+                                                wardFound = true;
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if (wardFound) {
+                                            wardSelect.value = roomData.ward;
+                                            console.log('✅ Set ward:', roomData.ward);
+                                        } else {
+                                            console.log('❌ Ward option not found:', roomData.ward);
+                                        }
+                                    } else {
+                                        console.log('❌ Ward select not ready or empty');
+                                    }
+                                }
+                            }, 800); // Increased timeout for wards
+                        } else {
+                            console.log('❌ District option not found:', roomData.district);
+                        }
                     } else {
-                        console.log('❌ district select not found');
+                        console.log('❌ District select not ready or empty');
                     }
                 }
-            }, 500); // Increase timeout
+            }, 600); // Increased timeout for districts
         } else {
-            console.log('❌ province select not found');
+            console.log('❌ Province select not found or province data missing');
         }
     }
     
@@ -2984,8 +3017,11 @@ function setupAutoSave() {
     // Save on input changes
     const inputs = document.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
-        input.addEventListener('input', debounce(saveFormDataToSession, 500));
-        input.addEventListener('change', saveFormDataToSession);
+        // Skip file inputs to prevent issues with image handling
+        if (input.type !== 'file') {
+            input.addEventListener('input', debounce(saveFormDataToSession, 500));
+            input.addEventListener('change', saveFormDataToSession);
+        }
     });
     
     // Save on counter changes
@@ -2994,6 +3030,17 @@ function setupAutoSave() {
         btn.addEventListener('click', () => {
             setTimeout(saveFormDataToSession, 100);
         });
+    });
+    
+    // Special handling for location dropdowns with delayed save
+    const locationSelects = ['province', 'district', 'ward'];
+    locationSelects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (select) {
+            select.addEventListener('change', () => {
+                setTimeout(saveFormDataToSession, 300);
+            });
+        }
     });
 }
 
@@ -3033,6 +3080,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveFormDataToSession(); // Save after rental type change
             });
         });
+        
+        // Location change listeners sẽ được setup trong setupAutoSave
         
         // Load saved data again after APIs are loaded (for location selects)
         setTimeout(() => {
