@@ -30,6 +30,7 @@
             <input type="hidden" name="bathroom_count" id="bathroom_count_input" value="2">
             <input type="hidden" name="bed_count" id="bed_count_input" value="1">
             <input type="hidden" name="guest_count" id="guest_count_input" value="1">
+            <input type="hidden" name="selected_rental_type" id="selected_rental_type" value="">
             <!-- Step 1: Basic Information -->
             <div class="step-content active" id="step-1">
                 <div class="form-section">
@@ -210,41 +211,40 @@
                     <h3>Thêm ảnh phòng</h3>
                     <div class="form-content">
                         <div class="upload-grid">
-                            <div class="upload-item main-upload">
-                                <span>Ảnh bìa</span>
+                            <div class="upload-item">
+                                <span class="upload-label">Ảnh bìa</span>
                                 <input type="file" id="main-image" name="main_image" accept="image/*">
                                 <div class="upload-placeholder">
-                                    <i class="icon-camera"></i>
-                                    <span>Chọn ảnh</span>
+                                    <i class="bi bi-camera"></i>
                                 </div>
                             </div>
                             <div class="upload-item">
                                 <input type="file" name="images[]" accept="image/*" multiple>
                                 <div class="upload-placeholder">
-                                    <i class="icon-camera"></i>
+                                    <i class="bi bi-camera"></i>
                                 </div>
                             </div>
                             <div class="upload-item">
                                 <input type="file" name="images[]" accept="image/*" multiple>
                                 <div class="upload-placeholder">
-                                    <i class="icon-camera"></i>
+                                    <i class="bi bi-camera"></i>
                                 </div>
                             </div>
                             <div class="upload-item">
                                 <input type="file" name="images[]" accept="image/*" multiple>
                                 <div class="upload-placeholder">
-                                    <i class="icon-camera"></i>
+                                    <i class="bi bi-camera"></i>
                                 </div>
                             </div>
                             <div class="upload-item">
                                 <input type="file" name="images[]" accept="image/*" multiple>
                                 <div class="upload-placeholder">
-                                    <i class="icon-camera"></i>
+                                    <i class="bi bi-camera"></i>
                                 </div>
                             </div>
                             <div class="upload-item add-more">
                                 <div class="upload-placeholder">
-                                    <i class="icon-plus"></i>
+                                    <i class="bi bi-plus-circle"></i>
                                     <span>Thêm ảnh</span>
                                 </div>
                             </div>
@@ -256,7 +256,7 @@
                     <h3>Thêm giá dịch vụ</h3>
                     <div class="form-content">
                         <div class="pricing-section">
-                            <div class="pricing-option">
+                            <div class="pricing-option" id="hourly-pricing" style="display: none;">
                                 <h4>Theo giờ</h4>
                                 <p>Giá thuê theo giờ với giá gốc homestay ban đầu từ 50.000đ</p>
                                 <div class="price-input">
@@ -264,13 +264,19 @@
                                     <input type="number" name="hourly_price" placeholder="Gợi ý 200.000đ" class="price-field">
                                 </div>
                             </div>
-                            <div class="pricing-option">
+                            <div class="pricing-option" id="nightly-pricing" style="display: none;">
                                 <h4>Theo đêm</h4>
                                 <p>Giá thuê theo đêm với giá gốc homestay ban đầu từ 400.000đ</p>
                                 <div class="price-input">
                                     <span class="currency">VND</span>
                                     <input type="number" name="nightly_price" placeholder="Gợi ý 400.000đ" class="price-field">
                                 </div>
+                            </div>
+                            <div class="no-rental-type-selected" id="no-pricing-selected">
+                                <p style="color: #666; font-style: italic; text-align: center;">
+                                    <i class="bi bi-arrow-left me-2"></i>
+                                    Vui lòng chọn hình thức cho thuê ở bước trước để thiết lập giá
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -847,20 +853,32 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 .upload-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 12px;
+    max-width: 100%;
+    width: 100%;
 }
 
 .upload-item {
     position: relative;
     aspect-ratio: 1;
     border: 2px dashed #ddd;
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
+    min-height: 140px;
+    max-width: 160px;
 }
 
-.upload-item.main-upload {
-    grid-column: span 2;
-    grid-row: span 2;
+.upload-label {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(158, 214, 73, 0.9);
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    z-index: 2;
+    font-weight: 500;
 }
 
 .upload-placeholder {
@@ -873,8 +891,19 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 6px;
     cursor: pointer;
+}
+
+.upload-placeholder i {
+    font-size: 28px;
+    color: #9ed649;
+}
+
+.upload-placeholder span {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
 }
 
 .upload-item input[type="file"] {
@@ -888,6 +917,21 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 .upload-item.add-more {
     background: #f9f9f9;
     border-color: #9ed649;
+    border-style: dashed;
+}
+
+.upload-item.add-more .upload-placeholder {
+    background: transparent;
+}
+
+.upload-item.add-more .upload-placeholder i {
+    font-size: 24px;
+    color: #9ed649;
+}
+
+.upload-item:hover {
+    border-color: #9ed649;
+    background-color: #f8fff0;
 }
 
 .pricing-section {
@@ -1622,6 +1666,18 @@ window.addEventListener('beforeunload', function() {
 
 function nextStep() {
     if (currentStep < totalSteps) {
+        // Validate current step before proceeding
+        if (currentStep === 2) {
+            // Check if rental type is selected
+            const hourlyRadio = document.getElementById('hourly');
+            const nightlyRadio = document.getElementById('nightly');
+            
+            if (!hourlyRadio.checked && !nightlyRadio.checked) {
+                alert('Vui lòng chọn hình thức cho thuê (theo giờ hoặc qua đêm)');
+                return;
+            }
+        }
+        
         // Hide current step
         document.getElementById(`step-${currentStep}`).classList.remove('active');
         document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
@@ -1631,6 +1687,11 @@ function nextStep() {
         // Show next step
         document.getElementById(`step-${currentStep}`).classList.add('active');
         document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+        
+        // Update pricing display when entering step 3
+        if (currentStep === 3) {
+            updatePricingDisplay();
+        }
     }
 }
 
@@ -2004,6 +2065,63 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 document.querySelector('.form-textarea').addEventListener('input', function() {
     const count = this.value.length;
     document.querySelector('.char-count').textContent = `${count}/500`;
+});
+
+// ================================
+// Rental Type & Pricing Functions
+// ================================
+
+function updatePricingDisplay() {
+    const hourlyRadio = document.getElementById('hourly');
+    const nightlyRadio = document.getElementById('nightly');
+    const hourlyPricing = document.getElementById('hourly-pricing');
+    const nightlyPricing = document.getElementById('nightly-pricing');
+    const noPricingSelected = document.getElementById('no-pricing-selected');
+    const selectedRentalTypeInput = document.getElementById('selected_rental_type');
+    
+    // Hide all pricing options first
+    hourlyPricing.style.display = 'none';
+    nightlyPricing.style.display = 'none';
+    noPricingSelected.style.display = 'block';
+    
+    // Show appropriate pricing based on selected rental type
+    if (hourlyRadio.checked) {
+        hourlyPricing.style.display = 'block';
+        noPricingSelected.style.display = 'none';
+        selectedRentalTypeInput.value = 'hourly';
+        // Clear nightly price input since it's not selected
+        document.querySelector('input[name="nightly_price"]').value = '';
+    } else if (nightlyRadio.checked) {
+        nightlyPricing.style.display = 'block';
+        noPricingSelected.style.display = 'none';
+        selectedRentalTypeInput.value = 'nightly';
+        // Clear hourly price input since it's not selected
+        document.querySelector('input[name="hourly_price"]').value = '';
+    } else {
+        selectedRentalTypeInput.value = '';
+    }
+}
+
+// Add event listeners for rental type radio buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const hourlyRadio = document.getElementById('hourly');
+    const nightlyRadio = document.getElementById('nightly');
+    
+    if (hourlyRadio) {
+        hourlyRadio.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricingDisplay();
+            }
+        });
+    }
+    
+    if (nightlyRadio) {
+        nightlyRadio.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricingDisplay();
+            }
+        });
+    }
 });
 
 // ================================

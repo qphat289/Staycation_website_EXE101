@@ -69,13 +69,19 @@ def add_room():
             bed_count = int(request.form.get('bed_count', 1))
             guest_count = int(request.form.get('guest_count', 1))
             
-            # Giá cả
-            hourly_price = request.form.get('hourly_price')
-            nightly_price = request.form.get('nightly_price')
+            # Lấy rental type được chọn
+            selected_rental_type = request.form.get('selected_rental_type')
             
-            # Xử lý giá theo giờ
-            price_per_hour = float(hourly_price) if hourly_price else 0.0
-            price_per_night = float(nightly_price) if nightly_price else None
+            # Xử lý giá dựa theo rental type được chọn
+            price_per_hour = None
+            price_per_night = None
+            
+            if selected_rental_type == 'hourly':
+                hourly_price = request.form.get('hourly_price')
+                price_per_hour = float(hourly_price) if hourly_price else 0.0
+            elif selected_rental_type == 'nightly':
+                nightly_price = request.form.get('nightly_price')
+                price_per_night = float(nightly_price) if nightly_price else 0.0
             
             # Tạo room mới
             new_room = Room(
