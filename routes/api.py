@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from models import Province, District, Ward
+from models import Province, District, Ward, Rule, AmenityCategory, Amenity
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -93,4 +93,123 @@ def get_all_locations():
         return jsonify({
             'success': False,
             'message': str(e)
-        }), 500 
+        }), 500
+
+# ================================
+# Rules API Endpoints
+# ================================
+
+@api_bp.route('/rules', methods=['GET'])
+def get_all_rules():
+    """Lấy danh sách tất cả nội quy"""
+    try:
+        rules = Rule.query.filter_by(is_active=True).all()
+        
+        # Nhóm rules theo category
+        rules_by_category = {}
+        for rule in rules:
+            category = rule.category
+            if category not in rules_by_category:
+                rules_by_category[category] = []
+            rules_by_category[category].append(rule.to_dict())
+        
+        return jsonify({
+            'success': True,
+            'data': rules_by_category
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@api_bp.route('/rules/category/<category>', methods=['GET'])
+def get_rules_by_category(category):
+    """Lấy danh sách nội quy theo category"""
+    try:
+        rules = Rule.query.filter_by(category=category, is_active=True).all()
+        return jsonify({
+            'success': True,
+            'data': [rule.to_dict() for rule in rules]
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+# ================================
+# Amenities API Endpoints
+# ================================
+
+@api_bp.route('/amenities', methods=['GET'])
+def get_all_amenities():
+    """Lấy danh sách tất cả tiện nghi theo categories"""
+    try:
+        categories = AmenityCategory.query.filter_by(is_active=True).order_by(AmenityCategory.display_order).all()
+        
+        result = {}
+        for category in categories:
+            amenities = Amenity.query.filter_by(
+                category_id=category.id, 
+                is_active=True
+            ).order_by(Amenity.display_order).all()
+            
+            result[category.code] = {
+                'category_info': category.to_dict(),
+                'amenities': [amenity.to_dict() for amenity in amenities]
+            }
+        
+        return jsonify({
+            'success': True,
+            'data': result
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@api_bp.route('/amenities/categories', methods=['GET'])
+def get_amenity_categories():
+    """Lấy danh sách các loại tiện nghi"""
+    try:
+        categories = AmenityCategory.query.filter_by(is_active=True).order_by(AmenityCategory.display_order).all()
+        return jsonify({
+            'success': True,
+            'data': [category.to_dict() for category in categories]
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@api_bp.route('/amenities/category/<category_code>', methods=['GET'])
+def get_amenities_by_category(category_code):
+    """Lấy danh sách tiện nghi theo loại"""
+    try:
+        category = AmenityCategory.query.filter_by(code=category_code, is_active=True).first()
+        if not category:
+            return jsonify({
+                'success': False,
+                'message': 'Loại tiện nghi không tồn tại'
+            }), 404
+        
+        amenities = Amenity.query.filter_by(
+            category_id=category.id, 
+            is_active=True
+        ).order_by(Amenity.display_order).all()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'category': category.to_dict(),
+                'amenities': [amenity.to_dict() for amenity in amenities]
+            }
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500

@@ -113,7 +113,7 @@
             <!-- Step 2: Detailed Information -->
             <div class="step-content" id="step-2">
                 <div class="form-section">
-                    <h3>Đặc chủng của phòng</h3>
+                    <h3>Sức chứa của phòng</h3>
                     <div class="form-content">
                         <div class="room-details">
                             <div class="detail-row">
@@ -147,50 +147,35 @@
                 <div class="form-section">
                     <h3>Nội quy tại phòng</h3>
                     <div class="form-content">
-                        <div class="rules-section">
-                            <div class="rule-item">
-                                <span>Khách được hút thuốc</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="smoking" name="smoking">
-                                    <label for="smoking"></label>
-                                </div>
+                        <div class="rules-row">
+                            <div class="selected-rules" id="selectedRules">
+                                <!-- Selected rules will appear here -->
                             </div>
-                            <div class="rule-item">
-                                <span>Khách được mang thú cưng</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="pets" name="pets">
-                                    <label for="pets"></label>
-                                </div>
-                            </div>
-                            <div class="rule-item">
-                                <span>Khách được mang trẻ em</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="children" name="children">
-                                    <label for="children"></label>
-                                </div>
-                            </div>
-                            <div class="rule-item">
-                                <span>Khách được tổ chức tiệc/ăn mừng</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="party" name="party">
-                                    <label for="party"></label>
-                                </div>
-                            </div>
+                            <button type="button" class="add-rule-btn" onclick="showRulesModal()">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>Thêm nội quy</span>
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h3>Tiện ích cho thuê</h3>
+                    <h3>Hình thức cho thuê</h3>
                     <div class="form-content">
-                        <div class="amenities-section">
-                            <div class="amenity-category">
-                                <i class="icon-clock"></i>
-                                <span>Theo giờ</span>
+                        <div class="rental-type-selection">
+                            <div class="rental-option">
+                                <input type="radio" id="hourly" name="rental_type" value="hourly" class="rental-radio">
+                                <label for="hourly" class="rental-label">
+                                    <i class="rental-icon bi bi-clock"></i>
+                                    <span class="rental-text">Theo giờ</span>
+                                </label>
                             </div>
-                            <div class="amenity-category">
-                                <i class="icon-night"></i>
-                                <span>Qua đêm</span>
+                            <div class="rental-option">
+                                <input type="radio" id="nightly" name="rental_type" value="nightly" class="rental-radio">
+                                <label for="nightly" class="rental-label">
+                                    <i class="rental-icon bi bi-moon"></i>
+                                    <span class="rental-text">Qua đêm</span>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -199,12 +184,17 @@
                                 <div class="form-section">
                     <h3>Thêm tiện nghi</h3>
                     <div class="form-content">
-                        <div class="amenities-grid">
-                            <button type="button" class="amenity-btn" onclick="showAmenityModal()">
-                                <i class="icon-plus"></i>
+                        <div class="amenities-row">
+                            <div class="selected-amenities" id="selectedAmenities">
+                                <!-- Selected amenities will appear here -->
+                            </div>
+                            <button type="button" class="add-amenity-btn" onclick="showAmenityModal()">
+                                <i class="bi bi-plus-circle"></i>
                                 <span>Thêm tiện nghi</span>
                             </button>
                         </div>
+                        <!-- Hidden inputs cho selected amenities -->
+                        <div id="amenityInputs"></div>
                     </div>
   </div>
 
@@ -294,40 +284,105 @@
         </form>
   </div>
 
-    <!-- Amenity Modal -->
+        <!-- Amenity Modal -->
     <div id="amenityModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Các tiện nghi cơ bản</h3>
-                <button type="button" class="close-btn" onclick="closeAmenityModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="amenity-categories">
-                    <div class="category-tabs">
-                        <button class="tab-btn active" data-tab="basic">Cơ bản</button>
-                        <button class="tab-btn" data-tab="room">Phòng</button>
-                        <button class="tab-btn" data-tab="bathroom">Phòng tắm</button>
-                        <button class="tab-btn" data-tab="kitchen">Bếp</button>
-                        <button class="tab-btn" data-tab="safety">An toàn</button>
-  </div>
-
-                    <div class="amenity-grid" id="basic-amenities">
-                        <div class="amenity-item">
-                            <input type="checkbox" id="wifi" name="amenities[]" value="wifi">
-                            <label for="wifi">Wifi miễn phí</label>
-                        </div>
-                        <div class="amenity-item">
-                            <input type="checkbox" id="ac" name="amenities[]" value="ac">
-                            <label for="ac">Điều hòa không khí</label>
-                        </div>
-                        <div class="amenity-item">
-                            <input type="checkbox" id="tv" name="amenities[]" value="tv">
-                            <label for="tv">Tivi</label>
+                <div class="header-content">
+                    <div class="header-title">
+                        <i class="bi bi-star-fill me-3"></i>
+                        <div>
+                            <h3>Chọn tiện nghi cho phòng</h3>
+                            <p class="header-subtitle">Thêm các tiện nghi để thu hút khách hàng</p>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="modal-body">
+                <div class="amenity-categories">
+                    <div class="amenity-sections">
+                        <!-- Amenity sections will be loaded here -->
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="rulesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <i class="bi bi-shield-check me-3"></i>
+                        <div>
+                            <h3>Chọn nội quy cho phòng</h3>
+                            <p class="header-subtitle">Thiết lập các quy định để đảm bảo trải nghiệm tốt nhất</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="rules-categories">
+                    <div class="rules-sections">
+                        <div class="rule-section" data-category="smoking">
+                            <h4 class="section-title">
+                                <i class="bi bi-sign-no-smoking-fill me-2"></i>Hút thuốc
+                            </h4>
+                            <div class="rules-grid" id="smokingRules">
+                                <!-- Smoking rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="pets">
+                            <h4 class="section-title">
+                                <i class="bi bi-heart-fill me-2"></i>Thú cưng
+                            </h4>
+                            <div class="rules-grid" id="petsRules">
+                                <!-- Pet rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="children">
+                            <h4 class="section-title">
+                                <i class="bi bi-people-fill me-2"></i>Trẻ em
+                            </h4>
+                            <div class="rules-grid" id="childrenRules">
+                                <!-- Children rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="party">
+                            <h4 class="section-title">
+                                <i class="bi bi-music-note-beamed me-2"></i>Tiệc tùng
+                            </h4>
+                            <div class="rules-grid" id="partyRules">
+                                <!-- Party rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="time">
+                            <h4 class="section-title">
+                                <i class="bi bi-clock-fill me-2"></i>Thời gian
+                            </h4>
+                            <div class="rules-grid" id="timeRules">
+                                <!-- Time rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="behavior">
+                            <h4 class="section-title">
+                                <i class="bi bi-person-check-fill me-2"></i>Hành vi
+                            </h4>
+                            <div class="rules-grid" id="behaviorRules">
+                                <!-- Behavior rules will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
             </div>
         </div>
     </div>
@@ -338,7 +393,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 10px 20px;
-    background: #f8fdf4;
+    background: transparent;
     height: calc(100vh - 70px); /* 70px là chiều cao header */
     overflow: hidden;
 }
@@ -465,11 +520,11 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 }
 
 .form-section {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     display: flex;
     align-items: flex-start;
-    gap: 20px;
-    padding-bottom: 15px;
+    gap: 15px;
+    padding-bottom: 12px;
     border-bottom: 1px solid #e5e5e5;
 }
 
@@ -480,14 +535,134 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 .form-section h3 {
     margin-bottom: 0;
     color: #333;
+    font-size: 14px;
+    flex: 0 0 130px;
+    padding-top: 5px;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.rules-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+
+.selected-rules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+    margin-left:25px;
+}
+
+.selected-rule-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f0f9e8;
+    border: 1px solid #9ed649;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #2d5a2d;
+}
+
+.selected-rule-item .remove-rule {
+    color: #dc3545;
+    cursor: pointer;
     font-size: 16px;
-    flex: 0 0 150px;
-    padding-top: 8px;
+    font-weight: bold;
+    padding: 0 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.selected-rule-item .remove-rule:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.more-rules-badge {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: #e9ecef;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.more-rules-badge:hover {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+.add-rule-btn {
+    background: transparent;
+    color: #333;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.add-rule-btn:hover {
+    color: #9ed649;
+}
+
+/* Amenities Row Styles - tương tự như Rules */
+.amenities-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.selected-amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+    margin-left: 25px;
+}
+
+.add-amenity-btn {
+    background: transparent;
+    color: #333;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.add-amenity-btn:hover {
+    color: #9ed649;
 }
 
 .form-section .form-content {
     flex: 1;
+    background: transparent;
 }
+
+
 
 .form-input, .form-textarea {
     width: 100%;
@@ -545,36 +720,38 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 
 .form-select {
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    /* border: 1px solid #ddd; */
     border-radius: 6px;
-    background: white;
+    /* background: white; */
     font-size: 13px;
 }
 
 .room-details {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px;
+    background: transparent;
+    margin-top: -20px;
 }
 
 .detail-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-    font-size: 14px;
+    padding: 8px 0;
+    border-bottom: 1px solid #a7a3a3;
+    font-size: 13px;
 }
 
 .counter {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .counter-btn {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     border: 1px solid #ddd;
     border-radius: 50%;
     background: white;
@@ -582,7 +759,7 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .counter-btn:hover {
@@ -592,21 +769,21 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 .rules-section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
 }
 
 .rule-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0;
-    font-size: 14px;
+    padding: 6px 0;
+    font-size: 13px;
 }
 
 .toggle-switch {
     position: relative;
-    width: 50px;
-    height: 25px;
+    width: 44px;
+    height: 22px;
 }
 
 .toggle-switch input {
@@ -630,8 +807,8 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 .toggle-switch label:before {
     position: absolute;
     content: "";
-    height: 19px;
-    width: 19px;
+    height: 16px;
+    width: 16px;
     left: 3px;
     bottom: 3px;
     background-color: white;
@@ -644,7 +821,7 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 }
 
 .toggle-switch input:checked + label:before {
-    transform: translateX(25px);
+    transform: translateX(22px);
 }
 
 .amenities-section {
@@ -663,28 +840,9 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     font-size: 13px;
 }
 
-.amenities-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
 
-.amenity-btn {
-    padding: 25px 15px;
-    border: 2px dashed #ddd;
-    border-radius: 6px;
-    background: white;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-}
 
-.amenity-btn:hover {
-    border-color: #9ed649;
-}
+
 
 .upload-grid {
     display: grid;
@@ -829,64 +987,319 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 }
 
 .modal-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: fixed;
+    top: 70px;
+    right: 0;
+    transform: none;
     background: white;
-    border-radius: 12px;
+    border-radius: 12px 0 0 12px;
     padding: 30px;
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
+    max-width: 700px;
+    width: 650px;
+    height: calc(100vh - 70px);
     overflow-y: auto;
+    box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
 }
 
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #9ed649;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #8bc441;
+}
+
+
+
 .modal-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    padding: 15px 0;
+    margin: -30px -30px 15px -30px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border-bottom: 1px solid #e5e5e5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
 }
 
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.category-tabs {
+.header-title {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    align-items: center;
+    gap: 12px;
 }
 
-.tab-btn {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    cursor: pointer;
+.header-title i {
+    font-size: 24px;
+    color: #9ed649;
 }
 
-.tab-btn.active {
-    background: #9ed649;
-    color: white;
-    border-color: #9ed649;
+.header-title h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
 }
 
-.amenity-grid {
+.header-subtitle {
+    margin: 2px 0 0 0;
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+
+
+.rules-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.rule-section {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fafafa;
+}
+
+.section-title {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #9ed649;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    color: #9ed649;
+}
+
+.rules-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.rule-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.rule-item:hover {
+    border-color: #9ed649;
+    background: #f8fff0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(158, 214, 73, 0.15);
+}
+
+.rule-item.selected {
+    background: #e8f5e8;
+    border-color: #9ed649;
+    box-shadow: 0 2px 6px rgba(158, 214, 73, 0.25);
+}
+
+.rule-item.selected::before {
+    content: "✓";
+    position: absolute;
+    right: 12px;
+    color: #9ed649;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.rule-text {
+    font-size: 14px;
+    color: #333;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.rule-item.selected .rule-text {
+    color: #2d5a2d;
+    font-weight: 500;
+}
+
+.no-rules-text {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Amenity Modal specific styles */
+.amenity-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.amenity-section {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fafafa;
+}
+
+.amenity-section .section-title {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #9ed649;
+    display: flex;
+    align-items: center;
+}
+
+.amenity-section .section-title i {
+    color: #9ed649;
+}
+
+.amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
 }
 
 .amenity-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px;
+    padding: 12px 15px;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+}
+
+.amenity-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #9ed649;
+}
+
+.amenity-item.selected {
+    background-color: #e8f5e8;
+    border-color: #9ed649;
+}
+
+.amenity-item.selected::after {
+    content: '✔';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ed649;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.amenity-item i {
+    font-size: 18px;
+    color: #9ed649;
+    min-width: 20px;
+    margin-right: 10px;
+}
+
+.amenity-text {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.no-amenities-text {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+/* Selected amenity items - tương tự như selected rule items */
+.selected-amenity-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f0f9e8;
+    border: 1px solid #9ed649;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #2d5a2d;
+}
+
+.selected-amenity-item .remove-amenity {
+    color: #817d7d;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.selected-amenity-item .remove-amenity:hover {
+    background: #9ed649;
+    color: white;
+}
+
+.more-amenities-badge {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: #e9ecef;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.more-amenities-badge:hover {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
 }
 
 .amenity-item input[type="checkbox"] {
@@ -988,6 +1401,180 @@ body.add-room-no-scroll, html.add-room-no-scroll {
     color: #333;
 }
 
+/* Rental Type Selection Styles */
+.rental-type-selection {
+    display: flex;
+    gap: 15px;
+    margin-top: 5px;
+    margin-left: 20px;
+}
+
+.rental-option {
+    position: relative;
+}
+
+.rental-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.rental-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 13px;
+    min-width: 100px;
+    justify-content: center;
+}
+
+.rental-label:hover {
+    border-color: #9ed649;
+    background-color: #f8fff0;
+}
+
+.rental-icon {
+    font-size: 16px;
+    color: #666;
+}
+
+.rental-text {
+    font-weight: 500;
+    color: #333;
+}
+
+.rental-radio:checked + .rental-label {
+    border-color: #9ed649;
+    background-color: #f0f9e8;
+    box-shadow: 0 1px 4px rgba(158, 214, 73, 0.3);
+}
+
+.rental-radio:checked + .rental-label .rental-text {
+    color: #9ed649;
+    font-weight: 600;
+}
+
+/* Rules Section Styles */
+.selected-rules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+    min-height: 40px;
+    padding: 8px 0;
+}
+
+.selected-rule-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f0f9e8;
+    border: 1px solid #9ed649;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #2d5a2d;
+}
+
+
+
+.selected-rule-item .remove-rule {
+    color: #817d7d;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.selected-rule-item .remove-rule:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.add-rule-btn {
+    padding: 8px 16px;
+    border: 2px dashed #ddd;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.add-rule-btn i {
+    font-size: 16px;
+}
+
+/* Rules Modal Styles */
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.rule-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    text-align: center;
+    min-height: 45px;
+}
+
+.rule-option:hover {
+    border-color: #9ed649;
+    background: #f8fff0;
+}
+
+.rule-option.selected {
+    border-color: #9ed649;
+    background: #9ed649;
+    color: white;
+}
+
+.rule-option input[type="checkbox"] {
+    display: none;
+}
+
+.rule-option .rule-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.rule-option.selected .rule-name {
+    color: white;
+}
+
+.modal-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .property-type-selection {
@@ -1020,8 +1607,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.classList.add('add-room-no-scroll');
     document.documentElement.classList.add('add-room-no-scroll');
     
-    // Load dữ liệu địa chỉ từ API
+    // Load dữ liệu từ API
     loadLocationData();
+    loadRulesData();
+    loadAmenitiesData();
+    updateSelectedAmenitiesDisplay();
 });
 
 // Cho phép cuộn trở lại khi rời khỏi trang
@@ -1103,6 +1693,9 @@ function showAmenityModal() {
     // Đảm bảo body vẫn không cuộn được khi modal mở
     document.body.classList.add('add-room-no-scroll');
     document.documentElement.classList.add('add-room-no-scroll');
+    
+    // Load amenities cho tất cả categories
+    loadAllAmenities();
 }
 
 function closeAmenityModal() {
@@ -1112,8 +1705,140 @@ function closeAmenityModal() {
     document.documentElement.classList.add('add-room-no-scroll');
 }
 
-// Biến global để lưu dữ liệu địa chỉ từ API
+function loadAllAmenities() {
+    const amenitySections = document.querySelector('.amenity-sections');
+    amenitySections.innerHTML = '';
+    
+    if (!amenitiesData) {
+        amenitySections.innerHTML = '<p class="no-amenities-text">Đang tải dữ liệu tiện nghi...</p>';
+        return;
+    }
+    
+    // Tạo section cho mỗi category
+    Object.keys(amenitiesData).forEach(categoryCode => {
+        const categoryData = amenitiesData[categoryCode];
+        const categoryInfo = categoryData.category_info;
+        const amenities = categoryData.amenities;
+        
+        const sectionElement = document.createElement('div');
+        sectionElement.className = 'amenity-section';
+        sectionElement.setAttribute('data-category', categoryCode);
+        
+        sectionElement.innerHTML = `
+            <h4 class="section-title">
+                <i class="${categoryInfo.icon} me-2"></i>${categoryInfo.name}
+            </h4>
+            <div class="amenities-grid" id="${categoryCode}Amenities">
+                ${amenities.map(amenity => `
+                    <div class="amenity-item ${selectedAmenities.some(a => a.id === amenity.id) ? 'selected' : ''}" data-amenity-id="${amenity.id}">
+                        <i class="${amenity.icon}"></i>
+                        <span class="amenity-text">${amenity.name}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        amenitySections.appendChild(sectionElement);
+        
+        // Thêm event listeners cho amenity items
+        const amenityItems = sectionElement.querySelectorAll('.amenity-item');
+        amenityItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const amenityId = parseInt(this.getAttribute('data-amenity-id'));
+                const amenity = amenities.find(a => a.id === amenityId);
+                const isCurrentlySelected = this.classList.contains('selected');
+                
+                toggleAmenitySelection(amenity, !isCurrentlySelected);
+                
+                // Cập nhật visual state
+                if (!isCurrentlySelected) {
+                    this.classList.add('selected');
+                } else {
+                    this.classList.remove('selected');
+                }
+            });
+        });
+    });
+}
+
+function toggleAmenitySelection(amenity, isSelected) {
+    const existingIndex = selectedAmenities.findIndex(a => a.id === amenity.id);
+    
+    if (isSelected && existingIndex === -1) {
+        selectedAmenities.push(amenity);
+    } else if (!isSelected && existingIndex > -1) {
+        selectedAmenities.splice(existingIndex, 1);
+    }
+    
+    updateSelectedAmenitiesDisplay();
+    console.log('Selected amenities:', selectedAmenities);
+}
+
+function updateSelectedAmenitiesDisplay() {
+    const container = document.getElementById('selectedAmenities');
+    const inputsContainer = document.getElementById('amenityInputs');
+    
+    // Clear existing content
+    container.innerHTML = '';
+    inputsContainer.innerHTML = '';
+    
+    if (selectedAmenities.length === 0) {
+        container.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">Chưa chọn tiện nghi nào</p>';
+        return;
+    }
+    
+    const maxDisplayAmenities = 4;
+    const displayedAmenities = selectedAmenities.slice(0, maxDisplayAmenities);
+    const hiddenCount = selectedAmenities.length - maxDisplayAmenities;
+    
+    // Hiển thị các amenity đầu tiên
+    displayedAmenities.forEach(amenity => {
+        const amenityElement = document.createElement('div');
+        amenityElement.className = 'selected-amenity-item';
+        amenityElement.innerHTML = `
+            <span>${amenity.name}</span>
+            <span class="remove-amenity" onclick="removeAmenity(${amenity.id})">&times;</span>
+        `;
+        container.appendChild(amenityElement);
+    });
+    
+    // Hiển thị badge "+X tiện nghi khác" nếu có nhiều hơn maxDisplayAmenities
+    if (hiddenCount > 0) {
+        const moreElement = document.createElement('div');
+        moreElement.className = 'more-amenities-badge';
+        moreElement.innerHTML = `+${hiddenCount} tiện nghi khác`;
+        moreElement.onclick = () => showAmenityModal(); // Click để mở modal
+        container.appendChild(moreElement);
+    }
+    
+    // Thêm hidden inputs cho tất cả amenities
+    selectedAmenities.forEach(amenity => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'amenities[]';
+        hiddenInput.value = amenity.id;
+        inputsContainer.appendChild(hiddenInput);
+    });
+}
+
+function removeAmenity(amenityId) {
+    selectedAmenities = selectedAmenities.filter(a => a.id !== amenityId);
+    updateSelectedAmenitiesDisplay();
+    
+    // Update modal display if open
+    const modalItem = document.querySelector(`[data-amenity-id="${amenityId}"]`);
+    if (modalItem) {
+        modalItem.classList.remove('selected');
+    }
+}
+
+// Biến global để lưu dữ liệu từ API
 let locationData = null;
+let rulesData = null;
+let amenitiesData = null;
+let selectedRules = [];
+let selectedAmenities = [];
+let currentRuleCategory = 'smoking';
 
 // Load dữ liệu địa chỉ từ API khi trang load
 async function loadLocationData() {
@@ -1129,6 +1854,40 @@ async function loadLocationData() {
         }
     } catch (error) {
         console.error('Lỗi kết nối API:', error);
+    }
+}
+
+// Load dữ liệu nội quy từ API
+async function loadRulesData() {
+    try {
+        const response = await fetch('/api/rules');
+        const result = await response.json();
+        
+        if (result.success) {
+            rulesData = result.data;
+            console.log('Đã load dữ liệu nội quy từ API');
+        } else {
+            console.error('Lỗi khi load dữ liệu nội quy:', result.message);
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối API nội quy:', error);
+    }
+}
+
+// Load dữ liệu tiện nghi từ API
+async function loadAmenitiesData() {
+    try {
+        const response = await fetch('/api/amenities');
+        const result = await response.json();
+        
+        if (result.success) {
+            amenitiesData = result.data;
+            console.log('Đã load dữ liệu tiện nghi từ API');
+        } else {
+            console.error('Lỗi khi load dữ liệu tiện nghi:', result.message);
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối API tiện nghi:', error);
     }
 }
 
@@ -1247,12 +2006,157 @@ document.querySelector('.form-textarea').addEventListener('input', function() {
     document.querySelector('.char-count').textContent = `${count}/500`;
 });
 
+// ================================
+// Rules Modal Functions
+// ================================
+
+function showRulesModal() {
+    document.getElementById('rulesModal').style.display = 'block';
+    document.body.classList.add('add-room-no-scroll');
+    document.documentElement.classList.add('add-room-no-scroll');
+    
+    // Load tất cả rules cho mọi category
+    loadAllRules();
+}
+
+function closeRulesModal() {
+    document.getElementById('rulesModal').style.display = 'none';
+    document.body.classList.add('add-room-no-scroll');
+    document.documentElement.classList.add('add-room-no-scroll');
+}
+
+function loadAllRules() {
+    const categories = ['smoking', 'pets', 'children', 'party', 'time', 'behavior'];
+    
+    categories.forEach(category => {
+        loadRulesForCategory(category);
+    });
+}
+
+function loadRulesForCategory(category) {
+    const rulesGrid = document.getElementById(`${category}Rules`);
+    if (!rulesGrid) return;
+    
+    rulesGrid.innerHTML = '';
+    
+    if (!rulesData || !rulesData[category]) {
+        rulesGrid.innerHTML = '<p class="no-rules-text">Không có nội quy nào trong danh mục này.</p>';
+        return;
+    }
+    
+    rulesData[category].forEach(rule => {
+        const isSelected = selectedRules.some(r => r.id === rule.id);
+        const ruleElement = document.createElement('div');
+        ruleElement.className = `rule-item ${isSelected ? 'selected' : ''}`;
+        ruleElement.innerHTML = `
+            <span class="rule-text">${rule.name}</span>
+        `;
+        
+        // Thêm event listener cho toàn bộ rule item
+        ruleElement.addEventListener('click', function() {
+            const isCurrentlySelected = ruleElement.classList.contains('selected');
+            toggleRuleSelection(rule.id, !isCurrentlySelected);
+            // Cập nhật visual state
+            if (!isCurrentlySelected) {
+                ruleElement.classList.add('selected');
+            } else {
+                ruleElement.classList.remove('selected');
+            }
+        });
+        
+        rulesGrid.appendChild(ruleElement);
+    });
+}
+
+function toggleRuleSelection(ruleId, isChecked) {
+    const existingIndex = selectedRules.findIndex(r => r.id === ruleId);
+    
+    if (isChecked && existingIndex === -1) {
+        // Add rule - find in all categories
+        let ruleToAdd = null;
+        for (const category in rulesData) {
+            const rule = rulesData[category].find(r => r.id === ruleId);
+            if (rule) {
+                ruleToAdd = rule;
+                break;
+            }
+        }
+        if (ruleToAdd) {
+            selectedRules.push(ruleToAdd);
+        }
+    } else if (!isChecked && existingIndex > -1) {
+        // Remove rule
+        selectedRules.splice(existingIndex, 1);
+    }
+    
+    // Update selected rules display
+    updateSelectedRulesDisplay();
+}
+
+function saveSelectedRules() {
+    updateSelectedRulesDisplay();
+    closeRulesModal();
+}
+
+function updateSelectedRulesDisplay() {
+    const container = document.getElementById('selectedRules');
+    container.innerHTML = '';
+    
+    const maxDisplayRules = 4;
+    const displayedRules = selectedRules.slice(0, maxDisplayRules);
+    const hiddenCount = selectedRules.length - maxDisplayRules;
+    
+    // Hiển thị các rule đầu tiên
+    displayedRules.forEach(rule => {
+        const ruleElement = document.createElement('div');
+        ruleElement.className = 'selected-rule-item';
+        ruleElement.innerHTML = `
+            <span>${rule.name}</span>
+            <span class="remove-rule" onclick="removeSelectedRule(${rule.id})">&times;</span>
+            <input type="hidden" name="rules[]" value="${rule.id}">
+        `;
+        container.appendChild(ruleElement);
+    });
+    
+    // Hiển thị badge "+X nội quy khác" nếu có nhiều hơn maxDisplayRules
+    if (hiddenCount > 0) {
+        const moreElement = document.createElement('div');
+        moreElement.className = 'more-rules-badge';
+        moreElement.innerHTML = `+${hiddenCount} nội quy khác`;
+        moreElement.onclick = () => showRulesModal(); // Click để mở modal
+        container.appendChild(moreElement);
+    }
+    
+    // Thêm hidden inputs cho tất cả rules
+    selectedRules.forEach(rule => {
+        if (!displayedRules.includes(rule)) {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'rules[]';
+            hiddenInput.value = rule.id;
+            container.appendChild(hiddenInput);
+        }
+    });
+}
+
+function removeSelectedRule(ruleId) {
+    selectedRules = selectedRules.filter(r => r.id !== ruleId);
+    updateSelectedRulesDisplay();
+}
+
 // Close modal when clicking outside
 window.onclick = function(event) {
-    const modal = document.getElementById('amenityModal');
-    if (event.target == modal) {
-        modal.style.display = 'none';
-        // Giữ nguyên trạng thái không cuộn của trang chính
+    const amenityModal = document.getElementById('amenityModal');
+    const rulesModal = document.getElementById('rulesModal');
+    
+    if (event.target == amenityModal) {
+        amenityModal.style.display = 'none';
+        document.body.classList.add('add-room-no-scroll');
+        document.documentElement.classList.add('add-room-no-scroll');
+    }
+    
+    if (event.target == rulesModal) {
+        rulesModal.style.display = 'none';
         document.body.classList.add('add-room-no-scroll');
         document.documentElement.classList.add('add-room-no-scroll');
     }

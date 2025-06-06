@@ -174,6 +174,12 @@ room_amenities = db.Table('room_amenities',
     db.Column('amenity_id', db.Integer, db.ForeignKey('amenity.id'), primary_key=True)
 )
 
+# Bảng liên kết nhiều-nhiều giữa Room và Rule
+room_rules = db.Table('room_rules',
+    db.Column('room_id', db.Integer, db.ForeignKey('room.id'), primary_key=True),
+    db.Column('rule_id', db.Integer, db.ForeignKey('rule.id'), primary_key=True)
+)
+
 #######################################
 # 3. Các bảng địa chỉ                 #
 #######################################
@@ -288,6 +294,7 @@ class Room(db.Model):
     bookings = db.relationship('Booking', backref='room', lazy=True, cascade="all, delete-orphan")
     reviews = db.relationship('Review', backref='room', lazy=True)
     amenities = db.relationship('Amenity', secondary=room_amenities, backref=db.backref('rooms', lazy='dynamic'))
+    rules = db.relationship('Rule', secondary=room_rules, backref=db.backref('rooms', lazy='dynamic'))
 
     @property
     def display_price(self):
@@ -312,16 +319,85 @@ class RoomImage(db.Model):
     def __repr__(self):
         return f'<RoomImage {self.id} for Room {self.room_id}>'
 
+# Bảng phân loại tiện nghi
+class AmenityCategory(db.Model):
+    __tablename__ = 'amenity_category'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)  # VD: "Tiện nghi phòng", "Tiện nghi phổ biến"
+    code = db.Column(db.String(50), nullable=False, unique=True)  # VD: "room", "common", "unique"
+    icon = db.Column(db.String(100), nullable=True)  # Bootstrap icon
+    description = db.Column(db.Text, nullable=True)
+    display_order = db.Column(db.Integer, default=0)  # Thứ tự hiển thị
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    amenities = db.relationship('Amenity', backref='amenity_category', lazy=True)
+    
+    def __repr__(self):
+        return f'<AmenityCategory {self.name}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'code': self.code,
+            'icon': self.icon,
+            'description': self.description,
+            'display_order': self.display_order,
+            'is_active': self.is_active
+        }
+
 class Amenity(db.Model):
     __tablename__ = 'amenity'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     icon = db.Column(db.String(100), nullable=False)  # Tên biểu tượng Bootstrap
-    category = db.Column(db.String(50), nullable=False)  # Phân loại: common (phổ biến), room (phòng), unique (độc đáo)
     description = db.Column(db.Text, nullable=True)  # Mô tả thêm về tiện nghi
+    display_order = db.Column(db.Integer, default=0)  # Thứ tự hiển thị
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Foreign Key tới AmenityCategory
+    category_id = db.Column(db.Integer, db.ForeignKey('amenity_category.id'), nullable=False)
     
     def __repr__(self):
-        return f'<Amenity {self.name} ({self.category})>'
+        return f'<Amenity {self.name}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'icon': self.icon,
+            'description': self.description,
+            'category_id': self.category_id,
+            'category_name': self.amenity_category.name if self.amenity_category else None,
+            'display_order': self.display_order,
+            'is_active': self.is_active
+        }
+
+class Rule(db.Model):
+    __tablename__ = 'rule'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)  # VD: "Không hút thuốc"
+    icon = db.Column(db.String(100), nullable=False)  # Bootstrap icon class
+    type = db.Column(db.String(20), nullable=False)  # 'allowed' hoặc 'not_allowed'
+    category = db.Column(db.String(50), nullable=False)  # 'smoking', 'pets', 'children', 'party', 'time', 'other'
+    description = db.Column(db.Text, nullable=True)  # Mô tả chi tiết
+    is_active = db.Column(db.Boolean, default=True)
+    
+    def __repr__(self):
+        return f'<Rule {self.name}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'icon': self.icon,
+            'type': self.type,
+            'category': self.category,
+            'description': self.description
+        }
 
 class Booking(db.Model):
     __tablename__ = 'booking'
