@@ -25,7 +25,7 @@
 
             <!-- Form Content -->
             <div class="wizard-content">
-                <form method="post" enctype="multipart/form-data" class="wizard-form" onsubmit="prepareFormData()">
+                <form method="post" enctype="multipart/form-data" class="wizard-form" onsubmit="return prepareFormData()">
             <!-- Hidden inputs for counter values -->
             <input type="hidden" name="bathroom_count" id="bathroom_count_input" value="{{ room_data.bathroom_count or 2 }}">
             <input type="hidden" name="bed_count" id="bed_count_input" value="{{ room_data.bed_count or 1 }}">
@@ -121,7 +121,7 @@
                                 <span>Số lượng phòng tắm trong phòng</span>
                                 <div class="counter">
                                     <button type="button" class="counter-btn" onclick="decreaseCount('bathroom')">-</button>
-                                    <span id="bathroom-count">{{ room_data.bathroom_count or 2 }}</span>
+                                    <span id="bathroom-count">{{ room_data.bathroom_count or 1 }}</span>
                                     <button type="button" class="counter-btn" onclick="increaseCount('bathroom')">+</button>
                                 </div>
                             </div>
@@ -1806,8 +1806,37 @@ function prepareFormData() {
     document.getElementById('bed_count_input').value = bedCount;
     document.getElementById('guest_count_input').value = guestCount;
     
+    // Đảm bảo giá tiền được gửi đúng (chỉ số, không có format)
+    const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
+    const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
+    
+    if (hourlyPriceInput) {
+        const numericValue = getNumericPrice(hourlyPriceInput);
+        if (numericValue) {
+            hourlyPriceInput.value = numericValue; // Gửi số thuần
+            console.log('✅ Prepared hourly price:', numericValue);
+        }
+    }
+    
+    if (nightlyPriceInput) {
+        const numericValue = getNumericPrice(nightlyPriceInput);
+        if (numericValue) {
+            nightlyPriceInput.value = numericValue; // Gửi số thuần
+            console.log('✅ Prepared nightly price:', numericValue);
+        }
+    }
+    
     // Convert base64 images từ sessionStorage thành file inputs
     convertSessionStorageImagesToFiles();
+    
+    // Debug log tất cả form data trước khi submit
+    const formData = new FormData(document.querySelector('.wizard-form'));
+    console.log('🚀 SUBMITTING FORM DATA:');
+    for (let [key, value] of formData.entries()) {
+        if (key.includes('price')) {
+            console.log(`${key}:`, value, '(type:', typeof value, ')');
+        }
+    }
     
     return true;
 }
@@ -3158,10 +3187,15 @@ function formatPriceInput(input) {
     // Chỉ cho phép số và xóa ký tự không phải số
     let value = input.value.replace(/[^\d]/g, '');
     
-    // Format với dấu phẩy ngăn cách hàng nghìn
+    // Format với dấu chấm ngăn cách hàng nghìn theo chuẩn Việt Nam
     if (value) {
-        const formatted = new Intl.NumberFormat('vi-VN').format(value);
+        // Chuyển thành số và format lại
+        const numValue = parseInt(value);
+        const formatted = numValue.toLocaleString('vi-VN');
         input.value = formatted;
+        
+        // Lưu giá trị gốc để sử dụng khi submit
+        input.setAttribute('data-value', value);
     }
     
     // Xóa error state nếu có
@@ -3224,8 +3258,14 @@ function validatePrice(input, type) {
         priceInput.classList.remove('error');
         errorDiv.style.display = 'none';
         
-        // Lưu giá trị số thuần vào hidden input hoặc data attribute
+        // Lưu giá trị số thuần vào data attribute
         input.setAttribute('data-value', value);
+        
+        // Hiển thị lại với format đẹp
+        if (value && parseInt(value) > 0) {
+            const formatted = parseInt(value).toLocaleString('vi-VN');
+            input.value = formatted;
+        }
     }
     
     return isValid;
@@ -3233,7 +3273,16 @@ function validatePrice(input, type) {
 
 // Lấy giá trị số thuần từ input đã format
 function getNumericPrice(input) {
-    return input.getAttribute('data-value') || input.value.replace(/[^\d]/g, '');
+    if (!input) return '';
+    
+    // Ưu tiên lấy từ data-value đã lưu
+    const dataValue = input.getAttribute('data-value');
+    if (dataValue) {
+        return dataValue;
+    }
+    
+    // Fallback: lấy từ value và loại bỏ ký tự không phải số
+    return input.value.replace(/[^\d]/g, '');
 }
 
 // Clear when successfully creating room
