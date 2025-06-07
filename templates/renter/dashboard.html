@@ -55,7 +55,7 @@
                 <tr>
                   <td class="align-middle">
                     {% if booking.room is not none %}
-                      {{ booking.room.homestay.title }}
+                      {{ booking.room.title }}
                     {% else %}
                       <em>Chưa được gán</em>
                     {% endif %}
@@ -101,7 +101,7 @@
                     <div class="action-buttons">
                       {% if booking.room is not none %}
                         {% if booking.status != 'rejected' %}
-                          <a href="{{ url_for('renter.book_homestay', homestay_id=booking.room.homestay.id) }}" 
+                          <a href="{{ url_for('renter.book_room', room_id=booking.room.id) }}" 
                              class="action-button book-again">
                             <i class="bi bi-calendar-plus"></i> Đặt lại
                           </a>
@@ -123,7 +123,7 @@
                       {% endif %}
                       
                       {% if booking.status == 'rejected' %}
-                        <a href="{{ url_for('renter.book_homestay', homestay_id=booking.room.homestay.id) }}" 
+                        <a href="{{ url_for('renter.book_room', room_id=booking.room.id) }}" 
                            class="action-button book-again">
                           <i class="bi bi-calendar-plus"></i> Đặt lại
                         </a>

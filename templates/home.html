@@ -178,7 +178,7 @@
                         <h5 class="card-title">{{ homestay.title }}</h5>
                         <div class="location-info mb-2">
                             <i class="bi bi-geo-alt me-1"></i>
-                            {{ homestay.city }}, {{ homestay.district }}
+                            {{ homestay.city | location_name('city') }}, {{ homestay.district | location_name('district') }}
                         </div>
                         <div class="rating-stars mb-2">
                             <i class="bi bi-star-fill"></i>
@@ -189,7 +189,7 @@
                             <span class="text-muted ms-1">(4.2)</span>
                         </div>
                         <p class="card-text">{{ homestay.description|truncate(100) }}</p>
-                        <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary w-100">
+                        <a href="{{ url_for('renter.view_room', id=homestay.id) }}" class="btn btn-primary w-100">
                             <i class="bi bi-arrow-right me-2"></i><span data-translate="view-details">Xem Chi Tiết</span>
                         </a>
                     </div>

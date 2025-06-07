@@ -215,7 +215,7 @@ def add_review(homestay_id):
     existing_review = Review.query.filter_by(homestay_id=homestay.id, renter_id=current_user.id).first()
     if existing_review:
         flash('You have already left a review for this homestay.', 'danger')
-        return redirect(url_for('renter.view_homestay', id=homestay.id))
+        return redirect(url_for('renter.view_room', id=homestay.id))
 
     if request.method == 'POST':
         rating = int(request.form.get('rating', 5))
@@ -230,7 +230,7 @@ def add_review(homestay_id):
         db.session.add(review)
         db.session.commit()
         flash('Review submitted!', 'success')
-        return redirect(url_for('renter.view_homestay', id=homestay.id))
+        return redirect(url_for('renter.view_room', id=homestay.id))
 
     return render_template('renter/add_review.html', homestay=homestay)
 

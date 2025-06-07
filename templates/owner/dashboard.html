@@ -571,7 +571,7 @@
                      <div class="homestay-details">
                          <div class="homestay-detail">
                              <i class="fas fa-map-marker-alt"></i>
-                             <span>{{ room.address }}, {{ room.district }}, {{ room.city }}</span>
+                             <span>{{ room.address }}, {{ room.district | location_name('district') }}, {{ room.city | location_name('city') }}</span>
                          </div>
                          <div class="homestay-detail">
                              <i class="fas fa-money-bill"></i>

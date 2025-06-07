@@ -5,7 +5,7 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 from flask_migrate import Migrate
 from config import Config
 from models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity
-from utils import get_rank_info
+from utils import get_rank_info, get_location_name
 from dotenv import load_dotenv
 import json
 from datetime import datetime, timedelta
@@ -27,6 +27,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 app.jinja_env.filters['rank_info'] = get_rank_info
+app.jinja_env.filters['location_name'] = get_location_name
 
 # Add custom filter
 @app.template_filter('from_json')

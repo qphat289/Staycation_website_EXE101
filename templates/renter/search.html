@@ -70,7 +70,7 @@
                             <p class="card-text">{{ homestay.description|truncate(100) }}</p>
                             <p class="card-text">
                                 <small class="text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ homestay.city }}, {{ homestay.district }}
+                                    <i class="bi bi-geo-alt"></i> {{ homestay.city | location_name('city') }}, {{ homestay.district | location_name('district') }}
                                 </small>
                             </p>
                             {% set rooms = homestay.rooms|list %}
@@ -83,9 +83,9 @@
                             {% endif %}
                         </div>
                         <div class="card-footer">
-                            <a href="{{ url_for('renter.view_homestay', id=homestay.id) }}" class="btn btn-primary" data-translate="view-details">View Details</a>
+                            <a href="{{ url_for('renter.view_room', id=homestay.id) }}" class="btn btn-primary" data-translate="view-details">View Details</a>
                             {% if current_user.is_authenticated and current_user.is_renter() %}
-                            <a href="{{ url_for('renter.book_homestay', homestay_id=homestay.id) }}" class="btn btn-outline-primary" data-translate="book-now">Book Now</a>
+                                                         <a href="{{ url_for('renter.book_room', room_id=homestay.id) }}" class="btn btn-outline-primary" data-translate="book-now">Book Now</a>
                             {% endif %}
                         </div>
                     </div>
