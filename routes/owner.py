@@ -2,13 +2,15 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, session
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, Room, Booking, RoomImage, Renter, Admin, Owner, Province, District, Ward, Rule, Amenity
+from models import db, Room, Booking, RoomImage, Renter, Admin, Owner, Province, District, Ward, Rule, Amenity, RoomDeletionLog
 import os
+import shutil
 from datetime import datetime, timedelta
 from PIL import Image
 import io
 import os
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 
 
 owner_bp = Blueprint('owner', __name__, url_prefix='/owner')
@@ -106,8 +108,8 @@ def owner_required(f):
 @owner_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Lấy tất cả phòng của owner hiện tại
-    rooms = Room.query.filter_by(owner_id=current_user.id).all()
+    # Lấy tất cả phòng của owner hiện tại với relationship images
+    rooms = Room.query.options(joinedload(Room.images)).filter_by(owner_id=current_user.id).all()
     
     return render_template('owner/dashboard.html', rooms=rooms)
 
@@ -269,10 +271,18 @@ def confirm_room():
         elif room_data['selected_rental_type'] == 'nightly':
             price_per_night = float(room_data['nightly_price']) if room_data['nightly_price'] else 0.0
         
+        # Map property_type từ English sang Vietnamese
+        property_type_map = {
+            'house': 'Nhà',
+            'apartment': 'Căn hộ', 
+            'hotel': 'Khách sạn'
+        }
+        property_type_vn = property_type_map.get(room_data.get('property_type'), 'Mô hình chuẩn')
+        
         # Tạo room mới
         new_room = Room(
             title=room_data['room_title'],
-            room_type="Standard",  # Mặc định
+            room_type=property_type_vn,  # Lưu giá trị tiếng Việt
             address=f"{room_data['street']}, {room_data['ward']}" if room_data['street'] and room_data['ward'] else "Chưa cập nhật",
             city=room_data['province'] if room_data['province'] else "Chưa cập nhật",
             district=room_data['district'] if room_data['district'] else "Chưa cập nhật",
@@ -290,11 +300,104 @@ def confirm_room():
         db.session.add(new_room)
         db.session.commit()
         
+        # Xử lý ảnh từ temp sang uploads
+        try:
+            # Tạo folder riêng cho phòng này
+            room_folder = os.path.join('static', 'uploads', f'room_{new_room.id}')
+            os.makedirs(room_folder, exist_ok=True)
+            print(f"DEBUG: Created room folder: {room_folder}")
+            print(f"DEBUG: Room data images: {room_data.get('images', [])}")
+            print(f"DEBUG: Room data main_image: {room_data.get('main_image')}")
+            
+            # Xử lý ảnh chính (main_image)
+            if room_data.get('main_image'):
+                main_image_path = room_data['main_image']
+                if main_image_path.startswith('/static/temp/'):
+                    # Đường dẫn đầy đủ đến file temp (bao gồm 'static/')
+                    temp_file = main_image_path[1:]  # Bỏ '/' đầu để có đường dẫn tương đối
+                    print(f"DEBUG: Processing main image - original path: {main_image_path}")
+                    print(f"DEBUG: Processing main image - temp_file: {temp_file}")
+                    print(f"DEBUG: Main image file exists: {os.path.exists(temp_file)}")
+                    
+                    if os.path.exists(temp_file):
+                        # Tạo tên file mới (đơn giản hơn vì đã có folder riêng)
+                        original_name = os.path.basename(temp_file).replace('temp_main_', '', 1)
+                        # Loại bỏ timestamp cũ từ tên file nếu có
+                        if '_' in original_name:
+                            parts = original_name.split('_', 1)
+                            if len(parts) > 1:
+                                original_name = parts[1]
+                        new_filename = f"main_{original_name}"
+                        
+                        # Copy từ temp sang room folder
+                        new_path = os.path.join(room_folder, new_filename)
+                        print(f"DEBUG: Copying main image from {temp_file} to {new_path}")
+                        shutil.copy2(temp_file, new_path)
+                        print(f"DEBUG: Main image copied successfully")
+                        
+                        # Tạo record trong database
+                        main_img = RoomImage(
+                            image_path=f"uploads/room_{new_room.id}/{new_filename}",
+                            room_id=new_room.id,
+                            is_featured=True
+                        )
+                        db.session.add(main_img)
+                        print(f"DEBUG: Created main image record in DB: {main_img.image_path}")
+                        
+                        # Xóa file temp
+                        os.remove(temp_file)
+                        print(f"DEBUG: Removed temp file: {temp_file}")
+            
+            # Xử lý các ảnh khác
+            if room_data.get('images'):
+                for i, image_path in enumerate(room_data['images']):
+                    if image_path.startswith('/static/temp/'):
+                        # Đường dẫn đầy đủ đến file temp (bao gồm 'static/')
+                        temp_file = image_path[1:]  # Bỏ '/' đầu để có đường dẫn tương đối
+                        print(f"DEBUG: Processing image {i+1} - original path: {image_path}")
+                        print(f"DEBUG: Processing image {i+1} - temp_file: {temp_file}")
+                        print(f"DEBUG: Image {i+1} file exists: {os.path.exists(temp_file)}")
+                        
+                        if os.path.exists(temp_file):
+                            # Tạo tên file mới (đơn giản hơn)
+                            original_name = os.path.basename(temp_file).replace('temp_', '', 1)
+                            # Loại bỏ timestamp cũ từ tên file nếu có
+                            if '_' in original_name:
+                                parts = original_name.split('_', 1)
+                                if len(parts) > 1:
+                                    original_name = parts[1]
+                            new_filename = f"image_{i+1}_{original_name}"
+                            
+                            # Copy từ temp sang room folder
+                            new_path = os.path.join(room_folder, new_filename)
+                            print(f"DEBUG: Copying image {i+1} from {temp_file} to {new_path}")
+                            shutil.copy2(temp_file, new_path)
+                            
+                            # Tạo record trong database
+                            img = RoomImage(
+                                image_path=f"uploads/room_{new_room.id}/{new_filename}",
+                                room_id=new_room.id,
+                                is_featured=False
+                            )
+                            db.session.add(img)
+                            print(f"DEBUG: Created image {i+1} record in DB: {img.image_path}")
+                            
+                            # Xóa file temp
+                            os.remove(temp_file)
+                            print(f"DEBUG: Removed temp file: {temp_file}")
+            
+            db.session.commit()
+            
+        except Exception as e:
+            print(f"Lỗi khi xử lý ảnh: {str(e)}")
+            # Không làm fail việc tạo phòng nếu ảnh có lỗi
+            pass
+        
         # Xóa dữ liệu preview khỏi session
         session.pop('room_preview_data', None)
         
         flash('Đã tạo phòng thành công!', 'success')
-        return redirect(url_for('owner.dashboard'))
+        return redirect(url_for('owner.dashboard', created='success'))
         
     except Exception as e:
         db.session.rollback()
@@ -322,10 +425,64 @@ def delete_room(room_id):
         flash('Bạn không có quyền xóa phòng này!', 'danger')
         return redirect(url_for('owner.dashboard'))
     
-    db.session.delete(room)
-    db.session.commit()
+    # Lấy lý do xóa từ form
+    delete_reason = request.form.get('delete_reason', '').strip()
     
-    flash('Đã xóa phòng thành công!', 'success')
+    # Validate lý do xóa
+    if not delete_reason or len(delete_reason) < 10:
+        flash('Lý do xóa phòng phải có ít nhất 10 ký tự!', 'danger')
+        return redirect(url_for('owner.dashboard'))
+    
+    try:
+        # Lưu log xóa phòng (tùy chọn - có thể tạo bảng RoomDeletionLog)
+        room_title = room.title
+        owner_name = current_user.full_name or current_user.username
+        
+        # Xóa folder ảnh của phòng
+        room_folder = os.path.join('static', 'uploads', f'room_{room_id}')
+        if os.path.exists(room_folder):
+            try:
+                shutil.rmtree(room_folder)
+                print(f"Đã xóa folder ảnh: {room_folder}")
+            except Exception as e:
+                print(f"Không thể xóa folder ảnh: {e}")
+                # Fallback: xóa từng file
+                for image in room.images:
+                    if image.image_path:
+                        file_path = os.path.join('static', image.image_path)
+                        if os.path.exists(file_path):
+                            try:
+                                os.remove(file_path)
+                            except Exception as e:
+                                print(f"Không thể xóa file ảnh: {e}")
+        
+        # Lưu log vào database
+        deletion_log = RoomDeletionLog(
+            room_id=room_id,
+            room_title=room_title,
+            owner_id=current_user.id,
+            owner_name=owner_name,
+            delete_reason=delete_reason,
+            room_address=f"{room.address}, {room.district}, {room.city}",
+            room_price=room.price_per_hour or room.price_per_night
+        )
+        db.session.add(deletion_log)
+        
+        # Ghi log ra console
+        log_message = f"[{datetime.now()}] Owner '{owner_name}' (ID: {current_user.id}) đã xóa phòng '{room_title}' (ID: {room_id}). Lý do: {delete_reason}"
+        print(log_message)
+        
+        # Xóa phòng (cascade sẽ tự động xóa các record liên quan)
+        db.session.delete(room)
+        db.session.commit()
+        
+        flash(f'Đã xóa phòng "{room_title}" thành công!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Lỗi khi xóa phòng: {str(e)}")
+        flash('Có lỗi xảy ra khi xóa phòng. Vui lòng thử lại!', 'danger')
+    
     return redirect(url_for('owner.dashboard'))
 
 

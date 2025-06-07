@@ -466,3 +466,23 @@ class Statistics(db.Model):
     
     def __repr__(self):
         return f'<Statistics for {self.date}>'
+
+class RoomDeletionLog(db.Model):
+    __tablename__ = 'room_deletion_log'
+    id = db.Column(db.Integer, primary_key=True)
+    room_id = db.Column(db.Integer, nullable=False)  # ID phòng đã bị xóa
+    room_title = db.Column(db.String(100), nullable=False)  # Tên phòng
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
+    owner_name = db.Column(db.String(100), nullable=False)  # Tên owner
+    delete_reason = db.Column(db.Text, nullable=False)  # Lý do xóa
+    deleted_at = db.Column(db.DateTime, default=datetime.utcnow)  # Thời gian xóa
+    
+    # Additional info
+    room_address = db.Column(db.String(200), nullable=True)
+    room_price = db.Column(db.Float, nullable=True)
+    
+    # Relationship
+    owner = db.relationship('Owner', backref=db.backref('deleted_rooms_log', lazy=True))
+    
+    def __repr__(self):
+        return f'<RoomDeletionLog {self.room_title} deleted by {self.owner_name}>'

@@ -220,24 +220,28 @@
         background-color: #d4edda;
         border-color: #c3e6cb;
         color: #155724;
+        transition: opacity 0.5s ease-out;
     }
 
     .alert-info {
         background-color: #d1ecf1;
         border-color: #bee5eb;
         color: #0c5460;
+        transition: opacity 0.5s ease-out;
     }
 
     .alert-warning {
         background-color: #fff3cd;
         border-color: #ffeaa7;
         color: #856404;
+        transition: opacity 0.5s ease-out;
     }
 
     .alert-danger {
         background-color: #f8d7da;
         border-color: #f5c6cb;
         color: #721c24;
+        transition: opacity 0.5s ease-out;
     }
 
     .btn-close {
@@ -283,6 +287,7 @@
 
     .homestay-item {
         display: flex;
+        flex-direction: column;
         padding: 1.5rem;
         border-bottom: 1px solid #f1f1f1;
         transition: background-color 0.2s;
@@ -296,9 +301,15 @@
         border-bottom: none;
     }
 
+    .homestay-main-content {
+        display: flex;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
     .homestay-image {
-        width: 120px;
-        height: 80px;
+        width: 160px;
+        height: 120px;
         object-fit: cover;
         border-radius: 8px;
         margin-right: 1rem;
@@ -324,6 +335,18 @@
         margin: 0;
     }
 
+    .clickable-title {
+        cursor: pointer;
+        transition: color 0.3s ease, transform 0.2s ease;
+        z-index: 1;
+        position: relative;
+    }
+
+    .clickable-title:hover {
+        color: #9ed649;
+        transform: translateX(4px);
+    }
+
     .homestay-details {
         display: flex;
         flex-direction: column;
@@ -345,16 +368,21 @@
 
     .homestay-actions {
         display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: flex-end;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: -2.5rem;
+        z-index: 3;
+        position: relative;
     }
 
     .homestay-status {
+        position: absolute;
+        top: 5px;
+        right: 5px;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        margin-bottom: 0.5rem;
+        z-index: 2;
     }
 
     .status-badge {
@@ -362,21 +390,23 @@
         border-radius: 12px;
         font-size: 0.75rem;
         font-weight: 500;
+        background: transparent;
+        border: 1px solid;
     }
 
     .status-active {
-        background: #e8f5e9;
         color: #2e7d32;
+        border-color: #2e7d32;
     }
 
     .status-inactive {
-        background: #ffebee;
         color: #c62828;
+        border-color: #c62828;
     }
 
     .status-new {
-        background: #e8f5e9;
         color: #2e7d32;
+        border-color: #2e7d32;
     }
 
     .status-rented {
@@ -393,7 +423,7 @@
         display: flex;
         gap: 0.5rem;
         flex-wrap: wrap;
-        justify-content: flex-end;
+        align-items: center;
     }
 
     .btn-action {
@@ -407,42 +437,14 @@
         align-items: center;
         gap: 4px;
         transition: all 0.2s;
+        background: transparent;
+        color: #333;
+        font-weight: 600;
     }
 
-    .btn-edit {
-        background: #ffc107;
-        color: #000;
-    }
-
-    .btn-edit:hover {
-        background: #e0a800;
-    }
-
-    .btn-view {
-        background: #17a2b8;
+    .btn-action:hover {
         color: white;
-    }
-
-    .btn-view:hover {
-        background: #138496;
-    }
-
-    .btn-lock {
-        background: #6c757d;
-        color: white;
-    }
-
-    .btn-lock:hover {
-        background: #5a6268;
-    }
-
-    .btn-delete {
-        background: #dc3545;
-        color: white;
-    }
-
-    .btn-delete:hover {
-        background: #c82333;
+        background: #333;
     }
 
     .empty-state {
@@ -460,6 +462,42 @@
     .empty-state h3 {
         margin-bottom: 10px;
         color: #333;
+    }
+
+    /* Custom styles for delete modal */
+    #deleteReason:focus {
+        border-color: #ff6b6b !important;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25) !important;
+    }
+
+    #deleteReason:invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .modal-backdrop {
+        backdrop-filter: blur(3px);
+    }
+
+    /* Animation for modal */
+    .modal.fade .modal-dialog {
+        transform: scale(0.8) translateY(-50px);
+        transition: all 0.3s ease;
+    }
+
+    .modal.show .modal-dialog {
+        transform: scale(1) translateY(0);
+    }
+
+    /* Button hover effects */
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #ee5a24, #ff6b6b) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(238, 90, 36, 0.4) !important;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268 !important;
+        transform: translateY(-1px);
     }
 </style>
 {% endblock %}
@@ -559,64 +597,66 @@
         <div class="homestay-list">
             {% for room in rooms %}
             <div class="homestay-item">
-                <div class="homestay-image">
-                    {% if room.images and room.images|length > 0 %}
-                        <img src="{{ room.images[0] }}" alt="{{ room.name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
-                    {% else %}
-                        <i class="fas fa-image"></i>
-                    {% endif %}
-                </div>
-                                 <div class="homestay-info">
-                     <h3 class="homestay-name">{{ room.title }}</h3>
-                     <div class="homestay-details">
-                         <div class="homestay-detail">
-                             <i class="fas fa-map-marker-alt"></i>
-                             <span>{{ room.address }}, {{ room.district | location_name('district') }}, {{ room.city | location_name('city') }}</span>
-                         </div>
-                         <div class="homestay-detail">
-                             <i class="fas fa-money-bill"></i>
-                             <span>
-                                 {% if room.price_per_hour %}
-                                     {{ "{:,.0f}".format(room.price_per_hour) }}đ /giờ
-                                 {% elif room.price_per_night %}
-                                     {{ "{:,.0f}".format(room.price_per_night) }}đ /đêm
-                                 {% else %}
-                                     Chưa có giá
-                                 {% endif %}
-                             </span>
-                         </div>
-                         <div class="homestay-detail">
-                             <span class="homestay-date">
-                                 {% if room.created_at %}
-                                     Thêm vào {{ room.created_at.strftime('%d-%m-%Y') }}
-                                 {% else %}
-                                     Mới thêm
-                                 {% endif %}
-                             </span>
-                         </div>
-                     </div>
-                 </div>
-                <div class="homestay-actions">
+                <div class="homestay-main-content">
                     <div class="homestay-status">
                         <span class="status-badge {{ 'status-active' if room.is_active else 'status-inactive' }}">
                             {{ 'Đã khóa' if not room.is_active else 'Hoạt động' }}
                         </span>
+                        <span class="status-badge status-new">{{ room.room_type }}</span>
                     </div>
+                    <div class="homestay-image">
+                        {% set featured_image = room.images|selectattr('is_featured')|first %}
+                        {% if featured_image %}
+                            <img src="{{ url_for('static', filename=featured_image.image_path) }}" alt="{{ room.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        {% elif room.images and room.images|length > 0 %}
+                            <img src="{{ url_for('static', filename=room.images[0].image_path) }}" alt="{{ room.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        {% else %}
+                            <i class="fas fa-image"></i>
+                        {% endif %}
+                    </div>
+                    <div class="homestay-info">
+                        <h3 class="homestay-name clickable-title" onclick="window.location.href='{{ url_for('owner.room_detail', room_id=room.id) }}'">{{ room.title }}</h3>
+                        <div class="homestay-details">
+                            <div class="homestay-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ room.address }}, {{ room.district | location_name('district') }}, {{ room.city | location_name('city') }}</span>
+                            </div>
+                            <div class="homestay-detail">
+                                <i class="fas fa-money-bill"></i>
+                                <span>
+                                    {% if room.price_per_hour %}
+                                        {{ "{:,.0f}".format(room.price_per_hour) }}đ /giờ
+                                    {% elif room.price_per_night %}
+                                        {{ "{:,.0f}".format(room.price_per_night) }}đ /đêm
+                                    {% else %}
+                                        Chưa có giá
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="homestay-detail">
+                                <span class="homestay-date">
+                                    {% if room.created_at %}
+                                        Thêm vào {{ room.created_at.strftime('%d-%m-%Y') }}
+                                    {% else %}
+                                        Mới thêm
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="homestay-actions">
                     <div class="action-buttons">
-                        <span class="status-badge status-new">Mới</span>
-                        <a href="{{ url_for('owner.room_detail', room_id=room.id) }}" class="btn-action btn-view">
-                            Đổi homestay
-                        </a>
                         <a href="{{ url_for('owner.toggle_room_status', room_id=room.id) }}" class="btn-action btn-lock" onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái phòng?')">
                             {{ 'Mở khóa' if not room.is_active else 'Lock phòng' }}
                         </a>
                         <a href="{{ url_for('owner.edit_room', room_id=room.id) }}" class="btn-action btn-edit">
                             Edit
                         </a>
-                        <a href="{{ url_for('owner.delete_room', room_id=room.id) }}" class="btn-action btn-delete" onclick="return confirm('Bạn có chắc muốn xóa phòng này?')" 
-                           data-method="POST">
+                        <button type="button" class="btn-action btn-delete" 
+                                onclick="openDeleteModal({{ room.id }}, '{{ room.title }}')">
                             Xóa
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -632,20 +672,58 @@
     </div>
 </main>
 
-<!-- Development Modal -->
-<div class="modal fade" id="developmentModal" tabindex="-1" aria-labelledby="developmentModalLabel" aria-hidden="true">
+<!-- Delete Room Modal -->
+<div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="developmentModalLabel">Thông báo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content" style="border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); border-radius: 15px 15px 0 0; color: white; border: none;">
+                <h5 class="modal-title" id="deleteRoomModalLabel" style="font-weight: 600;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa phòng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p>Tính năng này đang được phát triển.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-            </div>
+            <form id="deleteRoomForm" method="POST">
+                <div class="modal-body" style="padding: 30px;">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-home" style="font-size: 48px; color: #ff6b6b; margin-bottom: 15px;"></i>
+                        <h6 class="mb-3" style="color: #333; font-weight: 600;">Bạn có chắc chắn muốn xóa phòng này?</h6>
+                        <p id="roomName" class="mb-3" style="color: #e74c3c; font-weight: 500; font-size: 18px;"></p>
+                        <p style="color: #7f8c8d; margin-bottom: 25px;">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến phòng sẽ bị xóa vĩnh viễn.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="deleteReason" class="form-label" style="font-weight: 600; color: #333;">
+                            <i class="fas fa-comment-alt me-1"></i>Lý do xóa phòng <span style="color: #e74c3c;">*</span>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="deleteReason" 
+                            name="delete_reason" 
+                            rows="4" 
+                            placeholder="Vui lòng nhập lý do bạn muốn xóa phòng này..."
+                            required
+                            style="border-radius: 10px; border: 2px solid #e9ecef; transition: all 0.3s ease;"
+                        ></textarea>
+                        <div class="form-text" style="color: #6c757d;">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            Ví dụ: Phòng không còn cho thuê, chuyển đổi mục đích sử dụng, v.v.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border: none; padding: 20px 30px;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" 
+                            style="border-radius: 8px; padding: 10px 20px; font-weight: 500;">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirmDeleteBtn"
+                            style="border-radius: 8px; padding: 10px 20px; font-weight: 500; background: linear-gradient(135deg, #ff6b6b, #ee5a24); border: none;">
+                        <i class="fas fa-trash-alt me-1"></i>Xóa phòng
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -672,6 +750,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Auto-hide flash messages after 4 seconds
+    const flashMessages = document.querySelectorAll('.alert-dismissible');
+    flashMessages.forEach(alert => {
+        setTimeout(() => {
+            if (alert.parentNode) {
+                // Fade out effect
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        }, 4000); // 4 seconds
+    });
+    
     // Check for draft room data and show alert
     checkForDraftRoomData();
     
@@ -691,14 +787,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Check for draft room data in sessionStorage and server session
 function checkForDraftRoomData() {
+    // First, check if we just created a room successfully
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('created') === 'success') {
+        // Don't show alert if we just created a room
+        console.log('Room created successfully - not showing draft alert');
+        return;
+    }
+    
     const sessionStorageData = sessionStorage.getItem('room_form_data');
     const hasServerData = {{ 'true' if session.get('room_preview_data') else 'false' }};
     
-    if (sessionStorageData || hasServerData) {
+    console.log('Checking draft data:', {
+        sessionStorage: !!sessionStorageData,
+        serverSession: hasServerData,
+        currentPath: window.location.pathname
+    });
+    
+    // Only show alert if we have actual draft data AND we're in dashboard
+    if ((sessionStorageData || hasServerData) && window.location.pathname === '/owner/dashboard') {
         const alert = document.getElementById('draft-room-alert');
         if (alert) {
             alert.style.display = 'block';
-            console.log('📝 Found draft room data - showing alert');
+            console.log('Found draft room data - showing alert');
         }
     }
 }
@@ -715,7 +826,7 @@ function clearDraftData() {
             'Content-Type': 'application/json'
         }
     }).then(response => {
-        console.log('✅ Cleared all draft data');
+        console.log('Cleared all draft data');
         
         // Hide alert
         const alert = document.getElementById('draft-room-alert');
@@ -753,5 +864,51 @@ function showTempMessage(message, type) {
         }, 3000);
     }
 }
+
+// Delete Room Modal Functions
+function openDeleteModal(roomId, roomTitle) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteRoomModal'));
+    const form = document.getElementById('deleteRoomForm');
+    const roomNameEl = document.getElementById('roomName');
+    const deleteReasonEl = document.getElementById('deleteReason');
+    
+    // Set room name
+    roomNameEl.textContent = roomTitle;
+    
+    // Set form action
+    form.action = `/owner/delete-room/${roomId}`;
+    
+    // Clear previous reason
+    deleteReasonEl.value = '';
+    
+    // Show modal
+    modal.show();
+    
+    // Focus on textarea after modal is shown
+    document.getElementById('deleteRoomModal').addEventListener('shown.bs.modal', function () {
+        deleteReasonEl.focus();
+    }, { once: true });
+}
+
+// Form validation
+document.getElementById('deleteRoomForm').addEventListener('submit', function(e) {
+    const deleteReason = document.getElementById('deleteReason').value.trim();
+    
+    if (deleteReason.length < 10) {
+        e.preventDefault();
+        showTempMessage('Lý do xóa phải có ít nhất 10 ký tự.', 'warning');
+        document.getElementById('deleteReason').focus();
+        return false;
+    }
+    
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xóa...';
+    confirmBtn.disabled = true;
+    
+    // Allow form to submit
+    return true;
+});
 </script>
 {% endblock %} 
