@@ -88,6 +88,15 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def get_property_type_en(vn_value):
+    """Chuyển đổi property type từ tiếng Việt sang English"""
+    vn_to_en_map = {
+        'Nhà': 'house',
+        'Căn hộ': 'apartment', 
+        'Khách sạn': 'hotel'
+    }
+    return vn_to_en_map.get(vn_value, 'house')  # Default là house
+
 # Custom decorator to ensure user is an owner
 def owner_required(f):
     @login_required
@@ -267,9 +276,9 @@ def confirm_room():
         price_per_night = None
         
         if room_data['selected_rental_type'] == 'hourly':
-            price_per_hour = float(room_data['hourly_price']) if room_data['hourly_price'] else 0.0
+            price_per_hour = float(room_data['hourly_price']) / 1000 if room_data['hourly_price'] else 0.0
         elif room_data['selected_rental_type'] == 'nightly':
-            price_per_night = float(room_data['nightly_price']) if room_data['nightly_price'] else 0.0
+            price_per_night = float(room_data['nightly_price']) / 1000 if room_data['nightly_price'] else 0.0
         
         # Map property_type từ English sang Vietnamese
         property_type_map = {
@@ -407,15 +416,150 @@ def confirm_room():
 @owner_bp.route('/edit-room/<int:room_id>', methods=['GET', 'POST'])
 @login_required
 def edit_room(room_id):
-    room = Room.query.get_or_404(room_id)
+    room = Room.query.options(joinedload(Room.images)).get_or_404(room_id)
     if room.owner_id != current_user.id:
         flash('Bạn không có quyền chỉnh sửa phòng này!', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     if request.method == 'POST':
-        # Xử lý chỉnh sửa phòng
-        pass
-    return render_template('owner/edit_room.html', room=room)
+        try:
+            # Cập nhật thông tin cơ bản
+            room.title = request.form.get('room_title')
+            room.description = request.form.get('room_description')
+            
+            # Chuyển đổi property_type sang tiếng Việt trước khi lưu
+            property_type_map = {
+                'house': 'Nhà',
+                'apartment': 'Căn hộ', 
+                'hotel': 'Khách sạn'
+            }
+            property_type_vn = property_type_map.get(request.form.get('property_type'), request.form.get('property_type'))
+            room.room_type = property_type_vn
+            room.city = request.form.get('province')  # Sử dụng city thay vì province
+            room.district = request.form.get('district')
+            # Bỏ ward vì Room model không có ward
+            room.address = request.form.get('street')
+            
+            # Cập nhật sức chứa
+            room.bathroom_count = int(request.form.get('bathroom_count', 1))
+            room.bed_count = int(request.form.get('bed_count', 1))
+            room.max_guests = int(request.form.get('guest_count', 1))  # Sử dụng max_guests thay vì guest_count
+            
+            # Cập nhật hình thức cho thuê và giá
+            rental_type = request.form.get('rental_type')
+            # Bỏ rental_type vì Room model không có rental_type
+            
+            # Cập nhật giá theo hình thức cho thuê
+            if rental_type == 'hourly':
+                hourly_price = request.form.get('hourly_price')
+                if hourly_price:
+                    # Loại bỏ định dạng, chuyển thành số và chia cho 1000 để cân bằng với display_price logic
+                    price_value = int(hourly_price.replace(',', '').replace('.', ''))
+                    room.price_per_hour = price_value / 1000
+                room.price_per_night = None
+            elif rental_type == 'nightly':
+                nightly_price = request.form.get('nightly_price')
+                if nightly_price:
+                    # Loại bỏ định dạng, chuyển thành số và chia cho 1000 để cân bằng với display_price logic
+                    price_value = int(nightly_price.replace(',', '').replace('.', ''))
+                    room.price_per_night = price_value / 1000
+                # Giữ price_per_hour để tương thích với logic hiện tại
+                if not room.price_per_hour:
+                    room.price_per_hour = 0
+            
+            # Cập nhật rules
+            room.rules.clear()
+            rule_ids = request.form.getlist('rules[]')
+            if rule_ids:
+                rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
+                room.rules.extend(rules)
+            
+            # Cập nhật amenities
+            room.amenities.clear()
+            amenity_ids = request.form.getlist('amenities[]')
+            if amenity_ids:
+                amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
+                room.amenities.extend(amenities)
+            
+            # Xử lý ảnh mới nếu có
+            # Tạo thư mục upload cho room nếu chưa có
+            room_folder = os.path.join('static', 'uploads', f'room_{room_id}')
+            os.makedirs(room_folder, exist_ok=True)
+            
+            # Xử lý ảnh bìa mới
+            if 'main_image' in request.files:
+                main_image = request.files['main_image']
+                if main_image and main_image.filename and allowed_file(main_image.filename):
+                    # Xóa ảnh bìa cũ
+                    old_main_image = RoomImage.query.filter_by(room_id=room_id, is_featured=True).first()
+                    if old_main_image:
+                        old_path = os.path.join('static', old_main_image.image_path)
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
+                        db.session.delete(old_main_image)
+                    
+                    # Lưu ảnh bìa mới
+                    filename = secure_filename(main_image.filename)
+                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                    filename = f"main_{timestamp}_{filename}"
+                    save_path = os.path.join(room_folder, filename)
+                    main_image.save(save_path)
+                    
+                    new_main_image = RoomImage(
+                        image_path=f"uploads/room_{room_id}/{filename}",
+                        room_id=room_id,
+                        is_featured=True
+                    )
+                    db.session.add(new_main_image)
+            
+            # Xử lý ảnh phụ mới
+            for key in request.files:
+                if key.startswith('images'):
+                    files = request.files.getlist(key)
+                    for file in files:
+                        if file and file.filename and allowed_file(file.filename):
+                            filename = secure_filename(file.filename)
+                            timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
+                            filename = f"{timestamp}_{filename}"
+                            save_path = os.path.join(room_folder, filename)
+                            file.save(save_path)
+                            
+                            new_image = RoomImage(
+                                image_path=f"uploads/room_{room_id}/{filename}",
+                                room_id=room_id,
+                                is_featured=False
+                            )
+                            db.session.add(new_image)
+            
+            db.session.commit()
+            flash('Đã cập nhật thông tin phòng thành công!', 'success')
+            return redirect(url_for('owner.dashboard'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Có lỗi xảy ra khi cập nhật: {str(e)}', 'danger')
+    
+    # Chuẩn bị dữ liệu cho template
+    room_data = {
+        'id': room.id,
+        'title': room.title,
+        'description': room.description,
+        'property_type': get_property_type_en(room.room_type),  # Chuyển đổi ngược từ tiếng Việt sang English cho form
+        'province': room.city,  # Sử dụng city thay vì province
+        'district': room.district,
+        'ward': '',  # Room model không có ward, để trống
+        'street': room.address,
+        'bathroom_count': room.bathroom_count,
+        'bed_count': room.bed_count,
+        'guest_count': room.max_guests,  # Sử dụng max_guests thay vì guest_count
+        'rental_type': 'nightly' if room.price_per_night and room.price_per_night > 0 else 'hourly',
+        'hourly_price': int(room.price_per_hour * 1000) if room.price_per_hour else 0,
+        'nightly_price': int(room.price_per_night * 1000) if room.price_per_night else None,
+        'rules': [{'id': rule.id, 'name': rule.name} for rule in room.rules],
+        'amenities': [{'id': amenity.id, 'name': amenity.name, 'icon': amenity.icon} for amenity in room.amenities]
+    }
+    
+    return render_template('owner/edit_room.html', room=room_data)
 
 @owner_bp.route('/delete-room/<int:room_id>', methods=['POST'])
 @login_required

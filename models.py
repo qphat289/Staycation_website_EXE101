@@ -272,7 +272,6 @@ class Room(db.Model):
     bed_count = db.Column(db.Integer, nullable=False)
     bathroom_count = db.Column(db.Integer, nullable=False)
     max_guests = db.Column(db.Integer, nullable=False)
-    room_size = db.Column(db.Float, nullable=True)  # Diện tích phòng (m2)
     
     # Giá và mô tả
     price_per_hour = db.Column(db.Float, nullable=False)

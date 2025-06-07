@@ -4,18 +4,15 @@
 from app import app
 from models import db, Province, District, Ward
 
-# Dữ liệu địa chỉ
+# Dữ liệu địa chỉ - Cập nhật 2024 với cấu trúc hành chính mới nhất
 LOCATION_DATA = {
     'hcm': {
         'name': 'TP. Hồ Chí Minh',
         'districts': {
+            # 16 Quận nội thành
             'quan1': {
                 'name': 'Quận 1',
                 'wards': ['Phường Tân Định', 'Phường Đa Kao', 'Phường Bến Nghé', 'Phường Bến Thành', 'Phường Nguyễn Thái Bình', 'Phường Phạm Ngũ Lão', 'Phường Cầu Ông Lãnh', 'Phường Cô Giang', 'Phường Nguyễn Cư Trinh', 'Phường Cầu Kho']
-            },
-            'quan2': {
-                'name': 'Quận 2',
-                'wards': ['Phường Thảo Điền', 'Phường An Phú', 'Phường An Khánh', 'Phường Bình An', 'Phường Bình Khanh', 'Phường Bình Trưng Đông', 'Phường Bình Trưng Tây', 'Phường Cát Lái', 'Phường Thạnh Mỹ Lợi', 'Phường An Lợi Đông', 'Phường Thủ Thiêm']
             },
             'quan3': {
                 'name': 'Quận 3',
@@ -41,16 +38,24 @@ LOCATION_DATA = {
                 'name': 'Quận 8',
                 'wards': ['Phường 1', 'Phường 2', 'Phường 3', 'Phường 4', 'Phường 5', 'Phường 6', 'Phường 7', 'Phường 8', 'Phường 9', 'Phường 10', 'Phường 11', 'Phường 12', 'Phường 13', 'Phường 14', 'Phường 15', 'Phường 16']
             },
-            'quan9': {
-                'name': 'Quận 9',
-                'wards': ['Phường Long Bình', 'Phường Long Thạnh Mỹ', 'Phường Tân Phú', 'Phường Hiệp Phú', 'Phường Tăng Nhơn Phú A', 'Phường Tăng Nhơn Phú B', 'Phường Phước Long A', 'Phường Phước Long B', 'Phường Trường Thạnh', 'Phường Long Phước', 'Phường Long Trường', 'Phường Phước Bình', 'Phường Phú Hữu']
-            },
             'quan10': {
                 'name': 'Quận 10',
                 'wards': ['Phường 1', 'Phường 2', 'Phường 4', 'Phường 5', 'Phường 6', 'Phường 7', 'Phường 8', 'Phường 9', 'Phường 10', 'Phường 11', 'Phường 12', 'Phường 13', 'Phường 14', 'Phường 15']
             },
             'quan11': {
                 'name': 'Quận 11',
+                'wards': ['Phường 1', 'Phường 2', 'Phường 3', 'Phường 4', 'Phường 5', 'Phường 6', 'Phường 7', 'Phường 8', 'Phường 9', 'Phường 10', 'Phường 11', 'Phường 12', 'Phường 13', 'Phường 14', 'Phường 15', 'Phường 16']
+            },
+            'quan6': {
+                'name': 'Quận 6',
+                'wards': ['Phường 1', 'Phường 2', 'Phường 3', 'Phường 4', 'Phường 5', 'Phường 6', 'Phường 7', 'Phường 8', 'Phường 9', 'Phường 10', 'Phường 11', 'Phường 12', 'Phường 13', 'Phường 14']
+            },
+            'quan7': {
+                'name': 'Quận 7',
+                'wards': ['Phường Tân Thuận Đông', 'Phường Tân Thuận Tây', 'Phường Tân Kiểng', 'Phường Tân Hưng', 'Phường Bình Thuận', 'Phường Tân Quy', 'Phường Phú Thuận', 'Phường Tân Phú', 'Phường Tân Phong', 'Phường Phú Mỹ']
+            },
+            'quan8': {
+                'name': 'Quận 8',
                 'wards': ['Phường 1', 'Phường 2', 'Phường 3', 'Phường 4', 'Phường 5', 'Phường 6', 'Phường 7', 'Phường 8', 'Phường 9', 'Phường 10', 'Phường 11', 'Phường 12', 'Phường 13', 'Phường 14', 'Phường 15', 'Phường 16']
             },
             'quan12': {
@@ -65,10 +70,6 @@ LOCATION_DATA = {
                 'name': 'Quận Tân Phú',
                 'wards': ['Phường Tân Sơn Nhì', 'Phường Tây Thạnh', 'Phường Sơn Kỳ', 'Phường Tân Quý', 'Phường Tân Thành', 'Phường Phú Thọ Hòa', 'Phường Phú Thạnh', 'Phường Phú Trung', 'Phường Hòa Thạnh', 'Phường Hiệp Tân', 'Phường Tân Thới Hòa']
             },
-            'quanbinhtan': {
-                'name': 'Quận Bình Tân',
-                'wards': ['Phường Bình Hưng Hòa', 'Phường Bình Hưng Hòa A', 'Phường Bình Hưng Hòa B', 'Phường Bình Trị Đông', 'Phường Bình Trị Đông A', 'Phường Bình Trị Đông B', 'Phường Tân Tạo', 'Phường Tân Tạo A', 'Phường An Lạc', 'Phường An Lạc A']
-            },
             'quanbinhthanh': {
                 'name': 'Quận Bình Thạnh',
                 'wards': ['Phường 1', 'Phường 2', 'Phường 3', 'Phường 5', 'Phường 6', 'Phường 7', 'Phường 11', 'Phường 12', 'Phường 13', 'Phường 14', 'Phường 15', 'Phường 17', 'Phường 19', 'Phường 21', 'Phường 22', 'Phường 24', 'Phường 25', 'Phường 26', 'Phường 27', 'Phường 28']
@@ -81,9 +82,70 @@ LOCATION_DATA = {
                 'name': 'Quận Phú Nhuận',
                 'wards': ['Phường 1', 'Phường 2', 'Phường 3', 'Phường 4', 'Phường 5', 'Phường 7', 'Phường 8', 'Phường 9', 'Phường 10', 'Phường 11', 'Phường 13', 'Phường 15', 'Phường 17']
             },
-            'quanthuduc': {
-                'name': 'Quận Thủ Đức',
-                'wards': ['Phường Linh Xuân', 'Phường Bình Chiểu', 'Phường Linh Trung', 'Phường Tam Bình', 'Phường Tam Phú', 'Phường Hiệp Bình Phước', 'Phường Hiệp Bình Chánh', 'Phường Linh Chiểu', 'Phường Linh Đông', 'Phường Bình Thọ', 'Phường Trường Thọ']
+            
+            # Thành phố Thủ Đức (thành phố trực thuộc thành phố)
+            'thanhphothuduc': {
+                'name': 'Thành phố Thủ Đức',
+                'wards': [
+                    # Khu vực cũ thuộc Quận 2
+                    'Phường Thảo Điền', 'Phường An Phú', 'Phường An Khánh', 'Phường Bình An', 
+                    'Phường Bình Khanh', 'Phường Bình Trưng Đông', 'Phường Bình Trưng Tây', 
+                    'Phường Cát Lái', 'Phường Thạnh Mỹ Lợi', 'Phường An Lợi Đông', 'Phường Thủ Thiêm',
+                    
+                    # Khu vực cũ thuộc Quận 9  
+                    'Phường Long Bình', 'Phường Long Thạnh Mỹ', 'Phường Tân Phú', 'Phường Hiệp Phú', 
+                    'Phường Tăng Nhơn Phú A', 'Phường Tăng Nhơn Phú B', 'Phường Phước Long A', 
+                    'Phường Phước Long B', 'Phường Trường Thạnh', 'Phường Long Phước', 
+                    'Phường Long Trường', 'Phường Phước Bình', 'Phường Phú Hữu',
+                    
+                    # Khu vực cũ thuộc Quận Thủ Đức
+                    'Phường Linh Xuân', 'Phường Bình Chiểu', 'Phường Linh Trung', 'Phường Tam Bình', 
+                    'Phường Tam Phú', 'Phường Hiệp Bình Phước', 'Phường Hiệp Bình Chánh', 
+                    'Phường Linh Chiểu', 'Phường Linh Đông', 'Phường Bình Thọ', 'Phường Trường Thọ'
+                ]
+            },
+            
+            # 5 Huyện ngoại thành
+            'huyenbinhchanh': {
+                'name': 'Huyện Bình Chánh',
+                'wards': [
+                    'Thị trấn Tân Túc', 'Xã Phạm Văn Hai', 'Xã Vĩnh Lộc A', 'Xã Vĩnh Lộc B', 
+                    'Xã Bình Lợi', 'Xã Lê Minh Xuân', 'Xã Tân Nhựt', 'Xã Tân Kiên', 
+                    'Xã Bình Hưng', 'Xã Phong Phú', 'Xã An Phú Tây', 'Xã Hưng Long', 
+                    'Xã Đa Phước', 'Xã Tân Quý Tây', 'Xã Bình Chánh', 'Xã Quy Đức'
+                ]
+            },
+            'huyencangio': {
+                'name': 'Huyện Cần Giờ',
+                'wards': [
+                    'Thị trấn Cần Thạnh', 'Xã Bình Khánh', 'Xã Tam Thôn Hiệp', 'Xã An Thới Đông', 
+                    'Xã Thạnh An', 'Xã Long Hòa', 'Xã Lý Nhơn'
+                ]
+            },
+            'huyencuchi': {
+                'name': 'Huyện Củ Chi',
+                'wards': [
+                    'Thị trấn Củ Chi', 'Xã Phú Mỹ Hưng', 'Xã An Phú', 'Xã Trung Lập Thượng', 
+                    'Xã An Nhơn Tây', 'Xã Nhuận Đức', 'Xã Phạm Văn Cội', 'Xã Phú Hòa Đông', 
+                    'Xã Trung Lập Hạ', 'Xã Trung An', 'Xã Phước Thạnh', 'Xã Phước Hiệp', 
+                    'Xã Tân An Hội', 'Xã Phước Vĩnh An', 'Xã Thái Mỹ', 'Xã Tân Thạnh Tây', 
+                    'Xã Hòa Phú', 'Xã Trung Hòa', 'Xã Nhị Bình', 'Xã Bình Mỹ', 'Xã Tân Phú Trung'
+                ]
+            },
+            'huyenhocmon': {
+                'name': 'Huyện Hóc Môn',
+                'wards': [
+                    'Thị trấn Hóc Môn', 'Xã Tân Hiệp', 'Xã Nhị Bình', 'Xã Đông Thạnh', 
+                    'Xã Tân Thới Nhì', 'Xã Thới Tam Thôn', 'Xã Xuân Thới Sơn', 'Xã Tân Xuân', 
+                    'Xã Xuân Thới Đông', 'Xã Trung Chánh', 'Xã Xuân Thới Thượng', 'Xã Bà Điểm'
+                ]
+            },
+            'huyennhabe': {
+                'name': 'Huyện Nhà Bè',
+                'wards': [
+                    'Thị trấn Nhà Bè', 'Xã Phước Kiển', 'Xã Phước Lộc', 'Xã Nhơn Đức', 
+                    'Xã Phú Xuân', 'Xã Long Thới', 'Xã Hiệp Phước'
+                ]
             }
         }
     },

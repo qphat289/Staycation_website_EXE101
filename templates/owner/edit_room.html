@@ -1,43 +1,1479 @@
 {% extends 'base.html' %}
+{% block title %}Chỉnh sửa phòng{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    body {
+        background: #f8fdf4;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .edit-container {
+        max-width: 1400px;
+        margin: -50px auto 0 auto;
+        padding: 20px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .back-link {
+        display: flex;
+        align-items: center;
+        color: #666;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .back-link i {
+        margin-right: 8px;
+    }
+
+    .save-btn {
+        background: #9ed649;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(158, 214, 73, 0.3);
+    }
+
+    .save-btn:hover {
+        background: #8bc441;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(158, 214, 73, 0.4);
+    }
+
+    .main-content {
+        display: grid;
+        grid-template-columns: 6fr 4fr;
+        gap: 30px;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .form-group:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        color: #333;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #9ed649;
+        box-shadow: 0 0 0 3px rgba(158, 214, 73, 0.1);
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        color: #333;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: #9ed649;
+        box-shadow: 0 0 0 3px rgba(158, 214, 73, 0.1);
+    }
+
+    .textarea {
+        width: 100%;
+        min-height: 80px;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        resize: vertical;
+        background: white;
+        color: #333;
+    }
+
+    .textarea:focus {
+        outline: none;
+        border-color: #9ed649;
+        box-shadow: 0 0 0 3px rgba(158, 214, 73, 0.1);
+    }
+
+    .counter-group {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 20px;
+    }
+
+    .counter-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .counter-label {
+        font-size: 14px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    .counter-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 4px;
+    }
+
+    .counter-btn {
+        width: 30px;
+        height: 30px;
+        border: none;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #666;
+        transition: all 0.2s ease;
+    }
+
+    .counter-btn:hover {
+        background: #9ed649;
+        color: white;
+    }
+
+    .counter-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        min-width: 30px;
+        text-align: center;
+    }
+
+    .property-type-selection {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .property-option {
+        position: relative;
+    }
+
+    .property-radio {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .property-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 15px 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 80px;
+        text-align: center;
+    }
+
+    .property-label:hover {
+        border-color: #9ed649;
+        background-color: #f8fff0;
+    }
+
+    .property-radio:checked + .property-label {
+        border-color: #9ed649;
+        background-color: #f0f9e8;
+        box-shadow: 0 2px 8px rgba(158, 214, 73, 0.3);
+    }
+
+    .property-icon {
+        margin-bottom: 8px;
+        font-size: 24px;
+        color: #666;
+        transition: color 0.3s ease;
+    }
+
+    .property-radio:checked + .property-label .property-icon {
+        color: #9ed649;
+    }
+
+    .property-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .rental-type-selection {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .rental-option {
+        position: relative;
+    }
+
+    .rental-radio {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .rental-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        min-width: 120px;
+        justify-content: center;
+    }
+
+    .rental-label:hover {
+        border-color: #9ed649;
+        background-color: #f8fff0;
+    }
+
+    .rental-radio:checked + .rental-label {
+        border-color: #9ed649;
+        background-color: #f0f9e8;
+        color: #9ed649;
+        font-weight: 600;
+    }
+
+    .price-input-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .price-input {
+        flex: 1;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        color: #333;
+    }
+
+    .price-input:focus {
+        outline: none;
+        border-color: #9ed649;
+        box-shadow: 0 0 0 3px rgba(158, 214, 73, 0.1);
+    }
+
+    .currency-label {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .image-upload-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        height: fit-content;
+    }
+
+    .upload-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .upload-item {
+        position: relative;
+        aspect-ratio: 1;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .upload-item:hover {
+        border-color: #9ed649;
+        background: #f8fff0;
+    }
+
+    .upload-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #999;
+        font-size: 14px;
+    }
+
+    .upload-placeholder i {
+        font-size: 24px;
+        color: #9ed649;
+    }
+
+    .upload-item input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .upload-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .remove-image {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        background: rgba(220, 53, 69, 0.8);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        z-index: 15;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .remove-image:hover {
+        background: rgba(220, 53, 69, 1);
+    }
+
+    .selected-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    .selected-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: #f0f9e8;
+        border: 1px solid #9ed649;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #2d5a2d;
+    }
+
+    .remove-item {
+        color: #666;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 0 4px;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        margin-left: 8px;
+    }
+
+    .remove-item:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    .add-btn {
+        background: transparent;
+        color: #333;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .add-btn:hover {
+        color: #9ed649;
+        border-color: #9ed649;
+    }
+
+    .location-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .location-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+
+
+    .actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #666;
+        border: 1px solid #ddd;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #f8f9fa;
+        border-color: #bbb;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+        border: 1px solid #dc3545;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+        border-color: #bd2130;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        position: fixed;
+        top: 70px;
+        right: 0;
+        transform: none;
+        background: white;
+        border-radius: 12px 0 0 12px;
+        padding: 30px;
+        max-width: 700px;
+        width: 650px;
+        height: calc(100vh - 70px);
+        overflow-y: auto;
+        box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        color: #333;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .modal-header button {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #666;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .amenity-sections, .rules-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .amenity-section, .rule-section {
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 20px;
+        background: #fafafa;
+    }
+
+    .section-title {
+        color: #333;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #9ed649;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-title i {
+        color: #9ed649;
+        margin-right: 8px;
+    }
+
+    .amenities-grid, .rules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .amenity-item, .rule-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        border: 2px solid #e5e5e5;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+        position: relative;
+    }
+
+    .amenity-item:hover, .rule-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-color: #9ed649;
+    }
+
+    .amenity-item.selected, .rule-item.selected {
+        background-color: #e8f5e8;
+        border-color: #9ed649;
+    }
+
+    .amenity-item.selected::after, .rule-item.selected::after {
+        content: '✔';
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ed649;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .amenity-item i {
+        font-size: 18px;
+        color: #9ed649;
+        min-width: 20px;
+        margin-right: 10px;
+    }
+
+    .amenity-text, .rule-text {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h2><span data-translate="edit-room-title">Edit Room</span> #{{ room.id }}</h2>
+<div class="edit-container">
+    <div class="header">
+        <a href="{{ url_for('owner.dashboard') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại danh sách phòng
+        </a>
+        <button type="submit" form="edit-room-form" class="save-btn">
+            <i class="fas fa-save"></i>
+            Lưu thay đổi
+        </button>
+    </div>
 
-<form method="post">
-  <div class="mb-3">
-    <label for="room_number" data-translate="room-name">Room Number</label>
-    <input type="text" class="form-control" id="room_number" name="room_number" value="{{ room.room_number }}" required>
-  </div>
+    <form id="edit-room-form" method="post" enctype="multipart/form-data">
+        <div class="main-content">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3 class="section-title">Thông tin cơ bản</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Tiêu đề phòng</label>
+                        <input type="text" name="room_title" class="form-input" 
+                               value="{{ room.title or '' }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Mô tả phòng</label>
+                        <textarea name="room_description" class="textarea" required>{{ room.description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Loại hình phòng</label>
+                        <div class="property-type-selection">
+                            <div class="property-option">
+                                <input type="radio" id="house" name="property_type" value="house" class="property-radio" 
+                                       {% if room.property_type == 'house' %}checked{% endif %}>
+                                <label for="house" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    <div class="property-text">Nhà</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="apartment" name="property_type" value="apartment" class="property-radio"
+                                       {% if room.property_type == 'apartment' %}checked{% endif %}>
+                                <label for="apartment" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <div class="property-text">Căn hộ</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="hotel" name="property_type" value="hotel" class="property-radio"
+                                       {% if room.property_type == 'hotel' %}checked{% endif %}>
+                                <label for="hotel" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="fas fa-hotel"></i>
+                                    </div>
+                                    <div class="property-text">Khách sạn</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-  <div class="mb-3">
-    <label for="floor_number" data-translate="floor-number">Floor Number</label>
-    <input type="number" class="form-control" id="floor_number" name="floor_number" value="{{ room.floor_number }}" required min="1">
-  </div>
+                <!-- Room Details -->
+                <div class="form-section">
+                    <h3 class="section-title">Chi tiết phòng</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Sức chứa phòng</label>
+                        <div class="counter-group">
+                            <div class="counter-item">
+                                <span class="counter-label">Phòng tắm</span>
+                                <div class="counter-controls">
+                                    <button type="button" class="counter-btn" onclick="decreaseCount('bathroom')">-</button>
+                                    <span class="counter-value" id="bathroom-count">{{ room.bathroom_count or 1 }}</span>
+                                    <button type="button" class="counter-btn" onclick="increaseCount('bathroom')">+</button>
+                                </div>
+                                <input type="hidden" name="bathroom_count" id="bathroom_count_input" value="{{ room.bathroom_count or 1 }}">
+                            </div>
+                            <div class="counter-item">
+                                <span class="counter-label">Giường</span>
+                                <div class="counter-controls">
+                                    <button type="button" class="counter-btn" onclick="decreaseCount('bed')">-</button>
+                                    <span class="counter-value" id="bed-count">{{ room.bed_count or 1 }}</span>
+                                    <button type="button" class="counter-btn" onclick="increaseCount('bed')">+</button>
+                                </div>
+                                <input type="hidden" name="bed_count" id="bed_count_input" value="{{ room.bed_count or 1 }}">
+                            </div>
+                            <div class="counter-item">
+                                <span class="counter-label">Khách</span>
+                                <div class="counter-controls">
+                                    <button type="button" class="counter-btn" onclick="decreaseCount('guest')">-</button>
+                                    <span class="counter-value" id="guest-count">{{ room.guest_count or 1 }}</span>
+                                    <button type="button" class="counter-btn" onclick="increaseCount('guest')">+</button>
+                                </div>
+                                <input type="hidden" name="guest_count" id="guest_count_input" value="{{ room.guest_count or 1 }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Hình thức cho thuê</label>
+                        <div class="rental-type-selection">
+                            <div class="rental-option">
+                                <input type="radio" id="hourly" name="rental_type" value="hourly" class="rental-radio"
+                                       {% if room.rental_type == 'hourly' %}checked{% endif %}>
+                                <label for="hourly" class="rental-label">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Theo giờ</span>
+                                </label>
+                            </div>
+                            <div class="rental-option">
+                                <input type="radio" id="nightly" name="rental_type" value="nightly" class="rental-radio"
+                                       {% if room.rental_type == 'nightly' %}checked{% endif %}>
+                                <label for="nightly" class="rental-label">
+                                    <i class="fas fa-moon"></i>
+                                    <span>Qua đêm</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Giá phòng</label>
+                        <div id="hourly-pricing" style="display: {% if room.rental_type == 'hourly' %}block{% else %}none{% endif %};">
+                            <div class="price-input-group">
+                                <span class="currency-label">VND</span>
+                                <input type="text" name="hourly_price" class="price-input" 
+                                       placeholder="Nhập giá theo giờ" 
+                                       value="{{ room.hourly_price or '' }}"
+                                       oninput="formatPriceInput(this)">
+                            </div>
+                        </div>
+                        <div id="nightly-pricing" style="display: {% if room.rental_type == 'nightly' %}block{% else %}none{% endif %};">
+                            <div class="price-input-group">
+                                <span class="currency-label">VND</span>
+                                <input type="text" name="nightly_price" class="price-input" 
+                                       placeholder="Nhập giá qua đêm" 
+                                       value="{{ room.nightly_price or '' }}"
+                                       oninput="formatPriceInput(this)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-  <div class="mb-3">
-    <label for="bed_count" data-translate="bed-count-label">Bed Count</label>
-    <input type="number" class="form-control" id="bed_count" name="bed_count" value="{{ room.bed_count }}" required min="1">
-  </div>
+                <!-- Amenities -->
+                <div class="form-section">
+                    <h3 class="section-title">Tiện nghi</h3>
+                    <div class="form-group">
+                        <div class="selected-items" id="selectedAmenities">
+                            <!-- Selected amenities will be populated here -->
+                        </div>
+                        <button type="button" class="add-btn" onclick="showAmenityModal()">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Thêm tiện nghi</span>
+                        </button>
+                        <div id="amenityInputs"></div>
+                    </div>
+                </div>
 
-  <div class="mb-3">
-    <label for="bathroom_count" data-translate="bathroom-count-label">Bathroom Count</label>
-    <input type="number" class="form-control" id="bathroom_count" name="bathroom_count" value="{{ room.bathroom_count }}" required min="1">
-  </div>
+                <!-- Rules -->
+                <div class="form-section">
+                    <h3 class="section-title">Nội quy</h3>
+                    <div class="form-group">
+                        <div class="selected-items" id="selectedRules">
+                            <!-- Selected rules will be populated here -->
+                        </div>
+                        <button type="button" class="add-btn" onclick="showRulesModal()">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Thêm nội quy</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-  <div class="mb-3">
-    <label for="max_guests" data-translate="max-guests">Max Guests</label>
-    <input type="number" class="form-control" id="max_guests" name="max_guests" value="{{ room.max_guests }}" required min="1">
-  </div>
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- Image Upload -->
+                <div class="image-upload-section">
+                    <h3 class="section-title">Hình ảnh phòng</h3>
+                    <div class="upload-grid">
+                        <!-- Main image -->
+                        <div class="upload-item">
+                            <input type="file" name="main_image" accept="image/*">
+                            <div class="upload-placeholder">
+                                <i class="fas fa-camera"></i>
+                                <span>Ảnh bìa</span>
+                            </div>
+                        </div>
+                        <!-- Additional images -->
+                        {% for i in range(5) %}
+                        <div class="upload-item">
+                            <input type="file" name="images[]" accept="image/*">
+                            <div class="upload-placeholder">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
 
-  <div class="mb-3">
-    <label for="price_per_hour" data-translate="price-per-hour-label">Price per Hour</label>
-    <input type="number" class="form-control" id="price_per_hour" name="price_per_hour" value="{{ room.price_per_hour }}" min="0" step="0.01" required>
-  </div>
+                <!-- Location -->
+                <div class="location-section">
+                    <h3 class="section-title">Vị trí</h3>
+                    <div class="location-inputs">
+                        <select name="province" id="province" class="form-select" onchange="updateDistricts()">
+                            <option value="" disabled>Tỉnh/Thành phố</option>
+                            <option value="hcm" {% if room.province == 'hcm' %}selected{% endif %}>TP. Hồ Chí Minh</option>
+                            <option value="hanoi" {% if room.province == 'hanoi' %}selected{% endif %}>Hà Nội</option>
+                        </select>
+                        <select name="district" id="district" class="form-select" onchange="updateWards()">
+                            <option value="" disabled selected>Quận/Huyện</option>
+                        </select>
+                        <select name="ward" id="ward" class="form-select">
+                            <option value="" disabled selected>Phường/Xã</option>
+                        </select>
+                        <input type="text" name="street" class="form-input" 
+                               placeholder="Số nhà, tên đường" 
+                               value="{{ room.street or '' }}" required>
+                    </div>
 
-  <div class="mb-3">
-    <label for="description" data-translate="description">Description</label>
-    <textarea class="form-control" id="description" name="description" rows="4" required>{{ room.description }}</textarea>
-  </div>
+                </div>
+            </div>
+        </div>
 
-  <button type="submit" class="btn btn-primary" data-translate="save-button">Save</button>
-</form>
+        <div class="actions">
+            <a href="{{ url_for('owner.dashboard') }}" class="btn-secondary">Hủy</a>
+            <button type="button" class="btn-danger" onclick="deleteRoom()">Xóa phòng</button>
+        </div>
+    </form>
+</div>
+
+<!-- Include modals from add_room.html for amenities and rules -->
+<!-- Amenity Modal -->
+<div id="amenityModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Chọn tiện nghi</h3>
+            <button type="button" onclick="closeAmenityModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="amenity-sections">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rules Modal -->
+<div id="rulesModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Chọn nội quy</h3>
+            <button type="button" onclick="closeRulesModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="rules-sections">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Include JavaScript from add_room.html for functionality
+let selectedAmenities = {{ room.amenities|tojson if room.amenities else '[]' }};
+let selectedRules = {{ room.rules|tojson if room.rules else '[]' }};
+let locationData = null;
+let amenitiesData = null;
+let rulesData = null;
+
+// Counter functions
+function increaseCount(type) {
+    const element = document.getElementById(`${type}-count`);
+    let count = parseInt(element.textContent);
+    count++;
+    element.textContent = count;
+    document.getElementById(`${type}_count_input`).value = count;
+}
+
+function decreaseCount(type) {
+    const element = document.getElementById(`${type}-count`);
+    let count = parseInt(element.textContent);
+    if (count > 1) {
+        count--;
+        element.textContent = count;
+        document.getElementById(`${type}_count_input`).value = count;
+    }
+}
+
+// Price formatting
+function formatPriceInput(input) {
+    let value = input.value.replace(/[^\d]/g, '');
+    if (value) {
+        const numValue = parseInt(value);
+        const formatted = numValue.toLocaleString('vi-VN');
+        input.value = formatted;
+        input.setAttribute('data-value', value);
+    }
+}
+
+// Rental type change
+document.addEventListener('DOMContentLoaded', function() {
+    const hourlyRadio = document.getElementById('hourly');
+    const nightlyRadio = document.getElementById('nightly');
+    
+    if (hourlyRadio) {
+        hourlyRadio.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricingDisplay();
+            }
+        });
+    }
+    
+    if (nightlyRadio) {
+        nightlyRadio.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricingDisplay();
+            }
+        });
+    }
+
+    // Load initial data
+    loadLocationData();
+    loadAmenitiesData();
+    loadRulesData();
+    
+    // Initialize displays
+    updateSelectedAmenitiesDisplay();
+    updateSelectedRulesDisplay();
+});
+
+function updatePricingDisplay() {
+    const hourlyRadio = document.getElementById('hourly');
+    const nightlyRadio = document.getElementById('nightly');
+    const hourlyPricing = document.getElementById('hourly-pricing');
+    const nightlyPricing = document.getElementById('nightly-pricing');
+    
+    if (hourlyRadio.checked) {
+        hourlyPricing.style.display = 'block';
+        nightlyPricing.style.display = 'none';
+    } else if (nightlyRadio.checked) {
+        nightlyPricing.style.display = 'block';
+        hourlyPricing.style.display = 'none';
+    }
+}
+
+// Load APIs and populate data (include the same functions from add_room.html)
+async function loadLocationData() {
+    try {
+        const response = await fetch('/api/locations/all');
+        const result = await response.json();
+        if (result.success) {
+            locationData = result.data;
+            // Auto-fill current location
+            fillCurrentLocation();
+        }
+    } catch (error) {
+        console.error('Error loading location data:', error);
+    }
+}
+
+async function loadAmenitiesData() {
+    try {
+        const response = await fetch('/api/amenities');
+        const result = await response.json();
+        if (result.success) {
+            amenitiesData = result.data;
+        }
+    } catch (error) {
+        console.error('Error loading amenities data:', error);
+    }
+}
+
+async function loadRulesData() {
+    try {
+        const response = await fetch('/api/rules');
+        const result = await response.json();
+        if (result.success) {
+            rulesData = result.data;
+        }
+    } catch (error) {
+        console.error('Error loading rules data:', error);
+    }
+}
+
+function fillCurrentLocation() {
+    // Fill saved location data
+    {% if room.province %}
+    document.getElementById('province').value = '{{ room.province }}';
+    updateDistricts();
+    setTimeout(() => {
+        {% if room.district %}
+        document.getElementById('district').value = '{{ room.district }}';
+        updateWards();
+        setTimeout(() => {
+            {% if room.ward %}
+            document.getElementById('ward').value = '{{ room.ward }}';
+            {% endif %}
+        }, 500);
+        {% endif %}
+    }, 500);
+    {% endif %}
+}
+
+// Location update functions
+function updateDistricts() {
+    const provinceSelect = document.getElementById('province');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
+    
+    // Reset districts and wards
+    districtSelect.innerHTML = '<option value="" disabled selected>Quận/Huyện</option>';
+    wardSelect.innerHTML = '<option value="" disabled selected>Phường/Xã</option>';
+    wardSelect.disabled = true;
+    
+    const selectedProvince = provinceSelect.value;
+    
+    if (selectedProvince && locationData && locationData[selectedProvince]) {
+        // Enable district dropdown
+        districtSelect.disabled = false;
+        
+        // Populate districts
+        const districts = locationData[selectedProvince].districts;
+        const sortedDistricts = Object.entries(districts).sort((a, b) => {
+            const nameA = a[1].name;
+            const nameB = b[1].name;
+            const getNumber = (name) => {
+                const match = name.match(/(\d+)/);
+                return match ? parseInt(match[1]) : 999;
+            };
+            const numA = getNumber(nameA);
+            const numB = getNumber(nameB);
+            if (numA !== 999 && numB !== 999) {
+                return numA - numB;
+            }
+            return nameA.localeCompare(nameB, 'vi');
+        });
+        
+        sortedDistricts.forEach(([key, district]) => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = district.name;
+            districtSelect.appendChild(option);
+        });
+    } else {
+        districtSelect.disabled = true;
+    }
+}
+
+function updateWards() {
+    const provinceSelect = document.getElementById('province');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
+    
+    // Reset wards
+    wardSelect.innerHTML = '<option value="" disabled selected>Phường/Xã</option>';
+    
+    const selectedProvince = provinceSelect.value;
+    const selectedDistrict = districtSelect.value;
+    
+    if (selectedProvince && selectedDistrict && 
+        locationData && locationData[selectedProvince] && 
+        locationData[selectedProvince].districts[selectedDistrict]) {
+        
+        // Enable ward dropdown
+        wardSelect.disabled = false;
+        
+        // Populate wards
+        const wards = locationData[selectedProvince].districts[selectedDistrict].wards;
+        const sortedWards = wards.slice().sort((a, b) => {
+            const getNumber = (name) => {
+                const match = name.match(/(\d+)/);
+                return match ? parseInt(match[1]) : 999;
+            };
+            const numA = getNumber(a);
+            const numB = getNumber(b);
+            if (numA !== 999 && numB !== 999) {
+                return numA - numB;
+            }
+            return a.localeCompare(b, 'vi');
+        });
+        
+        sortedWards.forEach(ward => {
+            const option = document.createElement('option');
+            option.value = ward;
+            option.textContent = ward;
+            wardSelect.appendChild(option);
+        });
+    } else {
+        wardSelect.disabled = true;
+    }
+}
+
+// Modal functions
+function showAmenityModal() {
+    document.getElementById('amenityModal').style.display = 'block';
+    loadAllAmenities();
+}
+
+function closeAmenityModal() {
+    document.getElementById('amenityModal').style.display = 'none';
+}
+
+function showRulesModal() {
+    document.getElementById('rulesModal').style.display = 'block';
+    loadAllRules();
+}
+
+function closeRulesModal() {
+    document.getElementById('rulesModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const amenityModal = document.getElementById('amenityModal');
+    const rulesModal = document.getElementById('rulesModal');
+    
+    if (event.target == amenityModal) {
+        closeAmenityModal();
+    }
+    
+    if (event.target == rulesModal) {
+        closeRulesModal();
+    }
+}
+
+function updateSelectedAmenitiesDisplay() {
+    const container = document.getElementById('selectedAmenities');
+    const inputsContainer = document.getElementById('amenityInputs');
+    
+    // Clear existing content
+    container.innerHTML = '';
+    inputsContainer.innerHTML = '';
+    
+    if (selectedAmenities.length === 0) {
+        container.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">Chưa chọn tiện nghi nào</p>';
+        return;
+    }
+    
+    const maxDisplayAmenities = 4;
+    const displayedAmenities = selectedAmenities.slice(0, maxDisplayAmenities);
+    const hiddenCount = selectedAmenities.length - maxDisplayAmenities;
+    
+    // Hiển thị các amenity đầu tiên
+    displayedAmenities.forEach(amenity => {
+        const amenityElement = document.createElement('div');
+        amenityElement.className = 'selected-item';
+        amenityElement.innerHTML = `
+            <span>${amenity.name}</span>
+            <span class="remove-item" onclick="removeAmenity(${amenity.id})">&times;</span>
+        `;
+        container.appendChild(amenityElement);
+    });
+    
+    // Hiển thị badge "+X tiện nghi khác" nếu có nhiều hơn maxDisplayAmenities
+    if (hiddenCount > 0) {
+        const moreElement = document.createElement('div');
+        moreElement.className = 'selected-item';
+        moreElement.innerHTML = `+${hiddenCount} tiện nghi khác`;
+        moreElement.onclick = () => showAmenityModal();
+        container.appendChild(moreElement);
+    }
+    
+    // Thêm hidden inputs cho tất cả amenities
+    selectedAmenities.forEach(amenity => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'amenities[]';
+        hiddenInput.value = amenity.id;
+        inputsContainer.appendChild(hiddenInput);
+    });
+}
+
+function updateSelectedRulesDisplay() {
+    const container = document.getElementById('selectedRules');
+    container.innerHTML = '';
+    
+    if (selectedRules.length === 0) {
+        container.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">Chưa chọn nội quy nào</p>';
+        return;
+    }
+    
+    const maxDisplayRules = 4;
+    const displayedRules = selectedRules.slice(0, maxDisplayRules);
+    const hiddenCount = selectedRules.length - maxDisplayRules;
+    
+    // Hiển thị các rule đầu tiên
+    displayedRules.forEach(rule => {
+        const ruleElement = document.createElement('div');
+        ruleElement.className = 'selected-item';
+        ruleElement.innerHTML = `
+            <span>${rule.name}</span>
+            <span class="remove-item" onclick="removeRule(${rule.id})">&times;</span>
+            <input type="hidden" name="rules[]" value="${rule.id}">
+        `;
+        container.appendChild(ruleElement);
+    });
+    
+    // Hiển thị badge "+X nội quy khác" nếu có nhiều hơn maxDisplayRules
+    if (hiddenCount > 0) {
+        const moreElement = document.createElement('div');
+        moreElement.className = 'selected-item';
+        moreElement.innerHTML = `+${hiddenCount} nội quy khác`;
+        moreElement.onclick = () => showRulesModal();
+        container.appendChild(moreElement);
+    }
+    
+    // Thêm hidden inputs cho tất cả rules không hiển thị
+    selectedRules.forEach(rule => {
+        if (!displayedRules.includes(rule)) {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'rules[]';
+            hiddenInput.value = rule.id;
+            container.appendChild(hiddenInput);
+        }
+    });
+}
+
+function removeAmenity(amenityId) {
+    selectedAmenities = selectedAmenities.filter(a => a.id !== amenityId);
+    updateSelectedAmenitiesDisplay();
+    
+    // Update modal display if open
+    const modalItem = document.querySelector(`[data-amenity-id="${amenityId}"]`);
+    if (modalItem) {
+        modalItem.classList.remove('selected');
+    }
+}
+
+function removeRule(ruleId) {
+    selectedRules = selectedRules.filter(r => r.id !== ruleId);
+    updateSelectedRulesDisplay();
+    
+    // Update modal display if open
+    const modalItem = document.querySelector(`[data-rule-id="${ruleId}"]`);
+    if (modalItem) {
+        modalItem.classList.remove('selected');
+    }
+}
+
+function loadAllAmenities() {
+    const amenitySections = document.querySelector('.amenity-sections');
+    amenitySections.innerHTML = '';
+    
+    if (!amenitiesData) {
+        amenitySections.innerHTML = '<p>Đang tải dữ liệu tiện nghi...</p>';
+        return;
+    }
+    
+    // Tạo section cho mỗi category
+    Object.keys(amenitiesData).forEach(categoryCode => {
+        const categoryData = amenitiesData[categoryCode];
+        const categoryInfo = categoryData.category_info;
+        const amenities = categoryData.amenities;
+        
+        const sectionElement = document.createElement('div');
+        sectionElement.className = 'amenity-section';
+        
+        sectionElement.innerHTML = `
+            <h4 class="section-title">
+                <i class="${categoryInfo.icon}"></i>${categoryInfo.name}
+            </h4>
+            <div class="amenities-grid">
+                ${amenities.map(amenity => `
+                    <div class="amenity-item ${selectedAmenities.some(a => a.id === amenity.id) ? 'selected' : ''}" 
+                         data-amenity-id="${amenity.id}"
+                         onclick="toggleAmenitySelection(${amenity.id}, '${amenity.name}', '${amenity.icon}')">
+                        <i class="${amenity.icon}"></i>
+                        <span class="amenity-text">${amenity.name}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        amenitySections.appendChild(sectionElement);
+    });
+}
+
+function loadAllRules() {
+    const rulesSections = document.querySelector('.rules-sections');
+    rulesSections.innerHTML = '';
+    
+    if (!rulesData) {
+        rulesSections.innerHTML = '<p>Đang tải dữ liệu nội quy...</p>';
+        return;
+    }
+    
+    Object.keys(rulesData).forEach(categoryCode => {
+        const rules = rulesData[categoryCode];
+        const categoryNames = {
+            'smoking': 'Hút thuốc',
+            'pets': 'Thú cưng', 
+            'children': 'Trẻ em',
+            'party': 'Tiệc tùng',
+            'time': 'Thời gian',
+            'behavior': 'Hành vi'
+        };
+        
+        const sectionElement = document.createElement('div');
+        sectionElement.className = 'rule-section';
+        
+        sectionElement.innerHTML = `
+            <h4 class="section-title">
+                <i class="fas fa-shield-alt"></i>${categoryNames[categoryCode] || categoryCode}
+            </h4>
+            <div class="rules-grid">
+                ${rules.map(rule => `
+                    <div class="rule-item ${selectedRules.some(r => r.id === rule.id) ? 'selected' : ''}" 
+                         data-rule-id="${rule.id}"
+                         onclick="toggleRuleSelection(${rule.id}, '${rule.name}')">
+                        <span class="rule-text">${rule.name}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        rulesSections.appendChild(sectionElement);
+    });
+}
+
+function toggleAmenitySelection(amenityId, amenityName, amenityIcon) {
+    const item = document.querySelector(`[data-amenity-id="${amenityId}"]`);
+    const isCurrentlySelected = item.classList.contains('selected');
+    
+    if (!isCurrentlySelected) {
+        selectedAmenities.push({id: amenityId, name: amenityName, icon: amenityIcon});
+        item.classList.add('selected');
+    } else {
+        selectedAmenities = selectedAmenities.filter(a => a.id !== amenityId);
+        item.classList.remove('selected');
+    }
+    
+    updateSelectedAmenitiesDisplay();
+}
+
+function toggleRuleSelection(ruleId, ruleName) {
+    const item = document.querySelector(`[data-rule-id="${ruleId}"]`);
+    const isCurrentlySelected = item.classList.contains('selected');
+    
+    if (!isCurrentlySelected) {
+        selectedRules.push({id: ruleId, name: ruleName});
+        item.classList.add('selected');
+    } else {
+        selectedRules = selectedRules.filter(r => r.id !== ruleId);
+        item.classList.remove('selected');
+    }
+    
+    updateSelectedRulesDisplay();
+}
+
+function deleteRoom() {
+    if (confirm('Bạn có chắc chắn muốn xóa phòng này? Hành động này không thể hoàn tác.')) {
+        window.location.href = "{{ url_for('owner.delete_room', room_id=room.id) }}";
+    }
+}
+
+// Form preparation before submit
+document.getElementById('edit-room-form').addEventListener('submit', function(e) {
+    // Prepare price values (remove formatting)
+    const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
+    const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
+    
+    if (hourlyPriceInput && hourlyPriceInput.getAttribute('data-value')) {
+        hourlyPriceInput.value = hourlyPriceInput.getAttribute('data-value');
+    }
+    
+    if (nightlyPriceInput && nightlyPriceInput.getAttribute('data-value')) {
+        nightlyPriceInput.value = nightlyPriceInput.getAttribute('data-value');
+    }
+});
+</script>
 {% endblock %}

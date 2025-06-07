@@ -602,7 +602,7 @@
                         <span class="status-badge {{ 'status-active' if room.is_active else 'status-inactive' }}">
                             {{ 'Đã khóa' if not room.is_active else 'Hoạt động' }}
                         </span>
-                        <span class="status-badge status-new">{{ room.room_type }}</span>
+                        <span class="status-badge status-new">{{ room.room_type | property_type_vn }}</span>
                     </div>
                     <div class="homestay-image">
                         {% set featured_image = room.images|selectattr('is_featured')|first %}
@@ -625,9 +625,9 @@
                                 <i class="fas fa-money-bill"></i>
                                 <span>
                                     {% if room.price_per_hour %}
-                                        {{ "{:,.0f}".format(room.price_per_hour) }}đ /giờ
+                                        {{ "{:,.0f}".format(room.display_price) }}đ /giờ
                                     {% elif room.price_per_night %}
-                                        {{ "{:,.0f}".format(room.price_per_night) }}đ /đêm
+                                        {{ "{:,.0f}".format(room.display_price_per_night) }}đ /đêm
                                     {% else %}
                                         Chưa có giá
                                     {% endif %}

@@ -42,6 +42,16 @@ def from_json_filter(value):
         print(f"Error parsing JSON in template filter: {e}, value: {value}")
         return []
 
+@app.template_filter('property_type_vn')
+def property_type_vn_filter(value):
+    """Chuyển đổi property type sang tiếng Việt"""
+    property_type_map = {
+        'house': 'Nhà',
+        'apartment': 'Căn hộ', 
+        'hotel': 'Khách sạn'
+    }
+    return property_type_map.get(value, value)
+
 @login_manager.user_loader
 def load_user(user_id):
     # Get user role from session to load correct user type
