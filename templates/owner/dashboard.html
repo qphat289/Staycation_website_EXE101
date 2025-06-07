@@ -200,6 +200,41 @@
         font-size: 0.8rem;
     }
 
+    /* Filter Modal Styles */
+    .filter-options {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    .filter-options .form-check {
+        margin-bottom: 8px;
+    }
+
+    .filter-options .form-check-input:checked {
+        background-color: #9ed649;
+        border-color: #9ed649;
+    }
+
+    .filter-options .form-check-label {
+        font-weight: 500;
+        color: #333;
+        cursor: pointer;
+    }
+
+    #filterModal .form-control,
+    #filterModal .form-select {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    #filterModal .form-control:focus,
+    #filterModal .form-select:focus {
+        border-color: #9ed649;
+        box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+    }
+
     /* Flash Messages */
     .flash-messages {
         margin: 1rem 1.5rem;
@@ -571,7 +606,7 @@
                 <div class="search-box">
                     <input type="text" placeholder="Search" id="searchInput">
                 </div>
-                <button class="filter-btn">
+                <button class="filter-btn" data-bs-toggle="modal" data-bs-target="#filterModal">
                     <i class="fas fa-filter"></i>
                     Filter
                 </button>
@@ -671,6 +706,141 @@
         {% endif %}
     </div>
 </main>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border: none; border-radius: 15px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #9ed649, #7bb93d); border-radius: 15px 15px 0 0; color: white; border: none;">
+                <h5 class="modal-title" id="filterModalLabel" style="font-weight: 600;">
+                    <i class="fas fa-filter me-2"></i>Lọc phòng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <form id="filterForm">
+                    <div class="row">
+                        <!-- Trạng thái phòng -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-toggle-on me-2"></i>Trạng thái phòng
+                            </label>
+                            <div class="filter-options">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" id="status_all" value="all" checked>
+                                    <label class="form-check-label" for="status_all">Tất cả</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" id="status_active" value="active">
+                                    <label class="form-check-label" for="status_active">Hoạt động</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" id="status_inactive" value="inactive">
+                                    <label class="form-check-label" for="status_inactive">Tạm khóa</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loại phòng -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-home me-2"></i>Loại phòng
+                            </label>
+                            <div class="filter-options">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="room_type" id="type_house" value="house">
+                                    <label class="form-check-label" for="type_house">Nhà nguyên căn</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="room_type" id="type_apartment" value="apartment">
+                                    <label class="form-check-label" for="type_apartment">Căn hộ</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="room_type" id="type_private" value="private_room">
+                                    <label class="form-check-label" for="type_private">Phòng riêng</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="room_type" id="type_studio" value="studio">
+                                    <label class="form-check-label" for="type_studio">Studio</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Khoảng giá -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-money-bill-wave me-2"></i>Khoảng giá (VND)
+                            </label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="price_min" name="price_min" placeholder="Giá thấp nhất" min="0">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="price_max" name="price_max" placeholder="Giá cao nhất" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ngày tạo -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-calendar me-2"></i>Ngày tạo
+                            </label>
+                            <select class="form-select" name="date_filter" id="date_filter">
+                                <option value="all">Tất cả</option>
+                                <option value="today">Hôm nay</option>
+                                <option value="week">7 ngày qua</option>
+                                <option value="month">30 ngày qua</option>
+                                <option value="custom">Tùy chọn</option>
+                            </select>
+                            <div id="custom_date_range" style="display: none;" class="mt-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="date" class="form-control" id="date_from" name="date_from">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="date" class="form-control" id="date_to" name="date_to">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Địa điểm -->
+                        <div class="col-12 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-map-marker-alt me-2"></i>Địa điểm
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <select class="form-select" name="city" id="filter_city">
+                                        <option value="">Tất cả tỉnh/thành</option>
+                                        <option value="hcm">TP. Hồ Chí Minh</option>
+                                        <option value="hanoi">Hà Nội</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-select" name="district" id="filter_district">
+                                        <option value="">Tất cả quận/huyện</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border: none; padding: 20px 30px;">
+                <button type="button" class="btn btn-secondary" onclick="clearAllFilters()" 
+                        style="border-radius: 8px; padding: 10px 20px; font-weight: 500;">
+                    <i class="fas fa-eraser me-1"></i>Xóa bộ lọc
+                </button>
+                <button type="button" class="btn btn-primary" onclick="applyFilters()" data-bs-dismiss="modal"
+                        style="border-radius: 8px; padding: 10px 20px; font-weight: 500; background: linear-gradient(135deg, #9ed649, #7bb93d); border: none;">
+                    <i class="fas fa-check me-1"></i>Áp dụng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Delete Room Modal -->
 <div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModalLabel" aria-hidden="true">
@@ -910,5 +1080,282 @@ document.getElementById('deleteRoomForm').addEventListener('submit', function(e)
     // Allow form to submit
     return true;
 });
+
+// Filter Functions
+let currentFilters = {
+    status: 'all',
+    room_types: [],
+    price_min: null,
+    price_max: null,
+    date_filter: 'all',
+    date_from: null,
+    date_to: null,
+    city: '',
+    district: ''
+};
+
+// Show/hide custom date range
+document.getElementById('date_filter').addEventListener('change', function() {
+    const customDateRange = document.getElementById('custom_date_range');
+    if (this.value === 'custom') {
+        customDateRange.style.display = 'block';
+    } else {
+        customDateRange.style.display = 'none';
+    }
+});
+
+// City change handler for district dropdown
+document.getElementById('filter_city').addEventListener('change', function() {
+    const districtSelect = document.getElementById('filter_district');
+    districtSelect.innerHTML = '<option value="">Tất cả quận/huyện</option>';
+    
+    if (this.value === 'hcm') {
+        const hcmDistricts = [
+            'Quận 1', 'Quận 2', 'Quận 3', 'Quận 4', 'Quận 5', 'Quận 6', 'Quận 7', 'Quận 8', 'Quận 9', 'Quận 10',
+            'Quận 11', 'Quận 12', 'Quận Bình Thạnh', 'Quận Gò Vấp', 'Quận Phú Nhuận', 'Quận Tân Bình', 'Quận Tân Phú',
+            'Quận Thủ Đức', 'Huyện Bình Chánh', 'Huyện Cần Giờ', 'Huyện Củ Chi', 'Huyện Hóc Môn', 'Huyện Nhà Bè'
+        ];
+        hcmDistricts.forEach(district => {
+            const option = document.createElement('option');
+            option.value = district;
+            option.textContent = district;
+            districtSelect.appendChild(option);
+        });
+    } else if (this.value === 'hanoi') {
+        const hanoiDistricts = [
+            'Quận Ba Đình', 'Quận Hoàn Kiếm', 'Quận Tây Hồ', 'Quận Long Biên', 'Quận Cầu Giấy', 'Quận Đống Đa',
+            'Quận Hai Bà Trưng', 'Quận Hoàng Mai', 'Quận Thanh Xuân', 'Quận Nam Từ Liêm', 'Quận Bắc Từ Liêm', 'Quận Hà Đông'
+        ];
+        hanoiDistricts.forEach(district => {
+            const option = document.createElement('option');
+            option.value = district;
+            option.textContent = district;
+            districtSelect.appendChild(option);
+        });
+    }
+});
+
+// Apply filters function
+function applyFilters() {
+    // Get form data
+    const formData = new FormData(document.getElementById('filterForm'));
+    
+    // Update current filters
+    currentFilters.status = formData.get('status') || 'all';
+    currentFilters.room_types = formData.getAll('room_type');
+    currentFilters.price_min = formData.get('price_min') ? parseInt(formData.get('price_min')) : null;
+    currentFilters.price_max = formData.get('price_max') ? parseInt(formData.get('price_max')) : null;
+    currentFilters.date_filter = formData.get('date_filter') || 'all';
+    currentFilters.date_from = formData.get('date_from') || null;
+    currentFilters.date_to = formData.get('date_to') || null;
+    currentFilters.city = formData.get('city') || '';
+    currentFilters.district = formData.get('district') || '';
+    
+    console.log('Applying filters:', currentFilters);
+    
+    // Filter rooms
+    filterRooms();
+    
+    // Update filter button to show active state
+    updateFilterButtonState();
+}
+
+// Clear all filters
+function clearAllFilters() {
+    // Reset form
+    document.getElementById('filterForm').reset();
+    document.getElementById('custom_date_range').style.display = 'none';
+    document.getElementById('filter_district').innerHTML = '<option value="">Tất cả quận/huyện</option>';
+    
+    // Reset filters object
+    currentFilters = {
+        status: 'all',
+        room_types: [],
+        price_min: null,
+        price_max: null,
+        date_filter: 'all',
+        date_from: null,
+        date_to: null,
+        city: '',
+        district: ''
+    };
+    
+    // Show all rooms
+    const homestayItems = document.querySelectorAll('.homestay-item');
+    homestayItems.forEach(item => {
+        item.style.display = '';
+    });
+    
+    // Update filter button state
+    updateFilterButtonState();
+    
+    console.log('Filters cleared');
+}
+
+// Filter rooms based on current filters
+function filterRooms() {
+    const homestayItems = document.querySelectorAll('.homestay-item');
+    let visibleCount = 0;
+    
+    homestayItems.forEach(item => {
+        let shouldShow = true;
+        
+        // Status filter
+        if (currentFilters.status !== 'all') {
+            const statusBadge = item.querySelector('.status-badge');
+            const isActive = statusBadge && statusBadge.textContent.trim() === 'Hoạt động';
+            
+            if (currentFilters.status === 'active' && !isActive) {
+                shouldShow = false;
+            } else if (currentFilters.status === 'inactive' && isActive) {
+                shouldShow = false;
+            }
+        }
+        
+        // Room type filter
+        if (currentFilters.room_types.length > 0) {
+            const typeElements = item.querySelectorAll('.status-badge');
+            let roomType = '';
+            
+            typeElements.forEach(badge => {
+                const text = badge.textContent.trim();
+                if (text !== 'Hoạt động' && text !== 'Đã khóa') {
+                    roomType = text;
+                }
+            });
+            
+            const typeMapping = {
+                'house': 'Nhà nguyên căn',
+                'apartment': 'Căn hộ', 
+                'private_room': 'Phòng riêng',
+                'studio': 'Studio'
+            };
+            
+            const matchesType = currentFilters.room_types.some(filterType => 
+                typeMapping[filterType] === roomType
+            );
+            
+            if (!matchesType) {
+                shouldShow = false;
+            }
+        }
+        
+        // Price filter
+        if (currentFilters.price_min !== null || currentFilters.price_max !== null) {
+            const priceElement = item.querySelector('.homestay-detail:nth-child(2) span');
+            if (priceElement) {
+                const priceText = priceElement.textContent;
+                const priceMatch = priceText.match(/([0-9,]+)đ/);
+                if (priceMatch) {
+                    const price = parseInt(priceMatch[1].replace(/,/g, ''));
+                    
+                    if (currentFilters.price_min !== null && price < currentFilters.price_min) {
+                        shouldShow = false;
+                    }
+                    if (currentFilters.price_max !== null && price > currentFilters.price_max) {
+                        shouldShow = false;
+                    }
+                }
+            }
+        }
+        
+        // Date filter
+        if (currentFilters.date_filter !== 'all') {
+            const dateElement = item.querySelector('.homestay-date');
+            if (dateElement) {
+                const dateText = dateElement.textContent;
+                const dateMatch = dateText.match(/(\d{2})-(\d{2})-(\d{4})/);
+                if (dateMatch) {
+                    const [_, day, month, year] = dateMatch;
+                    const roomDate = new Date(year, month - 1, day);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    let showDate = true;
+                    
+                    if (currentFilters.date_filter === 'today') {
+                        const todayStr = today.toDateString();
+                        showDate = roomDate.toDateString() === todayStr;
+                    } else if (currentFilters.date_filter === 'week') {
+                        const weekAgo = new Date(today);
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        showDate = roomDate >= weekAgo && roomDate <= today;
+                    } else if (currentFilters.date_filter === 'month') {
+                        const monthAgo = new Date(today);
+                        monthAgo.setDate(monthAgo.getDate() - 30);
+                        showDate = roomDate >= monthAgo && roomDate <= today;
+                    } else if (currentFilters.date_filter === 'custom') {
+                        if (currentFilters.date_from) {
+                            const fromDate = new Date(currentFilters.date_from);
+                            if (roomDate < fromDate) showDate = false;
+                        }
+                        if (currentFilters.date_to) {
+                            const toDate = new Date(currentFilters.date_to);
+                            if (roomDate > toDate) showDate = false;
+                        }
+                    }
+                    
+                    if (!showDate) {
+                        shouldShow = false;
+                    }
+                }
+            }
+        }
+        
+        // Location filter
+        if (currentFilters.city || currentFilters.district) {
+            const locationElement = item.querySelector('.homestay-detail:nth-child(1) span');
+            if (locationElement) {
+                const locationText = locationElement.textContent.toLowerCase();
+                
+                if (currentFilters.city) {
+                    const cityMapping = {
+                        'hcm': 'hồ chí minh',
+                        'hanoi': 'hà nội'
+                    };
+                    const cityName = cityMapping[currentFilters.city];
+                    if (cityName && !locationText.includes(cityName)) {
+                        shouldShow = false;
+                    }
+                }
+                
+                if (currentFilters.district && !locationText.includes(currentFilters.district.toLowerCase())) {
+                    shouldShow = false;
+                }
+            }
+        }
+        
+        // Show/hide item
+        if (shouldShow) {
+            item.style.display = '';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    console.log(`Filtered results: ${visibleCount} rooms visible`);
+}
+
+// Update filter button state
+function updateFilterButtonState() {
+    const filterBtn = document.querySelector('.filter-btn');
+    const hasActiveFilters = 
+        currentFilters.status !== 'all' ||
+        currentFilters.room_types.length > 0 ||
+        currentFilters.price_min !== null ||
+        currentFilters.price_max !== null ||
+        currentFilters.date_filter !== 'all' ||
+        currentFilters.city ||
+        currentFilters.district;
+    
+    if (hasActiveFilters) {
+        filterBtn.style.background = '#9ed649';
+        filterBtn.style.color = 'white';
+    } else {
+        filterBtn.style.background = '';
+        filterBtn.style.color = '';
+    }
+}
 </script>
 {% endblock %} 

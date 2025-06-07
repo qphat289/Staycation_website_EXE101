@@ -358,9 +358,10 @@
 
     .upload-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 12px;
-        margin-top: 16px;
+        max-width: 100%;
+        width: 100%;
     }
 
     .upload-item {
@@ -371,6 +372,37 @@
         overflow: hidden;
         cursor: pointer;
         transition: all 0.3s ease;
+        min-height: 140px;
+        max-width: 160px;
+    }
+
+    .upload-label {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        background: rgba(158, 214, 73, 0.9);
+        color: white;
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        z-index: 2;
+        font-weight: 500;
+    }
+
+    .upload-item.add-more {
+        background: #f9f9f9;
+        border-color: #9ed649;
+        border-style: dashed;
+        cursor: pointer;
+    }
+
+    .upload-item.add-more .upload-placeholder {
+        background: transparent;
+    }
+
+    .upload-item.add-more .upload-placeholder i {
+        font-size: 24px;
+        color: #9ed649;
     }
 
     .upload-item:hover {
@@ -412,6 +444,72 @@
         height: 100%;
         object-fit: cover;
         position: absolute;
+    }
+
+    .existing-image {
+        position: relative;
+        border: 2px solid #e5e5e5;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .existing-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .existing-image:hover .image-overlay {
+        opacity: 1;
+    }
+
+    .featured-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: #9ed649;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .remove-image-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .remove-image-btn:hover {
+        background: #c82333;
         top: 0;
         left: 0;
     }
@@ -881,26 +979,46 @@
             <!-- Right Column -->
             <div class="right-column">
                 <!-- Image Upload -->
-                <div class="image-upload-section">
-                    <h3 class="section-title">Hình ảnh phòng</h3>
-                    <div class="upload-grid">
-                        <!-- Main image -->
-                        <div class="upload-item">
-                            <input type="file" name="main_image" accept="image/*">
-                            <div class="upload-placeholder">
-                                <i class="fas fa-camera"></i>
-                                <span>Ảnh bìa</span>
+                <div class="form-section">
+                    <h3>Hình ảnh phòng</h3>
+                    <div class="form-content">
+                        <div class="upload-grid">
+                            <!-- Display existing images first -->
+                            {% if room.images %}
+                                {% for image in room.images %}
+                                <div class="upload-item existing-image">
+                                    {% if image.is_featured %}
+                                    <span class="upload-label">Ảnh bìa</span>
+                                    {% endif %}
+                                    <img src="/static/{{ image.path }}" alt="Room image" class="existing-img">
+                                    <div class="image-overlay">
+                                        <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ image.id }})">
+                                            <i class="bi bi-x-circle-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                            
+                            <!-- Upload slot for new images only if needed -->
+                            {% set existing_count = room.images|length if room.images else 0 %}
+                            {% if existing_count == 0 %}
+                            <div class="upload-item">
+                                <span class="upload-label">Ảnh bìa</span>
+                                <input type="file" name="main_image" accept="image/*">
+                                <div class="upload-placeholder">
+                                    <i class="bi bi-camera"></i>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="upload-item add-more">
+                                <div class="upload-placeholder">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <span>Thêm ảnh</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- Additional images -->
-                        {% for i in range(5) %}
-                        <div class="upload-item">
-                            <input type="file" name="images[]" accept="image/*">
-                            <div class="upload-placeholder">
-                                <i class="fas fa-camera"></i>
-                            </div>
-                        </div>
-                        {% endfor %}
                     </div>
                 </div>
 
@@ -928,10 +1046,6 @@
             </div>
         </div>
 
-        <div class="actions">
-            <a href="{{ url_for('owner.dashboard') }}" class="btn-secondary">Hủy</a>
-            <button type="button" class="btn-danger" onclick="deleteRoom()">Xóa phòng</button>
-        </div>
     </form>
 </div>
 
@@ -973,6 +1087,10 @@ let selectedRules = {{ room.rules|tojson if room.rules else '[]' }};
 let locationData = null;
 let amenitiesData = null;
 let rulesData = null;
+
+// Debug logs
+console.log('Initial selectedAmenities:', selectedAmenities);
+console.log('Initial selectedRules:', selectedRules);
 
 // Counter functions
 function increaseCount(type) {
@@ -1027,12 +1145,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load initial data
     loadLocationData();
-    loadAmenitiesData();
-    loadRulesData();
-    
-    // Initialize displays
-    updateSelectedAmenitiesDisplay();
-    updateSelectedRulesDisplay();
+    loadAmenitiesData().then(() => {
+        // Update display after amenities data is loaded
+        updateSelectedAmenitiesDisplay();
+    });
+    loadRulesData().then(() => {
+        // Update display after rules data is loaded
+        updateSelectedRulesDisplay();
+    });
+
+    // Setup upload functionality
+    setupUploadFunctionality();
 });
 
 function updatePricingDisplay() {
@@ -1071,6 +1194,7 @@ async function loadAmenitiesData() {
         const result = await response.json();
         if (result.success) {
             amenitiesData = result.data;
+            console.log('Amenities data loaded successfully');
         }
     } catch (error) {
         console.error('Error loading amenities data:', error);
@@ -1083,6 +1207,7 @@ async function loadRulesData() {
         const result = await response.json();
         if (result.success) {
             rulesData = result.data;
+            console.log('Rules data loaded successfully');
         }
     } catch (error) {
         console.error('Error loading rules data:', error);
@@ -1100,9 +1225,17 @@ function fillCurrentLocation() {
         updateWards();
         setTimeout(() => {
             {% if room.ward %}
-            document.getElementById('ward').value = '{{ room.ward }}';
+            // Try to find and select the ward
+            const wardSelect = document.getElementById('ward');
+            const wardOptions = wardSelect.options;
+            for (let i = 0; i < wardOptions.length; i++) {
+                if (wardOptions[i].textContent.trim() === '{{ room.ward }}') {
+                    wardSelect.value = wardOptions[i].value;
+                    break;
+                }
+            }
             {% endif %}
-        }, 500);
+        }, 1000);
         {% endif %}
     }, 500);
     {% endif %}
@@ -1230,9 +1363,61 @@ window.onclick = function(event) {
     }
 }
 
+// Image handling functions
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const uploadItem = input.closest('.upload-item');
+            const placeholder = uploadItem.querySelector('.upload-placeholder');
+            
+            // Create preview image
+            let preview = uploadItem.querySelector('.preview-img');
+            if (!preview) {
+                preview = document.createElement('img');
+                preview.className = 'preview-img';
+                preview.style.cssText = 'width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 8px;';
+                uploadItem.appendChild(preview);
+            }
+            
+            preview.src = e.target.result;
+            placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeExistingImage(imageId) {
+    if (confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
+        // Create form to submit deletion
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/room-image/${imageId}/delete`;
+        
+        // Add CSRF token if needed
+        const csrfToken = document.querySelector('meta[name=csrf-token]');
+        if (csrfToken) {
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = 'csrf_token';
+            tokenInput.value = csrfToken.getAttribute('content');
+            form.appendChild(tokenInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
 function updateSelectedAmenitiesDisplay() {
+    console.log('updateSelectedAmenitiesDisplay called with:', selectedAmenities);
     const container = document.getElementById('selectedAmenities');
     const inputsContainer = document.getElementById('amenityInputs');
+    
+    if (!container) {
+        console.error('selectedAmenities container not found');
+        return;
+    }
     
     // Clear existing content
     container.innerHTML = '';
@@ -1278,7 +1463,14 @@ function updateSelectedAmenitiesDisplay() {
 }
 
 function updateSelectedRulesDisplay() {
+    console.log('updateSelectedRulesDisplay called with:', selectedRules);
     const container = document.getElementById('selectedRules');
+    
+    if (!container) {
+        console.error('selectedRules container not found');
+        return;
+    }
+    
     container.innerHTML = '';
     
     if (selectedRules.length === 0) {
@@ -1475,5 +1667,153 @@ document.getElementById('edit-room-form').addEventListener('submit', function(e)
         nightlyPriceInput.value = nightlyPriceInput.getAttribute('data-value');
     }
 });
+
+// Setup upload functionality for images
+function setupUploadFunctionality() {
+    const uploadItems = document.querySelectorAll('.upload-item');
+    
+    uploadItems.forEach(item => {
+        const placeholder = item.querySelector('.upload-placeholder');
+        
+        if (item.classList.contains('add-more')) {
+            // Handle "Thêm ảnh" button - create new file input
+            placeholder.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Create temporary file input
+                const tempInput = document.createElement('input');
+                tempInput.type = 'file';
+                tempInput.accept = 'image/*';
+                tempInput.multiple = true;
+                tempInput.style.display = 'none';
+                
+                tempInput.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        // Add files to upload grid
+                        Array.from(this.files).forEach((file, index) => {
+                            addImageToUploadGrid(file);
+                        });
+                    }
+                    // Remove temporary input
+                    tempInput.remove();
+                });
+                
+                document.body.appendChild(tempInput);
+                tempInput.click();
+            });
+        }
+    });
+}
+
+// Add image to upload grid
+function addImageToUploadGrid(file) {
+    const uploadGrid = document.querySelector('.upload-grid');
+    const addMoreButton = uploadGrid.querySelector('.add-more');
+    
+    // Create new upload item
+    const newUploadItem = document.createElement('div');
+    newUploadItem.className = 'upload-item';
+    
+    // Create file input
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.name = 'images[]';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    
+    // Create placeholder
+    const placeholder = document.createElement('div');
+    placeholder.className = 'upload-placeholder';
+    placeholder.innerHTML = '<i class="bi bi-camera"></i>';
+    
+    // Add elements to upload item
+    newUploadItem.appendChild(fileInput);
+    newUploadItem.appendChild(placeholder);
+    
+    // Insert before "add-more" button
+    uploadGrid.insertBefore(newUploadItem, addMoreButton);
+    
+    // Set the file to the input
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    fileInput.files = dataTransfer.files;
+    
+    // Show preview
+    handleFilePreview(fileInput, newUploadItem);
+}
+
+// Handle file preview for new images
+function handleFilePreview(input, uploadItem) {
+    const file = input.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Create preview image
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 1;
+            `;
+            
+            // Add remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '×';
+            removeBtn.type = 'button';
+            removeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: 20px;
+                height: 20px;
+                border: none;
+                background: rgba(220, 53, 69, 0.8);
+                color: white;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 12px;
+                z-index: 15;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            removeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Remove the entire upload item
+                uploadItem.remove();
+            });
+            
+            // Hide placeholder and add preview
+            uploadItem.querySelector('.upload-placeholder').style.display = 'none';
+            uploadItem.appendChild(img);
+            uploadItem.appendChild(removeBtn);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Function to remove existing image
+function removeExistingImage(imageId) {
+    if (confirm('Bạn có chắc muốn xóa ảnh này?')) {
+        // Create hidden input to mark for deletion
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'delete_images[]';
+        hiddenInput.value = imageId;
+        document.getElementById('edit-room-form').appendChild(hiddenInput);
+        
+        // Remove the image element from display
+        const imageElement = document.querySelector(`button[onclick="removeExistingImage(${imageId})"]`).closest('.upload-item');
+        imageElement.remove();
+    }
+}
 </script>
 {% endblock %}

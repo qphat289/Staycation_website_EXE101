@@ -309,6 +309,30 @@ def confirm_room():
         db.session.add(new_room)
         db.session.commit()
         
+        # Xử lý amenities và rules
+        try:
+            # Lưu amenities (amenities trong session là array của ID strings)
+            if room_data.get('amenities'):
+                amenity_ids = [int(amenity_id) for amenity_id in room_data['amenities']]
+                amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
+                new_room.amenities.extend(amenities)
+                print(f"DEBUG: Added {len(amenities)} amenities to room: {[a.name for a in amenities]}")
+            
+            # Lưu rules (rules trong session là array của ID strings)
+            if room_data.get('rules'):
+                rule_ids = [int(rule_id) for rule_id in room_data['rules']]
+                rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
+                new_room.rules.extend(rules)
+                print(f"DEBUG: Added {len(rules)} rules to room: {[r.name for r in rules]}")
+            
+            db.session.commit()
+            print("DEBUG: Successfully saved amenities and rules")
+            
+        except Exception as e:
+            print(f"Lỗi khi lưu amenities/rules: {str(e)}")
+            # Không làm fail việc tạo phòng nếu có lỗi
+            pass
+        
         # Xử lý ảnh từ temp sang uploads
         try:
             # Tạo folder riêng cho phòng này
@@ -437,8 +461,19 @@ def edit_room(room_id):
             room.room_type = property_type_vn
             room.city = request.form.get('province')  # Sử dụng city thay vì province
             room.district = request.form.get('district')
-            # Bỏ ward vì Room model không có ward
-            room.address = request.form.get('street')
+            
+            # Gộp ward và street thành address đầy đủ
+            street = request.form.get('street', '').strip()
+            ward = request.form.get('ward', '').strip()
+            
+            if street and ward:
+                room.address = f"{street}, {ward}"
+            elif street:
+                room.address = street
+            elif ward:
+                room.address = ward
+            else:
+                room.address = "Chưa cập nhật"
             
             # Cập nhật sức chứa
             room.bathroom_count = int(request.form.get('bathroom_count', 1))
@@ -540,6 +575,27 @@ def edit_room(room_id):
             flash(f'Có lỗi xảy ra khi cập nhật: {str(e)}', 'danger')
     
     # Chuẩn bị dữ liệu cho template
+    # Tách địa chỉ để hiển thị đúng phường và số nhà
+    street_address = ''
+    ward_name = ''
+    
+    if room.address:
+        # Tách địa chỉ nếu có phường
+        address_parts = room.address.split(', ')
+        if len(address_parts) >= 2:
+            # Nếu có nhiều phần, phần cuối có thể là phường
+            for i, part in enumerate(address_parts):
+                if 'phường' in part.lower() or 'xã' in part.lower():
+                    ward_name = part.strip()
+                    # Phần còn lại là địa chỉ số nhà
+                    street_address = ', '.join(address_parts[:i] + address_parts[i+1:]).strip()
+                    break
+            else:
+                # Nếu không tìm thấy phường, coi toàn bộ là địa chỉ số nhà
+                street_address = room.address
+        else:
+            street_address = room.address
+    
     room_data = {
         'id': room.id,
         'title': room.title,
@@ -547,8 +603,8 @@ def edit_room(room_id):
         'property_type': get_property_type_en(room.room_type),  # Chuyển đổi ngược từ tiếng Việt sang English cho form
         'province': room.city,  # Sử dụng city thay vì province
         'district': room.district,
-        'ward': '',  # Room model không có ward, để trống
-        'street': room.address,
+        'ward': ward_name,  # Phường được tách từ address
+        'street': street_address,  # Số nhà được tách từ address
         'bathroom_count': room.bathroom_count,
         'bed_count': room.bed_count,
         'guest_count': room.max_guests,  # Sử dụng max_guests thay vì guest_count
@@ -556,7 +612,8 @@ def edit_room(room_id):
         'hourly_price': int(room.price_per_hour * 1000) if room.price_per_hour else 0,
         'nightly_price': int(room.price_per_night * 1000) if room.price_per_night else None,
         'rules': [{'id': rule.id, 'name': rule.name} for rule in room.rules],
-        'amenities': [{'id': amenity.id, 'name': amenity.name, 'icon': amenity.icon} for amenity in room.amenities]
+        'amenities': [{'id': amenity.id, 'name': amenity.name, 'icon': amenity.icon} for amenity in room.amenities],
+        'images': [{'id': img.id, 'path': img.image_path, 'is_featured': img.is_featured} for img in room.images]
     }
     
     return render_template('owner/edit_room.html', room=room_data)
@@ -778,81 +835,17 @@ def delete_room_image(image_id):
     return redirect(url_for('owner.add_room_images', room_id=room_id))
 
 
-@owner_bp.route('/room-detail/<int:room_id>', methods=['GET', 'POST'])
+@owner_bp.route('/room-detail/<int:room_id>')
 @login_required
 def room_detail(room_id):
+    """Redirect to edit room - no separate detail page needed"""
     room = Room.query.get_or_404(room_id)
     if room.owner_id != current_user.id:
         flash('Bạn không có quyền xem phòng này!', 'danger')
         return redirect(url_for('owner.dashboard'))
     
-    if request.method == 'POST':
-        # Handle form submission to edit
-        room.room_number = request.form.get('room_number', room.room_number)
-        room.bed_count = request.form.get('bed_count', room.bed_count)
-        room.bathroom_count = request.form.get('bathroom_count', room.bathroom_count)
-        room.max_guests = request.form.get('max_guests', room.max_guests)
-        room.price_per_hour = request.form.get('price_per_hour', room.price_per_hour)
-        
-        # Lấy giá trị mô tả ban đầu (đã được lọc tiện ích từ client)
-        description = request.form.get('description', '').strip()
-        
-        # Xử lý các tiện ích được chọn
-        has_wifi = 'has_wifi' in request.form
-        has_tv = 'has_tv' in request.form
-        has_ac = 'has_ac' in request.form
-        has_coffee = 'has_coffee' in request.form
-        has_view = 'has_view' in request.form
-        has_bluetooth = 'has_bluetooth' in request.form
-        
-        # Tạo mảng tiện ích đã chọn
-        amenities = []
-        if has_wifi: amenities.append("Wifi tốc độ cao")
-        if has_tv: amenities.append("Netflix")
-        if has_ac: amenities.append("Điều hòa")
-        if has_coffee: amenities.append("Máy pha cà phê")
-        if has_view: amenities.append("View đẹp")
-        if has_bluetooth: amenities.append("Loa bluetooth")
-        
-        # Tạo chuỗi tiện ích
-        amenities_string = ', '.join(amenities)
-        
-        # Xử lý dữ liệu lưu vào database
-        # Nếu có cả mô tả và tiện ích
-        if description and amenities:
-            room.description = description + (', ' + amenities_string if description else '')
-        # Nếu chỉ có tiện ích
-        elif amenities:
-            room.description = amenities_string
-        # Nếu chỉ có mô tả
-        elif description:
-            room.description = description
-        # Nếu không có cả hai
-        else:
-            room.description = '1'  # Giá trị mặc định
-
-        # Xử lý hình ảnh
-        image_files = request.files.getlist('gallery')
-        for image_file in image_files:
-            if image_file and image_file.filename:
-                # Save file to uploads folder
-                filename = secure_filename(image_file.filename)
-                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                image_file.save(file_path)
-
-                # Create RoomImage record
-                new_image = RoomImage(
-                    room_id=room.id,
-                    image_path=f"uploads/{filename}"
-                )
-                db.session.add(new_image)
-
-        db.session.commit()
-        flash("Phòng đã được cập nhật thành công!", "success")
-        return redirect(url_for('owner.room_detail', room_id=room.id))
-
-    # For GET requests, display the edit form
-    return render_template('owner/room_detail.html', room=room)
+    # Redirect to edit page to view/edit details
+    return redirect(url_for('owner.edit_room', room_id=room_id))
 
 @owner_bp.route('/booking/confirm/<int:id>')
 @owner_required
