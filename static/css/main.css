@@ -160,38 +160,39 @@ main {
     color: var(--text-light);
 }
 
-/* 1.4 Navbar - Default (cho trang auth) */
+/* 1.4 Navbar - Màu xanh chủ đạo */
 .navbar-dark.bg-primary {
-    background: rgba(255, 255, 255, 0.1) !important; /* Trong suốt với màu trắng nhạt */
-    backdrop-filter: blur(10px); /* Hiệu ứng blur */
-    -webkit-backdrop-filter: blur(10px); /* Hỗ trợ Safari */
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-dark) 100%) !important; /* Gradient xanh */
+    backdrop-filter: none; /* Bỏ hiệu ứng blur */
+    -webkit-backdrop-filter: none; /* Bỏ hiệu ứng blur */
+    box-shadow: 0 2px 15px rgba(122, 188, 14, 0.3);
+    border-bottom: 1px solid rgba(64, 112, 16, 0.5);
     transition: all 0.3s ease;
 }
 
-/* Navbar khi scroll - có thể thêm class này bằng JavaScript */
+/* Navbar khi scroll - giữ màu xanh */
 .navbar-dark.bg-primary.scrolled {
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    background: linear-gradient(135deg, var(--accent-dark) 0%, #2d5a08 100%) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 2px 20px rgba(122, 188, 14, 0.4);
 }
 
-/* Default navbar text color (cho trang auth) */
+/* Navbar text color - màu trắng trên nền xanh */
 .navbar-dark .navbar-nav .nav-link {
-    color: #333 !important; /* Màu chữ tối cho trang auth */
+    color: #ffffff !important; /* Màu chữ trắng */
     font-weight: 500;
     transition: all 0.3s ease;
 }
 
 .navbar-dark .navbar-nav .nav-link:hover {
-    color: #8bc34a !important; /* Màu xanh lá khi hover */
+    color: var(--primary-color) !important; /* Màu vàng khi hover */
     transform: translateY(-1px);
 }
 
-/* Brand text cho trang auth */
+/* Brand text - màu trắng */
 .navbar-brand .brand-text {
-    color: #333 !important;
+    color: #ffffff !important;
     font-weight: 700;
 }
 
@@ -267,18 +268,18 @@ main {
     }
 }
 
-/* Navbar toggler */
+/* Navbar toggler - cập nhật cho navbar xanh */
 .navbar-toggler {
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     padding: 4px 8px;
 }
 
 .navbar-toggler:focus {
-    box-shadow: none;
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
 }
 
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 /* 1.5 Form Controls */
@@ -344,13 +345,13 @@ main {
 
 footer {
     margin-top: auto;
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    color: #ecf0f1;
+    background: var(--accent-color);
+    color: #ffffff;
 }
 
 footer .container {
-    padding-top: 2rem !important;
-    padding-bottom: 1.5rem !important;
+    padding-top: 0rem !important;
+    padding-bottom: 0rem !important;
 }
 
 footer h5, footer h6 {
@@ -360,7 +361,7 @@ footer h5, footer h6 {
 }
 
 footer .text-muted {
-    color: #bdc3c7 !important;
+    color: rgba(255, 255, 255, 0.8) !important;
     font-size: 0.875rem;
 }
 
@@ -1016,13 +1017,13 @@ footer .mb-4 {
     pointer-events: none;
 }
 
-/* Dropdown menu styling */
+/* Dropdown menu styling - cho navbar xanh */
 .navbar .dropdown-menu {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(122, 188, 14, 0.2);
+    box-shadow: 0 10px 30px rgba(122, 188, 14, 0.2);
     border-radius: 10px;
     padding: 10px 0;
 }
@@ -1035,8 +1036,8 @@ footer .mb-4 {
 }
 
 .navbar .dropdown-item:hover {
-    background: rgba(139, 195, 74, 0.1);
-    color: #8bc34a !important;
+    background: rgba(122, 188, 14, 0.1);
+    color: var(--accent-color) !important;
 }
 
 .navbar .dropdown-item.text-danger {
@@ -1060,8 +1061,8 @@ footer .mb-4 {
 .dropdown-item:hover,
 .navbar .dropdown-item:hover,
 .dropdown-menu .dropdown-item:hover {
-    background: rgba(139, 195, 74, 0.1) !important;
-    color: #8bc34a !important;
+    background: rgba(122, 188, 14, 0.1) !important;
+    color: var(--accent-color) !important;
 }
 
 /* Special styling for danger items (logout) */
@@ -1078,23 +1079,25 @@ footer .mb-4 {
     color: #dc3545 !important;
 }
 
-/* Language toggle button */
+/* Language toggle button - phù hợp với navbar xanh */
 #languageToggle {
-    background: rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    color: #333 !important;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    color: #ffffff !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     transition: all 0.3s ease;
 }
 
 #languageToggle:hover {
-    background: rgba(255, 255, 255, 0.3) !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
     transform: translateY(-1px);
+    color: #ffffff !important;
 }
 
 #languageToggle span {
-    color: #333 !important;
+    color: #ffffff !important;
     font-weight: 600;
 }
 
