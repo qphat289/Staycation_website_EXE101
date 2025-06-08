@@ -594,6 +594,111 @@
         }
     </script>
     
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-4">
+        <div class="container">
+            <div class="row">
+                <!-- About Section -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h6 class="fw-bold">
+                        <i class="bi bi-house-door-fill me-2"></i>
+                        Staycation
+                    </h6>
+                    <p class="text-muted mb-2">
+                        Nền tảng đặt phòng homestay hàng đầu Việt Nam. Khám phá những không gian lưu trú độc đáo.
+                    </p>
+                    <div class="d-flex gap-2 social-links">
+                        <a href="#" class="text-white"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-white"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="bi bi-youtube"></i></a>
+                        <a href="#" class="text-white"><i class="bi bi-tiktok"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="fw-bold">Liên kết nhanh</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('home') }}" class="text-muted text-decoration-none">Trang chủ</a></li>
+                        <li><a href="{{ url_for('renter.search') }}" class="text-muted text-decoration-none">Tìm phòng</a></li>
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.is_renter() %}
+                                <li><a href="{{ url_for('renter.dashboard') }}" class="text-muted text-decoration-none">Dashboard</a></li>
+                                <li><a href="{{ url_for('renter.booking_history') }}" class="text-muted text-decoration-none">Lịch sử</a></li>
+                            {% elif current_user.is_owner() %}
+                                <li><a href="{{ url_for('owner.dashboard') }}" class="text-muted text-decoration-none">Quản lý phòng</a></li>
+                            {% endif %}
+                        {% else %}
+                            <li><a href="{{ url_for('auth.login') }}" class="text-muted text-decoration-none">Đăng nhập</a></li>
+                            <li><a href="{{ url_for('auth.register') }}" class="text-muted text-decoration-none">Đăng ký</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <!-- For Hosts -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="fw-bold">Chủ nhà</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted text-decoration-none">Đăng ký</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Hướng dẫn</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Chính sách</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Hỗ trợ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Support -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="fw-bold">Hỗ trợ</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted text-decoration-none">Trung tâm trợ giúp</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Liên hệ</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Báo cáo</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="fw-bold">Liên hệ</h6>
+                    <ul class="list-unstyled">
+                        <li class="text-muted">
+                            <i class="bi bi-telephone-fill me-1"></i>
+                            1900 1234
+                        </li>
+                        <li class="text-muted">
+                            <i class="bi bi-envelope-fill me-1"></i>
+                            support@staycation.vn
+                        </li>
+                        <li class="text-muted">
+                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            TP. HCM
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Copyright -->
+        <div class="border-top border-secondary">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="mb-0 text-muted small">
+                            © 2024 Staycation. All rights reserved.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="d-flex justify-content-md-end gap-2 mt-2 mt-md-0">
+                            <a href="#" class="text-muted small text-decoration-none">Điều khoản</a>
+                            <a href="#" class="text-muted small text-decoration-none">Bảo mật</a>
+                            <a href="#" class="text-muted small text-decoration-none">Cookie</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

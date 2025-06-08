@@ -21,16 +21,24 @@
             <tbody>
                 {% for booking in bookings %}
                 <tr>
-                    <td>{{ booking.homestay.title }}</td>
-                    <td>{{ booking.room.room_number }}</td>
+                    <td>{{ booking.room.title }}</td>
+                    <td>{{ booking.room.room_number or 'N/A' }}</td>
                     <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td>${{ "%.2f"|format(booking.total_price) }}</td>
+                    <td>{{ "%.0f"|format(booking.total_price * 1000) }} VND</td>
                     <td>
                         {% if booking.status == 'rejected' %}
                             <span class="badge bg-danger">{{ booking.status|title }}</span>
+                        {% elif booking.status == 'pending' %}
+                            <span class="badge bg-warning">{{ booking.status|title }}</span>
+                        {% elif booking.status == 'confirmed' or booking.status == 'active' %}
+                            <span class="badge bg-success">{{ booking.status|title }}</span>
+                        {% elif booking.status == 'completed' %}
+                            <span class="badge bg-info">{{ booking.status|title }}</span>
+                        {% elif booking.status == 'cancelled' %}
+                            <span class="badge bg-secondary">{{ booking.status|title }}</span>
                         {% else %}
-                            <span class="{{ status_classes[booking.status] }}">{{ booking.status|title }}</span>
+                            <span class="badge bg-primary">{{ booking.status|title }}</span>
                         {% endif %}
                     </td>
                     <td>
@@ -44,7 +52,7 @@
                            data-translate="cancel">Cancel</a>
                         {% endif %}
 
-                        {% if booking.status == 'completed' and not booking.has_review %}
+                        {% if booking.status == 'completed' %}
                         <a href="{{ url_for('renter.review_booking', booking_id=booking.id) }}" 
                            class="btn btn-sm btn-primary" data-translate="write-review">Write Review</a>
                         {% endif %}

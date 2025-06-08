@@ -234,6 +234,30 @@ def add_review(homestay_id):
 
     return render_template('renter/add_review.html', homestay=homestay)
 
+@renter_bp.route('/booking-history')
+@renter_required
+def booking_history():
+    """View booking history for the current renter"""
+    bookings = Booking.query.filter_by(renter_id=current_user.id).order_by(Booking.created_at.desc()).all()
+    now = datetime.utcnow()
+    updated = False
+
+    for booking in bookings:
+        if booking.status == 'pending' and booking.start_time <= now:
+            booking.status = 'active'
+            updated = True
+        elif booking.status == 'confirmed' and booking.start_time <= now:
+            booking.status = 'active'
+            updated = True
+        elif booking.status in ['active', 'confirmed'] and booking.end_time <= now:
+            booking.status = 'completed'
+            updated = True
+
+    if updated:
+        db.session.commit()
+    
+    return render_template('renter/booking_history.html', bookings=bookings)
+
 @renter_bp.route('/booking/<int:booking_id>')
 @login_required
 def booking_details(booking_id):

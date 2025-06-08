@@ -73,6 +73,7 @@ body {
     color: var(--text-primary);
     background-color: var(--background-light);
     font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    padding-bottom: 0;
 }
 
 main {
@@ -337,8 +338,105 @@ main {
 }
 
 /* 1.6 Footer */
+/* =======================================================================
+   1.6 FOOTER STYLES
+   ======================================================================= */
+
 footer {
     margin-top: auto;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: #ecf0f1;
+}
+
+footer .container {
+    padding-top: 2rem !important;
+    padding-bottom: 1.5rem !important;
+}
+
+footer h5, footer h6 {
+    color: #ffffff;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+footer .text-muted {
+    color: #bdc3c7 !important;
+    font-size: 0.875rem;
+}
+
+footer p {
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+footer ul li {
+    margin-bottom: 0.25rem !important;
+}
+
+footer a {
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+}
+
+footer a:hover {
+    color: var(--primary-color) !important;
+    transform: translateY(-1px);
+}
+
+footer .social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+}
+
+footer .social-links a:hover {
+    background: var(--primary-color);
+    color: #333 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(241, 181, 95, 0.3);
+}
+
+footer .border-top {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+footer .border-top .container {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+footer .small {
+    font-size: 0.8rem !important;
+}
+
+footer .mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Footer responsive */
+@media (max-width: 768px) {
+    footer .col-lg-2, footer .col-lg-4 {
+        margin-bottom: 1.25rem;
+    }
+    
+    footer .text-md-end {
+        text-align: center !important;
+    }
+    
+    footer .d-flex.justify-content-md-end {
+        justify-content: center !important;
+    }
+    
+    footer .container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1rem !important;
+    }
 }
 
 /* =======================================================================
