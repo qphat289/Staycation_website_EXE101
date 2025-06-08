@@ -1,8 +1,7 @@
-from app import create_app
+from app import app
 from models import db
 
 def recreate_database():
-    app = create_app()
     with app.app_context():
         # Drop all tables
         db.drop_all()

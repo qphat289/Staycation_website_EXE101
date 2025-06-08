@@ -221,8 +221,12 @@ def callback_google():
         }
     )
     
+    print(f"DEBUG: Token response status code: {token_response.status_code}")
+    print(f"DEBUG: Token response text: {token_response.text}")
+    
     # Parse the tokens
     token_json = token_response.json()
+    print(f"DEBUG: Google token_json response: {token_json}")
     
     # Get the ID token from Google
     id_token = token_json['id_token']
