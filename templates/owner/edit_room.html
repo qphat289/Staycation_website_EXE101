@@ -1089,8 +1089,10 @@ let amenitiesData = null;
 let rulesData = null;
 
 // Debug logs
-console.log('Initial selectedAmenities:', selectedAmenities);
-console.log('Initial selectedRules:', selectedRules);
+console.log('🔧 Edit Room Initial selectedAmenities:', selectedAmenities);
+console.log('🔧 Edit Room Initial selectedRules:', selectedRules);
+console.log('🔧 selectedAmenities type:', typeof selectedAmenities, Array.isArray(selectedAmenities));
+console.log('🔧 selectedRules type:', typeof selectedRules, Array.isArray(selectedRules));
 
 // Counter functions
 function increaseCount(type) {
@@ -1143,15 +1145,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load initial data
-    loadLocationData();
-    loadAmenitiesData().then(() => {
-        // Update display after amenities data is loaded
+    // Load initial data and setup displays
+    Promise.all([
+        loadLocationData(),
+        loadAmenitiesData(),
+        loadRulesData()
+    ]).then(() => {
+        // Fill location after data is loaded
+        fillCurrentLocation();
+        
+        // Update displays after data is loaded
         updateSelectedAmenitiesDisplay();
-    });
-    loadRulesData().then(() => {
-        // Update display after rules data is loaded
         updateSelectedRulesDisplay();
+        
+        console.log('✅ Edit Room - All data loaded and displays updated');
+        
+        // Load existing room rules and amenities
+        loadExistingRulesAndAmenities();
     });
 
     // Setup upload functionality
@@ -1240,6 +1250,56 @@ function fillCurrentLocation() {
     }, 500);
     {% endif %}
 }
+
+// Function to load existing room rules and amenities
+function loadExistingRulesAndAmenities() {
+    console.log('🔄 Loading existing room rules and amenities...');
+    
+    // Clear current selections first
+    selectedRules = [];
+    selectedAmenities = [];
+    
+    // Load amenities from room data
+    const roomAmenities = {{ room.amenities|tojson if room.amenities else '[]' }};
+    console.log('🔧 Room amenities from server:', roomAmenities);
+    
+    if (roomAmenities && Array.isArray(roomAmenities)) {
+        roomAmenities.forEach(amenity => {
+            if (amenity.id && amenity.name) {
+                selectedAmenities.push({
+                    id: amenity.id,
+                    name: amenity.name,
+                    icon: amenity.icon || 'fas fa-check'
+                });
+            }
+        });
+        console.log('✅ Loaded amenities:', selectedAmenities.length, selectedAmenities.map(a => a.name));
+    }
+    
+    // Load rules from room data
+    const roomRules = {{ room.rules|tojson if room.rules else '[]' }};
+    console.log('🔧 Room rules from server:', roomRules);
+    
+    if (roomRules && Array.isArray(roomRules)) {
+        roomRules.forEach(rule => {
+            if (rule.id && rule.name) {
+                selectedRules.push({
+                    id: rule.id,
+                    name: rule.name
+                });
+            }
+        });
+        console.log('✅ Loaded rules:', selectedRules.length, selectedRules.map(r => r.name));
+    }
+    
+    // Update displays after loading
+    updateSelectedAmenitiesDisplay();
+    updateSelectedRulesDisplay();
+    
+    console.log('✅ Existing room data loaded successfully');
+}
+
+// Note: Duplicate functions removed - using the ones defined above
 
 // Location update functions
 function updateDistricts() {
@@ -1410,7 +1470,8 @@ function removeExistingImage(imageId) {
 }
 
 function updateSelectedAmenitiesDisplay() {
-    console.log('updateSelectedAmenitiesDisplay called with:', selectedAmenities);
+    console.log('🔧 updateSelectedAmenitiesDisplay called with:', selectedAmenities);
+    console.log('🔧 selectedAmenities length:', selectedAmenities.length);
     const container = document.getElementById('selectedAmenities');
     const inputsContainer = document.getElementById('amenityInputs');
     
@@ -1463,7 +1524,8 @@ function updateSelectedAmenitiesDisplay() {
 }
 
 function updateSelectedRulesDisplay() {
-    console.log('updateSelectedRulesDisplay called with:', selectedRules);
+    console.log('🔧 updateSelectedRulesDisplay called with:', selectedRules);
+    console.log('🔧 selectedRules length:', selectedRules.length);
     const container = document.getElementById('selectedRules');
     
     if (!container) {
