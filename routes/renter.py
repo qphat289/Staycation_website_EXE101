@@ -213,7 +213,7 @@ def view_room(id):
     # Load reviews for this room
     reviews = Review.query.filter_by(room_id=id).order_by(Review.created_at.desc()).all()
     
-    return render_template('renter/view_room.html', 
+    return render_template('renter/view_room_detail.html', 
                           room=room,
                           room_images=room_images,
                           reviews=reviews)

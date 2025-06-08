@@ -327,6 +327,10 @@ class Room(db.Model):
     rules = db.relationship('Rule', secondary=room_rules, backref=db.backref('rooms', lazy='dynamic'))
 
     @property
+    def homestay(self):
+        return self.owner
+
+    @property
     def display_price(self):
         """Return the price formatted for display (multiplied by 1000 and converted to integer)"""
         return int(self.price_per_hour * 1000)

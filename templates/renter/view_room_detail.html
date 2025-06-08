@@ -6,7 +6,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('home') }}" data-translate="home">Home</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('renter.view_room', id=room.homestay.id) }}">{{ room.homestay.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('renter.view_room', id=room.homestay.id) }}">{{ room.homestay.business_name or room.homestay.full_name }}</a></li>
             <li class="breadcrumb-item active"><span data-translate="room">Room</span> {{ room.room_number }}</li>
         </ol>
     </nav>
@@ -52,7 +52,7 @@
             </div>
             
             <!-- Location Card - Below Gallery -->
-            {% if room.homestay.address %}
+            {% if room.address %}
             <div class="card shadow-sm mt-4">
                 <div class="card-header" style="background-color: #e2b77b; color: white;">
                     <h3 class="card-title mb-0" data-translate="location">Location</h3>
@@ -61,12 +61,12 @@
                     <div class="d-flex align-items-center mb-3">
                         <i class="bi bi-geo-alt-fill text-primary me-2" style="font-size: 1.5rem;"></i>
                         <div>
-                            <h5 class="mb-1">{{ room.homestay.title }}</h5>
-                            <p class="mb-0">{{ room.homestay.address }}, {{ room.homestay.district }}, {{ room.homestay.city }}</p>
+                            <h5 class="mb-1">{{ room.homestay.business_name or room.homestay.full_name }}</h5>
+                            <p class="mb-0">{{ room.address }}, {{ room.district }}, {{ room.city }}</p>
                         </div>
                     </div>
                     
-                    {% set map_address = room.homestay.address + ', ' + room.homestay.district + ', ' + room.homestay.city + ', Vietnam' %}
+                    {% set map_address = room.address + ', ' + room.district + ', ' + room.city + ', Vietnam' %}
                     {% set encoded_map_address = map_address|urlencode %}
                     {% set directions_url = 'https://www.google.com/maps/search/?api=1&query=' + encoded_map_address %}
                     
