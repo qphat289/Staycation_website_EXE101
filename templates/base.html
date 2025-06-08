@@ -219,7 +219,7 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body{% if request.endpoint == 'home' %} class="homepage"{% endif %}>
     <!-- Hidden data for JavaScript -->
     <div id="user-data" 
          data-username="{{ current_user.display_name if current_user.is_authenticated else 'User' }}" 
@@ -308,7 +308,7 @@
 
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown ms-3">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #333333; border: 1px solid rgba(51, 51, 51, 0.3) !important; border-radius: 25px !important; padding: 4px 12px !important; background: rgba(255, 255, 255, 0.1) !important;">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid rgb(255, 255, 255) !important; border-radius: 25px !important; padding: 4px 12px !important; background: rgba(255, 255, 255, 0.1) !important;">
                                 {% if current_user.avatar %}
                                     <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% else %}

@@ -30,6 +30,446 @@
 .navbar .dropdown-toggle {
     color: white !important;
 }
+
+/* Search Tabs Styling */
+.search-tabs-container {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.form-control {
+    min-width: 120px;
+}
+
+.form-label {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Custom 16-column grid system for search forms */
+.search-form .row {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: end;
+    margin-top: calc(-1 * var(--bs-gutter-y));
+    margin-right: calc(-0.5 * var(--bs-gutter-x));
+    margin-left: calc(-0.5 * var(--bs-gutter-x));
+}
+
+.search-form .row > * {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    padding-right: calc(var(--bs-gutter-x) * 0.5);
+    padding-left: calc(var(--bs-gutter-x) * 0.5);
+    margin-top: var(--bs-gutter-y);
+}
+
+/* 16-column classes */
+@media (min-width: 1400px) {
+    .search-form .col-xxl-1 { flex: 0 0 auto; width: 6.25%; }
+    .search-form .col-xxl-2 { flex: 0 0 auto; width: 12.5%; }
+    .search-form .col-xxl-3 { flex: 0 0 auto; width: 18.75%; }
+    .search-form .col-xxl-4 { flex: 0 0 auto; width: 25%; }
+    .search-form .col-xxl-5 { flex: 0 0 auto; width: 31.25%; }
+    .search-form .col-xxl-6 { flex: 0 0 auto; width: 37.5%; }
+    .search-form .col-xxl-7 { flex: 0 0 auto; width: 43.75%; }
+    .search-form .col-xxl-8 { flex: 0 0 auto; width: 50%; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1399px) {
+    .search-form .row {
+        flex-wrap: wrap;
+    }
+}
+
+.search-btn-col {
+    display: flex;
+    align-items: end;
+}
+
+/* Guest selector dropdown positioning */
+.guest-selector {
+    position: relative;
+    z-index: 1000;
+}
+
+.guest-dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    margin-top: 5px !important;
+    overflow: visible !important;
+}
+
+.search-form .row {
+    overflow: visible !important;
+}
+
+.search-forms-container {
+    overflow: visible !important;
+}
+
+.search-tabs-container {
+    overflow: visible !important;
+}
+
+/* Location autocomplete dropdown */
+.location-selector {
+    position: relative;
+    z-index: 1000;
+}
+
+.location-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    margin-top: 2px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.location-dropdown.show {
+    display: block;
+}
+
+.location-option {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.location-option:hover {
+    background-color: #f8f9fa;
+}
+
+.location-option:last-child {
+    border-bottom: none;
+}
+
+.location-option.highlighted {
+    background-color: #8bc34a;
+    color: white;
+}
+
+.location-input {
+    width: 100%;
+    position: relative;
+}
+
+.search-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px 12px 0 0;
+    margin-bottom: 0;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 12px;
+    font-weight: 500;
+    font-size: 15px;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border-radius: 12px 12px 0 0;
+}
+
+.search-tab:hover {
+    background: rgba(139, 195, 74, 0.08);
+    color: #8bc34a;
+    transform: translateY(-1px);
+}
+
+.search-tab.active {
+    background: white;
+    color: #8bc34a;
+    font-weight: 600;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.search-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #8bc34a, #689f38);
+    border-radius: 2px;
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+    to {
+        width: 40px;
+        opacity: 1;
+    }
+}
+
+.search-forms-container {
+    position: relative;
+    background: white;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+    min-height: 100px;
+    z-index: 5;
+}
+
+.search-form {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 20px 24px;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.search-form.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+    position: relative;
+    z-index: 20;
+}
+
+.search-form.active input,
+.search-form.active select,
+.search-form.active button {
+    pointer-events: auto;
+}
+
+.search-form.slide-out {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.search-tabs-container .search-form {
+    margin-top: 0;
+}
+
+/* Enhanced form styling */
+.search-form .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #fafafa;
+    position: relative;
+    z-index: 30;
+    pointer-events: auto;
+}
+
+.search-form .form-control:focus {
+    border-color: #8bc34a;
+    box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.1);
+    background: white;
+    transform: translateY(-1px);
+}
+
+.search-form .form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #8bc34a, #689f38);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(139, 195, 74, 0.3);
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 195, 74, 0.4);
+    background: linear-gradient(135deg, #689f38, #558b2f);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .search-tabs-container {
+        margin: 0 15px;
+    }
+    
+    .search-form {
+        padding: 20px 16px;
+    }
+    
+    .search-form .row {
+        margin: 0 -8px;
+    }
+    
+    .search-form .row > * {
+        padding: 0 8px;
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .search-form .col-lg-3,
+    .search-form .col-lg-2,
+    .search-form .col-md-4,
+    .search-form .col-md-3,
+    .search-form .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Guest selector styling for both forms */
+.guest-selector {
+    position: relative;
+}
+
+.guest-display {
+    cursor: pointer;
+    background: #fafafa !important;
+}
+
+.guest-display:focus {
+    background: white !important;
+}
+
+.guest-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    z-index: 1050;
+    margin-top: 8px;
+    backdrop-filter: blur(10px);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.guest-dropdown.show {
+    display: block;
+}
+
+.guest-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.guest-row:last-of-type {
+    border-bottom: none;
+}
+
+.guest-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guest-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-decrease, .btn-increase {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-decrease:hover, .btn-increase:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+}
+
+.btn-decrease:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.guest-count {
+    font-weight: 500;
+    min-width: 20px;
+    text-align: center;
+}
+
+.guest-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
 </style>
 {% endblock %}
 
@@ -43,6 +483,9 @@
                     {% if current_user.is_authenticated and current_user.role == 'admin' %}
                     <h1 class="hero-title" data-translate="admin-management-interface">Giao diện quản lí cho<br> Admin</h1>
                     <p class="hero-subtitle" data-translate="admin-subtitle">Quản lý toàn bộ hệ thống homestay, người dùng và đặt phòng một cách hiệu quả</p>
+                    {% elif current_user.is_authenticated and current_user.role == 'renter' %}
+                    <h1 class="hero-title" data-translate="welcome-back-renter">Chào mừng<br>{{ current_user.full_name }}!</h1>
+                    <p class="hero-subtitle" data-translate="renter-subtitle">Khám phá những homestay tuyệt vời và tạo nên những chuyến đi đáng nhớ của bạn</p>
                     {% else %}
                     <h1 class="hero-title" data-translate="find-perfect-place">Tìm kiếm chỗ nghỉ ngơi<br>lý tưởng cho bạn</h1>
                     <p class="hero-subtitle" data-translate="book-description">Book ngay và thỏa mãn trải nghiệm du lịch của bạn</p>
@@ -55,9 +498,9 @@
 
 <!-- Search Form - Outside hero section for better positioning -->
 <div class="search-form-wrapper">
-    <form class="search-form" action="{{ url_for('renter.search') }}" method="GET">
         {% if current_user.is_authenticated and current_user.role == 'admin' %}
         <!-- Admin search form - simplified -->
+    <form class="search-form" action="{{ url_for('renter.search') }}" method="GET">
         <div class="row g-2 justify-content-center">
             <div class="col-md-8">
                 <label for="location" class="form-label">Tìm kiếm homestay theo địa điểm hoặc tên</label>
@@ -68,31 +511,50 @@
                 <button type="submit" class="btn search-btn w-100" data-translate="search">Tìm kiếm</button>
             </div>
         </div>
+    </form>
         {% else %}
-        <!-- Regular user search form -->
-        <div class="row g-2">
-            <div class="col-md-2">
-                <label for="location" class="form-label">Địa điểm hoặc tên homestay</label>
-                <input type="text" class="form-control" id="location" name="location" placeholder="Nhập địa điểm hoặc tên homestay">
+    <!-- Regular user search form with tabs -->
+    <div class="search-tabs-container">
+        <!-- Search Tabs -->
+        <div class="search-tabs">
+            <button type="button" class="search-tab active" data-tab="hourly">Theo giờ</button>
+            <button type="button" class="search-tab" data-tab="daily">Theo ngày</button>
             </div>
-            <div class="col-md-2">
-                <label for="checkin" class="form-label" data-translate="checkin-date">Ngày nhận phòng</label>
-                <input type="date" class="form-control" id="checkin" name="checkin_date">
+        
+        <!-- Search Forms Container -->
+        <div class="search-forms-container">
+            <!-- Hourly Search Form -->
+            <form class="search-form hourly-form active" id="hourly-form" action="{{ url_for('renter.search') }}" method="GET">
+            <input type="hidden" name="booking_type" value="hourly">
+            <div class="row g-3 align-items-end">
+                                <div class="col-xxl-4 col-xl-3 col-lg-4 col-md-6">
+                    <label for="location-hourly" class="form-label">Địa điểm hoặc tên homestay</label>
+                    <div class="location-selector">
+                        <input type="text" class="form-control location-input" id="location-hourly" name="location" 
+                               placeholder="Nhập hoặc chọn địa điểm" autocomplete="off">
+                        <div class="location-dropdown" id="location-dropdown-hourly">
+                            <!-- Options will be loaded dynamically from API -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-3">
+                    <label for="checkin-hourly" class="form-label">Ngày nhận phòng</label>
+                    <input type="date" class="form-control" id="checkin-hourly" name="checkin_date">
             </div>
-            <div class="col-md-2">
-                <label for="checkin-time" class="form-label" data-translate="checkin-time">Giờ check-in</label>
-                <input type="time" class="form-control" id="checkin-time" name="checkin_time">
+                <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-3">
+                    <label for="checkin-time-hourly" class="form-label">Giờ nhận phòng</label>
+                    <input type="time" class="form-control" id="checkin-time-hourly" name="checkin_time">
             </div>
-            <div class="col-md-2">
-                <label for="checkout-time" class="form-label" data-translate="checkout-time">Giờ check-out</label>
-                <input type="time" class="form-control" id="checkout-time" name="checkout_time">
-            </div>
-            <div class="col-md-2">
-                <label for="guests-rooms" class="form-label" data-translate="guests-rooms">Khách và Phòng</label>
+                <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-3">
+                    <label for="checkout-time-hourly" class="form-label">Giờ trả phòng</label>
+                    <input type="time" class="form-control" id="checkout-time-hourly" name="checkout_time">
+                </div>
+                <div class="col-xxl-4 col-xl-3 col-lg-3 col-md-3">
+                    <label for="guests-rooms-hourly" class="form-label">Khách và Phòng</label>
                 <div class="guest-selector">
-                    <input type="text" class="form-control guest-display" id="guests-rooms" name="guests_rooms" 
+                        <input type="text" class="form-control guest-display" id="guests-rooms-hourly" name="guests_rooms" 
                            value="1 người lớn, 0 Trẻ em, 1 phòng" readonly>
-                    <div class="guest-dropdown" id="guest-dropdown">
+                        <div class="guest-dropdown" id="guest-dropdown-hourly">
                         <div class="guest-row">
                             <div class="guest-info">
                                 <i class="bi bi-person-fill text-success"></i>
@@ -100,7 +562,7 @@
                             </div>
                             <div class="guest-controls">
                                 <button type="button" class="btn-decrease" data-target="adults">−</button>
-                                <span class="guest-count" id="adults-count">1</span>
+                                    <span class="guest-count" id="adults-count-hourly">1</span>
                                 <button type="button" class="btn-increase" data-target="adults">+</button>
                             </div>
                         </div>
@@ -111,7 +573,7 @@
                             </div>
                             <div class="guest-controls">
                                 <button type="button" class="btn-decrease" data-target="children">−</button>
-                                <span class="guest-count" id="children-count">0</span>
+                                    <span class="guest-count" id="children-count-hourly">0</span>
                                 <button type="button" class="btn-increase" data-target="children">+</button>
                             </div>
                         </div>
@@ -122,7 +584,7 @@
                             </div>
                             <div class="guest-controls">
                                 <button type="button" class="btn-decrease" data-target="rooms">−</button>
-                                <span class="guest-count" id="rooms-count">1</span>
+                                    <span class="guest-count" id="rooms-count-hourly">1</span>
                                 <button type="button" class="btn-increase" data-target="rooms">+</button>
                             </div>
                         </div>
@@ -132,13 +594,87 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2 search-btn-col">
-                <label class="form-label d-block">&nbsp;</label>
-                <button type="submit" class="btn search-btn w-100" data-translate="search">Tìm kiếm</button>
+                <div class="col-xxl-1 col-xl-2 col-lg-12 col-md-6 search-btn-col d-flex justify-content-center">
+                    <button type="submit" class="btn search-btn" style="white-space: nowrap; min-width: 100px;">Tìm kiếm</button>
             </div>
         </div>
-        {% endif %}
     </form>
+        
+        <!-- Daily Search Form -->
+        <form class="search-form daily-form" id="daily-form" action="{{ url_for('renter.search') }}" method="GET">
+            <input type="hidden" name="booking_type" value="daily">
+            <div class="row g-3 align-items-end">
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
+                    <label for="location-daily" class="form-label">Địa điểm hoặc tên homestay</label>
+                    <div class="location-selector">
+                        <input type="text" class="form-control location-input" id="location-daily" name="location" 
+                               placeholder="Nhập hoặc chọn địa điểm" autocomplete="off">
+                        <div class="location-dropdown" id="location-dropdown-daily">
+                            <!-- Options will be loaded dynamically from API -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-3">
+                    <label for="checkin-daily" class="form-label">Ngày nhận phòng</label>
+                    <input type="date" class="form-control" id="checkin-daily" name="checkin_date">
+                </div>
+                <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-3">
+                    <label for="checkout-daily" class="form-label">Ngày trả phòng</label>
+                    <input type="date" class="form-control" id="checkout-daily" name="checkout_date">
+                </div>
+                <div class="col-xxl-4 col-xl-2 col-lg-2 col-md-6">
+                    <label for="guests-rooms-daily" class="form-label">Khách và Phòng</label>
+                    <div class="guest-selector">
+                        <input type="text" class="form-control guest-display" id="guests-rooms-daily" name="guests_rooms" 
+                               value="1 người lớn, 0 Trẻ em, 1 phòng" readonly>
+                        <div class="guest-dropdown" id="guest-dropdown-daily">
+                            <div class="guest-row">
+                                <div class="guest-info">
+                                    <i class="bi bi-person-fill text-success"></i>
+                                    <span>Người lớn</span>
+                                </div>
+                                <div class="guest-controls">
+                                    <button type="button" class="btn-decrease" data-target="adults">−</button>
+                                    <span class="guest-count" id="adults-count-daily">1</span>
+                                    <button type="button" class="btn-increase" data-target="adults">+</button>
+                                </div>
+                            </div>
+                            <div class="guest-row">
+                                <div class="guest-info">
+                                    <i class="bi bi-person text-success"></i>
+                                    <span>Trẻ em</span>
+                                </div>
+                                <div class="guest-controls">
+                                    <button type="button" class="btn-decrease" data-target="children">−</button>
+                                    <span class="guest-count" id="children-count-daily">0</span>
+                                    <button type="button" class="btn-increase" data-target="children">+</button>
+                                </div>
+                            </div>
+                            <div class="guest-row">
+                                <div class="guest-info">
+                                    <i class="bi bi-door-open text-success"></i>
+                                    <span>Phòng</span>
+                                </div>
+                                <div class="guest-controls">
+                                    <button type="button" class="btn-decrease" data-target="rooms">−</button>
+                                    <span class="guest-count" id="rooms-count-daily">1</span>
+                                    <button type="button" class="btn-increase" data-target="rooms">+</button>
+                                </div>
+                            </div>
+                            <div class="guest-actions">
+                                <button type="button" class="btn btn-primary btn-done">Xong</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-1 col-xl-12 col-lg-12 col-md-6 search-btn-col">
+                    <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Featured Homestays Section -->
@@ -148,8 +684,13 @@
             <div class="col-12">
                 <div class="section-header d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
                     <div class="section-title-wrapper text-center text-md-start mb-3 mb-md-0">
+                        {% if current_user.is_authenticated and current_user.role == 'renter' %}
+                        <h2 class="section-title mb-0" data-translate="recommended-homestays">Homestay Được Gợi Ý Cho Bạn</h2>
+                        <p class="section-subtitle text-muted mb-0">Những điểm đến hoàn hảo dành riêng cho {{ current_user.username }}</p>
+                        {% else %}
                         <h2 class="section-title mb-0" data-translate="featured-homestays">Khám Phá Ngay Các Homestay Nổi Bật!</h2>
                         <p class="section-subtitle text-muted mb-0">Khám phá những homestay được yêu thích nhất</p>
+                        {% endif %}
                     </div>
                     <div class="section-action">
                         <a href="{{ url_for('renter.search') }}" class="btn btn-view-all d-flex align-items-center">
@@ -199,6 +740,107 @@
         </div>
     </div>
 </section>
+
+<!-- Renter-specific features section -->
+{% if current_user.is_authenticated and current_user.role == 'renter' %}
+<section class="renter-features-section py-5" style="background: linear-gradient(135deg, #f8fdf4 0%, #e8f5e8 100%);">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h3 class="section-title" data-translate="quick-actions">Truy Cập Nhanh</h3>
+                <p class="text-muted" data-translate="manage-your-bookings">Quản lý các đặt phòng và khám phá tính năng mới</p>
+            </div>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-clock-history" style="font-size: 2.5rem; color: #8bc34a;"></i>
+                    </div>
+                    <h5 class="feature-title mb-2" data-translate="booking-history">Lịch Sử Đặt Phòng</h5>
+                    <p class="feature-desc text-muted mb-3" data-translate="view-past-bookings">Xem lại các chuyến đi đã qua</p>
+                    <a href="{{ url_for('renter.booking_history') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Xem Ngay
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-person-circle" style="font-size: 2.5rem; color: #8bc34a;"></i>
+                    </div>
+                    <h5 class="feature-title mb-2" data-translate="my-profile">Hồ Sơ Cá Nhân</h5>
+                    <p class="feature-desc text-muted mb-3" data-translate="update-profile-info">Cập nhật thông tin cá nhân</p>
+                    <a href="{{ url_for('renter.profile') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Cập Nhật
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-search" style="font-size: 2.5rem; color: #8bc34a;"></i>
+                    </div>
+                    <h5 class="feature-title mb-2" data-translate="advanced-search">Tìm Kiếm Nâng Cao</h5>
+                    <p class="feature-desc text-muted mb-3" data-translate="filter-by-preferences">Lọc theo sở thích của bạn</p>
+                    <a href="{{ url_for('renter.search') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Khám Phá
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-heart" style="font-size: 2.5rem; color: #8bc34a;"></i>
+                    </div>
+                    <h5 class="feature-title mb-2" data-translate="favorites">Yêu Thích</h5>
+                    <p class="feature-desc text-muted mb-3" data-translate="saved-homestays">Homestay đã lưu</p>
+                    <a href="{{ url_for('renter.dashboard') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Xem Danh Sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.renter-features-section .feature-card {
+    background: white;
+    border-radius: 15px;
+    border: 1px solid rgba(139, 195, 74, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.renter-features-section .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(139, 195, 74, 0.15);
+    border-color: rgba(139, 195, 74, 0.3);
+}
+
+.renter-features-section .feature-title {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.renter-features-section .feature-desc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.btn-outline-success {
+    border-color: #8bc34a;
+    color: #8bc34a;
+}
+
+.btn-outline-success:hover {
+    background-color: #8bc34a;
+    border-color: #8bc34a;
+    color: white;
+}
+</style>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -437,10 +1079,378 @@ document.addEventListener('DOMContentLoaded', function() {
         guestDisplay.value = `${adultsText}, ${childrenText}, ${roomsText}`;
     }
     
-    // Initialize decrease button states
-    document.querySelector('[data-target="adults"].btn-decrease').disabled = true;
-    document.querySelector('[data-target="children"].btn-decrease').disabled = true;
-    document.querySelector('[data-target="rooms"].btn-decrease').disabled = true;
+    // Search Tabs Functionality
+    const searchTabs = document.querySelectorAll('.search-tab');
+    const searchForms = document.querySelectorAll('.search-form');
+    
+    searchTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const targetTab = this.dataset.tab;
+            const currentActiveForm = document.querySelector('.search-form.active');
+            const targetForm = document.getElementById(targetTab + '-form');
+            
+            // Don't do anything if clicking the same tab
+            if (this.classList.contains('active')) return;
+            
+            // Remove active class from all tabs
+            searchTabs.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Smooth transition between forms
+            if (currentActiveForm && targetForm && currentActiveForm !== targetForm) {
+                // Add slide-out class to current form
+                currentActiveForm.classList.add('slide-out');
+                
+                // After transition completes, switch forms
+                setTimeout(() => {
+                    searchForms.forEach(f => {
+                        f.classList.remove('active', 'slide-out');
+                    });
+                    targetForm.classList.add('active');
+                    
+                    // Set default dates for new active form
+                    setDefaultDatesForForm(targetTab);
+                }, 200); // Half of the transition duration
+            } else if (targetForm) {
+                // Direct switch if no current form
+                searchForms.forEach(f => f.classList.remove('active'));
+                targetForm.classList.add('active');
+                setDefaultDatesForForm(targetTab);
+            }
+        });
+    });
+    
+    // Set default dates for specific form
+    function setDefaultDatesForForm(formType) {
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        
+        if (formType === 'hourly') {
+            const checkinInput = document.getElementById('checkin-hourly');
+            const checkinTimeInput = document.getElementById('checkin-time-hourly');
+            const checkoutTimeInput = document.getElementById('checkout-time-hourly');
+            
+            if (checkinInput) {
+                checkinInput.value = todayStr;
+                checkinInput.min = todayStr;
+            }
+            
+            if (checkinTimeInput) {
+                checkinTimeInput.value = '14:00'; // Default check-in time 2:00 PM
+            }
+            
+            if (checkoutTimeInput) {
+                checkoutTimeInput.value = '18:00'; // Default check-out time 6:00 PM
+            }
+        } else if (formType === 'daily') {
+            const checkinInput = document.getElementById('checkin-daily');
+            const checkoutInput = document.getElementById('checkout-daily');
+            
+            if (checkinInput) {
+                checkinInput.value = todayStr;
+                checkinInput.min = todayStr;
+            }
+            
+            if (checkoutInput) {
+                checkoutInput.value = tomorrowStr;
+                checkoutInput.min = tomorrowStr;
+            }
+        }
+    }
+    
+    // Set default dates for both forms on page load
+    setDefaultDatesForForm('hourly');
+    setDefaultDatesForForm('daily');
+    
+    // Setup guest selectors for both forms
+    setupGuestSelector('hourly');
+    setupGuestSelector('daily');
+    
+    // Setup location autocomplete for both forms
+    setupLocationAutocomplete('hourly');
+    setupLocationAutocomplete('daily');
+    
+    // Ensure first form is properly active
+    document.addEventListener('DOMContentLoaded', function() {
+        const hourlyForm = document.getElementById('hourly-form');
+        if (hourlyForm) {
+            hourlyForm.classList.add('active');
+            // Force enable all inputs in active form
+            hourlyForm.querySelectorAll('input, select, button').forEach(element => {
+                element.style.pointerEvents = 'auto';
+                element.disabled = false;
+            });
+        }
+    });
+    
+    // Close dropdown when clicking outside (for both forms)
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.guest-selector')) {
+            document.querySelectorAll('.guest-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        }
+        
+        if (!e.target.closest('.location-selector')) {
+            document.querySelectorAll('.location-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        }
+    });
+    
+    function setupGuestSelector(formType) {
+        const guestDisplay = document.getElementById(`guests-rooms-${formType}`);
+        const guestDropdown = document.getElementById(`guest-dropdown-${formType}`);
+        const btnDone = guestDropdown?.querySelector('.btn-done');
+        
+        if (!guestDisplay || !guestDropdown) return;
+        
+        let guestCounts = {
+            adults: 1,
+            children: 0,
+            rooms: 1
+        };
+        
+        // Toggle dropdown
+        guestDisplay.addEventListener('click', function(e) {
+            e.stopPropagation();
+            guestDropdown.classList.toggle('show');
+        });
+        
+        // Handle increase/decrease buttons
+        guestDropdown.querySelectorAll('.btn-increase, .btn-decrease').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const target = this.dataset.target;
+                const isIncrease = this.classList.contains('btn-increase');
+                
+                if (isIncrease) {
+                    guestCounts[target]++;
+                } else {
+                    if (target === 'adults' && guestCounts[target] > 1) {
+                        guestCounts[target]--;
+                    } else if (target === 'children' && guestCounts[target] > 0) {
+                        guestCounts[target]--;
+                    } else if (target === 'rooms' && guestCounts[target] > 1) {
+                        guestCounts[target]--;
+                    }
+                }
+                
+                // Update display
+                document.getElementById(`${target}-count-${formType}`).textContent = guestCounts[target];
+                updateGuestDisplayForForm(formType, guestCounts, guestDisplay);
+                
+                // Update button states
+                updateButtonStates(formType, guestCounts);
+            });
+        });
+        
+        // Done button
+        if (btnDone) {
+            btnDone.addEventListener('click', function() {
+                guestDropdown.classList.remove('show');
+            });
+        }
+        
+        // Initialize display
+        updateGuestDisplayForForm(formType, guestCounts, guestDisplay);
+        updateButtonStates(formType, guestCounts);
+    }
+    
+    function updateGuestDisplayForForm(formType, guestCounts, guestDisplay) {
+        const adultsText = guestCounts.adults + ' người lớn';
+        const childrenText = guestCounts.children + ' Trẻ em';
+        const roomsText = guestCounts.rooms + ' phòng';
+        
+        guestDisplay.value = `${adultsText}, ${childrenText}, ${roomsText}`;
+    }
+    
+    function updateButtonStates(formType, guestCounts) {
+        const adultsDecreaseBtn = document.querySelector(`#guest-dropdown-${formType} [data-target="adults"].btn-decrease`);
+        const childrenDecreaseBtn = document.querySelector(`#guest-dropdown-${formType} [data-target="children"].btn-decrease`);
+        const roomsDecreaseBtn = document.querySelector(`#guest-dropdown-${formType} [data-target="rooms"].btn-decrease`);
+        
+        // Adults minimum is 1
+        if (adultsDecreaseBtn) {
+            adultsDecreaseBtn.disabled = guestCounts.adults <= 1;
+        }
+        
+        // Children minimum is 0
+        if (childrenDecreaseBtn) {
+            childrenDecreaseBtn.disabled = guestCounts.children <= 0;
+        }
+        
+        // Rooms minimum is 1
+        if (roomsDecreaseBtn) {
+            roomsDecreaseBtn.disabled = guestCounts.rooms <= 1;
+        }
+    }
+    
+    // Initialize decrease button states for both forms
+    function initializeButtonStates(formType) {
+        const adultsCount = document.getElementById(`adults-count-${formType}`);
+        const childrenCount = document.getElementById(`children-count-${formType}`);
+        const roomsCount = document.getElementById(`rooms-count-${formType}`);
+        
+        if (adultsCount && parseInt(adultsCount.textContent) <= 1) {
+            document.querySelector(`#guest-dropdown-${formType} [data-target="adults"].btn-decrease`).disabled = true;
+        }
+        if (childrenCount && parseInt(childrenCount.textContent) <= 0) {
+            document.querySelector(`#guest-dropdown-${formType} [data-target="children"].btn-decrease`).disabled = false;
+        }
+        if (roomsCount && parseInt(roomsCount.textContent) <= 1) {
+            document.querySelector(`#guest-dropdown-${formType} [data-target="rooms"].btn-decrease`).disabled = true;
+        }
+    }
+    
+    // Initialize for both forms
+    initializeButtonStates('hourly');
+    initializeButtonStates('daily');
+    
+    function setupLocationAutocomplete(formType) {
+        const locationInput = document.getElementById(`location-${formType}`);
+        const locationDropdown = document.getElementById(`location-dropdown-${formType}`);
+        
+        if (!locationInput || !locationDropdown) return;
+        
+        let currentFocus = -1;
+        let provinces = []; // Store provinces data
+        
+        // Load provinces from API
+        loadProvinces();
+        
+        function loadProvinces() {
+            fetch('/api/provinces')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        provinces = data.data;
+                        renderOptions();
+                        setupEventListeners();
+                    } else {
+                        console.error('Failed to load provinces:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading provinces:', error);
+                });
+        }
+        
+        function renderOptions() {
+            locationDropdown.innerHTML = '';
+            provinces.forEach(province => {
+                const option = document.createElement('div');
+                option.className = 'location-option';
+                option.dataset.value = province.name;
+                option.textContent = province.name;
+                option.addEventListener('click', function() {
+                    selectOption(this);
+                });
+                locationDropdown.appendChild(option);
+            });
+        }
+        
+        function setupEventListeners() {
+            // Show dropdown on focus/click
+            locationInput.addEventListener('focus', function() {
+                showAllOptions();
+            });
+            
+            locationInput.addEventListener('click', function() {
+                showAllOptions();
+            });
+            
+            // Filter dropdown on input
+            locationInput.addEventListener('input', function() {
+                const value = this.value.toLowerCase();
+                let visibleCount = 0;
+                
+                const options = locationDropdown.querySelectorAll('.location-option');
+                options.forEach(option => {
+                    const text = option.textContent.toLowerCase();
+                    if (text.includes(value)) {
+                        option.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+                
+                if (visibleCount > 0 && value.length > 0) {
+                    locationDropdown.classList.add('show');
+                } else if (value.length === 0) {
+                    showAllOptions();
+                } else {
+                    locationDropdown.classList.remove('show');
+                }
+                
+                currentFocus = -1;
+                clearHighlight();
+            });
+            
+            // Handle keyboard navigation
+            locationInput.addEventListener('keydown', function(e) {
+                const options = locationDropdown.querySelectorAll('.location-option');
+                const visibleOptions = Array.from(options).filter(opt => opt.style.display !== 'none');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    currentFocus++;
+                    if (currentFocus >= visibleOptions.length) currentFocus = 0;
+                    setActive(visibleOptions);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    currentFocus--;
+                    if (currentFocus < 0) currentFocus = visibleOptions.length - 1;
+                    setActive(visibleOptions);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentFocus > -1 && visibleOptions[currentFocus]) {
+                        selectOption(visibleOptions[currentFocus]);
+                    }
+                } else if (e.key === 'Escape') {
+                    locationDropdown.classList.remove('show');
+                    currentFocus = -1;
+                }
+            });
+        }
+        
+        function showAllOptions() {
+            const options = locationDropdown.querySelectorAll('.location-option');
+            options.forEach(option => {
+                option.style.display = 'block';
+            });
+            locationDropdown.classList.add('show');
+            currentFocus = -1;
+            clearHighlight();
+        }
+        
+        function selectOption(option) {
+            locationInput.value = option.dataset.value;
+            locationDropdown.classList.remove('show');
+            currentFocus = -1;
+            clearHighlight();
+        }
+        
+        function setActive(visibleOptions) {
+            clearHighlight();
+            if (currentFocus > -1 && visibleOptions[currentFocus]) {
+                visibleOptions[currentFocus].classList.add('highlighted');
+            }
+        }
+        
+        function clearHighlight() {
+            const options = locationDropdown.querySelectorAll('.location-option');
+            options.forEach(option => {
+                option.classList.remove('highlighted');
+            });
+        }
+    }
 });
 </script>
 {% endblock %}

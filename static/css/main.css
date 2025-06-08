@@ -193,8 +193,8 @@ html body .navbar-dark.bg-primary.scrolled {
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15) !important; /* Bóng đậm hơn khi scroll */
 }
 
-/* Dynamic navbar text colors using CSS variables */
-html body .navbar .nav-link,
+/* Dynamic navbar text colors using CSS variables - exclude user dropdown */
+html body .navbar .nav-link:not(.user-dropdown-container),
 html body .navbar .navbar-brand,
 html body .navbar .brand-text,
 html body .navbar-brand .brand-text,
@@ -1056,7 +1056,7 @@ footer .mb-4 {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(122, 188, 14, 0.2);
+    border: 1px solid rgba(122, 188, 14, 0.2);  
     box-shadow: 0 10px 30px rgba(122, 188, 14, 0.2);
     border-radius: 10px;
     padding: 10px 0;
@@ -1310,4 +1310,34 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.use
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.user-dropdown-container:hover {
     background: rgba(255, 255, 255, 0.15) !important;
     border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* ========================================
+   USER DROPDOWN SPECIFIC TEXT COLOR FIX
+   ======================================== */
+
+/* Specific styling for user dropdown - override auto-adjust color system */
+html body .navbar .nav-link.user-dropdown-container,
+html body .navbar .nav-link.user-dropdown-container span {
+    /* Other pages: black text */
+    color: #fffdfd !important;
+    text-shadow: none !important;
+}
+
+/* Homepage specific styling - white text on transparent navbar - HIGHEST PRIORITY */
+body.homepage html body .navbar .nav-link.user-dropdown-container,
+body.homepage html body .navbar .nav-link.user-dropdown-container span {
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* User dropdown hover - use appropriate hover color */
+html body .navbar .nav-link.user-dropdown-container:hover,
+html body .navbar .nav-link.user-dropdown-container:hover span {
+    color: #8bc34a !important; /* Green hover for non-homepage */
+}
+
+body.homepage html body .navbar .nav-link.user-dropdown-container:hover,
+body.homepage html body .navbar .nav-link.user-dropdown-container:hover span {
+    color: #f1b55f !important; /* Yellow hover for homepage */
 }

@@ -162,5 +162,8 @@ function adjustNavbarTextColor() {
         }
     }
     
+    // User dropdown text color is handled by CSS based on body.homepage class
+    // No JavaScript override needed - CSS specificity handles it
+    
     console.log(`Navbar background: ${backgroundColor}, Luminance: ${luminance.toFixed(3)}, Theme: ${navbar.getAttribute('data-theme')}`);
 }
