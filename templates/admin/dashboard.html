@@ -15,291 +15,347 @@
 }
 
 body {
-    background: #f0f2f5;
+    background: #f8fdf4;
     height: 100vh;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
 }
 
-/* Layout */
-.admin-layout {
-    display: flex;
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
-}
 
-/* Sidebar */
+
+/* Sidebar - MATCH OWNER STYLE */
 .admin-sidebar {
     width: 250px;
-    background: linear-gradient(180deg, #9ed649 0%, #8ab82f 100%);
-    height: 100vh;
+    background: transparent;
+    height: calc(100vh - 80px);
     padding: 1.5rem;
     position: fixed;
-    left: 0;
-    top: 0;
-    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    left: 85px;
+    top: 0px;
     z-index: 1051;
 }
 
-/* Brand */
-.admin-brand {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    text-decoration: none;
-    margin-bottom: 2.5rem;
-    padding: 0.75rem 1rem;
-    position: relative;
-    background: #f5ece0;
-    margin: -1.5rem -1.5rem 2.5rem -1.5rem;
-    padding: 1.5rem;
-}
-
-.admin-brand::after {
+.admin-sidebar::after {
     content: '';
     position: absolute;
-    bottom: -0.1rem;
-    left: 0;
     right: 0;
-    height: 1px;
-    background: rgb(0, 0, 0);
+    top: 160px;
+    bottom: 0;
+    width: 2px;
+    background: #e0e0e0;
+    z-index: 1;
 }
 
-.admin-brand img {
-    width: 35px;
-    height: 35px;
-}
-
-.admin-brand span {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #333;
-    letter-spacing: 0.5px;
-}
-
-/* Sidebar Menu */
 .sidebar-menu {
     list-style: none;
     padding: 0;
     margin: 0;
+    margin-top: 9rem;
 }
 
 .sidebar-menu-item {
     margin-bottom: 0.5rem;
 }
 
-.sidebar-menu-link {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: white;
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-    overflow: hidden;
+/* FORCE SIDEBAR MENU STYLES - HIGHEST PRIORITY */
+.admin-sidebar ul.sidebar-menu li.sidebar-menu-item a.sidebar-menu-link,
+.admin-sidebar .sidebar-menu .sidebar-menu-item .sidebar-menu-link,
+.admin-sidebar a[href="javascript:void(0)"],
+#menu-stats,
+#menu-owner,
+#menu-manage-admin,
+a#menu-stats,
+a#menu-owner,
+a#menu-manage-admin {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0.875rem 1rem !important;
+    color: #333333 !important;
+    text-decoration: none !important;
+    border-radius: 8px !important;
+    transition: color 0.3s ease !important;
+    font-weight: 500 !important;
+    transform: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.admin-sidebar ul.sidebar-menu li.sidebar-menu-item a.sidebar-menu-link:hover,
+.admin-sidebar .sidebar-menu .sidebar-menu-item .sidebar-menu-link:hover,
+.admin-sidebar a[href="javascript:void(0)"]:hover,
+#menu-stats:hover,
+#menu-owner:hover,
+#menu-manage-admin:hover,
+a#menu-stats:hover,
+a#menu-owner:hover,
+a#menu-manage-admin:hover {
+    color: #9ed649 !important;
+    text-decoration: none !important;
+    transform: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.admin-sidebar ul.sidebar-menu li.sidebar-menu-item a.sidebar-menu-link.active,
+.admin-sidebar .sidebar-menu .sidebar-menu-item .sidebar-menu-link.active,
+.admin-sidebar a[href="javascript:void(0)"].active,
+#menu-stats.active,
+#menu-owner.active,
+#menu-manage-admin.active,
+a#menu-stats.active,
+a#menu-owner.active,
+a#menu-manage-admin.active {
+    color: #9ed649 !important;
+    font-weight: 600 !important;
+    transform: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
 }
 
 .sidebar-menu-link i {
-    font-size: 1.2rem;
-    width: 24px;
-    text-align: center;
-    opacity: 0.9;
-    margin-top: 3px;
-}
-
-.sidebar-menu-link span {
-    font-size: 1rem;
-    line-height: 1.4;
-    opacity: 0.9;
-    display: block;
-    font-weight: 600;
-}
-
-.sidebar-menu-link:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateX(5px);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.sidebar-menu-link.active {
-    background: white;
-    color: #8ab82f;
-    border-color: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-menu-link.active i,
-.sidebar-menu-link.active span {
-    opacity: 1;
+    font-size: 1.25rem;
 }
 
 /* Main Content */
 .admin-main {
-    flex: 1;
     margin-left: 250px;
-    padding: 0.5rem 2rem;
-    position: relative;
+    padding: 3rem 2rem 2rem 2rem;
     height: 100vh;
-    overflow: hidden;
+    margin-top: -2rem;
+    overflow-y: auto;
 }
 
-/* Navbar Override for Admin Page */
-.navbar.navbar-expand-lg.navbar-dark.bg-primary {
-    background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+.content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 0;
+    margin: 8rem 0 1rem 0;
+    background: white;
+}
+
+.page-header {
+    padding: 1.5rem;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+/* Navbar và dropdown styling - FIX DROPDOWN ISSUES */
+.navbar {
+    z-index: 1060 !important;
     position: fixed !important;
     top: 0 !important;
-    left: 250px !important;
-    right: 0 !important;
-    width: auto !important;
-    z-index: 1050 !important;
+    width: 100% !important;
 }
 
-.navbar .navbar-nav.me-auto {
-    flex-grow: 0;
+/* All navbar text to black */
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link,
+.navbar .navbar-text {
+    color: #333333 !important;
 }
 
-.navbar .navbar-nav.align-items-center {
-    margin-left: auto;
+.navbar .navbar-brand:hover,
+.navbar .navbar-nav .nav-link:hover {
+    color: #000000 !important;
 }
 
-.navbar .navbar-brand {
-    margin-right: 2rem;
-    margin-left: 0;
-    display: flex;
-    align-items: center;
-    padding: 0;
-}
-
-.navbar .container {
-    max-width: 1400px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.navbar .navbar-brand img {
-    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
-    vertical-align: middle;
-}
-
-.navbar .nav-link {
-    color: white !important;
-    font-weight: 500;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.navbar .brand-text {
-    color: white !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-#languageToggle {
-    background: rgba(255, 255, 255, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    color: white !important;
-}
-
-#languageToggle span {
-    color: white !important;
+.navbar .dropdown-menu {
+    z-index: 1070 !important;
+    position: absolute !important;
+    will-change: transform !important;
 }
 
 .navbar .dropdown-toggle {
-    color: white !important;
+    z-index: 1062 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.navbar .dropdown {
+    position: relative !important;
+    z-index: 1062 !important;
+}
+
+/* Đảm bảo dropdown menu hiển thị đúng */
+.navbar-nav .dropdown-menu {
+    position: absolute !important;
+    top: 100% !important;
+    left: auto !important;
+    right: 0 !important;
+    transform: none !important;
+    z-index: 1070 !important;
+    display: none !important;
+}
+
+.navbar-nav .dropdown-menu.show {
+    display: block !important;
+}
+
+/* Đảm bảo không có element nào che khuất dropdown */
+.admin-sidebar {
+    pointer-events: auto;
+    z-index: 1040 !important;
+}
+
+.admin-main {
+    pointer-events: auto;
+    z-index: 1030 !important;
+}
+
+/* Modal không che dropdown và centering fix */
+.modal {
+    z-index: 1080 !important;
+}
+
+.modal-backdrop {
+    z-index: 1075 !important;
+}
+
+/* Modal centering fix */
+.modal-dialog-centered {
+    display: flex !important;
+    align-items: center !important;
+    min-height: calc(100vh - 3rem) !important;
+}
+
+#addAdminModal .modal-content {
+    margin: auto !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+}
+
+#addAdminModal .modal-header {
+    border-bottom: 1px solid #dee2e6 !important;
+    padding: 1rem 1.5rem !important;
+}
+
+#addAdminModal .modal-body {
+    padding: 1.5rem !important;
+}
+
+#addAdminModal .modal-footer {
+    border-top: 1px solid #dee2e6 !important;
+    padding: 1rem 1.5rem !important;
+}
+
+.navbar .brand-text {
+    color: #333333 !important;
+    text-shadow: none;
+}
+
+#languageToggle {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(51, 51, 51, 0.3) !important;
+    color: #333333 !important;
+}
+
+#languageToggle span {
+    color: #333333 !important;
+}
+
+.navbar .dropdown-toggle {
+    color: #333333 !important;
 }
 
 /* Page Title */
 .page-title {
-    font-size: 1.75rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid #e2e8f0;
+    color: #333;
+    margin: 0;
 }
 
-/* Content Card */
+.page-subtitle {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Content Card - UPDATED TO MATCH OWNER STYLE */
 .content-card {
     background: white;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    /* overflow: hidden !important; */ /* Xóa để dropdown không bị che */
-    margin-top: 0rem;
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: visible !important;
+    margin: 1rem 0;
     display: flex;
     flex-direction: column;
 }
 
-/* Filter Section */
+/* Filter Section - MATCH OWNER STYLE */
 .filter-section {
+    padding: 1rem 1.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding: 0.75rem 1rem;
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background: white;
+    overflow: visible !important;
 }
 
+/* Filter Pills - MATCH OWNER STYLE */
 .filter-pills {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
     align-items: center;
 }
 
 .filter-pill {
     display: inline-flex;
     align-items: center;
-    padding: 0.4rem 0.75rem;
+    padding: 10px 16px;
     background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    color: #64748b;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    color: #666;
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .filter-pill:hover {
-    border-color: #9ed649;
-    color: #9ed649;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.1);
+    background: #f5f5f5;
+    border-color: #ccc;
     text-decoration: none;
+    color: #333;
 }
 
 .filter-pill.active {
     background: #9ed649;
     border-color: #9ed649;
     color: white;
-    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.2);
 }
 
 .filter-pill .count {
     margin-left: 8px;
-    padding: 0.15rem 0.5rem;
+    padding: 2px 6px;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
+    border-radius: 10px;
     font-size: 0.75rem;
     font-weight: 600;
+    min-width: 20px;
+    text-align: center;
 }
 
 .filter-pill:not(.active) .count {
-    background: rgba(100, 116, 139, 0.1);
+    background: rgba(102, 102, 102, 0.1);
+    color: #666;
 }
 
 .filter-pill.active .count {
@@ -343,6 +399,29 @@ body {
 
 .search-box .btn i {
     font-size: 0.875rem;
+}
+
+/* Add Button - MATCH OWNER STYLE */
+.add-room-btn {
+    padding: 10px 20px;
+    background: #9ed649;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(158, 214, 73, 0.3);
+    transition: all 0.2s;
+}
+
+.add-room-btn:hover {
+    background: #8ab82f;
+    box-shadow: 0 2px 6px rgba(158, 214, 73, 0.4);
+    transform: translateY(-1px);
 }
 
 /* Table Header */
@@ -390,10 +469,13 @@ body {
     transform: translateY(-1px);
 }
 
-/* Table Container */
+/* Table Container - SCROLLABLE ONLY */
 .table-responsive {
     margin: -1px;
     padding: 1px;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: auto;
 }
 
 .table-responsive::-webkit-scrollbar {
@@ -1418,12 +1500,7 @@ nav[aria-label="Page navigation"] {
 {% endblock %}
 
 {% block content %}
-<div class="admin-layout">
     <aside class="admin-sidebar">
-        <a href="{{ url_for('home') }}" class="admin-brand">
-            <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Logo">
-            <span>Horin</span>
-        </a>
         <ul class="sidebar-menu">
             <li class="sidebar-menu-item">
                 <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-stats" data-bs-toggle="modal" data-bs-target="#developmentModal">
@@ -1431,19 +1508,42 @@ nav[aria-label="Page navigation"] {
                     <span>Thống kê</span>
                 </a>
             </li>
+            {% if current_user.is_super_admin %}
+            <li class="sidebar-menu-item">
+                <a href="javascript:void(0)" class="sidebar-menu-link active" id="menu-manage-admin">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Quản lý Admin</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-owner">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Thêm tài khoản &<br>Quản lý Owner</span>
+                </a>
+            </li>
+            {% else %}
             <li class="sidebar-menu-item">
                 <a href="javascript:void(0)" class="sidebar-menu-link active" id="menu-owner">
                     <i class="fas fa-user-plus"></i>
                     <span>Thêm tài khoản &<br>Quản lý Owner</span>
                 </a>
             </li>
+            {% endif %}
         </ul>
     </aside>
 
     <main class="admin-main">
-        <div class="content-card">
+        <div class="content-wrapper">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Admin Dashboard</h1>
+                    <p class="page-subtitle">Quản lý tài khoản và thống kê hệ thống</p>
+                </div>
+            </div>
+            
             <!-- Block: Quản lý Owner -->
-            <div id="owner-section" style="display: block;">
+            <div id="owner-section" style="display: block; padding: 1.5rem;">
                 <!-- Filter Section -->
                 <div class="filter-section">
                     <div class="filter-pills">
@@ -1484,7 +1584,7 @@ nav[aria-label="Page navigation"] {
                 <!-- Table Header -->
                 <div class="table-header">
                     <h2 class="table-title">Danh sách tài khoản</h2>
-                    <button class="add-button" data-bs-toggle="modal" data-bs-target="#addOwnerModal">
+                    <button class="add-room-btn" data-bs-toggle="modal" data-bs-target="#addOwnerModal">
                         <i class="fas fa-plus"></i>
                         Thêm tài khoản
                     </button>
@@ -1583,8 +1683,46 @@ nav[aria-label="Page navigation"] {
                 </nav>
             </div>
 
+            <!-- Block: Quản lý Admin -->
+            {% if current_user.is_super_admin %}
+            <div id="manage-admin-section" style="display: block; padding: 1.5rem;">
+                <!-- Admin Management Content -->
+                <div class="table-header">
+                    <h2 class="table-title">Quản lý Admin</h2>
+                    <button class="add-room-btn" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+                        <i class="fas fa-plus"></i>
+                        Thêm Admin
+                    </button>
+                </div>
+
+                <!-- Admin Table -->
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Tên đăng nhập</th>
+                                <th>Email</th>
+                                <th>Quyền hạn</th>
+                                <th>Ngày tạo</th>
+                                <th>Trạng thái</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Tính năng đang được phát triển...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Block: Thống kê -->
-            <div id="stats-section" style="display: none;">
+            <div id="stats-section" style="display: none; padding: 1.5rem;">
                 <!-- Stats Overview -->
                 <div class="stats-overview mb-4">
                     <div class="row g-3">
@@ -2127,70 +2265,168 @@ nav[aria-label="Page navigation"] {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Đóng modal development trước để không che dropdown
+    const developmentModal = document.getElementById('developmentModal');
+    if (developmentModal) {
+        const modal = bootstrap.Modal.getInstance(developmentModal);
+        if (modal) {
+            modal.hide();
+        }
+    }
+
+    // Debug và khởi tạo navbar dropdown sau khi đóng modal
+    setTimeout(() => {
+        console.log('Admin dashboard loaded');
+        const dropdownToggle = document.querySelector('.navbar .dropdown-toggle');
+        if (dropdownToggle) {
+            console.log('Dropdown toggle found:', dropdownToggle);
+            
+            // Xóa tất cả event listeners cũ
+            dropdownToggle.removeAttribute('data-bs-toggle');
+            dropdownToggle.removeAttribute('data-bs-target');
+            
+            // Thêm lại attributes Bootstrap
+            dropdownToggle.setAttribute('data-bs-toggle', 'dropdown');
+            dropdownToggle.setAttribute('aria-expanded', 'false');
+            
+            // Khởi tạo lại Bootstrap dropdown
+            try {
+                const existingDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                if (existingDropdown) {
+                    existingDropdown.dispose();
+                }
+                new bootstrap.Dropdown(dropdownToggle);
+                console.log('Bootstrap dropdown re-initialized');
+            } catch (e) {
+                console.error('Error initializing dropdown:', e);
+            }
+        } else {
+            console.log('Dropdown toggle not found');
+        }
+
+        // Kiểm tra Bootstrap
+        if (typeof bootstrap === 'undefined') {
+            console.error('Bootstrap is not loaded!');
+        } else {
+            console.log('Bootstrap loaded successfully');
+        }
+    }, 500);
+
     // Sidebar Menu Handling
     const initializeSidebar = () => {
         console.log('Initializing sidebar...');
         
         const statsSection = document.getElementById('stats-section');
         const ownerSection = document.getElementById('owner-section');
+        const manageAdminSection = document.getElementById('manage-admin-section');
         const menuStats = document.getElementById('menu-stats');
         const menuOwner = document.getElementById('menu-owner');
+        const menuManageAdmin = document.getElementById('menu-manage-admin');
 
         if (!statsSection || !ownerSection || !menuStats || !menuOwner) {
             console.error('Required elements not found');
             return;
         }
 
-        // Hiển thị owner section mặc định và active menu owner
+        // Hide all sections initially
         statsSection.style.display = 'none';
-        ownerSection.style.display = 'block';
-        menuStats.classList.remove('active');
-        menuOwner.classList.add('active');
+        ownerSection.style.display = 'none';
+        if (manageAdminSection) manageAdminSection.style.display = 'none';
+
+        // Determine the active section based on which menu is active
+        const activeMenu = document.querySelector('.sidebar-menu-link.active:not(#menu-stats)');
+        
+        if (activeMenu && activeMenu.id === 'menu-manage-admin' && manageAdminSection) {
+            // Super admin: Show manage admin section
+            manageAdminSection.style.display = 'block';
+            console.log('Super admin: Manage Admin section is active');
+        } else {
+            // Regular admin or fallback: show owner section
+            ownerSection.style.display = 'block';
+            console.log('Regular admin: Owner section is active');
+        }
+
+        // Xử lý click cho menu Manage Admin
+        if (menuManageAdmin && manageAdminSection) {
+            menuManageAdmin.onclick = () => {
+                statsSection.style.display = 'none';
+                ownerSection.style.display = 'none';
+                manageAdminSection.style.display = 'block';
+                menuStats.classList.remove('active');
+                menuOwner.classList.remove('active');
+                menuManageAdmin.classList.add('active');
+                console.log('Switched to Manage Admin section');
+            };
+        }
 
         // Xử lý click cho menu Owner
-        menuOwner.onclick = () => {
-            statsSection.style.display = 'none';
-            ownerSection.style.display = 'block';
-            menuStats.classList.remove('active');
-            menuOwner.classList.add('active');
-        };
+        if (menuOwner) {
+            menuOwner.onclick = () => {
+                statsSection.style.display = 'none';
+                ownerSection.style.display = 'block';
+                if (manageAdminSection) manageAdminSection.style.display = 'none';
+                menuStats.classList.remove('active');
+                menuOwner.classList.add('active');
+                if (menuManageAdmin) menuManageAdmin.classList.remove('active');
+                console.log('Switched to Owner section');
+            };
+        }
 
-        // Xử lý click cho menu Stats
-        menuStats.onclick = () => {
-            menuStats.classList.add('active');
-            menuOwner.classList.remove('active');
-        };
+        // Xử lý click cho menu Stats (development modal)
+        if (menuStats) {
+            menuStats.onclick = () => {
+                console.log('Stats menu clicked - will show development modal');
+                // Development modal will be shown, but don't change sections here
+            };
+        }
 
-        // Xử lý đóng modal development
+        // Xử lý đóng modal development - return to appropriate active menu
         const developmentModal = document.getElementById('developmentModal');
         if (developmentModal) {
             developmentModal.addEventListener('hidden.bs.modal', function () {
-                // Khi đóng modal, active menu owner và hiển thị section owner
+                console.log('Development modal closed, restoring active menu');
+                // Remove stats from active
                 menuStats.classList.remove('active');
-                menuOwner.classList.add('active');
-                statsSection.style.display = 'none';
-                ownerSection.style.display = 'block';
+                
+                // Restore the appropriate active menu based on user role
+                if (menuManageAdmin && manageAdminSection && !menuManageAdmin.style.display.includes('none')) {
+                    // Super admin: activate manage admin menu
+                    menuManageAdmin.classList.add('active');
+                    menuOwner.classList.remove('active');
+                    statsSection.style.display = 'none';
+                    ownerSection.style.display = 'none';
+                    manageAdminSection.style.display = 'block';
+                    console.log('Restored Super Admin menu');
+                } else {
+                    // Regular admin: activate owner menu
+                    menuOwner.classList.add('active');
+                    if (menuManageAdmin) menuManageAdmin.classList.remove('active');
+                    statsSection.style.display = 'none';
+                    ownerSection.style.display = 'block';
+                    if (manageAdminSection) manageAdminSection.style.display = 'none';
+                    console.log('Restored Owner menu');
+                }
             });
         }
     };
 
     initializeSidebar();
 
-    // Hiển thị modal khi vào trang
-    const developmentModal = new bootstrap.Modal(document.getElementById('developmentModal'));
-    developmentModal.show();
+    // Không tự động hiển thị modal development để tránh che dropdown
+    // const developmentModal = new bootstrap.Modal(document.getElementById('developmentModal'));
+    // developmentModal.show();
 
-    // Lưu trữ dropdown đang mở
-    let currentDropdown = null;
+    // Lưu trữ dropdown đang mở cho table actions (không áp dụng cho navbar)
+    let currentTableDropdown = null;
 
-    // Xử lý sự kiện click cho tất cả các nút action
-    document.querySelectorAll('.action-button').forEach(button => {
+    // Xử lý sự kiện click cho các nút action trong table (không ảnh hưởng navbar)
+    document.querySelectorAll('table .action-button').forEach(button => {
         button.addEventListener('click', function(e) {
             e.stopPropagation();
             
             // Đóng dropdown hiện tại nếu đang mở
-            if (currentDropdown && currentDropdown !== this) {
-                const dropdown = bootstrap.Dropdown.getInstance(currentDropdown);
+            if (currentTableDropdown && currentTableDropdown !== this) {
+                const dropdown = bootstrap.Dropdown.getInstance(currentTableDropdown);
                 if (dropdown) {
                     dropdown.hide();
                 }
@@ -2201,19 +2437,19 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdown.toggle();
             
             // Cập nhật dropdown hiện tại
-            currentDropdown = this;
+            currentTableDropdown = this;
         });
     });
 
-    // Đóng dropdown khi click ra ngoài
+    // Đóng table dropdown khi click ra ngoài (không ảnh hưởng navbar dropdown)
     document.addEventListener('click', function(e) {
-        if (!e.target.closest('.dropdown')) {
-            if (currentDropdown) {
-                const dropdown = bootstrap.Dropdown.getInstance(currentDropdown);
+        if (!e.target.closest('table .dropdown') && !e.target.closest('.navbar .dropdown')) {
+            if (currentTableDropdown) {
+                const dropdown = bootstrap.Dropdown.getInstance(currentTableDropdown);
                 if (dropdown) {
                     dropdown.hide();
                 }
-                currentDropdown = null;
+                currentTableDropdown = null;
             }
         }
     });
@@ -2519,8 +2755,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Khởi tạo dữ liệu biểu đồ từ server
-    const hourlyStats = JSON.parse('{{ stats.hourly_stats|tojson|safe }}');
-    const overnightStats = JSON.parse('{{ stats.overnight_stats|tojson|safe }}');
+    let hourlyStats, overnightStats;
+    try {
+        hourlyStats = JSON.parse('{{ stats.hourly_stats|tojson|safe }}');
+    } catch (e) {
+        console.error('Error parsing hourly stats:', e);
+        hourlyStats = {
+            labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+            data: [0, 0, 0, 0, 0, 0, 0]
+        };
+    }
+    
+    try {
+        overnightStats = JSON.parse('{{ stats.overnight_stats|tojson|safe }}');
+    } catch (e) {
+        console.error('Error parsing overnight stats:', e);
+        overnightStats = {
+            labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+            data: [0, 0, 0, 0, 0, 0, 0]
+        };
+    }
 
     // Cấu hình biểu đồ thuê theo giờ
     const hourlyTaxData = {
@@ -2605,6 +2859,122 @@ document.addEventListener('DOMContentLoaded', function() {
         ...chartConfig,
         data: overnightTaxData
     });
+
+    // DEBUG AND FIX DROPDOWN FUNCTIONALITY
+    console.log('=== DROPDOWN DEBUG START ===');
+    
+    // Check if Bootstrap is loaded
+    if (typeof bootstrap !== 'undefined') {
+        console.log('✓ Bootstrap is loaded');
+        
+        // Find dropdown elements
+        const dropdownElements = document.querySelectorAll('.dropdown-toggle');
+        console.log('Found dropdown elements:', dropdownElements.length);
+        
+        // Specifically check navbar dropdown
+        const navbarDropdown = document.getElementById('navbarDropdown');
+        if (navbarDropdown) {
+            console.log('✓ Navbar dropdown found:', navbarDropdown);
+            
+            // Manually initialize Bootstrap dropdown
+            const dropdownInstance = new bootstrap.Dropdown(navbarDropdown);
+            console.log('✓ Bootstrap dropdown initialized:', dropdownInstance);
+            
+            // Add event listeners
+            navbarDropdown.addEventListener('click', function(e) {
+                console.log('🔍 Dropdown clicked!');
+                console.log('- Event:', e);
+                console.log('- Target:', e.target);
+                console.log('- Current target:', e.currentTarget);
+                
+                // Prevent default if needed
+                e.preventDefault();
+                
+                // Toggle dropdown manually if bootstrap fails
+                const dropdownMenu = navbarDropdown.nextElementSibling;
+                if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+                    console.log('- Dropdown menu found:', dropdownMenu);
+                    console.log('- Current classes:', dropdownMenu.className);
+                    
+                    if (dropdownMenu.classList.contains('show')) {
+                        dropdownMenu.classList.remove('show');
+                        console.log('✓ Dropdown hidden manually');
+                    } else {
+                        dropdownMenu.classList.add('show');
+                        console.log('✓ Dropdown shown manually');
+                    }
+                }
+            });
+            
+            // Add Bootstrap events
+            navbarDropdown.addEventListener('shown.bs.dropdown', function() {
+                console.log('✓ Bootstrap dropdown shown event fired');
+            });
+            
+            navbarDropdown.addEventListener('hidden.bs.dropdown', function() {
+                console.log('✓ Bootstrap dropdown hidden event fired');
+            });
+            
+        } else {
+            console.log('❌ Navbar dropdown not found!');
+        }
+        
+        // Check for conflicts
+        const conflictingElements = document.querySelectorAll('[style*="overflow: hidden"]');
+        console.log('Elements with overflow hidden:', conflictingElements.length);
+        
+        // Check z-index
+        const navbarZIndex = window.getComputedStyle(document.querySelector('.navbar')).zIndex;
+        console.log('Navbar z-index:', navbarZIndex);
+        
+    } else {
+        console.log('❌ Bootstrap not loaded!');
+    }
+    
+    console.log('=== DROPDOWN DEBUG END ===');
 });
 </script>
+
+<!-- Modal Thêm Admin -->
+{% if current_user.is_super_admin %}
+<div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAdminModalLabel">Thêm Admin mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAdminForm">
+                    <div class="mb-3">
+                        <label for="adminUsername" class="form-label">Tên đăng nhập</label>
+                        <input type="text" class="form-control" id="adminUsername" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adminEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="adminEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adminPassword" class="form-label">Mật khẩu</label>
+                        <input type="password" class="form-control" id="adminPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adminRole" class="form-label">Quyền hạn</label>
+                        <select class="form-select" id="adminRole" required>
+                            <option value="">Chọn quyền hạn</option>
+                            <option value="admin">Admin</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary">Thêm Admin</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

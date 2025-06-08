@@ -168,6 +168,9 @@ def home():
     # If user is logged in and is owner, redirect to their dashboard instead of showing home page
     if current_user.is_authenticated and current_user.is_owner():
         return redirect(url_for('owner.dashboard'))
+    # If user is logged in and is admin, redirect to their dashboard instead of showing home page
+    if current_user.is_authenticated and isinstance(current_user, Admin):
+        return redirect(url_for('admin.dashboard'))
     # Retrieve featured homestays to display on the homepage
     homestays = Room.query.filter_by(is_active=True).limit(6).all()
     return render_template('home.html', homestays=homestays)

@@ -7,6 +7,36 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('language', 'vi');
     }
     
+    // Initialize Bootstrap dropdowns
+    const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+    const dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+        return new bootstrap.Dropdown(dropdownToggleEl);
+    });
+    
+    // Debug dropdown functionality
+    const navbarDropdown = document.getElementById('navbarDropdown');
+    if (navbarDropdown) {
+        console.log('Avatar dropdown element found:', navbarDropdown);
+        
+        // Add click event listener for debugging
+        navbarDropdown.addEventListener('click', function(e) {
+            console.log('Avatar dropdown clicked!');
+            console.log('Event target:', e.target);
+            console.log('Bootstrap dropdown instance:', bootstrap.Dropdown.getInstance(navbarDropdown));
+        });
+        
+        // Add shown/hidden event listeners
+        navbarDropdown.addEventListener('shown.bs.dropdown', function () {
+            console.log('Dropdown shown');
+        });
+        
+        navbarDropdown.addEventListener('hidden.bs.dropdown', function () {
+            console.log('Dropdown hidden');
+        });
+    } else {
+        console.log('Avatar dropdown element not found!');
+    }
+    
     // Add Bootstrap validation for forms
     const forms = document.querySelectorAll('.needs-validation');
     

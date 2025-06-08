@@ -131,7 +131,7 @@ def login():
                     user.can_manage_users = True
                     db.session.commit()
                     flash('Bạn đã được set làm Super Admin!', 'success')
-                next_page = url_for('home', login_success='1')
+                next_page = url_for('admin.dashboard', login_success='1')
                 
             elif isinstance(user, Owner):
                 session['user_role'] = 'owner'
