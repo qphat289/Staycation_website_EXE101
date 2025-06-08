@@ -16,10 +16,11 @@
 
 body {
     background: #f8fdf4;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 
@@ -198,7 +199,11 @@ a#menu-manage-admin.active {
 
 .navbar-nav .dropdown-menu.show {
     display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 1060 !important;
 }
+
 
 /* Đảm bảo không có element nào che khuất dropdown */
 .admin-sidebar {
@@ -213,14 +218,20 @@ a#menu-manage-admin.active {
 
 /* Modal không che dropdown và centering fix */
 .modal {
-    z-index: 1080 !important;
+    z-index: 1051 !important;
 }
 
 .modal-backdrop {
-    z-index: 1075 !important;
+    z-index: 1050 !important;
+    background-color: rgba(108, 117, 125, 0.8) !important;
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
 }
 
-/* Modal centering fix */
+.modal-backdrop.show {
+    opacity: 1 !important;
+}
+
 .modal-dialog-centered {
     display: flex !important;
     align-items: center !important;
@@ -644,11 +655,11 @@ a#menu-manage-admin.active {
 
 /* Modal Styles */
 .modal {
-    z-index: 1050 !important;
+    z-index: 1051 !important;
 }
 
 .modal-backdrop {
-    z-index: 1040 !important;
+    z-index: 1050 !important;
     background-color: rgba(108, 117, 125, 0.8) !important;
     backdrop-filter: blur(5px) !important;
     -webkit-backdrop-filter: blur(5px) !important;
@@ -1307,194 +1318,101 @@ nav[aria-label="Page navigation"] {
     transform: translateY(-1px);
 }
 
-/* Stats Overview */
-.stat-card {
-    background: white;
-    border-radius: 10px;
-    padding: 1rem;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+/* Thống kê (Statistics) Section Styles */
+#stats-section {
+    padding: 1.5rem;
+    background-color: #f8fdf4;
+}
+
+.stats-overview .stat-card {
     height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.stat-icon {
-    font-size: 1.5rem;
-    color: #8bc34a;
-    margin-bottom: 0.5rem;
+.stats-overview .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
 }
 
-.stat-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+.bg-light-success {
+    background-color: rgba(138, 184, 47, 0.1);
 }
 
-.stat-label {
-    font-size: 0.75rem;
-    color: #64748b;
-    font-weight: 500;
+.bg-light-primary {
+    background-color: rgba(13, 110, 253, 0.1);
 }
 
-.stat-value {
-    font-size: 0.875rem;
-    color: #1e293b;
-    font-weight: 600;
+.bg-light-warning {
+    background-color: rgba(255, 193, 7, 0.1);
 }
 
-/* Chart Card */
+.bg-light-info {
+    background-color: rgba(13, 202, 240, 0.1);
+}
+
+.bg-light-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.text-success {
+    color: #8ab82f !important;
+}
+
+/* Chart section styles */
 .chart-card {
-    background: white;
-    border-radius: 10px;
-    padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
 }
 
 .chart-title {
-    font-size: 1rem;
-    color: #1e293b;
+    font-size: 1.1rem;
     font-weight: 600;
+    color: #333;
     margin-bottom: 1rem;
 }
 
-/* Homestay Stats Table */
-.homestay-stats .table th {
-    font-weight: 600;
-    color: #64748b;
-    border-bottom: 2px solid #e2e8f0;
+/* Homestay table styles */
+.homestay-stats {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.homestay-stats .table td {
-    padding: 0.75rem;
-    vertical-align: middle;
+.homestay-stats:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.homestay-stats th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.homestay-stats .table {
+    margin-bottom: 0;
+}
+
+.homestay-stats .table tr {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.homestay-stats .table tr:hover {
+    background-color: rgba(138, 184, 47, 0.05);
 }
 
 .rating {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
 }
 
 .rating .fa-star {
-    color: #fbbf24;
-}
-
-/* Modal Customization */
-#statsModal .modal-content {
-    border: none;
-    border-radius: 15px;
-}
-
-#statsModal .modal-header {
-    padding: 1.5rem;
-}
-
-#statsModal .modal-body {
-    padding: 0 1.5rem 1.5rem 1.5rem;
-}
-
-#statsModal .modal-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1e293b;
-}
-
-/* Sidebar Menu Link for Stats */
-.sidebar-menu-link[data-bs-toggle="modal"] {
-    background: #ffffff;
-    margin-bottom: 1rem;
-    color: #8ab82f;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-menu-link[data-bs-toggle="modal"]:hover {
-    background: #f8f9fa;
-    transform: translateX(5px);
-    color: #8ab82f;
-}
-
-.sidebar-menu-link[data-bs-toggle="modal"] i {
-    font-size: 1.2rem;
-    margin-top: 0;
-    color: #8ab82f;
-}
-
-.sidebar-menu-link[data-bs-toggle="modal"]:hover i {
-    color: #8ab82f;
-}
-
-.sidebar-menu-link[data-bs-toggle="modal"]:hover i {
-    color: #8ab82f;
-}
-
-.add-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: #8ab82f;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(138, 184, 47, 0.2);
-}
-
-.add-button:hover {
-    background: #9ed649;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(138, 184, 47, 0.3);
-}
-
-.add-button i {
-    font-size: 1rem;
-}
-
-/* Development Modal specific styles */
-#developmentModal .modal-content {
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-#developmentModal .modal-header {
-    border-bottom: none !important;
-}
-
-#developmentModal .modal-body {
-    padding: 2rem !important;
-}
-
-#developmentModal .fa-code {
-    color: #8ab82f !important;
-    margin-bottom: 1.5rem !important;
-}
-
-#developmentModal h4 {
-    color: #2c3e50 !important;
-    margin-bottom: 1rem !important;
-}
-
-#developmentModal p {
-    color: #64748b !important;
-}
-
-#developmentModal .btn-secondary {
-    background-color: #8ab82f !important;
-    border-color: #8ab82f !important;
-    color: white !important;
-    padding: 0.5rem 2rem !important;
-    font-weight: 500 !important;
-    transition: all 0.3s ease !important;
-}
-
-#developmentModal .btn-secondary:hover {
-    background-color: #9ed649 !important;
-    border-color: #9ed649 !important;
-    transform: translateY(-1px) !important;
+    color: #ffc107;
 }
 </style>
 {% endblock %}
@@ -1503,7 +1421,7 @@ nav[aria-label="Page navigation"] {
     <aside class="admin-sidebar">
         <ul class="sidebar-menu">
             <li class="sidebar-menu-item">
-                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-stats" data-bs-toggle="modal" data-bs-target="#developmentModal">
+                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-stats">
                     <i class="fas fa-chart-line"></i>
                     <span>Thống kê</span>
                 </a>
@@ -1722,96 +1640,105 @@ nav[aria-label="Page navigation"] {
             {% endif %}
 
             <!-- Block: Thống kê -->
-            <div id="stats-section" style="display: none; padding: 1.5rem;">
-                <!-- Stats Overview -->
+            <div id="stats-section" style="display: none;">                <!-- Admin Dashboard Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">Admin Dashboard</h4>
+                    <p class="mb-0 text-muted">Quản lý tài khoản và thống kê hệ thống</p>
+                </div>
+
+                <!-- Stats Overview Cards - Updated to match original design -->
                 <div class="stats-overview mb-4">
                     <div class="row g-3">
                         <div class="col-md-2">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-home"></i>
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="stat-icon rounded-circle bg-light-success p-2 me-2">
+                                        <i class="fas fa-home text-success"></i>
+                                    </div>
+                                    <h6 class="mb-0">Tổng số chủ nhà</h6>
                                 </div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Tổng số chủ nhà</span>
-                                    <span class="stat-value">{{ stats.total_owners }}</span>
-                                </div>
+                                <h4 class="mb-0">{{ stats.total_owners }}</h4>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-users"></i>
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="stat-icon rounded-circle bg-light-primary p-2 me-2">
+                                        <i class="fas fa-users text-primary"></i>
+                                    </div>
+                                    <h6 class="mb-0">Tổng số khách hàng</h6>
                                 </div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Tổng số khách hàng</span>
-                                    <span class="stat-value">{{ stats.total_renters }}</span>
-                                </div>
+                                <h4 class="mb-0">{{ stats.total_renters }}</h4>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-clock"></i>
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="stat-icon rounded-circle bg-light-warning p-2 me-2">
+                                        <i class="fas fa-clock text-warning"></i>
+                                    </div>
+                                    <h6 class="mb-0">Số giờ thuê</h6>
                                 </div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Số giờ thuê</span>
-                                    <span class="stat-value">{{ stats.total_hours }} giờ</span>
-                                </div>
+                                <h4 class="mb-0">{{ stats.total_hours }} <span class="fs-6 text-muted">giờ</span></h4>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-calendar-check"></i>
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="stat-icon rounded-circle bg-light-info p-2 me-2">
+                                        <i class="fas fa-calendar-check text-info"></i>
+                                    </div>
+                                    <h6 class="mb-0">Số lần thuê</h6>
                                 </div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Số lần thuê</span>
-                                    <span class="stat-value">{{ stats.total_bookings }} lần</span>
-                                </div>
+                                <h4 class="mb-0">{{ stats.total_bookings }} <span class="fs-6 text-muted">lần</span></h4>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-chart-line"></i>
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="stat-icon rounded-circle bg-light-danger p-2 me-2">
+                                        <i class="fas fa-chart-line text-danger"></i>
+                                    </div>
+                                    <h6 class="mb-0">Hình thức phổ biến</h6>
                                 </div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Hình thức phổ biến</span>
-                                    <span class="stat-value">{{ stats.common_type }}</span>
-                                </div>
+                                <h4 class="mb-0">{{ stats.common_type }}</h4>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-star"></i>
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="stat-icon rounded-circle bg-light-warning p-2 me-2">
+                                        <i class="fas fa-star text-warning"></i>
+                                    </div>
+                                    <h6 class="mb-0">Đánh giá trung bình</h6>
                                 </div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Đánh giá trung bình</span>
-                                    <span class="stat-value">{{ stats.average_rating }}/5.0</span>
-                                </div>
+                                <h4 class="mb-0">{{ stats.average_rating }}/5.0</h4>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- Charts -->
-                <div class="row g-4 mb-4">
+                </div>                <!-- Chart Sections -->
+                <!-- <div class="row mb-4">
                     <div class="col-md-6">
-                        <div class="chart-card">
-                            <h6 class="chart-title">Tổng thuê theo giờ</h6>
-                            <canvas id="hourlyTaxChart"></canvas>
+                        <div class="chart-card bg-white p-3 rounded shadow-sm">
+                            <h5 class="chart-title">Tổng thuê theo giờ</h5>
+                            <div style="height: 300px;">
+                                <canvas id="hourlyTaxChart"></canvas>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="chart-card">
-                            <h6 class="chart-title">Tổng thuê qua đêm</h6>
-                            <canvas id="overnightTaxChart"></canvas>
+                        <div class="chart-card bg-white p-3 rounded shadow-sm">
+                            <h5 class="chart-title">Tổng thuê qua đêm</h5>
+                            <div style="height: 300px;">
+                                <canvas id="overnightTaxChart"></canvas>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
+
                 <!-- Homestay Table -->
-                <div class="homestay-stats">
-                    <h6 class="mb-3">Các homestay nổi bật</h6>
+                <div class="homestay-stats bg-white p-4 rounded shadow-sm">
+                    <h5 class="mb-3">Các homestay nổi bật</h5>
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -1825,8 +1752,8 @@ nav[aria-label="Page navigation"] {
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if stats and stats.top_homestays %}
-                                    {% set homestays_data = stats.top_homestays|from_json %}
+                                {% if stats and stats.top_rooms %}
+                                    {% set homestays_data = stats.top_rooms|from_json %}
                                     {% if homestays_data %}
                                         {% for homestay in homestays_data %}
                                         <tr>
@@ -2261,6 +2188,25 @@ nav[aria-label="Page navigation"] {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Dropdown polyfill for better cross-browser support -->
+<script>
+// Custom polyfill to ensure dropdowns work consistently
+window.addEventListener('load', function() {
+    if (typeof bootstrap !== 'undefined') {
+        // Give dropdowns time to initialize
+        setTimeout(function() {
+            document.querySelectorAll('.dropdown-toggle').forEach(function(element) {
+                // Ensure dropdown has proper attributes
+                element.setAttribute('data-bs-toggle', 'dropdown');
+                // Initialize or re-initialize dropdown
+                const existingDropdown = bootstrap.Dropdown.getInstance(element);
+                if (existingDropdown) existingDropdown.dispose();
+                new bootstrap.Dropdown(element);
+            });
+        }, 1000);
+    }
+});
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -2277,31 +2223,75 @@ document.addEventListener('DOMContentLoaded', function() {
     // Debug và khởi tạo navbar dropdown sau khi đóng modal
     setTimeout(() => {
         console.log('Admin dashboard loaded');
-        const dropdownToggle = document.querySelector('.navbar .dropdown-toggle');
-        if (dropdownToggle) {
-            console.log('Dropdown toggle found:', dropdownToggle);
+        // Get all dropdown toggles, including the navbar dropdown
+        const allDropdownToggles = document.querySelectorAll('.dropdown-toggle');
+        console.log('Found dropdown toggles:', allDropdownToggles.length);
+
+        
+        // Specifically target the navbarDropdown in the user menu
+        const navbarDropdown = document.getElementById('navbarDropdown');
+        if (navbarDropdown) {
+            console.log('User dropdown found by ID:', navbarDropdown);
             
-            // Xóa tất cả event listeners cũ
-            dropdownToggle.removeAttribute('data-bs-toggle');
-            dropdownToggle.removeAttribute('data-bs-target');
-            
-            // Thêm lại attributes Bootstrap
-            dropdownToggle.setAttribute('data-bs-toggle', 'dropdown');
-            dropdownToggle.setAttribute('aria-expanded', 'false');
-            
-            // Khởi tạo lại Bootstrap dropdown
-            try {
-                const existingDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
-                if (existingDropdown) {
-                    existingDropdown.dispose();
-                }
-                new bootstrap.Dropdown(dropdownToggle);
-                console.log('Bootstrap dropdown re-initialized');
-            } catch (e) {
-                console.error('Error initializing dropdown:', e);
+            // Remove previous event listeners and bootstrap instances
+            const existingDropdown = bootstrap.Dropdown.getInstance(navbarDropdown);
+            if (existingDropdown) {
+                existingDropdown.dispose();
             }
+            
+            // Make sure dropdown has proper attributes
+            navbarDropdown.setAttribute('data-bs-toggle', 'dropdown');
+            navbarDropdown.setAttribute('aria-expanded', 'false');
+            
+            // Initialize dropdown with options
+            const dropdown = new bootstrap.Dropdown(navbarDropdown, {
+                autoClose: true,
+                boundary: 'viewport'
+            });
+            
+            // Add manual click handler for additional reliability
+            navbarDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log('Navbar dropdown clicked');
+                const dropdownMenu = navbarDropdown.nextElementSibling;
+                
+                if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+                    if (dropdownMenu.classList.contains('show')) {
+                        dropdown.hide();
+                    } else {
+                        dropdown.show();
+                    }
+                }
+            });
+            
+            console.log('Bootstrap user dropdown initialized successfully');
         } else {
-            console.log('Dropdown toggle not found');
+            // Fallback to query selector if ID not found
+            const dropdownToggle = document.querySelector('.navbar .dropdown-toggle');
+            if (dropdownToggle) {
+                console.log('Dropdown toggle found by class:', dropdownToggle);
+                
+                // Remove previous event listeners
+                dropdownToggle.removeAttribute('data-bs-toggle');
+                
+                // Add proper attributes back
+                dropdownToggle.setAttribute('data-bs-toggle', 'dropdown');
+                dropdownToggle.setAttribute('aria-expanded', 'false');
+                
+                // Initialize dropdown
+                try {
+                    const existingDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                    if (existingDropdown) {
+                        existingDropdown.dispose();
+                    }
+                    new bootstrap.Dropdown(dropdownToggle);
+                    console.log('Bootstrap dropdown re-initialized');
+                } catch (e) {
+                    console.error('Error initializing dropdown:', e);
+                }
+            } else {
+                console.log('User dropdown toggle not found');
+            }
         }
 
         // Kiểm tra Bootstrap
@@ -2314,99 +2304,73 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Sidebar Menu Handling
     const initializeSidebar = () => {
-        console.log('Initializing sidebar...');
-        
         const statsSection = document.getElementById('stats-section');
         const ownerSection = document.getElementById('owner-section');
         const manageAdminSection = document.getElementById('manage-admin-section');
+        
         const menuStats = document.getElementById('menu-stats');
         const menuOwner = document.getElementById('menu-owner');
         const menuManageAdmin = document.getElementById('menu-manage-admin');
 
-        if (!statsSection || !ownerSection || !menuStats || !menuOwner) {
-            console.error('Required elements not found');
-            return;
-        }
+        // Hàm để ẩn tất cả các section
+        const hideAllSections = () => {
+            if (statsSection) statsSection.style.display = 'none';
+            if (ownerSection) ownerSection.style.display = 'none';
+            if (manageAdminSection) manageAdminSection.style.display = 'none';
+        };
 
-        // Hide all sections initially
-        statsSection.style.display = 'none';
-        ownerSection.style.display = 'none';
-        if (manageAdminSection) manageAdminSection.style.display = 'none';
-
-        // Determine the active section based on which menu is active
-        const activeMenu = document.querySelector('.sidebar-menu-link.active:not(#menu-stats)');
-        
-        if (activeMenu && activeMenu.id === 'menu-manage-admin' && manageAdminSection) {
-            // Super admin: Show manage admin section
-            manageAdminSection.style.display = 'block';
-            console.log('Super admin: Manage Admin section is active');
-        } else {
-            // Regular admin or fallback: show owner section
-            ownerSection.style.display = 'block';
-            console.log('Regular admin: Owner section is active');
-        }
-
-        // Xử lý click cho menu Manage Admin
-        if (menuManageAdmin && manageAdminSection) {
-            menuManageAdmin.onclick = () => {
-                statsSection.style.display = 'none';
-                ownerSection.style.display = 'none';
-                manageAdminSection.style.display = 'block';
-                menuStats.classList.remove('active');
-                menuOwner.classList.remove('active');
-                menuManageAdmin.classList.add('active');
-                console.log('Switched to Manage Admin section');
-            };
-        }
-
-        // Xử lý click cho menu Owner
-        if (menuOwner) {
-            menuOwner.onclick = () => {
-                statsSection.style.display = 'none';
-                ownerSection.style.display = 'block';
-                if (manageAdminSection) manageAdminSection.style.display = 'none';
-                menuStats.classList.remove('active');
-                menuOwner.classList.add('active');
-                if (menuManageAdmin) menuManageAdmin.classList.remove('active');
-                console.log('Switched to Owner section');
-            };
-        }
-
-        // Xử lý click cho menu Stats (development modal)
-        if (menuStats) {
-            menuStats.onclick = () => {
-                console.log('Stats menu clicked - will show development modal');
-                // Development modal will be shown, but don't change sections here
-            };
-        }
-
-        // Xử lý đóng modal development - return to appropriate active menu
-        const developmentModal = document.getElementById('developmentModal');
-        if (developmentModal) {
-            developmentModal.addEventListener('hidden.bs.modal', function () {
-                console.log('Development modal closed, restoring active menu');
-                // Remove stats from active
-                menuStats.classList.remove('active');
-                
-                // Restore the appropriate active menu based on user role
-                if (menuManageAdmin && manageAdminSection && !menuManageAdmin.style.display.includes('none')) {
-                    // Super admin: activate manage admin menu
-                    menuManageAdmin.classList.add('active');
-                    menuOwner.classList.remove('active');
-                    statsSection.style.display = 'none';
-                    ownerSection.style.display = 'none';
-                    manageAdminSection.style.display = 'block';
-                    console.log('Restored Super Admin menu');
-                } else {
-                    // Regular admin: activate owner menu
-                    menuOwner.classList.add('active');
-                    if (menuManageAdmin) menuManageAdmin.classList.remove('active');
-                    statsSection.style.display = 'none';
-                    ownerSection.style.display = 'block';
-                    if (manageAdminSection) manageAdminSection.style.display = 'none';
-                    console.log('Restored Owner menu');
+        // Hàm để cập nhật trạng thái active của menu
+        const setActiveMenu = (activeMenu) => {
+            [menuStats, menuOwner, menuManageAdmin].forEach(menu => {
+                if (menu) {
+                    menu.classList.remove('active');
                 }
             });
+            if (activeMenu) {
+                activeMenu.classList.add('active');
+            }
+        };
+
+        // Gán sự kiện click cho từng menu item
+        if (menuStats) {
+            menuStats.addEventListener('click', () => {
+                hideAllSections();
+                statsSection.style.display = 'block';
+                setActiveMenu(menuStats);
+            });
+        }
+
+        if (menuOwner) {
+            menuOwner.addEventListener('click', () => {
+                hideAllSections();
+                ownerSection.style.display = 'block';
+                setActiveMenu(menuOwner);
+            });
+        }
+
+        if (menuManageAdmin) {
+            menuManageAdmin.addEventListener('click', () => {
+                hideAllSections();
+                manageAdminSection.style.display = 'block';
+                setActiveMenu(menuManageAdmin);
+            });
+        }
+
+        // Logic hiển thị section mặc định khi tải trang
+        hideAllSections(); // Ẩn tất cả trước
+        const initiallyActiveMenu = document.querySelector('.sidebar-menu-link.active');
+        if (initiallyActiveMenu) {
+            if (initiallyActiveMenu.id === 'menu-stats') {
+                statsSection.style.display = 'block';
+            } else if (initiallyActiveMenu.id === 'menu-manage-admin') {
+                manageAdminSection.style.display = 'block';
+            } else {
+                ownerSection.style.display = 'block';
+            }
+        } else {
+            // Nếu không có menu nào active, hiển thị owner mặc định
+            ownerSection.style.display = 'block';
+            setActiveMenu(menuOwner);
         }
     };
 
@@ -2844,21 +2808,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 mode: 'index'
             }
         }
-    };
-
-    // Khởi tạo biểu đồ
-    const hourlyCtx = document.getElementById('hourlyTaxChart').getContext('2d');
-    const overnightCtx = document.getElementById('overnightTaxChart').getContext('2d');
-
-    new Chart(hourlyCtx, {
-        ...chartConfig,
-        data: hourlyTaxData
-    });
-
-    new Chart(overnightCtx, {
-        ...chartConfig,
-        data: overnightTaxData
-    });
+    };    // Khởi tạo biểu đồ
+    const hourlyChartEl = document.getElementById('hourlyTaxChart');
+    const overnightChartEl = document.getElementById('overnightTaxChart');
+    
+    if (hourlyChartEl && overnightChartEl) {
+        const hourlyCtx = hourlyChartEl.getContext('2d');
+        const overnightCtx = overnightChartEl.getContext('2d');
+        
+        new Chart(hourlyCtx, {
+            ...chartConfig,
+            data: hourlyTaxData
+        });
+        
+        new Chart(overnightCtx, {
+            ...chartConfig,
+            data: overnightTaxData
+        });
+    } else {
+        console.error('Chart canvas elements not found');
+    }
 
     // DEBUG AND FIX DROPDOWN FUNCTIONALITY
     console.log('=== DROPDOWN DEBUG START ===');
@@ -2932,6 +2901,67 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     console.log('=== DROPDOWN DEBUG END ===');
+    
+    // Handle Add Admin Form
+    const addAdminModal = document.getElementById('addAdminModal');
+    const addAdminForm = document.getElementById('addAdminForm');
+    const submitAddAdminBtn = document.getElementById('submitAddAdmin');
+    
+    if (addAdminForm && submitAddAdminBtn) {
+        submitAddAdminBtn.addEventListener('click', async function() {
+            // Validate form
+            if (!addAdminForm.checkValidity()) {
+                addAdminForm.reportValidity();
+                return;
+            }
+            
+            const formData = {
+                username: document.getElementById('adminUsername').value.trim(),
+                email: document.getElementById('adminEmail').value.trim(),
+                password: document.getElementById('adminPassword').value,
+                role: document.getElementById('adminRole').value
+            };
+            
+            try {
+                const response = await fetch('/admin/add-admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showToast('success', 'Thêm admin mới thành công!');
+                    const bsModal = bootstrap.Modal.getInstance(addAdminModal);
+                    bsModal.hide();
+                    
+                    // Reload page after a short delay to show the new admin
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast('error', result.error || 'Đã xảy ra lỗi khi thêm admin');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('error', 'Đã xảy ra lỗi khi gửi yêu cầu');
+            }
+        });
+        
+        // Reset form when modal is closed
+        addAdminModal.addEventListener('hidden.bs.modal', function() {
+            addAdminForm.reset();
+            
+            // Remove any validation errors
+            const inputs = addAdminForm.querySelectorAll('.form-control');
+            inputs.forEach(input => {
+                input.classList.remove('is-invalid');
+            });
+        });
+    }
 });
 </script>
 
@@ -2967,10 +2997,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </select>
                     </div>
                 </form>
-            </div>
-            <div class="modal-footer">
+            </div>            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary">Thêm Admin</button>
+                <button type="button" class="btn btn-primary" id="submitAddAdmin">Thêm Admin</button>
             </div>
         </div>
     </div>
