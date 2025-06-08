@@ -27,6 +27,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
     z-index: 1050;
     padding: 1rem 2rem; /* Tăng padding để logo và các phần tử có không gian */
     margin: 0;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1) !important; /* Bóng mờ nhẹ như main.css */
 }
 
 /* Navbar styling adjustments */
@@ -62,7 +63,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled {
     background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
     backdrop-filter: blur(10px);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15) !important; /* Bóng đậm hơn khi scroll */
     padding: 0.5rem 0;
 }
 

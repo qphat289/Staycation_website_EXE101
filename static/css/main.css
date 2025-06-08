@@ -18,6 +18,10 @@
     --background-light: #f8fdf4;    /* Màu nền sáng */
     --background-warning: #FFDBA8;  /* Màu nền cảnh báo */
     --white: #ffffff;               /* Màu trắng */
+    
+    /* Dynamic navbar text colors - sẽ được thay đổi bởi JavaScript */
+    --navbar-text-color: #ffffff;   /* Màu chữ navbar (mặc định trắng) */
+    --navbar-hover-color: #F1B55F;  /* Màu hover navbar (mặc định vàng) */
 }
 
 /* =======================================================================
@@ -74,6 +78,11 @@ body {
     background-color: var(--background-light);
     font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
     padding-bottom: 0;
+}
+
+/* Padding cho navbar fixed - sẽ bị override bởi home.css cho homepage */
+body:not(.homepage) {
+    padding-top: 80px;
 }
 
 main {
@@ -160,39 +169,64 @@ main {
     color: var(--text-light);
 }
 
-/* 1.4 Navbar - Màu xanh chủ đạo */
-.navbar-dark.bg-primary {
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-dark) 100%) !important; /* Gradient xanh */
+/* 1.4 Navbar - Màu trong suốt ban đầu với bóng mờ - GLOBAL */
+html body .navbar-dark.bg-primary {
+    background: transparent !important; /* Trong suốt ban đầu */
     backdrop-filter: none; /* Bỏ hiệu ứng blur */
     -webkit-backdrop-filter: none; /* Bỏ hiệu ứng blur */
-    box-shadow: 0 2px 15px rgba(122, 188, 14, 0.3);
-    border-bottom: 1px solid rgba(64, 112, 16, 0.5);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1) !important; /* Bóng mờ nhẹ */
+    border-bottom: none; /* Không có border khi trong suốt */
     transition: all 0.3s ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1050;
 }
 
-/* Navbar khi scroll - giữ màu xanh */
-.navbar-dark.bg-primary.scrolled {
-    background: linear-gradient(135deg, var(--accent-dark) 0%, #2d5a08 100%) !important;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    box-shadow: 0 2px 20px rgba(122, 188, 14, 0.4);
+/* Navbar khi scroll - hiện màu xanh - GLOBAL */
+html body .navbar-dark.bg-primary.scrolled {
+    background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15) !important; /* Bóng đậm hơn khi scroll */
 }
 
-/* Navbar text color - màu trắng trên nền xanh */
-.navbar-dark .navbar-nav .nav-link {
-    color: #ffffff !important; /* Màu chữ trắng */
+/* Dynamic navbar text colors using CSS variables */
+html body .navbar .nav-link,
+html body .navbar .navbar-brand,
+html body .navbar .brand-text,
+html body .navbar-brand .brand-text,
+html body .navbar-dark .navbar-nav .nav-link,
+html body .navbar .dropdown-toggle,
+html body .navbar .nav-link.dropdown-toggle,
+html body .navbar .nav-item.dropdown .nav-link.dropdown-toggle,
+html body .navbar .nav-link.user-dropdown-container,
+html body .navbar .nav-link.user-dropdown-container span,
+html body #languageToggle,
+html body #languageToggle span,
+html body .navbar .auth-buttons-container .nav-link {
+    color: var(--navbar-text-color) !important;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease !important;
 }
 
-.navbar-dark .navbar-nav .nav-link:hover {
-    color: var(--primary-color) !important; /* Màu vàng khi hover */
+html body .navbar .nav-link:hover,
+html body .navbar .auth-link:hover,
+html body .navbar .dropdown-toggle:hover,
+html body .navbar .nav-link.user-dropdown-container:hover,
+html body .navbar .nav-link.user-dropdown-container:hover span,
+html body .navbar .nav-item.dropdown .nav-link.dropdown-toggle:hover,
+html body #languageToggle:hover,
+html body .navbar-dark .navbar-nav .nav-link:hover {
+    color: var(--navbar-hover-color) !important;
     transform: translateY(-1px);
 }
 
-/* Brand text - màu trắng */
-.navbar-brand .brand-text {
-    color: #ffffff !important;
+/* Brand text - sử dụng CSS variables */
+html body .navbar-brand .brand-text {
+    color: var(--navbar-text-color) !important;
     font-weight: 700;
 }
 

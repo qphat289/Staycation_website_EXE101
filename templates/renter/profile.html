@@ -1,5 +1,193 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+<style>
+/* Black navbar text for renter profile page - HIGHEST PRIORITY */
+html body .navbar .nav-link,
+html body .navbar .navbar-brand,
+html body .navbar .brand-text,
+html body .navbar-brand .brand-text,
+html body .navbar-dark .navbar-nav .nav-link {
+  color: black !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  text-shadow: none !important;
+}
+
+/* Ensure normal navbar size */
+html body .navbar {
+  min-height: 60px !important;
+  padding: 0.5rem 1rem !important;
+}
+
+html body .navbar .container {
+  padding: 0 15px !important;
+}
+
+html body .navbar .navbar-brand {
+  font-size: 1.25rem !important;
+  padding: 0.3125rem 0 !important;
+}
+
+html body .navbar .nav-link {
+  padding: 0.5rem 1rem !important;
+  font-size: 1rem !important;
+}
+
+/* All navbar buttons and dropdowns */
+html body .navbar .dropdown-toggle,
+html body .navbar .nav-link.dropdown-toggle,
+html body .navbar .nav-item.dropdown .nav-link.dropdown-toggle {
+  color: black !important;
+  text-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* User dropdown container */
+html body .navbar .nav-link.user-dropdown-container,
+html body .navbar .nav-link.user-dropdown-container span {
+  color: black !important;
+  text-shadow: none !important;
+}
+
+/* Language toggle button - black text */
+html body #languageToggle,
+html body #languageToggle span {
+  color: black !important;
+}
+
+/* Hover effects */
+html body .navbar .nav-link:hover,
+html body .navbar .auth-link:hover,
+html body .navbar .dropdown-toggle:hover {
+  color: #8bc34a !important; /* Green hover for black text */
+  transform: translateY(-1px) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Auth buttons container */
+html body .navbar .auth-buttons-container .nav-link {
+  color: black !important;
+}
+
+/* Avatar and user info */
+html body .navbar img.rounded-circle {
+  border: 2px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* CSS Variables for dynamic text color */
+:root {
+  --navbar-text-color: black;
+  --navbar-hover-color: #8bc34a;
+}
+
+/* Dynamic navbar text color */
+html body .navbar .nav-link,
+html body .navbar .navbar-brand,
+html body .navbar .brand-text,
+html body .navbar-brand .brand-text,
+html body .navbar-dark .navbar-nav .nav-link,
+html body .navbar .dropdown-toggle,
+html body .navbar .nav-link.dropdown-toggle,
+html body .navbar .nav-item.dropdown .nav-link.dropdown-toggle,
+html body .navbar .nav-link.user-dropdown-container,
+html body .navbar .nav-link.user-dropdown-container span,
+html body #languageToggle,
+html body #languageToggle span,
+html body .navbar .auth-buttons-container .nav-link {
+  color: var(--navbar-text-color) !important;
+}
+
+html body .navbar .nav-link:hover,
+html body .navbar .auth-link:hover,
+html body .navbar .dropdown-toggle:hover {
+  color: var(--navbar-hover-color) !important;
+}
+</style>
+
+<script>
+// Function to calculate background brightness and adjust text color
+function adjustNavbarTextColor() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+    
+    // Get computed background color
+    const computedStyle = window.getComputedStyle(navbar);
+    const backgroundColor = computedStyle.backgroundColor;
+    
+    // Function to parse RGB values from background color
+    function getRGBValues(color) {
+        const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        return match ? [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])] : [255, 255, 255];
+    }
+    
+    // Calculate luminance (brightness) using the relative luminance formula
+    function getLuminance(r, g, b) {
+        const [rs, gs, bs] = [r, g, b].map(c => {
+            c = c / 255;
+            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    }
+    
+    // Get RGB values
+    const [r, g, b] = getRGBValues(backgroundColor);
+    
+    // Calculate luminance
+    const luminance = getLuminance(r, g, b);
+    
+    // Determine text color based on background brightness
+    // If background is transparent or very bright, use dark text
+    // If background is dark, use light text
+    const root = document.documentElement;
+    
+    if (backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent' || luminance > 0.5) {
+        // Bright background - use dark text
+        root.style.setProperty('--navbar-text-color', 'black');
+        root.style.setProperty('--navbar-hover-color', '#8bc34a');
+    } else {
+        // Dark background - use light text  
+        root.style.setProperty('--navbar-text-color', 'white');
+        root.style.setProperty('--navbar-hover-color', '#f1b55f');
+    }
+    
+    // Also adjust language toggle background
+    const languageToggle = document.getElementById('languageToggle');
+    if (languageToggle) {
+        if (luminance > 0.5) {
+            languageToggle.style.background = 'rgba(255, 255, 255, 0.8)';
+            languageToggle.style.border = '1px solid rgba(0, 0, 0, 0.2)';
+        } else {
+            languageToggle.style.background = 'rgba(255, 255, 255, 0.2)';
+            languageToggle.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+        }
+    }
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', adjustNavbarTextColor);
+
+// Run when scrolling (navbar might change background)
+window.addEventListener('scroll', adjustNavbarTextColor);
+
+// Run when window is resized (responsive changes)
+window.addEventListener('resize', adjustNavbarTextColor);
+
+// Observe navbar for background changes
+if (window.MutationObserver) {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        const observer = new MutationObserver(adjustNavbarTextColor);
+        observer.observe(navbar, { 
+            attributes: true, 
+            attributeFilter: ['style', 'class'] 
+        });
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="text-center mb-4">
@@ -53,9 +241,9 @@
                         Thông Tin Cá Nhân
                     </h5>
                     <form method="POST" enctype="multipart/form-data" id="profileForm" onsubmit="return validateForm()">
-                        <!-- Tên đăng nhập và Họ tên cùng hàng -->
+                        <!-- Tên đăng nhập, Họ, Tên và Giới tính cùng hàng -->
                         <div class="row">
-                            <div class="col-md-6 mb-2">
+                            <div class="col-md-3 mb-2">
                                 <label for="username" class="form-label">
                                     <i class="fas fa-user me-1"></i>
                                     Tên đăng nhập
@@ -70,20 +258,87 @@
                                     Vui lòng nhập tên đăng nhập
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-2">
-                                <label for="full_name" class="form-label">
+                            <div class="col-md-3 mb-2">
+                                <label for="first_name" class="form-label">
                                     <i class="fas fa-user me-1"></i>
-                                    Họ và tên
+                                    Họ
                                 </label>
                                 <input type="text" 
                                        class="form-control form-input-renter" 
-                                       id="full_name" 
-                                       name="full_name" 
-                                       value="{{ current_user.full_name or '' }}"
-                                       placeholder="Nguyễn Văn A"
+                                       id="first_name" 
+                                       name="first_name" 
+                                       value="{{ current_user.first_name or '' }}"
+                                       placeholder="Nguyễn"
                                        required>
                                 <div class="invalid-feedback">
-                                    Vui lòng nhập họ và tên
+                                    Vui lòng nhập họ
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="last_name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Tên
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-input-renter" 
+                                       id="last_name" 
+                                       name="last_name" 
+                                       value="{{ current_user.last_name or '' }}"
+                                       placeholder="Văn A"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập tên
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="gender" class="form-label">
+                                    <i class="fas fa-venus-mars me-1"></i>
+                                    Giới tính
+                                </label>
+                                <select class="form-control form-input-renter" id="gender" name="gender">
+                                    <option value="Nam" {{ 'selected' if current_user.gender == 'Nam' else '' }}>Nam</option>
+                                    <option value="Nữ" {{ 'selected' if current_user.gender == 'Nữ' else '' }}>Nữ</option>
+                                    <option value="Khác" {{ 'selected' if current_user.gender == 'Khác' else '' }}>Khác</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Ngày sinh -->
+                        <div class="mb-2">
+                            <label for="birth_date" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>
+                                Ngày sinh
+                            </label>
+                            <div class="row">
+                                <div class="col-4">
+                                    <select class="form-control form-input-renter" name="birth_day">
+                                        <option value="">Ngày</option>
+                                        {% for day in range(1, 32) %}
+                                            <option value="{{ day }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.day == day else '' }}>
+                                                {{ day }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <select class="form-control form-input-renter" name="birth_month">
+                                        <option value="">Tháng</option>
+                                        {% for month in range(1, 13) %}
+                                            <option value="{{ month }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.month == month else '' }}>
+                                                {{ month }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <select class="form-control form-input-renter" name="birth_year">
+                                        <option value="">Năm</option>
+                                        {% for year in range(1950, 2010) %}
+                                            <option value="{{ year }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.year == year else '' }}>
+                                                {{ year }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -117,6 +372,20 @@
                                        value="{{ current_user.phone or '' }}"
                                        placeholder="0937956211">
                             </div>
+                        </div>
+
+                        <!-- Địa chỉ -->
+                        <div class="mb-2">
+                            <label for="address" class="form-label">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                Địa chỉ
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-input-renter" 
+                                   id="address" 
+                                   name="address" 
+                                   value="{{ current_user.address or '' }}"
+                                   placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố">
                         </div>
                         
                         <!-- Ảnh đại diện và Đổi mật khẩu -->
@@ -538,6 +807,8 @@ function previewImage(input) {
 // Real-time validation
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('.form-input-renter');
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
     
     inputs.forEach(input => {
         input.addEventListener('input', function() {
@@ -547,6 +818,88 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Username validation
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            const username = this.value.trim();
+            if (username && username !== '{{ current_user.username }}') {
+                checkUsernameAvailability(username, this);
+            } else if (username === '{{ current_user.username }}') {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+    
+    // Email validation
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const email = this.value.trim();
+            if (email && email !== '{{ current_user.email }}') {
+                checkEmailAvailability(email, this);
+            } else if (email === '{{ current_user.email }}') {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
 });
+
+// Check username availability
+function checkUsernameAvailability(username, inputElement) {
+    fetch('/renter/check-username', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({username: username})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.available) {
+            inputElement.classList.remove('is-invalid');
+            inputElement.classList.add('is-valid');
+        } else {
+            inputElement.classList.remove('is-valid');
+            inputElement.classList.add('is-invalid');
+            const feedback = inputElement.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.textContent = 'Tên đăng nhập đã tồn tại';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking username:', error);
+    });
+}
+
+// Check email availability
+function checkEmailAvailability(email, inputElement) {
+    fetch('/renter/check-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({email: email})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.available) {
+            inputElement.classList.remove('is-invalid');
+            inputElement.classList.add('is-valid');
+        } else {
+            inputElement.classList.remove('is-valid');
+            inputElement.classList.add('is-invalid');
+            const feedback = inputElement.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.textContent = 'Email đã tồn tại';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking email:', error);
+    });
+}
 </script>
 {% endblock %} 

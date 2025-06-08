@@ -202,38 +202,67 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 @renter_bp.route('/profile', methods=['GET', 'POST'])
-@login_required
+@login_required  
 def profile():
     if request.method == 'POST':
         try:
             # Cập nhật thông tin cơ bản
             current_user.username = request.form.get('username')
-            current_user.full_name = request.form.get('full_name')
+            current_user.first_name = request.form.get('first_name')
+            current_user.last_name = request.form.get('last_name')
+            current_user.gender = request.form.get('gender')
             current_user.email = request.form.get('email')
             current_user.phone = request.form.get('phone')
+            current_user.address = request.form.get('address')
+            
+            # Xử lý ngày sinh
+            birth_day = request.form.get('birth_day')
+            birth_month = request.form.get('birth_month')
+            birth_year = request.form.get('birth_year')
+            
+            if birth_day and birth_month and birth_year:
+                try:
+                    current_user.birth_date = datetime(int(birth_year), int(birth_month), int(birth_day)).date()
+                except ValueError:
+                    pass  # Ignore invalid date
             
             # Xử lý upload avatar
             avatar_file = request.files.get('avatar')
-            if avatar_file and allowed_file(avatar_file.filename):
+            if avatar_file and avatar_file.filename and allowed_file(avatar_file.filename):
                 # Tạo tên file unique
                 filename = secure_filename(avatar_file.filename)
                 timestamp = str(int(datetime.now().timestamp()))
                 filename = f"avatar_{current_user.id}_{timestamp}_{filename}"
                 
+                # Đảm bảo upload folder tồn tại
+                upload_folder = current_app.config.get('UPLOAD_FOLDER')
+                if not upload_folder:
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+                    current_app.config['UPLOAD_FOLDER'] = upload_folder
+                
+                if not os.path.exists(upload_folder):
+                    os.makedirs(upload_folder)
+                
                 # Lưu file
-                upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                upload_path = os.path.join(upload_folder, filename)
                 avatar_file.save(upload_path)
                 
                 # Resize image
-                with Image.open(upload_path) as img:
-                    img = img.resize((200, 200), Image.Resampling.LANCZOS)
-                    img.save(upload_path, optimize=True, quality=85)
+                try:
+                    with Image.open(upload_path) as img:
+                        img = img.resize((200, 200), Image.Resampling.LANCZOS)
+                        img.save(upload_path, optimize=True, quality=85)
+                except Exception as e:
+                    print(f"Error resizing image: {e}")
                 
                 # Xóa avatar cũ nếu có
                 if current_user.avatar:
-                    old_avatar_path = os.path.join(current_app.config['UPLOAD_FOLDER'], current_user.avatar)
+                    old_avatar_path = os.path.join(upload_folder, current_user.avatar)
                     if os.path.exists(old_avatar_path):
-                        os.remove(old_avatar_path)
+                        try:
+                            os.remove(old_avatar_path)
+                        except Exception as e:
+                            print(f"Error removing old avatar: {e}")
                 
                 current_user.avatar = filename
             
@@ -247,6 +276,42 @@ def profile():
         return redirect(url_for('renter.profile'))
     
     return render_template('renter/profile.html')
+
+@renter_bp.route('/check-username', methods=['POST'])
+@login_required
+def check_username():
+    data = request.get_json()
+    username = data.get('username')
+    
+    # Kiểm tra nếu username này là của user hiện tại thì available
+    if username == current_user.username:
+        return jsonify({'available': True})
+    
+    existing_owner = Owner.query.filter_by(username=username).first()
+    existing_admin = Admin.query.filter_by(username=username).first()
+    existing_renter = Renter.query.filter_by(username=username).first()
+    
+    return jsonify({
+        'available': not bool(existing_owner or existing_admin or existing_renter)
+    })
+
+@renter_bp.route('/check-email', methods=['POST'])
+@login_required
+def check_email():
+    data = request.get_json()
+    email = data.get('email')
+    
+    # Kiểm tra nếu email này là của user hiện tại thì available
+    if email == current_user.email:
+        return jsonify({'available': True})
+    
+    existing_owner = Owner.query.filter_by(email=email).first()
+    existing_admin = Admin.query.filter_by(email=email).first()
+    existing_renter = Renter.query.filter_by(email=email).first()
+    
+    return jsonify({
+        'available': not bool(existing_owner or existing_admin or existing_renter)
+    })
 
 @renter_bp.route('/homestay/<int:homestay_id>/review', methods=['GET', 'POST'])
 @login_required

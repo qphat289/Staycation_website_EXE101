@@ -56,6 +56,29 @@ document.addEventListener('DOMContentLoaded', function() {
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+    
+    // Navbar scroll effect - áp dụng cho tất cả trang
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        function handleNavbarScroll() {
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            // Adjust text color after scroll state changes
+            adjustNavbarTextColor();
+        }
+        
+        // Xử lý khi scroll
+        window.addEventListener('scroll', handleNavbarScroll);
+        
+        // Xử lý lần đầu load trang
+        handleNavbarScroll();
+    }
+    
+    // Auto-adjust navbar text color based on background brightness
+    adjustNavbarTextColor();
 });
 
 // Function to preview image before upload
@@ -74,4 +97,70 @@ function previewImage(input, previewElement) {
 // Function to format currency
 function formatCurrency(amount) {
     return '$' + parseFloat(amount).toFixed(2);
+}
+
+// Function to calculate background brightness and adjust navbar text color automatically
+function adjustNavbarTextColor() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+    
+    // Get computed background color
+    const computedStyle = window.getComputedStyle(navbar);
+    const backgroundColor = computedStyle.backgroundColor;
+    
+    // Function to parse RGB values from background color
+    function getRGBValues(color) {
+        const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        return match ? [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])] : [255, 255, 255];
+    }
+    
+    // Calculate luminance (brightness) using the relative luminance formula
+    function getLuminance(r, g, b) {
+        const [rs, gs, bs] = [r, g, b].map(c => {
+            c = c / 255;
+            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    }
+    
+    // Get RGB values
+    const [r, g, b] = getRGBValues(backgroundColor);
+    
+    // Calculate luminance
+    const luminance = getLuminance(r, g, b);
+    
+    // Set CSS custom properties for dynamic text color
+    const root = document.documentElement;
+    
+    // Check if background is transparent or bright
+    const isTransparent = backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent';
+    const isBright = luminance > 0.5;
+    
+    if (isTransparent || isBright) {
+        // Bright/transparent background - use dark text
+        root.style.setProperty('--navbar-text-color', 'black');
+        root.style.setProperty('--navbar-hover-color', '#8bc34a');
+        navbar.setAttribute('data-theme', 'light');
+    } else {
+        // Dark background - use light text  
+        root.style.setProperty('--navbar-text-color', 'white');
+        root.style.setProperty('--navbar-hover-color', '#f1b55f');
+        navbar.setAttribute('data-theme', 'dark');
+    }
+    
+    // Adjust language toggle styling
+    const languageToggle = document.getElementById('languageToggle');
+    if (languageToggle) {
+        if (isTransparent || isBright) {
+            languageToggle.style.background = 'rgba(255, 255, 255, 0.8)';
+            languageToggle.style.border = '1px solid rgba(0, 0, 0, 0.2)';
+            languageToggle.style.color = 'black';
+        } else {
+            languageToggle.style.background = 'rgba(255, 255, 255, 0.2)';
+            languageToggle.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+            languageToggle.style.color = 'white';
+        }
+    }
+    
+    console.log(`Navbar background: ${backgroundColor}, Luminance: ${luminance.toFixed(3)}, Theme: ${navbar.getAttribute('data-theme')}`);
 }

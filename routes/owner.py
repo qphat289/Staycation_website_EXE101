@@ -944,30 +944,76 @@ def settings():
 @owner_required
 def profile():
     if request.method == 'POST':
-        # Get form data
-        current_user.full_name = request.form.get('full_name')
-        current_user.email = request.form.get('email')
-        current_user.phone = request.form.get('phone')
-        current_user.address = request.form.get('address')
-        current_user.business_name = request.form.get('business_name')
-        current_user.tax_code = request.form.get('tax_code')
-        current_user.bank_account = request.form.get('bank_account')
-        current_user.bank_name = request.form.get('bank_name')
-        
-        # Handle avatar upload
-        if 'avatar' in request.files:
-            file = request.files['avatar']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                current_user.avatar = filename
-        
         try:
+            # Cập nhật thông tin cơ bản
+            current_user.username = request.form.get('username')
+            current_user.first_name = request.form.get('first_name')
+            current_user.last_name = request.form.get('last_name')
+            current_user.gender = request.form.get('gender')
+            current_user.email = request.form.get('email')
+            current_user.phone = request.form.get('phone')
+            current_user.address = request.form.get('address')
+            
+            # Xử lý ngày sinh
+            birth_day = request.form.get('birth_day')
+            birth_month = request.form.get('birth_month')
+            birth_year = request.form.get('birth_year')
+            
+            if birth_day and birth_month and birth_year:
+                try:
+                    current_user.birth_date = datetime(int(birth_year), int(birth_month), int(birth_day)).date()
+                except ValueError:
+                    pass  # Ignore invalid date
+            
+            # Xử lý upload avatar
+            avatar_file = request.files.get('avatar')
+            if avatar_file and avatar_file.filename and allowed_file(avatar_file.filename):
+                # Tạo tên file unique
+                filename = secure_filename(avatar_file.filename)
+                timestamp = str(int(datetime.now().timestamp()))
+                filename = f"avatar_{current_user.id}_{timestamp}_{filename}"
+                
+                # Đảm bảo upload folder tồn tại
+                upload_folder = current_app.config.get('UPLOAD_FOLDER')
+                if not upload_folder:
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+                    current_app.config['UPLOAD_FOLDER'] = upload_folder
+                
+                if not os.path.exists(upload_folder):
+                    os.makedirs(upload_folder)
+                
+                # Lưu file
+                upload_path = os.path.join(upload_folder, filename)
+                avatar_file.save(upload_path)
+                
+                # Resize image  
+                try:
+                    from PIL import Image
+                    with Image.open(upload_path) as img:
+                        img = img.resize((200, 200), Image.Resampling.LANCZOS)
+                        img.save(upload_path, optimize=True, quality=85)
+                except Exception as e:
+                    print(f"Error resizing image: {e}")
+                
+                # Xóa avatar cũ nếu có
+                if current_user.avatar:
+                    old_avatar_path = os.path.join(upload_folder, current_user.avatar)
+                    if os.path.exists(old_avatar_path):
+                        try:
+                            os.remove(old_avatar_path)
+                        except Exception as e:
+                            print(f"Error removing old avatar: {e}")
+                
+                current_user.avatar = filename
+            
             db.session.commit()
-            flash('Profile updated successfully!', 'success')
-        except IntegrityError:
+            flash('Cập nhật thông tin thành công!', 'success')
+            
+        except Exception as e:
             db.session.rollback()
-            flash('Error updating profile. Please try again.', 'danger')
+            flash(f'Có lỗi xảy ra: {str(e)}', 'danger')
+        
+        return redirect(url_for('owner.profile'))
             
     return render_template('owner/profile.html')
 

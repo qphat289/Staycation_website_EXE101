@@ -66,6 +66,8 @@ def register():
             username=username,
             email=email,
             phone=phone,
+            first_name=first_name,
+            last_name=last_name,
             full_name=f"{first_name} {last_name}"
         )
         new_renter.set_password(password)
