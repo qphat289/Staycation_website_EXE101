@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user, logout_user
 from models import Booking, Review, db, Room, RoomImage, Admin, Owner, Renter
 from datetime import datetime, timedelta
@@ -50,43 +50,151 @@ def dashboard():
     
     return render_template('renter/dashboard.html', bookings=bookings)
 
+# City and district mapping
+CITY_MAPPING = {
+    'TP. Hồ Chí Minh': 'hcm',
+    'Hà Nội': 'hanoi'
+}
+
+DISTRICT_MAPPING = {
+    'Quận 1': 'quan1',
+    'Quận 2': 'quan2',
+    'Quận 3': 'quan3',
+    'Quận 4': 'quan4',
+    'Quận 5': 'quan5',
+    'Quận 6': 'quan6',
+    'Quận 7': 'quan7',
+    'Quận 8': 'quan8',
+    'Quận 9': 'quan9',
+    'Quận 10': 'quan10',
+    'Quận 11': 'quan11',
+    'Quận 12': 'quan12',
+    'Quận Bình Thạnh': 'quan_binh_thanh',
+    'Quận Tân Bình': 'quan_tan_binh',
+    'Quận Gò Vấp': 'quan_go_vap',
+    'Quận Phú Nhuận': 'quan_phu_nhuan',
+    'Quận Tân Phú': 'quan_tan_phu',
+    'Quận Bình Tân': 'quan_binh_tan',
+    'Quận Thủ Đức': 'quan_thu_duc'
+}
 
 @renter_bp.route('/search')
 def search():
     """Search for rooms with filters"""
     # Get search parameters
-    city = request.args.get('city', '')
-    district = request.args.get('district', '')
+    location = request.args.get('location', '')
     min_price = request.args.get('min_price', type=float)
     max_price = request.args.get('max_price', type=float)
     room_type = request.args.get('room_type', '')
+    booking_type = request.args.get('booking_type', 'hourly')  # Default to hourly if not specified
+    
+    # Get time parameters
+    checkin_date = request.args.get('checkin_date')
+    checkin_time = request.args.get('checkin_time')
+    checkout_time = request.args.get('checkout_time')
+    
+    # Get guest parameters
+    adults = request.args.get('adults', type=int, default=1)
+    children = request.args.get('children', type=int, default=0)
+    rooms_count = request.args.get('rooms', type=int, default=1)
+    total_guests = adults + children if adults is not None and children is not None else None
+    
+    # Log search parameters
+    print("🔍 Search Parameters:")
+    print(f"Location: {location}")
+    print(f"Booking Type: {booking_type}")
+    print(f"Check-in Date: {checkin_date}")
+    print(f"Check-in Time: {checkin_time}")
+    print(f"Check-out Time: {checkout_time}")
+    print(f"Adults: {adults}")
+    print(f"Children: {children}")
+    print(f"Rooms: {rooms_count}")
+    print(f"Total Guests: {total_guests}")
     
     # Build query
     query = Room.query.filter_by(is_active=True)
     
-    if city:
-        query = query.filter(Room.city.ilike(f'%{city}%'))
-    if district:
-        query = query.filter(Room.district.ilike(f'%{district}%'))
-    if min_price is not None:
-        query = query.filter(Room.price_per_night >= min_price)
-    if max_price is not None:
-        query = query.filter(Room.price_per_night <= max_price)
+    # Filter by location (city, district or room title)
+    if location:
+        # Map location to database values if it matches a city or district
+        location_db = location
+        if location in CITY_MAPPING:
+            location_db = CITY_MAPPING[location]
+        elif location in DISTRICT_MAPPING:
+            location_db = DISTRICT_MAPPING[location]
+            
+        # Try to match location against city, district, or title
+        query = query.filter(
+            db.or_(
+                Room.city.ilike(f'%{location_db}%'),
+                Room.district.ilike(f'%{location_db}%'),
+                Room.title.ilike(f'%{location}%')  # Keep original for title search
+            )
+        )
+        print(f"🔍 Location filter: {location} -> {location_db}")
+        
+    # Apply price filters based on booking type
+    if booking_type == 'hourly':
+        if min_price is not None:
+            query = query.filter(Room.price_per_hour >= min_price)
+            print(f"🔍 Min hourly price filter: {min_price}")
+        if max_price is not None:
+            query = query.filter(Room.price_per_hour <= max_price)
+            print(f"🔍 Max hourly price filter: {max_price}")
+        # Ensure room has hourly price and it's not zero
+        query = query.filter(Room.price_per_hour.isnot(None))
+        query = query.filter(Room.price_per_hour > 0)
+    else:  # daily/nightly
+        if min_price is not None:
+            query = query.filter(Room.price_per_night >= min_price)
+            print(f"🔍 Min nightly price filter: {min_price}")
+        if max_price is not None:
+            query = query.filter(Room.price_per_night <= max_price)
+            print(f"🔍 Max nightly price filter: {max_price}")
+        # Ensure room has nightly price and it's not zero
+        query = query.filter(Room.price_per_night.isnot(None))
+        query = query.filter(Room.price_per_night > 0)
+    
     if room_type:
         query = query.filter(Room.room_type == room_type)
+        print(f"🔍 Room type filter: {room_type}")
     
-    # Execute query
+    # Filter by max guests if specified
+    if total_guests is not None:
+        query = query.filter(Room.max_guests >= total_guests)
+        print(f"🔍 Max guests filter: {total_guests}")
+    
+    # Execute query and get all matching rooms
     rooms = query.all()
+    print(f"🔍 Found {len(rooms)} matching rooms")
+    
+    # Print details of each room for debugging
+    for room in rooms:
+        print(f"\nRoom Details:")
+        print(f"Title: {room.title}")
+        print(f"City: {room.city}")
+        print(f"District: {room.district}")
+        print(f"Max Guests: {room.max_guests}")
+        print(f"Price per Hour: {room.price_per_hour}")
+        print(f"Price per Night: {room.price_per_night}")
+        print(f"Is Active: {room.is_active}")
     
     # Get unique cities and districts for filter dropdowns
     cities = db.session.query(Room.city).distinct().all()
     districts = db.session.query(Room.district).distinct().all()
     room_types = db.session.query(Room.room_type).distinct().all()
     
+    # Map database values to display names
+    city_display_names = {v: k for k, v in CITY_MAPPING.items()}
+    district_display_names = {v: k for k, v in DISTRICT_MAPPING.items()}
+    
+    cities = [city_display_names.get(city[0], city[0].upper()) for city in cities]
+    districts = [district_display_names.get(district[0], district[0].upper()) for district in districts]
+    
     return render_template('renter/search.html', 
                           rooms=rooms,
-                          cities=[city[0] for city in cities],
-                          districts=[district[0] for district in districts],
+                          cities=cities,
+                          districts=districts,
                           room_types=[rt[0] for rt in room_types if rt[0]],
                           search_params=request.args)
 
@@ -544,3 +652,21 @@ def delete_account():
     logout_user()
     flash('Tài khoản của bạn đã được xóa', 'success')
     return redirect(url_for('home'))
+
+@renter_bp.route('/debug_rooms')
+def debug_rooms():
+    """Temporary route to debug room data"""
+    rooms = Room.query.all()
+    result = []
+    for room in rooms:
+        result.append({
+            'title': room.title,
+            'city': room.city,
+            'district': room.district,
+            'max_guests': room.max_guests,
+            'price_per_hour': room.price_per_hour,
+            'price_per_night': room.price_per_night,
+            'is_active': room.is_active,
+            'room_type': room.room_type
+        })
+    return jsonify(result)

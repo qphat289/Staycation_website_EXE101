@@ -272,17 +272,6 @@
                                     <i class="bi bi-speedometer2 me-1"></i><span data-translate="admin">Quản trị viên</span>
                                 </a>
                             </li>
-                        {% elif current_user.role == 'renter' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('renter.dashboard') }}" style="color: #333333;">
-                                    <i class="bi bi-person-workspace me-1"></i><span data-translate="renter-dashboard">Renter Dashboard</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('renter.search') }}" style="color: #333333;">
-                                    <i class="bi bi-search me-1"></i><span data-translate="search">Search</span>
-                                </a>
-                            </li>
                         {% endif %}
                     {% endif %}
                 </ul>

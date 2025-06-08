@@ -11,6 +11,16 @@
             </div>
             <div class="card-body">
                 <form method="get" action="{{ url_for('renter.search') }}">
+                    <!-- Hidden booking type field -->
+                    <input type="hidden" name="booking_type" value="{{ search_params.booking_type or 'hourly' }}">
+                    
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Địa điểm hoặc tên homestay</label>
+                        <input type="text" class="form-control" id="location" name="location" 
+                               value="{{ search_params.location or '' }}"
+                               placeholder="Nhập địa điểm hoặc tên homestay">
+                    </div>
+                    
                     <div class="mb-3">
                         <label for="city" class="form-label" data-translate="city">City</label>
                         <select class="form-select" id="city" name="city">
@@ -30,62 +40,90 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="min_price" class="form-label" data-translate="min-price-per-hour">Min Price per Hour ($)</label>
-                        <input type="number" class="form-control" id="min_price" name="min_price" min="0" step="0.01" value="{{ search_params.min_price or '' }}">
+                        <label for="min_price" class="form-label">
+                            {% if search_params.booking_type == 'daily' %}
+                                Giá tối thiểu/đêm
+                            {% else %}
+                                Giá tối thiểu/giờ
+                            {% endif %}
+                        </label>
+                        <input type="number" class="form-control" id="min_price" name="min_price" 
+                               min="0" step="0.01" value="{{ search_params.min_price or '' }}">
                     </div>
                     <div class="mb-3">
-                        <label for="max_price" class="form-label" data-translate="max-price-per-hour">Max Price per Hour ($)</label>
-                        <input type="number" class="form-control" id="max_price" name="max_price" min="0" step="0.01" value="{{ search_params.max_price or '' }}">
+                        <label for="max_price" class="form-label">
+                            {% if search_params.booking_type == 'daily' %}
+                                Giá tối đa/đêm
+                            {% else %}
+                                Giá tối đa/giờ
+                            {% endif %}
+                        </label>
+                        <input type="number" class="form-control" id="max_price" name="max_price" 
+                               min="0" step="0.01" value="{{ search_params.max_price or '' }}">
                     </div>
-                    <div class="mb-3">
-                        <label for="bedrooms" class="form-label" data-translate="minimum-bedrooms">Minimum Bedrooms</label>
-                        <input type="number" class="form-control" id="bedrooms" name="bedrooms" min="1" value="{{ search_params.bedrooms or '' }}">
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100" data-translate="apply-filters">Apply Filters</button>
+                    <button type="submit" class="btn btn-primary w-100" data-translate="apply-filters">Tìm kiếm</button>
                 </form>
             </div>
         </div>
     </div>
     
-    <!-- Homestay Results -->
+    <!-- Room Results -->
     <div class="col-md-9">
-        <h2 class="mb-4" data-translate="available-homestays">Available Homestays</h2>
+        <h2 class="mb-4">
+            {% if search_params.booking_type == 'daily' %}
+                Phòng cho thuê theo đêm
+            {% else %}
+                Phòng cho thuê theo giờ
+            {% endif %}
+        </h2>
         
-        {% if homestays %}
+        {% if rooms %}
             <div class="row">
-                {% for homestay in homestays %}
+                {% for room in rooms %}
                 <div class="col-md-6 mb-4">
                     <div class="card h-100">
-                        {% if homestay.image_path %}
-                        <img src="{{ url_for('static', filename=homestay.image_path) }}" 
-                             class="card-img-top" alt="{{ homestay.title }}" 
-                             style="height: 200px; object-fit: cover;">
+                        {% if room.images and room.images|length > 0 %}
+                            {% set featured_image = None %}
+                            {% for img in room.images %}
+                                {% if img.is_featured %}
+                                    {% set featured_image = img %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if featured_image %}
+                                <img src="{{ url_for('static', filename=featured_image.image_path) }}" 
+                                     class="card-img-top" alt="{{ room.title }}" 
+                                     style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <img src="{{ url_for('static', filename=room.images[0].image_path) }}" 
+                                     class="card-img-top" alt="{{ room.title }}" 
+                                     style="height: 200px; object-fit: cover;">
+                            {% endif %}
                         {% else %}
-                        <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" 
-                             class="card-img-top" alt="Default Image" 
-                             style="height: 200px; object-fit: cover;">
+                            <img src="{{ url_for('static', filename='images/default-room.jpg') }}" 
+                                 class="card-img-top" alt="Default Image" 
+                                 style="height: 200px; object-fit: cover;">
                         {% endif %}
                         <div class="card-body">
-                            <h5 class="card-title">{{ homestay.title }}</h5>
-                            <p class="card-text">{{ homestay.description|truncate(100) }}</p>
+                            <h5 class="card-title">{{ room.title }}</h5>
+                            <p class="card-text">{{ room.description|truncate(100) }}</p>
                             <p class="card-text">
                                 <small class="text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ homestay.city | location_name('city') }}, {{ homestay.district | location_name('district') }}
+                                    <i class="bi bi-geo-alt"></i> {{ room.city | location_name('city') }}, {{ room.district | location_name('district') }}
                                 </small>
                             </p>
-                            {% set rooms = homestay.rooms|list %}
-                            {% if rooms|length > 0 %}
-                                {% set price_list = rooms|map(attribute='price_per_hour')|list %}
-                                {% set min_price = price_list|min %}
-                                <p class="card-text fw-bold">${{ min_price }}/hour</p>
-                            {% else %}
-                                <p class="card-text fw-bold" data-translate="no-rooms">No rooms yet</p>
-                            {% endif %}
+                            <p class="card-text fw-bold">
+                                {% if search_params.booking_type == 'daily' %}
+                                    {{ "{:,.0f}".format(room.display_price_per_night) }}đ /đêm
+                                {% else %}
+                                    {{ "{:,.0f}".format(room.display_price) }}đ /giờ
+                                {% endif %}
+                            </p>
                         </div>
                         <div class="card-footer">
-                            <a href="{{ url_for('renter.view_room', id=homestay.id) }}" class="btn btn-primary" data-translate="view-details">View Details</a>
+                            <a href="{{ url_for('renter.view_room', id=room.id) }}" class="btn btn-primary" data-translate="view-details">Xem chi tiết</a>
                             {% if current_user.is_authenticated and current_user.is_renter() %}
-                                                         <a href="{{ url_for('renter.book_room', room_id=homestay.id) }}" class="btn btn-outline-primary" data-translate="book-now">Book Now</a>
+                                <a href="{{ url_for('renter.book_room', room_id=room.id) }}" class="btn btn-outline-primary" data-translate="book-now">Đặt phòng</a>
                             {% endif %}
                         </div>
                     </div>
@@ -93,8 +131,8 @@
                 {% endfor %}
             </div>
         {% else %}
-            <div class="alert alert-info" data-translate="no-homestays-found">
-                No homestays found matching your criteria. Try adjusting your filters.
+            <div class="alert alert-info">
+                Không tìm thấy phòng phù hợp với tiêu chí tìm kiếm. Vui lòng thử lại với bộ lọc khác.
             </div>
         {% endif %}
     </div>
