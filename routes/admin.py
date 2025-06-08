@@ -21,263 +21,137 @@ def allowed_file(filename):
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():
+    # --- PHẦN 1: LOGIC LỌC VÀ PHÂN TRANG (GIỮ NGUYÊN CỦA BẠN) ---
     if not isinstance(current_user, Admin):
         flash("You are not authorized!", "danger")
         return redirect(url_for('auth.login'))
     
-    # Get page number from query string, default to 1
     page = request.args.get('page', 1, type=int)
     per_page = 6
-    
-    # Get filter parameters
     status_filter = request.args.get('status', 'all')
     search_query = request.args.get('search', '')
     
-    # Base query for owners
     query = Owner.query
-    
-    # Apply filters
     if status_filter == 'active':
         query = query.filter_by(is_active=True)
     elif status_filter == 'inactive':
         query = query.filter_by(is_active=False)
         
-    # Apply search if provided
     if search_query:
         search_term = f"%{search_query}%"
         query = query.filter(
-            (Owner.username.ilike(search_term)) |
-            (Owner.email.ilike(search_term)) |
-            (Owner.phone.ilike(search_term))
+            or_(
+                Owner.username.ilike(search_term),
+                Owner.email.ilike(search_term),
+                Owner.phone.ilike(search_term)
+            )
         )
     
-    # Get paginated results
     owners = query.paginate(page=page, per_page=per_page, error_out=False)
     
-    # Get counts for filter pills
     total_count = Owner.query.count()
     active_count = Owner.query.filter_by(is_active=True).count()
     inactive_count = Owner.query.filter_by(is_active=False).count()
 
-    # Get or create today's statistics with error handling
-    today = datetime.now().date()
-    stats = None
-    
+    # --- PHẦN 2: LOGIC THỐNG KÊ ---
     try:
+        today = datetime.now().date()
         stats = Statistics.query.filter_by(date=today).first()
-        
-        # Nếu đã có stats cho hôm nay, cập nhật lại số liệu
-        if stats:
-            # 1. User statistics
-            total_owners = Owner.query.count() or random.randint(5, 15)  # Fake nếu chưa có
-            total_renters = Renter.query.count() or random.randint(20, 50)  # Fake nếu chưa có
-            total_users = total_owners + total_renters
-            
-            # 2. Booking statistics
-            # Lấy tất cả booking đã hoàn thành
-            completed_bookings = Booking.query.filter_by(status='completed').all()
-            
-            if completed_bookings:
-                # Tính tổng số giờ thuê và số lần thuê từ dữ liệu thật
-                total_hours = 0
-                total_bookings = len(completed_bookings)
-                hourly_count = 0
-                overnight_count = 0
-                
-                for booking in completed_bookings:
-                    duration = (booking.end_time - booking.start_time).total_seconds() / 3600
-                    total_hours += duration
-                    
-                    if duration <= 24:
-                        hourly_count += 1
-                    else:
-                        overnight_count += 1
-                        
-                common_type = "Theo giờ" if hourly_count >= overnight_count else "Qua đêm"
-            else:
-                # Fake data nếu chưa có booking
-                total_hours = random.randint(100, 500)
-                total_bookings = random.randint(20, 100)
-                hourly_count = random.randint(10, 50)
-                overnight_count = random.randint(10, 50)
-                common_type = random.choice(["Theo giờ", "Qua đêm"])
-            
-            # 3. Rating statistics
-            avg_rating = db.session.query(func.avg(Review.rating)).scalar()
-            if avg_rating is None:
-                # Fake rating nếu chưa có đánh giá
-                avg_rating = round(random.uniform(4.0, 5.0), 1)
-            
-            # Cập nhật số liệu
-            stats.total_owners = total_owners
-            stats.total_renters = total_renters
-            stats.total_users = total_users
-            stats.total_hours = int(total_hours)
-            stats.total_bookings = total_bookings
-            stats.hourly_bookings = hourly_count
-            stats.overnight_bookings = overnight_count
-            stats.common_type = common_type
-            stats.average_rating = avg_rating
-            
-            # Fake data cho biểu đồ nếu chưa có
-            if not stats.hourly_stats:
-                stats.hourly_stats = json.dumps({
-                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-                    'data': [random.randint(5, 20) for _ in range(7)]
-                })
-            
-            if not stats.overnight_stats:
-                stats.overnight_stats = json.dumps({
-                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-                    'data': [random.randint(3, 15) for _ in range(7)]
-                })
-            
-            if not stats.top_homestays:
-                # Fake data cho homestay nổi bật
-                stats.top_homestays = json.dumps([
-                    {
-                        'name': 'Thới Lai Apartment',
-                        'type': 'Theo giờ',
-                        'revenue': random.randint(3000000, 5000000),
-                        'bookings': random.randint(20, 30),
-                        'rate': random.randint(70, 90),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    },
-                    {
-                        'name': 'Nordic Signature The View',
-                        'type': 'Qua đêm',
-                        'revenue': random.randint(2500000, 4000000),
-                        'bookings': random.randint(15, 25),
-                        'rate': random.randint(60, 85),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    },
-                    {
-                        'name': 'LoveNStay',
-                        'type': 'Theo giờ',
-                        'revenue': random.randint(1500000, 2500000),
-                        'bookings': random.randint(10, 20),
-                        'rate': random.randint(50, 75),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    },
-                    {
-                        'name': 'GoNow',
-                        'type': 'Qua đêm',
-                        'revenue': random.randint(1000000, 2000000),
-                        'bookings': random.randint(8, 15),
-                        'rate': random.randint(40, 70),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    },
-                    {
-                        'name': 'Bonita Thái Bình',
-                        'type': 'Theo giờ',
-                        'revenue': random.randint(1000000, 2000000),
-                        'bookings': random.randint(10, 18),
-                        'rate': random.randint(45, 65),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    }
-                ])
-            
-            # Commit changes
-            db.session.commit()
-            print(f"Updated statistics with real/fake data successfully")
-            
-    except Exception as e:
-        print(f"Error querying/updating statistics: {e}")
-        db.session.rollback()
-    
-    if not stats:
-        try:
-            # Tạo thống kê mới với fake data
-            total_owners = Owner.query.count() or random.randint(5, 15)
-            total_renters = Renter.query.count() or random.randint(20, 50)
-            total_users = total_owners + total_renters
-            total_hours = random.randint(100, 500)
-            total_bookings = random.randint(20, 100)
-            hourly_bookings = random.randint(10, 50)
-            overnight_bookings = random.randint(10, 50)
-            common_type = random.choice(["Theo giờ", "Qua đêm"])
-            avg_rating = round(random.uniform(4.0, 5.0), 1)
-            
-            stats = Statistics(
-                date=today,
-                total_users=total_users,
-                total_owners=total_owners,
-                total_renters=total_renters,
-                total_bookings=total_bookings,
-                hourly_bookings=hourly_bookings,
-                overnight_bookings=overnight_bookings,
-                total_hours=total_hours,
-                booking_rate=round(random.uniform(60, 90), 1),
-                common_type=common_type,
-                average_rating=avg_rating,
-                hourly_stats=json.dumps({
-                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-                    'data': [random.randint(5, 20) for _ in range(7)]
-                }),
-                overnight_stats=json.dumps({
-                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-                    'data': [random.randint(3, 15) for _ in range(7)]
-                }),
-                top_homestays=json.dumps([
-                    {
-                        'name': 'Thới Lai Apartment',
-                        'type': 'Theo giờ',
-                        'revenue': random.randint(3000000, 5000000),
-                        'bookings': random.randint(20, 30),
-                        'rate': random.randint(70, 90),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    },
-                    {
-                        'name': 'Nordic Signature The View',
-                        'type': 'Qua đêm',
-                        'revenue': random.randint(2500000, 4000000),
-                        'bookings': random.randint(15, 25),
-                        'rate': random.randint(60, 85),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    },
-                    {
-                        'name': 'LoveNStay',
-                        'type': 'Theo giờ',
-                        'revenue': random.randint(1500000, 2500000),
-                        'bookings': random.randint(10, 20),
-                        'rate': random.randint(50, 75),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    },
-                    {
-                        'name': 'GoNow',
-                        'type': 'Qua đêm',
-                        'revenue': random.randint(1000000, 2000000),
-                        'bookings': random.randint(8, 15),
-                        'rate': random.randint(40, 70),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    },
-                    {
-                        'name': 'Bonita Thái Bình',
-                        'type': 'Theo giờ',
-                        'revenue': random.randint(1000000, 2000000),
-                        'bookings': random.randint(10, 18),
-                        'rate': random.randint(45, 65),
-                        'rating': round(random.uniform(4.0, 5.0), 1)
-                    }
-                ])
-            )
-            db.session.add(stats)
-            db.session.commit()
-            print(f"Created new statistics with fake data successfully")
-        except Exception as e:
-            print(f"Error creating statistics: {e}")
-            db.session.rollback()
-            return redirect(url_for('admin.dashboard'))
-    
-    return render_template('admin/dashboard.html',
-                         owners=owners,
-                         total_count=total_count,
-                         active_count=active_count,
-                         inactive_count=inactive_count,
-                         current_filter=status_filter,
-                         search_query=search_query,
-                         stats=stats)
 
+        # Bước 1: Nếu chưa có thống kê cho hôm nay, tạo một đối tượng rỗng
+        if not stats:
+            stats = Statistics(date=today)
+            db.session.add(stats)
+
+        # Bước 2: Luôn tính toán và gán lại dữ liệu THẬT
+        stats.total_owners = Owner.query.count()
+        stats.total_renters = Renter.query.count()
+        stats.total_users = stats.total_owners + stats.total_renters
+        stats.total_rooms = Room.query.count()
+        
+        completed_bookings = Booking.query.filter_by(status='completed').all()
+        stats.total_bookings = len(completed_bookings)
+        
+        avg_rating_real = db.session.query(func.avg(Review.rating)).scalar()
+        stats.average_rating = round(avg_rating_real, 1) if avg_rating_real is not None else 0.0
+
+        if completed_bookings:
+            stats.total_hours = int(sum((b.end_time - b.start_time).total_seconds() / 3600 for b in completed_bookings))
+            hourly_count = sum(1 for b in completed_bookings if ((b.end_time - b.start_time).total_seconds() / 3600) <= 24)
+            stats.hourly_bookings = hourly_count
+            stats.overnight_bookings = stats.total_bookings - hourly_count
+            stats.common_type = "Theo giờ" if hourly_count >= stats.overnight_bookings else "Qua đêm"
+        else:
+            stats.total_hours = 0
+            stats.hourly_bookings = 0
+            stats.overnight_bookings = 0
+            stats.common_type = "N/A"
+
+        # Bước 3: Tạo dữ liệu GIẢ nếu cần (và chỉ khi dữ liệu thật chưa tồn tại)
+        if stats.total_bookings == 0:
+
+            #Dữ liệu giả cho bảng "Các homestay nổi bật"
+            fake_top_rooms_list = [
+                {'name': 'Thới Lai Apartment', 'type': 'Theo giờ', 'revenue': 5879000, 'bookings': 25, 'rate': 43, 'rating': 4.9},
+                {'name': 'Nordic Signature', 'type': 'Qua đêm', 'revenue': 3470000, 'bookings': 18, 'rate': 37, 'rating': 4.1},
+                {'name': 'LoveNStay', 'type': 'Theo giờ', 'revenue': 2130000, 'bookings': 12, 'rate': 20, 'rating': 4.5}
+            ]
+            stats.top_rooms = json.dumps(fake_top_rooms_list)
+
+            # C. Tính toán các chỉ số nhất quán từ dữ liệu giả vừa tạo
+            
+            # C.1. HÌNH THỨC PHỔ BIẾN (dựa theo yêu cầu mới của bạn)
+            # Đếm số lượng homestay theo từng loại trong danh sách giả
+            hourly_homestay_count = sum(1 for room in fake_top_rooms_list if room['type'] == 'Theo giờ')
+            overnight_homestay_count = len(fake_top_rooms_list) - hourly_homestay_count
+            # Gán hình thức phổ biến dựa trên số lượng homestay
+            stats.common_type = "Theo giờ" if hourly_homestay_count >= overnight_homestay_count else "Qua đêm"
+
+            # C.2. TỔNG SỐ LẦN THUÊ (khớp với tổng đơn thuê trong bảng)
+            total_fake_bookings = sum(room['bookings'] for room in fake_top_rooms_list)
+            stats.total_bookings = total_fake_bookings
+
+            # C.3. TỔNG THUÊ THEO GIỜ / QUA ĐÊM (dựa trên tổng số lần thuê)
+            if total_fake_bookings > 0:
+                fake_hourly_bookings = random.randint(int(total_fake_bookings * 0.4), int(total_fake_bookings * 0.6))
+                fake_overnight_bookings = total_fake_bookings - fake_hourly_bookings
+            else:
+                fake_hourly_bookings = 0
+                fake_overnight_bookings = 0
+            stats.hourly_bookings = fake_hourly_bookings
+            stats.overnight_bookings = fake_overnight_bookings
+
+            # D. Các chỉ số giả độc lập khác
+            stats.total_hours = random.randint(total_fake_bookings * 2, total_fake_bookings * 10)
+            stats.average_rating = 4.5
+            
+        if not stats.hourly_stats:
+             stats.hourly_stats = json.dumps({'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], 'data': [4 for _ in range(7)]})
+        if not stats.overnight_stats:
+             stats.overnight_stats = json.dumps({'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], 'data': [8 for _ in range(7)]})
+
+
+        # Bước 4: Commit một lần duy nhất vào database
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"CRITICAL ERROR in statistics calculation: {e}")
+        # Tạo một đối tượng stats rỗng để trang không bị crash
+        stats = Statistics(date=datetime.now().date())
+
+
+    # --- PHẦN 3: TRẢ VỀ TEMPLATE ---
+    return render_template('admin/dashboard.html',
+                           owners=owners,
+                           total_count=total_count,
+                           active_count=active_count,
+                           inactive_count=inactive_count,
+                           current_filter=status_filter,
+                           search_query=search_query,
+                           stats=stats)
+
+        
 @admin_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -818,3 +692,5 @@ def create_admin_ajax():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
+
+

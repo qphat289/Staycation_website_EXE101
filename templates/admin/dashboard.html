@@ -1503,7 +1503,7 @@ nav[aria-label="Page navigation"] {
     <aside class="admin-sidebar">
         <ul class="sidebar-menu">
             <li class="sidebar-menu-item">
-                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-stats" data-bs-toggle="modal" data-bs-target="#developmentModal">
+                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-stats">
                     <i class="fas fa-chart-line"></i>
                     <span>Thống kê</span>
                 </a>
@@ -1794,21 +1794,6 @@ nav[aria-label="Page navigation"] {
                         </div>
                     </div>
                 </div>
-                <!-- Charts -->
-                <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <div class="chart-card">
-                            <h6 class="chart-title">Tổng thuê theo giờ</h6>
-                            <canvas id="hourlyTaxChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="chart-card">
-                            <h6 class="chart-title">Tổng thuê qua đêm</h6>
-                            <canvas id="overnightTaxChart"></canvas>
-                        </div>
-                    </div>
-                </div>
                 <!-- Homestay Table -->
                 <div class="homestay-stats">
                     <h6 class="mb-3">Các homestay nổi bật</h6>
@@ -1825,8 +1810,8 @@ nav[aria-label="Page navigation"] {
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if stats and stats.top_homestays %}
-                                    {% set homestays_data = stats.top_homestays|from_json %}
+                                {% if stats and stats.top_rooms %}
+                                    {% set homestays_data = stats.top_rooms|from_json %}
                                     {% if homestays_data %}
                                         {% for homestay in homestays_data %}
                                         <tr>
@@ -2314,99 +2299,73 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Sidebar Menu Handling
     const initializeSidebar = () => {
-        console.log('Initializing sidebar...');
-        
         const statsSection = document.getElementById('stats-section');
         const ownerSection = document.getElementById('owner-section');
         const manageAdminSection = document.getElementById('manage-admin-section');
+        
         const menuStats = document.getElementById('menu-stats');
         const menuOwner = document.getElementById('menu-owner');
         const menuManageAdmin = document.getElementById('menu-manage-admin');
 
-        if (!statsSection || !ownerSection || !menuStats || !menuOwner) {
-            console.error('Required elements not found');
-            return;
-        }
+        // Hàm để ẩn tất cả các section
+        const hideAllSections = () => {
+            if (statsSection) statsSection.style.display = 'none';
+            if (ownerSection) ownerSection.style.display = 'none';
+            if (manageAdminSection) manageAdminSection.style.display = 'none';
+        };
 
-        // Hide all sections initially
-        statsSection.style.display = 'none';
-        ownerSection.style.display = 'none';
-        if (manageAdminSection) manageAdminSection.style.display = 'none';
-
-        // Determine the active section based on which menu is active
-        const activeMenu = document.querySelector('.sidebar-menu-link.active:not(#menu-stats)');
-        
-        if (activeMenu && activeMenu.id === 'menu-manage-admin' && manageAdminSection) {
-            // Super admin: Show manage admin section
-            manageAdminSection.style.display = 'block';
-            console.log('Super admin: Manage Admin section is active');
-        } else {
-            // Regular admin or fallback: show owner section
-            ownerSection.style.display = 'block';
-            console.log('Regular admin: Owner section is active');
-        }
-
-        // Xử lý click cho menu Manage Admin
-        if (menuManageAdmin && manageAdminSection) {
-            menuManageAdmin.onclick = () => {
-                statsSection.style.display = 'none';
-                ownerSection.style.display = 'none';
-                manageAdminSection.style.display = 'block';
-                menuStats.classList.remove('active');
-                menuOwner.classList.remove('active');
-                menuManageAdmin.classList.add('active');
-                console.log('Switched to Manage Admin section');
-            };
-        }
-
-        // Xử lý click cho menu Owner
-        if (menuOwner) {
-            menuOwner.onclick = () => {
-                statsSection.style.display = 'none';
-                ownerSection.style.display = 'block';
-                if (manageAdminSection) manageAdminSection.style.display = 'none';
-                menuStats.classList.remove('active');
-                menuOwner.classList.add('active');
-                if (menuManageAdmin) menuManageAdmin.classList.remove('active');
-                console.log('Switched to Owner section');
-            };
-        }
-
-        // Xử lý click cho menu Stats (development modal)
-        if (menuStats) {
-            menuStats.onclick = () => {
-                console.log('Stats menu clicked - will show development modal');
-                // Development modal will be shown, but don't change sections here
-            };
-        }
-
-        // Xử lý đóng modal development - return to appropriate active menu
-        const developmentModal = document.getElementById('developmentModal');
-        if (developmentModal) {
-            developmentModal.addEventListener('hidden.bs.modal', function () {
-                console.log('Development modal closed, restoring active menu');
-                // Remove stats from active
-                menuStats.classList.remove('active');
-                
-                // Restore the appropriate active menu based on user role
-                if (menuManageAdmin && manageAdminSection && !menuManageAdmin.style.display.includes('none')) {
-                    // Super admin: activate manage admin menu
-                    menuManageAdmin.classList.add('active');
-                    menuOwner.classList.remove('active');
-                    statsSection.style.display = 'none';
-                    ownerSection.style.display = 'none';
-                    manageAdminSection.style.display = 'block';
-                    console.log('Restored Super Admin menu');
-                } else {
-                    // Regular admin: activate owner menu
-                    menuOwner.classList.add('active');
-                    if (menuManageAdmin) menuManageAdmin.classList.remove('active');
-                    statsSection.style.display = 'none';
-                    ownerSection.style.display = 'block';
-                    if (manageAdminSection) manageAdminSection.style.display = 'none';
-                    console.log('Restored Owner menu');
+        // Hàm để cập nhật trạng thái active của menu
+        const setActiveMenu = (activeMenu) => {
+            [menuStats, menuOwner, menuManageAdmin].forEach(menu => {
+                if (menu) {
+                    menu.classList.remove('active');
                 }
             });
+            if (activeMenu) {
+                activeMenu.classList.add('active');
+            }
+        };
+
+        // Gán sự kiện click cho từng menu item
+        if (menuStats) {
+            menuStats.addEventListener('click', () => {
+                hideAllSections();
+                statsSection.style.display = 'block';
+                setActiveMenu(menuStats);
+            });
+        }
+
+        if (menuOwner) {
+            menuOwner.addEventListener('click', () => {
+                hideAllSections();
+                ownerSection.style.display = 'block';
+                setActiveMenu(menuOwner);
+            });
+        }
+
+        if (menuManageAdmin) {
+            menuManageAdmin.addEventListener('click', () => {
+                hideAllSections();
+                manageAdminSection.style.display = 'block';
+                setActiveMenu(menuManageAdmin);
+            });
+        }
+
+        // Logic hiển thị section mặc định khi tải trang
+        hideAllSections(); // Ẩn tất cả trước
+        const initiallyActiveMenu = document.querySelector('.sidebar-menu-link.active');
+        if (initiallyActiveMenu) {
+            if (initiallyActiveMenu.id === 'menu-stats') {
+                statsSection.style.display = 'block';
+            } else if (initiallyActiveMenu.id === 'menu-manage-admin') {
+                manageAdminSection.style.display = 'block';
+            } else {
+                ownerSection.style.display = 'block';
+            }
+        } else {
+            // Nếu không có menu nào active, hiển thị owner mặc định
+            ownerSection.style.display = 'block';
+            setActiveMenu(menuOwner);
         }
     };
 
