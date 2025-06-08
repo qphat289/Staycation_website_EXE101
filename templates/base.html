@@ -594,7 +594,8 @@
         }
     </script>
     
-    <!-- Footer -->
+    <!-- Footer - chỉ hiển thị ở homepage khi renter đăng nhập -->
+    {% if request.endpoint == 'home' %}
     <footer class="bg-dark text-white mt-4">
         <div class="container">
             <div class="row">
@@ -698,6 +699,7 @@
             </div>
         </div>
     </footer>
+    {% endif %}
     
     {% block extra_js %}{% endblock %}
 </body>
