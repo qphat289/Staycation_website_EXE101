@@ -201,9 +201,51 @@ def allowed_file(filename):
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
-@renter_bp.route('/profile')
+@renter_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
+    if request.method == 'POST':
+        try:
+            # Cập nhật thông tin cơ bản
+            current_user.username = request.form.get('username')
+            current_user.full_name = request.form.get('full_name')
+            current_user.email = request.form.get('email')
+            current_user.phone = request.form.get('phone')
+            
+            # Xử lý upload avatar
+            avatar_file = request.files.get('avatar')
+            if avatar_file and allowed_file(avatar_file.filename):
+                # Tạo tên file unique
+                filename = secure_filename(avatar_file.filename)
+                timestamp = str(int(datetime.now().timestamp()))
+                filename = f"avatar_{current_user.id}_{timestamp}_{filename}"
+                
+                # Lưu file
+                upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                avatar_file.save(upload_path)
+                
+                # Resize image
+                with Image.open(upload_path) as img:
+                    img = img.resize((200, 200), Image.Resampling.LANCZOS)
+                    img.save(upload_path, optimize=True, quality=85)
+                
+                # Xóa avatar cũ nếu có
+                if current_user.avatar:
+                    old_avatar_path = os.path.join(current_app.config['UPLOAD_FOLDER'], current_user.avatar)
+                    if os.path.exists(old_avatar_path):
+                        os.remove(old_avatar_path)
+                
+                current_user.avatar = filename
+            
+            db.session.commit()
+            flash('Cập nhật thông tin thành công!', 'success')
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Có lỗi xảy ra: {str(e)}', 'danger')
+        
+        return redirect(url_for('renter.profile'))
+    
     return render_template('renter/profile.html')
 
 @renter_bp.route('/homestay/<int:homestay_id>/review', methods=['GET', 'POST'])

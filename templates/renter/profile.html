@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="profile-title" data-translate="my-profile">
+            <i class="fas fa-user-circle me-2"></i>
+            Hồ Sơ Của Tôi
+        </h2>
+        <div class="title-underline"></div>
+    </div>
+    
+    <!-- RENTER LAYOUT: Avatar bên trái, Form bên phải -->
+    <div class="row">
+        <!-- LEFT COLUMN: Avatar Display -->
+        <div class="col-md-4">
+            <div class="renter-profile-card mt-2">
+                <div class="card-body text-center">
+                    <!-- Avatar -->
+                    <div class="avatar-container-renter">
+                        {% if current_user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                                alt="Avatar"
+                                class="avatar-circle-renter">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
+                                alt="Avatar"
+                                class="avatar-circle-renter">
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="renter-name">{{ current_user.username }}</h5>
+                    
+                    <div class="renter-status">
+                        <div class="status-dot"></div>
+                        <span class="status-text">Khách thuê</span>
+                    </div>
+                    
+                    <div class="renter-badge">
+                        <i class="fas fa-user me-2"></i>
+                        Người thuê phòng
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+        <!-- RIGHT COLUMN: Renter Profile Form -->
+        <div class="col-md-8">
+            <div class="form-card-renter mt-2">
+                <div class="card-body">
+                    <h5 class="form-title-renter">
+                        <i class="fas fa-edit me-2"></i>
+                        Thông Tin Cá Nhân
+                    </h5>
+                    <form method="POST" enctype="multipart/form-data" id="profileForm" onsubmit="return validateForm()">
+                        <!-- Tên đăng nhập và Họ tên cùng hàng -->
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Tên đăng nhập
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-input-renter" 
+                                       id="username" 
+                                       name="username" 
+                                       value="{{ current_user.username }}"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập tên đăng nhập
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="full_name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Họ và tên
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-input-renter" 
+                                       id="full_name" 
+                                       name="full_name" 
+                                       value="{{ current_user.full_name or '' }}"
+                                       placeholder="Nguyễn Văn A"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập họ và tên
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email và Phone cùng hàng -->
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    Email
+                                </label>
+                                <input type="email" 
+                                       class="form-control form-input-renter" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ current_user.email }}"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập email hợp lệ
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>
+                                    Số điện thoại
+                                </label>
+                                <input type="tel" 
+                                       class="form-control form-input-renter" 
+                                       id="phone" 
+                                       name="phone" 
+                                       value="{{ current_user.phone or '' }}"
+                                       placeholder="0937956211">
+                            </div>
+                        </div>
+                        
+                        <!-- Ảnh đại diện và Đổi mật khẩu -->
+                        <div class="row">
+                            <div class="col-md-8 mb-2">
+                                <label for="avatar" class="form-label">
+                                    <i class="fas fa-camera me-1"></i>
+                                    Ảnh đại diện
+                                </label>
+                                <input type="file" 
+                                       class="form-control form-input-renter" 
+                                       id="avatar" 
+                                       name="avatar" 
+                                       accept="image/*"
+                                       onchange="previewImage(this)">
+                                <div class="form-text">
+                                    Chọn ảnh có kích thước tối đa 5MB
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">
+                                    <i class="fas fa-lock me-1"></i>
+                                    Bảo mật
+                                </label>
+                                <div>
+                                    <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                        <i class="fas fa-key me-1"></i>
+                                        Đổi mật khẩu
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-start mt-3">
+                            <button type="submit" class="btn btn-renter-primary">
+                                <i class="fas fa-save me-1"></i>
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
+                <h5 class="modal-title" id="changePasswordModalLabel">
+                    <i class="fas fa-lock me-2"></i>
+                    Thông báo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="fas fa-tools text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Chức năng đang được phát triển</h6>
+                <p class="text-muted mb-0">
+                    Tính năng đổi mật khẩu sẽ sớm được cập nhật trong phiên bản tiếp theo.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-1"></i>
+                    Đã hiểu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-title {
+    color: #000000;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.container.py-4 {
+    margin-top: -85px;
+}
+
+.title-underline {
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #9ed649, #8ab82f);
+    border-radius: 2px;
+    margin: 0 auto;
+}
+
+.renter-profile-card {
+    background: linear-gradient(135deg, #9ed649 0%, #8ab82f 100%);
+    background-size: 200% 200%;
+    animation: rotateBackground 15s ease infinite;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(158, 214, 73, 0.2);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.renter-profile-card:hover {
+    transform: translateY(-5px);
+    animation: glowAnimation 2s ease-in-out infinite;
+}
+
+@keyframes rotateBackground {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes glowAnimation {
+    0%, 100% { box-shadow: 0 10px 30px rgba(158, 214, 73, 0.2); }
+    50% { box-shadow: 0 15px 40px rgba(158, 214, 73, 0.4); }
+}
+
+@keyframes floatAnimation {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.avatar-container-renter {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 20px;
+    position: relative;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    padding: 8px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    animation: floatAnimation 3s ease-in-out infinite;
+}
+
+.avatar-container-renter:hover {
+    transform: scale(1.05) translateY(-5px);
+    background: rgba(255,255,255,0.3);
+}
+
+.avatar-circle-renter {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.avatar-circle-renter:hover {
+    transform: rotate(5deg);
+    border-width: 5px;
+}
+
+.renter-name {
+    color: white;
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.renter-name:hover {
+    transform: scale(1.05);
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.renter-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 15px auto;
+    background: rgba(255,255,255,0.2);
+    padding: 10px 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.3);
+    width: fit-content;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #ffffff;
+    border-radius: 50%;
+    animation: pulse-status 2s infinite;
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0.4);
+}
+
+@keyframes pulse-status {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+.status-text {
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.renter-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(45deg, #ea580c, #fb923c);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 10px auto;
+    box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.renter-badge i {
+    color: white;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.form-card-renter {
+    background: white;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid rgba(158, 214, 73, 0.1);
+}
+
+.form-card-renter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    border-color: rgba(158, 214, 73, 0.3);
+}
+
+.form-title-renter {
+    color: #8ab82f;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f8f9fa;
+    display: flex;
+    align-items: center;
+}
+
+.form-label {
+    color: #8ab82f;
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.form-input-renter {
+    border: 2px solid #E5E9FA;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8fdf4;
+}
+
+.form-input-renter:focus {
+    border-color: #8ab82f;
+    box-shadow: 0 0 0 3px rgba(138, 184, 47, 0.1);
+    background: white;
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.form-input-renter:hover {
+    border-color: #9ed649;
+    background: white;
+}
+
+.btn-renter-primary {
+    background: linear-gradient(135deg, #9ed649 0%, #b2e254 100%);
+    color: #18282C;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(158, 214, 73, 0.4);
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-renter-primary:hover {
+    background: linear-gradient(135deg, #b2e254 0%, #9ed649 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(158, 214, 73, 0.6);
+    color: #18282C;
+}
+
+.btn-renter-primary:active {
+    transform: translateY(0);
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+/* Thêm style mới để giảm khoảng cách */
+.form-control {
+    padding: 8px 12px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.mb-2 {
+    margin-bottom: 0.75rem !important;
+}
+
+/* Keyframes cho các animation */
+@keyframes floatAnimation {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes glowAnimation {
+    0% {
+        box-shadow: 0 5px 15px rgba(158, 214, 73, 0.2);
+    }
+    50% {
+        box-shadow: 0 5px 25px rgba(158, 214, 73, 0.4);
+    }
+    100% {
+        box-shadow: 0 5px 15px rgba(158, 214, 73, 0.2);
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-title {
+        font-size: 1.8rem;
+    }
+    
+    .renter-profile-card .card-body {
+        padding: 20px;
+    }
+    
+    .avatar-container-renter {
+        width: 120px;
+        height: 120px;
+    }
+}
+</style>
+
+<script>
+function validateForm() {
+    let isValid = true;
+    const form = document.getElementById('profileForm');
+    const inputs = form.querySelectorAll('input[required]');
+    
+    inputs.forEach(input => {
+        if (!input.value.trim()) {
+            input.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            input.classList.remove('is-invalid');
+        }
+    });
+    
+    // Email validation
+    const emailInput = document.getElementById('email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailInput.value)) {
+        emailInput.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatar = document.querySelector('.avatar-circle-renter');
+            avatar.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.form-input-renter');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.hasAttribute('required') && this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 
