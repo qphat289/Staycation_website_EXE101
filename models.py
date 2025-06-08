@@ -126,7 +126,7 @@ class Renter(UserMixin, db.Model):
     __tablename__ = 'renter'
     
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     full_name = db.Column(db.String(100))
@@ -144,12 +144,34 @@ class Renter(UserMixin, db.Model):
     # Social login fields
     is_google = db.Column(db.Boolean, default=False)
     is_facebook = db.Column(db.Boolean, default=False)
+    google_id = db.Column(db.String(100), unique=True)
     facebook_id = db.Column(db.String(100), unique=True)
     
     # Relationships
     bookings = db.relationship('Booking', backref='renter', lazy=True)
     reviews = db.relationship('Review', backref='renter', lazy=True)
     
+    def __init__(self, username, email, full_name=None, first_name=None, last_name=None,
+                 gender='Nam', address=None, birth_date=None, phone=None, avatar=None,
+                 is_active=True, temp_role='renter', is_google=False, is_facebook=False,
+                 google_id=None, facebook_id=None):
+        self.username = username
+        self.email = email
+        self.full_name = full_name or username
+        self.first_name = first_name
+        self.last_name = last_name
+        self.gender = gender
+        self.address = address
+        self.birth_date = birth_date
+        self.phone = phone
+        self.avatar = avatar
+        self.is_active = is_active
+        self.temp_role = temp_role
+        self.is_google = is_google
+        self.is_facebook = is_facebook
+        self.google_id = google_id
+        self.facebook_id = facebook_id
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
         
