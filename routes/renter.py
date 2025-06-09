@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user, logout_user
-from models import Booking, Review, db, Room, RoomImage, Admin, Owner, Renter
+from models import Booking, Review, db, Room, RoomImage, Admin, Owner, Renter, Amenity
 from datetime import datetime, timedelta
 from PIL import Image
 import io
 import os
 from werkzeug.utils import secure_filename
+from sqlalchemy.orm import joinedload
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
@@ -200,24 +201,23 @@ def search():
 
 @renter_bp.route('/view-room/<int:id>')
 def view_room(id):
-    room = Room.query.get_or_404(id)
+    # Load room với amenities và category relationships
+    room = Room.query.options(
+        joinedload(Room.amenities).joinedload(Amenity.amenity_category),
+        joinedload(Room.images)
+    ).get_or_404(id)
     
     # Kiểm tra nếu phòng đã bị khóa
     if not room.is_active:
         flash("Phòng này hiện tại đã ngừng hoạt động và không khả dụng để đặt.", "warning")
         return redirect(url_for('home'))
     
-    # Load room images
-    room_images = RoomImage.query.filter_by(room_id=room.id).all()
-    
     # Load reviews for this room
     reviews = Review.query.filter_by(room_id=id).order_by(Review.created_at.desc()).all()
     
     return render_template('renter/view_room_detail.html', 
                           room=room,
-                          room_images=room_images,
                           reviews=reviews)
-
 
 @renter_bp.route('/book/<int:room_id>', methods=['GET', 'POST'])
 @renter_required
