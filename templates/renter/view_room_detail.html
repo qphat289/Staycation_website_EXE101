@@ -166,7 +166,7 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <h1 class="h2 fw-bold mb-2">{{ room.homestay.business_name or room.homestay.full_name }}</h1>
+                    <h1 class="h2 fw-bold mb-2">{{ room.homestay.business_name}}</h1>
                     <p class="text-muted mb-0 address-text">
                         <i class="bi bi-geo-alt me-1"></i>
                         {{ room.address }}, 
@@ -280,7 +280,7 @@
     <!-- Details Section -->
     <div class="row">
         <!-- Left Column: Description + Location -->
-        <div class="col-md-7">
+        <div class="col-md-8">
             <!-- Description -->
             <div class="mb-4">
                 <h3 class="h5 fw-bold mb-3">Mô tả</h3>
@@ -295,8 +295,11 @@
 
             <!-- Location -->
             <div class="mb-4">
-                <h3 class="h5 fw-bold mb-3">Địa điểm</h3>
+                <h3 class="h5 fw-bold mb-3">                   
+                    Địa điểm
+                </h3>
                 <p class="text-muted mb-3 address-text">
+                    <i class="bi bi-geo-alt me-1"></i>
                     {{ room.address }}, 
                     {% if room.district.lower().startswith('quan') %}
                         {{ room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') }}
@@ -314,27 +317,172 @@
                     {% endif %}
                 </p>
                 
-                <div class="bg-light rounded-3 p-4 text-center" style="height: 200px;">
-                    <div class="d-flex align-items-center justify-content-center h-100">
-                        <div>
-                            <i class="bi bi-geo-alt fs-1 text-muted mb-2"></i>
-                            <p class="text-muted">Bản đồ vị trí</p>
-                            {% set district_full = room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') if room.district.lower().startswith('quan') else room.district %}
-                            {% set city_full = 'Thành phố Hồ Chí Minh' if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' else ('Thành phố Hà Nội' if room.city.lower() == 'hn' or room.city.lower() == 'hanoi' else ('Thành phố Đà Nẵng' if room.city.lower() == 'dn' or room.city.lower() == 'da nang' else room.city)) %}
-                            {% set map_address = room.address + ', ' + district_full + ', ' + city_full + ', Vietnam' %}
-                            {% set encoded_map_address = map_address|urlencode %}
-                            {% set directions_url = 'https://www.google.com/maps/search/?api=1&query=' + encoded_map_address %}
-                            <a href="{{ directions_url }}" class="btn btn-outline-primary btn-sm" target="_blank">
-                                Xem trên Google Maps
-                            </a>
-                        </div>
+                <div class="bg-light rounded-3 overflow-hidden position-relative" style="height: 400px;">
+                    {% set district_full = room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') if room.district.lower().startswith('quan') else room.district %}
+                    {% set city_full = 'Thành phố Hồ Chí Minh' if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' else ('Thành phố Hà Nội' if room.city.lower() == 'hn' or room.city.lower() == 'hanoi' else ('Thành phố Đà Nẵng' if room.city.lower() == 'dn' or room.city.lower() == 'da nang' else room.city)) %}
+                    {% set map_address = room.address + ', ' + district_full + ', ' + city_full + ', Vietnam' %}
+                    {% set encoded_map_address = map_address|urlencode %}
+                    
+                    <!-- Mapbox GL JS -->
+                    <div id="map" style="width: 100%; height: 100%; border-radius: 12px;"></div>
+                    
+                    <!-- Nút mở trên Google Maps -->
+                    <div class="position-absolute top-0 end-0 m-2" style="z-index: 1000;">
+                        {% set directions_url = 'https://www.google.com/maps/search/?api=1&query=' + encoded_map_address %}
+                        <a href="{{ directions_url }}" class="btn btn-light btn-sm shadow-sm" target="_blank" title="Mở trên Google Maps">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
                     </div>
                 </div>
+                
+                <!-- Mapbox GL CSS và JS -->
+                <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+                <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+                
+                <script>
+                // Mapbox access token của bạn
+                mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
+                
+                // Tạo bản đồ Mapbox với style đẹp
+                var map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v12', // Mapbox Streets style
+                    center: [106.6297, 10.8231], // [lng, lat] for Mapbox
+                    zoom: 13,
+                    attributionControl: true,
+                    scrollZoom: false // Tắt scroll zoom
+                });
+                
+                // Thêm controls đẹp
+                map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+                map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+                
+                // Geocoding với Mapbox Geocoding API (chính xác hơn)
+                var address = "{{ map_address }}";
+                var geocodeUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(address) + '.json?access_token=' + mapboxgl.accessToken + '&country=vn&limit=1&types=address,poi';
+                
+                fetch(geocodeUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.features && data.features.length > 0) {
+                            var coordinates = data.features[0].center; // [lng, lat]
+                            var placeName = data.features[0].place_name;
+                            
+                            // Fly to location với animation mượt mà
+                            map.flyTo({
+                                center: coordinates,
+                                zoom: 15,
+                                duration: 2500,
+                                essential: true
+                            });
+                            
+                            // Tạo custom marker element
+                            var markerEl = document.createElement('div');
+                            markerEl.innerHTML = `
+                                <div style="
+                                    color: #8bc34a;
+                                    font-size: 32px;
+                                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                                    cursor: pointer;
+                                ">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                </div>
+                            `;
+                            
+                            // Thêm marker với popup đơn giản
+                            var marker = new mapboxgl.Marker(markerEl)
+                                .setLngLat(coordinates)
+                                .setPopup(new mapboxgl.Popup({ 
+                                    offset: 30,
+                                    closeButton: true,
+                                    closeOnClick: false
+                                }).setHTML(`
+                                    <div style="text-align: center; padding: 15px; min-width: 200px;">
+                                        <h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">
+                                            {{ room.title or room.address }}
+                                        </h6>
+                                        <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
+                                           target="_blank" 
+                                           style="color: #007bff; text-decoration: none; font-size: 14px;">
+                                            <i class="bi bi-box-arrow-up-right" style="margin-right: 5px;"></i>
+                                            Xem trên Google Maps
+                                        </a>
+                                    </div>
+                                `))
+                                .addTo(map);
+                            
+                            // Mở popup ngay lập tức
+                            marker.getPopup().addTo(map);
+                            
+                            // Add some animation to marker
+                            setTimeout(() => {
+                                markerEl.style.animation = 'bounce 1s ease-in-out';
+                            }, 2500);
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Geocoding error, using fallback:', error);
+                        // Fallback: hiển thị tọa độ mặc định
+                        var fallbackCoords;
+                        {% if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' %}
+                            fallbackCoords = [106.6297, 10.8231];
+                        {% elif room.city.lower() == 'hn' or room.city.lower() == 'hanoi' %}
+                            fallbackCoords = [105.8542, 21.0285];
+                        {% elif room.city.lower() == 'dn' or room.city.lower() == 'da nang' %}
+                            fallbackCoords = [108.2068, 16.0471];
+                        {% else %}
+                            fallbackCoords = [106.6297, 10.8231];
+                        {% endif %}
+                        
+                        map.flyTo({ center: fallbackCoords, zoom: 13 });
+                        
+                        var markerEl = document.createElement('div');
+                        markerEl.innerHTML = `
+                            <div style="
+                                color: #8bc34a;
+                                font-size: 32px;
+                                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                                cursor: pointer;
+                            ">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </div>
+                        `;
+                        
+                        new mapboxgl.Marker(markerEl)
+                            .setLngLat(fallbackCoords)
+                            .setPopup(new mapboxgl.Popup({ offset: 30 })
+                                .setHTML(`
+                                    <div style="text-align: center; padding: 15px; min-width: 200px;">
+                                        <h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">
+                                            {{ room.title or room.address }}
+                                        </h6>
+                                        <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
+                                           target="_blank" 
+                                           style="color: #007bff; text-decoration: none; font-size: 14px;">
+                                            <i class="bi bi-box-arrow-up-right" style="margin-right: 5px;"></i>
+                                            Xem trên Google Maps
+                                        </a>
+                                    </div>
+                                `))
+                            .addTo(map);
+                    });
+                
+                // Thêm CSS cho animation
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes bounce {
+                        0%, 20%, 60%, 100% { transform: translateY(0) rotate(-45deg); }
+                        40% { transform: translateY(-20px) rotate(-45deg); }
+                        80% { transform: translateY(-10px) rotate(-45deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+                </script>
             </div>
         </div>
 
         <!-- Right Column: Amenities + Rules -->
-        <div class="col-md-5" style="padding-left: 6.8rem;">
+        <div class="col-md-4" style="padding-left: 4rem;">
             <!-- Amenities -->
             <div class="mb-4">
                 <h3 class="h5 fw-bold mb-3">Tiện nghi</h3>
@@ -359,20 +507,20 @@
                             </div>
                         {% endif %}
                     {% elif '|AMENITIES|' in room.description %}
-                        {% set description_parts = room.description.split('|AMENITIES|') %}
-                        {% set amenities_part = description_parts[1]|trim %}
-                        {% set amenities_list = amenities_part.split('|') %}
-                        
-                        <div class="row">
+                    {% set description_parts = room.description.split('|AMENITIES|') %}
+                    {% set amenities_part = description_parts[1]|trim %}
+                    {% set amenities_list = amenities_part.split('|') %}
+                    
+                    <div class="row">
                             {% for amenity in amenities_list[:5] %}
                                 <div class="col-12 mb-2">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                        <div class="d-flex align-items-center">
+                                    <i class="bi bi-check-circle text-success me-2"></i>
                                         <span class="small">{{ amenity.strip() }}</span>
                                     </div>
-                                </div>
+                                    </div>
                             {% endfor %}
-                        </div>
+                    </div>
                         {% if amenities_list|length > 5 %}
                             <div class="text-center mt-3">
                                 <button class="btn btn-outline-dark btn-sm amenities-btn" onclick="showAmenitiesModal()">
@@ -381,23 +529,23 @@
                                 </button>
                             </div>
                         {% endif %}
-                    {% else %}
-                        <div class="row">
+                {% else %}
+                    <div class="row">
                             <div class="col-12 mb-2">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-wifi text-success me-2"></i>
+                                        <div class="d-flex align-items-center">
+                                <i class="bi bi-wifi text-success me-2"></i>
                                     <span class="small">Wi-Fi miễn phí</span>
-                                </div>
-                            </div>
+                                    </div>
+                        </div>
                             <div class="col-12 mb-2">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-snow text-success me-2"></i>
+                                        <div class="d-flex align-items-center">
+                                <i class="bi bi-snow text-success me-2"></i>
                                     <span class="small">Điều hòa</span>
                                 </div>
-                            </div>
+                                    </div>
                         </div>
                     {% endif %}
-                </div>
+                    </div>
             </div>
 
             <!-- Rules -->
@@ -442,8 +590,8 @@
                                     <i class="bi bi-exclamation-circle text-warning me-2"></i>
                                     <span class="small">Không được mang thú cưng</span>
                                 </div>
-                            </div>
                         </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>
