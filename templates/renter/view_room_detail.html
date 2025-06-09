@@ -6,6 +6,24 @@
     .room-detail-container {
         margin-top: -50px !important;
     }
+    
+    /* Hover effect cho nút xem tất cả */
+    .amenities-btn:hover {
+        background-color: #8bc34a !important;
+        border-color: #8bc34a !important;
+        color: white !important;
+    }
+    
+    .rules-btn:hover {
+        background-color: #8bc34a !important;
+        border-color: #8bc34a !important;
+        color: white !important;
+    }
+    
+    .amenities-btn,
+    .rules-btn {
+        transition: all 0.3s ease;
+    }
 </style>
 <div class="container-fluid px-4 pt-0 pb-3 room-detail-container">
     <!-- Header -->
@@ -99,7 +117,8 @@
 
     <!-- Details Section -->
     <div class="row">
-        <div class="col-12">
+        <!-- Left Column: Description + Location -->
+        <div class="col-md-7">
             <!-- Description -->
             <div class="mb-4">
                 <h3 class="h5 fw-bold mb-3">Mô tả</h3>
@@ -109,42 +128,6 @@
                     <p class="text-muted">{{ user_description or 'Phòng thoải mái với đầy đủ tiện nghi hiện đại.' }}</p>
                 {% else %}
                     <p class="text-muted">{{ room.description or 'Phòng thoải mái với đầy đủ tiện nghi hiện đại.' }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Amenities -->
-            <div class="mb-4">
-                <h3 class="h5 fw-bold mb-3">Tiện nghi</h3>
-                {% if '|AMENITIES|' in room.description %}
-                    {% set description_parts = room.description.split('|AMENITIES|') %}
-                    {% set amenities_part = description_parts[1]|trim %}
-                    {% set amenities_list = amenities_part.split('|') %}
-                    
-                    <div class="row">
-                        {% for amenity in amenities_list[:6] %}
-                            <div class="col-md-6 mb-2">
-                                        <div class="d-flex align-items-center">
-                                    <i class="bi bi-check-circle text-success me-2"></i>
-                                    <span>{{ amenity.strip() }}</span>
-                                        </div>
-                                    </div>
-                            {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="row">
-                        <div class="col-md-6 mb-2">
-                                        <div class="d-flex align-items-center">
-                                <i class="bi bi-wifi text-success me-2"></i>
-                                <span>Wi-Fi miễn phí</span>
-                                    </div>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                                        <div class="d-flex align-items-center">
-                                <i class="bi bi-snow text-success me-2"></i>
-                                <span>Điều hòa</span>
-                                    </div>
-                        </div>
-                    </div>
                 {% endif %}
             </div>
 
@@ -166,6 +149,122 @@
                             </a>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Amenities + Rules -->
+        <div class="col-md-5" style="padding-left: 6.8rem;">
+            <!-- Amenities -->
+            <div class="mb-4">
+                <h3 class="h5 fw-bold mb-3">Tiện nghi</h3>
+                <div class="bg-light rounded-3 p-3">
+                    {% if room.amenities %}
+                        <div class="row">
+                            {% for amenity in room.amenities[:5] %}
+                                <div class="col-12 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="{{ amenity.icon or 'bi bi-check-circle' }} text-success me-2"></i>
+                                        <span class="small">{{ amenity.name }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if room.amenities|length > 5 %}
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-dark btn-sm amenities-btn" onclick="showAmenitiesModal()">
+                                    <i class="bi bi-list me-1"></i>
+                                    Xem tất cả {{ room.amenities|length }} tiện nghi
+                                </button>
+                            </div>
+                        {% endif %}
+                    {% elif '|AMENITIES|' in room.description %}
+                        {% set description_parts = room.description.split('|AMENITIES|') %}
+                        {% set amenities_part = description_parts[1]|trim %}
+                        {% set amenities_list = amenities_part.split('|') %}
+                        
+                        <div class="row">
+                            {% for amenity in amenities_list[:5] %}
+                                <div class="col-12 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                        <span class="small">{{ amenity.strip() }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if amenities_list|length > 5 %}
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-dark btn-sm amenities-btn" onclick="showAmenitiesModal()">
+                                    <i class="bi bi-list me-1"></i>
+                                    Xem tất cả {{ amenities_list|length }} tiện nghi
+                                </button>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-wifi text-success me-2"></i>
+                                    <span class="small">Wi-Fi miễn phí</span>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-snow text-success me-2"></i>
+                                    <span class="small">Điều hòa</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Rules -->
+            <div class="mb-4">
+                <h3 class="h5 fw-bold mb-3">Nội quy</h3>
+                <div class="bg-light rounded-3 p-3">
+                    {% if room.rules %}
+                        <div class="row">
+                            {% for rule in room.rules[:5] %}
+                                <div class="col-12 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                                        <span class="small">{{ rule.name }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if room.rules|length > 5 %}
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-dark btn-sm rules-btn" onclick="showRulesModal()">
+                                    <i class="bi bi-list me-1"></i>
+                                    Xem tất cả {{ room.rules|length }} nội quy
+                                </button>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                                    <span class="small">Không hút thuốc trong phòng</span>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                                    <span class="small">Giữ yên lặng sau 22:00</span>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                                    <span class="small">Không được mang thú cưng</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -208,9 +307,118 @@
     </div>
 </div>
 
+<!-- Modal hiển thị tất cả tiện nghi -->
+<div class="modal fade" id="amenitiesModal" tabindex="-1" aria-labelledby="amenitiesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-list-check me-2 fs-5" style="color: #28a745;"></i>
+                    <h4 class="modal-title fw-bold mb-0" id="amenitiesModalLabel">
+                        Tất cả tiện nghi
+                        {% if room.amenities %}
+                            <span class="text-muted fs-6 fw-normal">({{ room.amenities|length }} tiện nghi)</span>
+                        {% endif %}
+                    </h4>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <div class="row g-3">
+                    {% if room.amenities %}
+                        {% for amenity in room.amenities %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center p-2 bg-light rounded">
+                                    <i class="{{ amenity.icon or 'bi bi-check-circle' }} text-success me-3 fs-5"></i>
+                                    <span>{{ amenity.name }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% elif '|AMENITIES|' in room.description %}
+                        {% set description_parts = room.description.split('|AMENITIES|') %}
+                        {% set amenities_part = description_parts[1]|trim %}
+                        {% set amenities_list = amenities_part.split('|') %}
+                        {% for amenity in amenities_list %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center p-2 bg-light rounded">
+                                    <i class="bi bi-check-circle text-success me-3 fs-5"></i>
+                                    <span>{{ amenity.strip() }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal hiển thị tất cả nội quy -->
+<div class="modal fade" id="rulesModal" tabindex="-1" aria-labelledby="rulesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle me-2 fs-5" style="color: #ffc107;"></i>
+                    <h4 class="modal-title fw-bold mb-0" id="rulesModalLabel">
+                        Tất cả nội quy
+                        {% if room.rules %}
+                            <span class="text-muted fs-6 fw-normal">({{ room.rules|length }} nội quy)</span>
+                        {% endif %}
+                    </h4>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <div class="row g-3">
+                    {% if room.rules %}
+                        {% for rule in room.rules %}
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-3 bg-light rounded">
+                                    <i class="bi bi-exclamation-circle text-warning me-3 fs-5"></i>
+                                    <span>{{ rule.name }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <i class="bi bi-exclamation-circle text-warning me-3 fs-5"></i>
+                                <span>Không hút thuốc trong phòng</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <i class="bi bi-exclamation-circle text-warning me-3 fs-5"></i>
+                                <span>Giữ yên lặng sau 22:00</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <i class="bi bi-exclamation-circle text-warning me-3 fs-5"></i>
+                                <span>Không được mang thú cưng</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function showAllImages() {
     var modal = new bootstrap.Modal(document.getElementById('imageGalleryModal'));
+    modal.show();
+}
+
+function showAmenitiesModal() {
+    var modal = new bootstrap.Modal(document.getElementById('amenitiesModal'));
+    modal.show();
+}
+
+function showRulesModal() {
+    var modal = new bootstrap.Modal(document.getElementById('rulesModal'));
     modal.show();
 }
 </script>
