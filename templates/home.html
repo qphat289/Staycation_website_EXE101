@@ -531,8 +531,8 @@
             <input type="hidden" name="children" id="children-input-hourly" value="0">
             <input type="hidden" name="rooms" id="rooms-input-hourly" value="1">
             
-            <div class="row g-3 align-items-end">
-                <div class="col-xxl-4 col-xl-3 col-lg-4 col-md-6">
+            <div class="row g-2 align-items-end">
+                <div class="col-xxl-3 col-xl-3 col-lg-4 col-md-6">
                     <label for="location-hourly" class="form-label">Địa điểm hoặc tên homestay</label>
                     <div class="location-selector">
                         <input type="text" class="form-control location-input" id="location-hourly" name="location" 
@@ -542,22 +542,22 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-3">
+                <div class="col-xxl-1 col-xl-2 col-lg-2 col-md-3">
                     <label for="checkin-hourly" class="form-label">Ngày nhận phòng</label>
                     <input type="date" class="form-control" id="checkin-hourly" name="checkin_date">
                 </div>
-                <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-3">
+                <div class="col-xxl-1 col-xl-1 col-lg-2 col-md-3">
                     <label for="checkin-time-hourly" class="form-label">Giờ nhận phòng</label>
                     <input type="time" class="form-control" id="checkin-time-hourly" name="checkin_time">
                 </div>
-                <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-3">
+                <div class="col-xxl-1 col-xl-1 col-lg-2 col-md-3">
                     <label for="checkout-time-hourly" class="form-label">Giờ trả phòng</label>
                     <input type="time" class="form-control" id="checkout-time-hourly" name="checkout_time">
                 </div>
-                <div class="col-xxl-4 col-xl-3 col-lg-3 col-md-3">
-                    <label for="guests-rooms-hourly" class="form-label">Khách và Phòng</label>
+                <div class="col-xxl-4 col-xl-4 col-lg-3 col-md-3">
+                    <label for="guests-rooms-hourly" class="form-label">Khách</label>
                     <input type="text" class="form-control guest-display" id="guests-rooms-hourly" 
-                           value="1 người lớn, 0 Trẻ em, 1 phòng" readonly>
+                           value="1 người lớn, 0 Trẻ em" readonly>
                     <div class="guest-dropdown" id="guest-dropdown-hourly">
                         <div class="guest-row">
                             <div class="guest-info">
@@ -581,23 +581,11 @@
                                 <button type="button" class="btn-increase" data-target="children">+</button>
                             </div>
                         </div>
-                        <div class="guest-row">
-                            <div class="guest-info">
-                                <i class="bi bi-door-open text-success"></i>
-                                <span>Phòng</span>
-                            </div>
-                            <div class="guest-controls">
-                                <button type="button" class="btn-decrease" data-target="rooms">−</button>
-                                <span class="guest-count" id="rooms-count-hourly">1</span>
-                                <button type="button" class="btn-increase" data-target="rooms">+</button>
-                            </div>
-                        </div>
-                        <div class="guest-actions">
-                            <button type="button" class="btn btn-primary btn-done">Xong</button>
-                        </div>
+
+
                     </div>
                 </div>
-                <div class="col-xxl-1 col-xl-2 col-lg-12 col-md-6 search-btn-col d-flex justify-content-center">
+                <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-6 search-btn-col d-flex justify-content-center">
                     <button type="submit" class="btn search-btn" style="white-space: nowrap; min-width: 100px;">Tìm kiếm</button>
                 </div>
             </div>
@@ -606,7 +594,7 @@
         <!-- Daily Search Form -->
         <form class="search-form daily-form" id="daily-form" action="{{ url_for('renter.search') }}" method="GET">
             <input type="hidden" name="booking_type" value="daily">
-            <div class="row g-3 align-items-end">
+            <div class="row g-2 align-items-end">
                 <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
                     <label for="location-daily" class="form-label">Địa điểm hoặc tên homestay</label>
                     <div class="location-selector">
@@ -625,11 +613,11 @@
                     <label for="checkout-daily" class="form-label">Ngày trả phòng</label>
                     <input type="date" class="form-control" id="checkout-daily" name="checkout_date">
                 </div>
-                <div class="col-xxl-4 col-xl-2 col-lg-2 col-md-6">
-                    <label for="guests-rooms-daily" class="form-label">Khách và Phòng</label>
+                <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
+                    <label for="guests-rooms-daily" class="form-label">Khách</label>
                     <div class="guest-selector">
                         <input type="text" class="form-control guest-display" id="guests-rooms-daily" name="guests_rooms" 
-                               value="1 người lớn, 0 Trẻ em, 1 phòng" readonly>
+                               value="1 người lớn, 0 Trẻ em" readonly>
                         <div class="guest-dropdown" id="guest-dropdown-daily">
                             <div class="guest-row">
                                 <div class="guest-info">
@@ -653,24 +641,12 @@
                                     <button type="button" class="btn-increase" data-target="children">+</button>
                                 </div>
                             </div>
-                            <div class="guest-row">
-                                <div class="guest-info">
-                                    <i class="bi bi-door-open text-success"></i>
-                                    <span>Phòng</span>
-                                </div>
-                                <div class="guest-controls">
-                                    <button type="button" class="btn-decrease" data-target="rooms">−</button>
-                                    <span class="guest-count" id="rooms-count-daily">1</span>
-                                    <button type="button" class="btn-increase" data-target="rooms">+</button>
-                                </div>
-                            </div>
-                            <div class="guest-actions">
-                                <button type="button" class="btn btn-primary btn-done">Xong</button>
-                            </div>
+
+
                         </div>
                     </div>
                 </div>
-                <div class="col-xxl-1 col-xl-12 col-lg-12 col-md-6 search-btn-col">
+                <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-6 search-btn-col">
                     <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
                 </div>
             </div>
@@ -1056,8 +1032,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     guestCounts[target]--;
                 } else if (target === 'children' && guestCounts[target] > 0) {
                     guestCounts[target]--;
-                } else if (target === 'rooms' && guestCounts[target] > 1) {
-                    guestCounts[target]--;
                 }
             }
             
@@ -1066,7 +1040,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update decrease button state
             const decreaseBtn = document.querySelector(`[data-target="${target}"].btn-decrease`);
-            if ((target === 'adults' || target === 'rooms') && guestCounts[target] <= 1) {
+            if (target === 'adults' && guestCounts[target] <= 1) {
                 decreaseBtn.disabled = true;
             } else if (target === 'children' && guestCounts[target] <= 0) {
                 decreaseBtn.disabled = true;
@@ -1078,18 +1052,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Done button
-    btnDone.addEventListener('click', function() {
-        guestDropdown.classList.remove('show');
-    });
+
     
     // Update guest display text
     function updateGuestDisplay() {
         const adultsText = guestCounts.adults + ' người lớn';
         const childrenText = guestCounts.children + ' Trẻ em';
-        const roomsText = guestCounts.rooms + ' phòng';
         
-        guestDisplay.value = `${adultsText}, ${childrenText}, ${roomsText}`;
+        guestDisplay.value = `${adultsText}, ${childrenText}`;
     }
     
     // Search Tabs Functionality
@@ -1219,14 +1189,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupGuestSelector(formType) {
         const guestDisplay = document.getElementById(`guests-rooms-${formType}`);
         const guestDropdown = document.getElementById(`guest-dropdown-${formType}`);
-        const btnDone = guestDropdown?.querySelector('.btn-done');
         
         if (!guestDisplay || !guestDropdown) return;
         
         let guestCounts = {
             adults: 1,
-            children: 0,
-            rooms: 1
+            children: 0
         };
         
         // Toggle dropdown
@@ -1242,6 +1210,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const target = this.dataset.target;
                 const isIncrease = this.classList.contains('btn-increase');
                 
+                console.log(`${formType}: ${target} ${isIncrease ? 'increase' : 'decrease'}, current: ${guestCounts[target]}`);
+                
                 if (isIncrease) {
                     guestCounts[target]++;
                 } else {
@@ -1249,27 +1219,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         guestCounts[target]--;
                     } else if (target === 'children' && guestCounts[target] > 0) {
                         guestCounts[target]--;
-                    } else if (target === 'rooms' && guestCounts[target] > 1) {
-                        guestCounts[target]--;
                     }
                 }
                 
+                console.log(`${formType}: After ${target} is now: ${guestCounts[target]}`);
+                
                 // Update display
                 document.getElementById(`${target}-count-${formType}`).textContent = guestCounts[target];
-                // Update hidden inputs
-                document.getElementById(`${target}-input-${formType}`).value = guestCounts[target];
                 
                 updateGuestDisplayForForm(formType, guestCounts, guestDisplay);
                 updateButtonStates(formType, guestCounts);
             });
         });
         
-        // Done button
-        if (btnDone) {
-            btnDone.addEventListener('click', function() {
-                guestDropdown.classList.remove('show');
-            });
-        }
+
         
         // Initialize display
         updateGuestDisplayForForm(formType, guestCounts, guestDisplay);
@@ -1279,15 +1242,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateGuestDisplayForForm(formType, guestCounts, guestDisplay) {
         const adultsText = guestCounts.adults + ' người lớn';
         const childrenText = guestCounts.children + ' Trẻ em';
-        const roomsText = guestCounts.rooms + ' phòng';
         
-        guestDisplay.value = `${adultsText}, ${childrenText}, ${roomsText}`;
+        guestDisplay.value = `${adultsText}, ${childrenText}`;
     }
     
     function updateButtonStates(formType, guestCounts) {
         const adultsDecreaseBtn = document.querySelector(`#guest-dropdown-${formType} [data-target="adults"].btn-decrease`);
         const childrenDecreaseBtn = document.querySelector(`#guest-dropdown-${formType} [data-target="children"].btn-decrease`);
-        const roomsDecreaseBtn = document.querySelector(`#guest-dropdown-${formType} [data-target="rooms"].btn-decrease`);
         
         // Adults minimum is 1
         if (adultsDecreaseBtn) {
@@ -1298,27 +1259,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (childrenDecreaseBtn) {
             childrenDecreaseBtn.disabled = guestCounts.children <= 0;
         }
-        
-        // Rooms minimum is 1
-        if (roomsDecreaseBtn) {
-            roomsDecreaseBtn.disabled = guestCounts.rooms <= 1;
-        }
     }
     
     // Initialize decrease button states for both forms
     function initializeButtonStates(formType) {
         const adultsCount = document.getElementById(`adults-count-${formType}`);
         const childrenCount = document.getElementById(`children-count-${formType}`);
-        const roomsCount = document.getElementById(`rooms-count-${formType}`);
         
         if (adultsCount && parseInt(adultsCount.textContent) <= 1) {
             document.querySelector(`#guest-dropdown-${formType} [data-target="adults"].btn-decrease`).disabled = true;
         }
         if (childrenCount && parseInt(childrenCount.textContent) <= 0) {
-            document.querySelector(`#guest-dropdown-${formType} [data-target="children"].btn-decrease`).disabled = false;
-        }
-        if (roomsCount && parseInt(roomsCount.textContent) <= 1) {
-            document.querySelector(`#guest-dropdown-${formType} [data-target="rooms"].btn-decrease`).disabled = true;
+            document.querySelector(`#guest-dropdown-${formType} [data-target="children"].btn-decrease`).disabled = true;
         }
     }
     
