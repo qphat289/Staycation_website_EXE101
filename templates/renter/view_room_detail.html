@@ -24,6 +24,141 @@
     .rules-btn {
         transition: all 0.3s ease;
     }
+    
+    /* Đảm bảo địa chỉ hiển thị đầy đủ */
+    .address-text {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow: visible !important;
+        text-overflow: unset !important;
+        max-width: none !important;
+    }
+    
+    /* Gallery image hover effect */
+    .gallery-img {
+        transition: all 0.3s ease;
+    }
+    
+    .gallery-img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    /* Đảm bảo modal hiển thị trên cùng */
+    .modal {
+        z-index: 1060 !important;
+    }
+    
+    .modal-backdrop {
+        z-index: 1055 !important;
+    }
+    
+    /* Single image modal có z-index cao nhất */
+    #singleImageModal {
+        z-index: 1070 !important;
+    }
+    
+    #singleImageModal .modal-backdrop {
+        z-index: 1065 !important;
+    }
+    
+    /* Backdrop làm mờ xung quanh */
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
+    
+    .modal-backdrop.show {
+        opacity: 1 !important;
+    }
+    
+    /* Single image modal backdrop làm mờ mạnh hơn */
+    #singleImageModal + .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.9) !important;
+    }
+    
+    /* Transition cho modal gallery */
+    #imageGalleryModal {
+        transition: all 0.3s ease;
+    }
+    
+    /* Placeholder hướng dẫn xem ảnh */
+    .image-guide {
+        background: linear-gradient(135deg, #8bc34a, #7cb342);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 13px;
+        position: relative;
+        margin-top: 10px;
+        display: inline-block;
+        box-shadow: 0 2px 10px rgba(139, 195, 74, 0.3);
+    }
+    
+    .image-guide::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 20px;
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 6px solid #8bc34a;
+    }
+    
+    .image-hover-tip {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        z-index: 10;
+    }
+    
+    .position-relative:hover .image-hover-tip {
+        opacity: 1;
+    }
+    
+    /* Hover effect cho ảnh chính và phụ */
+    .main-image, .side-image {
+        transition: all 0.3s ease;
+    }
+    
+    .main-image:hover {
+        transform: scale(1.015);
+    }
+    
+    .side-image:hover {
+        transform: scale(1.03);
+    }
+    
+    .image-hover-simple {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.75);
+        color: white;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        z-index: 10;
+        white-space: nowrap;
+    }
+    
+    .position-relative:hover .image-hover-simple {
+        opacity: 1;
+    }
 </style>
 <div class="container-fluid px-4 pt-0 pb-3 room-detail-container">
     <!-- Header -->
@@ -32,9 +167,23 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <h1 class="h2 fw-bold mb-2">{{ room.homestay.business_name or room.homestay.full_name }}</h1>
-                    <p class="text-muted mb-0">
+                    <p class="text-muted mb-0 address-text">
                         <i class="bi bi-geo-alt me-1"></i>
-                        {{ room.address }}, {{ room.district }}, {{ room.city }}
+                        {{ room.address }}, 
+                        {% if room.district.lower().startswith('quan') %}
+                            {{ room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') }}
+                        {% else %}
+                            {{ room.district }}
+                        {% endif %}, 
+                        {% if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' %}
+                            Thành phố Hồ Chí Minh
+                        {% elif room.city.lower() == 'hn' or room.city.lower() == 'hanoi' %}
+                            Thành phố Hà Nội
+                        {% elif room.city.lower() == 'dn' or room.city.lower() == 'da nang' %}
+                            Thành phố Đà Nẵng
+                        {% else %}
+                            {{ room.city }}
+                        {% endif %}
                     </p>
                 </div>
                 <div class="d-flex gap-2">
@@ -58,13 +207,17 @@
             <div class="row g-2">
                 <div class="col-md-8">
                     <!-- Main Image -->
-                    <div class="position-relative" style="height: 300px;">
+                    <div class="position-relative" style="height: 400px;">
                         {% if room.images %}
                             {% set featured_image = room.images|selectattr('is_featured', 'equalto', True)|list|first %}
-                            <img src="{{ url_for('static', filename=featured_image.image_path if featured_image else room.images[0].image_path) }}" 
-                                 class="img-fluid w-100 h-100 rounded-3" 
-                                 style="object-fit: cover;" 
-                                 alt="Main room image">
+                            <img src="{{ url_for('static', filename=(featured_image.image_path if featured_image else room.images[0].image_path)) }}" 
+                                 class="img-fluid w-100 h-100 rounded-3 main-image" 
+                                 style="object-fit: cover; cursor: pointer;" 
+                                 alt="Main room image"
+                                 onclick="showSingleImage('{{ url_for('static', filename=(featured_image.image_path if featured_image else room.images[0].image_path)) }}', 'Ảnh chính')">
+                            <div class="image-hover-simple">
+                                Click để xem toàn bộ ảnh
+                            </div>
                         {% else %}
                             <div class="bg-secondary w-100 h-100 rounded-3 d-flex align-items-center justify-content-center" style="background-color: #C8C8C8 !important;">
                                 <span class="text-muted">Không có hình ảnh</span>
@@ -76,22 +229,30 @@
                 <div class="col-md-4">
                     <!-- Side Images -->
                     <div class="row g-2">
-                        <div class="col-12" style="height: 147px;">
+                        <div class="col-12 position-relative" style="height: 195px;">
                             {% if room.images and room.images|length > 1 %}
                                 <img src="{{ url_for('static', filename=room.images[1].image_path) }}" 
-                                     class="img-fluid w-100 h-100 rounded-2" 
-                                     style="object-fit: cover;" 
-                                     alt="Room image">
+                                     class="img-fluid w-100 h-100 rounded-2 side-image" 
+                                     style="object-fit: cover; cursor: pointer;" 
+                                     alt="Room image"
+                                     onclick="showSingleImage('{{ url_for('static', filename=room.images[1].image_path) }}', 'Ảnh phụ 1')">
+                                <div class="image-hover-simple">
+                                    Click để xem toàn bộ ảnh
+                                </div>
                             {% else %}
                                 <div class="bg-secondary w-100 h-100 rounded-2" style="background-color: #C8C8C8 !important;"></div>
         {% endif %}
                         </div>
-                        <div class="col-12 position-relative" style="height: 147px;">
+                        <div class="col-12 position-relative" style="height: 195px;">
                             {% if room.images and room.images|length > 2 %}
                                 <img src="{{ url_for('static', filename=room.images[2].image_path) }}" 
-                                     class="img-fluid w-100 h-100 rounded-2" 
-                                     style="object-fit: cover;" 
-                                     alt="Room image">
+                                     class="img-fluid w-100 h-100 rounded-2 side-image" 
+                                     style="object-fit: cover; cursor: pointer;" 
+                                     alt="Room image"
+                                     onclick="showSingleImage('{{ url_for('static', filename=room.images[2].image_path) }}', 'Ảnh phụ 2')">
+                                <div class="image-hover-simple">
+                                    Click để xem toàn bộ ảnh
+                                </div>
                                 <div class="position-absolute bottom-0 end-0 p-2">
                                     <button class="btn btn-light btn-sm fw-bold" onclick="showAllImages()" style="font-size: 12px; padding: 4px 8px;">
                                         <i class="bi bi-grid-3x3-gap me-1"></i>
@@ -113,6 +274,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- Details Section -->
@@ -134,14 +296,32 @@
             <!-- Location -->
             <div class="mb-4">
                 <h3 class="h5 fw-bold mb-3">Địa điểm</h3>
-                <p class="text-muted mb-3">{{ room.address }}, {{ room.district }}, {{ room.city }}</p>
+                <p class="text-muted mb-3 address-text">
+                    {{ room.address }}, 
+                    {% if room.district.lower().startswith('quan') %}
+                        {{ room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') }}
+                    {% else %}
+                        {{ room.district }}
+                    {% endif %}, 
+                    {% if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' %}
+                        Thành phố Hồ Chí Minh
+                    {% elif room.city.lower() == 'hn' or room.city.lower() == 'hanoi' %}
+                        Thành phố Hà Nội
+                    {% elif room.city.lower() == 'dn' or room.city.lower() == 'da nang' %}
+                        Thành phố Đà Nẵng
+                    {% else %}
+                        {{ room.city }}
+                    {% endif %}
+                </p>
                 
                 <div class="bg-light rounded-3 p-4 text-center" style="height: 200px;">
                     <div class="d-flex align-items-center justify-content-center h-100">
                         <div>
                             <i class="bi bi-geo-alt fs-1 text-muted mb-2"></i>
                             <p class="text-muted">Bản đồ vị trí</p>
-                            {% set map_address = room.address + ', ' + room.district + ', ' + room.city + ', Vietnam' %}
+                            {% set district_full = room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') if room.district.lower().startswith('quan') else room.district %}
+                            {% set city_full = 'Thành phố Hồ Chí Minh' if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' else ('Thành phố Hà Nội' if room.city.lower() == 'hn' or room.city.lower() == 'hanoi' else ('Thành phố Đà Nẵng' if room.city.lower() == 'dn' or room.city.lower() == 'da nang' else room.city)) %}
+                            {% set map_address = room.address + ', ' + district_full + ', ' + city_full + ', Vietnam' %}
                             {% set encoded_map_address = map_address|urlencode %}
                             {% set directions_url = 'https://www.google.com/maps/search/?api=1&query=' + encoded_map_address %}
                             <a href="{{ directions_url }}" class="btn btn-outline-primary btn-sm" target="_blank">
@@ -226,7 +406,7 @@
                 <div class="bg-light rounded-3 p-3">
                     {% if room.rules %}
                         <div class="row">
-                            {% for rule in room.rules[:5] %}
+                            {% for rule in room.rules[:3] %}
                                 <div class="col-12 mb-2">
                                     <div class="d-flex align-items-center">
                                         <i class="bi bi-exclamation-circle text-warning me-2"></i>
@@ -235,7 +415,7 @@
                                 </div>
                             {% endfor %}
                         </div>
-                        {% if room.rules|length > 5 %}
+                        {% if room.rules|length > 3 %}
                             <div class="text-center mt-3">
                                 <button class="btn btn-outline-dark btn-sm rules-btn" onclick="showRulesModal()">
                                     <i class="bi bi-list me-1"></i>
@@ -271,35 +451,52 @@
     </div>
 </div>
 
+<!-- Modal hiển thị ảnh đơn lẻ -->
+<div class="modal fade" id="singleImageModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true" style="z-index: 1070;" data-bs-focus="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 90vw;">
+        <div class="modal-content bg-transparent border-0" style="z-index: 1071;">
+            <div class="modal-body p-0 text-center" data-bs-dismiss="modal" style="cursor: pointer;">
+                <img id="singleImageDisplay" src="" class="img-fluid rounded-3" style="max-height: 90vh; max-width: 100%; object-fit: contain; pointer-events: none;" alt="Room image">
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal hiển thị tất cả ảnh -->
-<div class="modal fade" id="imageGalleryModal" tabindex="-1" aria-labelledby="imageGalleryModalLabel" aria-hidden="true">
+<div class="modal fade" id="imageGalleryModal" tabindex="-1" aria-labelledby="imageGalleryModalLabel" aria-hidden="true" style="z-index: 1060;" data-bs-backdrop="true" data-bs-keyboard="true">
     <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
+        <div class="modal-content" style="z-index: 1061;">
+            <div class="modal-header border-0">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-images me-2 fs-5" style="color: #8bc34a;"></i>
                     <h4 class="modal-title fw-bold mb-0" id="imageGalleryModalLabel">
                         Tất cả ảnh phòng
-                        {% if room.images %}
-                            <span class="text-muted fs-6 fw-normal">({{ room.images|length }} ảnh)</span>
+                        {% if room.images and room.images|length > 3 %}
+                            <span class="text-muted fs-6 fw-normal">({{ room.images|length - 3 }} ảnh)</span>
                         {% endif %}
                     </h4>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body pt-3">
-                <div class="row g-4">
-                    {% if room.images %}
-                        {% for image in room.images %}
+            <div class="modal-body">
+                <div class="row g-3">
+                    {% if room.images and room.images|length > 3 %}
+                        {% for image in room.images[3:] %}
                             <div class="col-md-4">
-                                <div class="position-relative" style="height: 200px;">
+                                <div class="position-relative" style="height: 250px;">
                                     <img src="{{ url_for('static', filename=image.image_path) }}" 
-                                         class="img-fluid w-100 h-100 rounded-3" 
-                                         style="object-fit: cover;" 
-                                         alt="Room image {{ loop.index }}">
+                                         class="img-fluid w-100 h-100 rounded gallery-img" 
+                                         style="object-fit: cover; cursor: pointer;" 
+                                         alt="Room image"
+                                         data-image-src="{{ url_for('static', filename=image.image_path) }}">
                                 </div>
                             </div>
                         {% endfor %}
+                    {% else %}
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-images text-muted fs-1 mb-3"></i>
+                            <p class="text-muted">Không có thêm ảnh để hiển thị</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -406,7 +603,67 @@
     </div>
 </div>
 
+<style>
+/* CSS cho tooltip hover ảnh */
+.image-hover-simple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+/* Hiện tooltip khi hover vào ảnh */
+.main-image:hover .image-hover-simple,
+.side-image:hover .image-hover-simple {
+    opacity: 1;
+}
+
+/* Hover effects cho ảnh */
+.main-image:hover {
+    transform: scale(1.015);
+    transition: transform 0.3s ease;
+}
+
+.side-image:hover {
+    transform: scale(1.03);
+    transition: transform 0.3s ease;
+}
+</style>
+
 <script>
+function showSingleImage(imageSrc, title) {
+    document.getElementById('singleImageDisplay').src = imageSrc;
+    
+    // Làm mờ modal gallery
+    var galleryModal = document.getElementById('imageGalleryModal');
+    if (galleryModal) {
+        galleryModal.style.filter = 'blur(3px)';
+        galleryModal.style.opacity = '0.3';
+    }
+    
+    var modal = new bootstrap.Modal(document.getElementById('singleImageModal'));
+    modal.show();
+    
+    // Reset modal gallery khi đóng single image modal
+    document.getElementById('singleImageModal').addEventListener('hidden.bs.modal', function() {
+        if (galleryModal) {
+            galleryModal.style.filter = 'none';
+            galleryModal.style.opacity = '1';
+        }
+    });
+}
+
 function showAllImages() {
     var modal = new bootstrap.Modal(document.getElementById('imageGalleryModal'));
     modal.show();
@@ -421,5 +678,16 @@ function showRulesModal() {
     var modal = new bootstrap.Modal(document.getElementById('rulesModal'));
     modal.show();
 }
+
+// Thêm event listener cho gallery images
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click event to gallery images
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('gallery-img')) {
+            var imageSrc = e.target.getAttribute('data-image-src');
+            showSingleImage(imageSrc, 'Ảnh phòng');
+        }
+    });
+});
 </script>
 {% endblock %}
