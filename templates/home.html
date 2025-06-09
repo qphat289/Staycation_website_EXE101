@@ -706,36 +706,46 @@
         
         <div class="row g-4">
             {% for homestay in homestays %}
-            <div class="col-lg-4 col-md-6">
+            <div class="col-xl-3 col-lg-4 col-md-6">
                 <div class="card homestay-card h-100">
                     <div class="card-img-container">
-                        {% if homestay.image_path %}
-                        <img src="{{ url_for('static', filename=homestay.image_path) }}" class="card-img-top" alt="{{ homestay.title }}">
+                        {% if homestay.images and homestay.images|length > 0 %}
+                            {% set featured_image = homestay.images|selectattr('is_featured', 'equalto', True)|list|first %}
+                            {% if featured_image %}
+                                <img src="{{ url_for('static', filename=featured_image.image_path) }}" class="card-img-top" alt="{{ homestay.title }}">
+                            {% else %}
+                                <img src="{{ url_for('static', filename=homestay.images[0].image_path) }}" class="card-img-top" alt="{{ homestay.title }}">
+                            {% endif %}
                         {% else %}
-                        <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
+                            <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
                         {% endif %}
-                        <div class="price-badge">
-                            ${{ homestay.price_per_night or '50' }}/đêm
-                        </div>
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title">{{ homestay.title }}</h5>
-                        <div class="location-info mb-2">
-                            <i class="bi bi-geo-alt me-1"></i>
-                            {{ homestay.city | location_name('city') }}, {{ homestay.district | location_name('district') }}
+                        <!-- Title and detail button -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0">{{ homestay.title }}</h5>
+                            <a href="{{ url_for('renter.view_room', id=homestay.id) }}" class="btn btn-outline-primary btn-sm">
+                                Chi tiết
+                            </a>
                         </div>
-                        <div class="rating-stars mb-2">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star"></i>
-                            <span class="text-muted ms-1">(4.2)</span>
+                        
+                        <!-- Location -->
+                        <div class="location-info mb-3">
+                            <i class="bi bi-geo-alt me-1 text-muted"></i>
+                            <span class="text-muted">{{ homestay.district | location_name('district') }}, {{ homestay.city | location_name('city') }}</span>
                         </div>
-                        <p class="card-text">{{ homestay.description|truncate(100) }}</p>
-                        <a href="{{ url_for('renter.view_room', id=homestay.id) }}" class="btn btn-primary w-100">
-                            <i class="bi bi-arrow-right me-2"></i><span data-translate="view-details">Xem Chi Tiết</span>
-                        </a>
+                        
+                        <!-- Price -->
+                        <div class="price-info">
+                            <span class="text-muted">từ </span>
+                            <span class="fw-bold text-dark">
+                                {% if homestay.display_price_per_night %}
+                                    {{ "{:,}".format(homestay.display_price_per_night) }} VND/đêm
+                                {% else %}
+                                    {{ "{:,}".format(homestay.display_price) }} VND/h
+                                {% endif %}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

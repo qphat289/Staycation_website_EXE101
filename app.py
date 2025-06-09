@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_migrate import Migrate
 from config import Config
-from models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity
+from models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity, RoomImage
 from utils import get_rank_info, get_location_name
 from dotenv import load_dotenv
 import json
@@ -172,7 +172,11 @@ def home():
     if current_user.is_authenticated and isinstance(current_user, Admin):
         return redirect(url_for('admin.dashboard'))
     # Retrieve featured homestays to display on the homepage
-    homestays = Room.query.filter_by(is_active=True).limit(6).all()
+    from sqlalchemy.orm import joinedload
+    homestays = Room.query.options(
+        joinedload(Room.images),
+        joinedload(Room.reviews)
+    ).filter_by(is_active=True).limit(6).all()
     return render_template('home.html', homestays=homestays)
 
 # Route to handle image uploads

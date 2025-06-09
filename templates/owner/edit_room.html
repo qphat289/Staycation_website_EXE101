@@ -1452,7 +1452,7 @@ function removeExistingImage(imageId) {
         // Create form to submit deletion
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/room-image/${imageId}/delete`;
+        form.action = `/owner/room-image/${imageId}/delete`;
         
         // Add CSRF token if needed
         const csrfToken = document.querySelector('meta[name=csrf-token]');
@@ -1862,20 +1862,6 @@ function handleFilePreview(input, uploadItem) {
     }
 }
 
-// Function to remove existing image
-function removeExistingImage(imageId) {
-    if (confirm('Bạn có chắc muốn xóa ảnh này?')) {
-        // Create hidden input to mark for deletion
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'delete_images[]';
-        hiddenInput.value = imageId;
-        document.getElementById('edit-room-form').appendChild(hiddenInput);
-        
-        // Remove the image element from display
-        const imageElement = document.querySelector(`button[onclick="removeExistingImage(${imageId})"]`).closest('.upload-item');
-        imageElement.remove();
-    }
-}
+// Function to remove existing image - removed duplicate
 </script>
 {% endblock %}

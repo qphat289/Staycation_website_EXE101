@@ -553,60 +553,62 @@ main.container {
 .card-img-container {
     position: relative;
     overflow: hidden;
+    height: 180px;
 }
 
 .card-img-container img {
     transition: transform 0.3s ease;
+    height: 100%;
+    object-fit: cover;
 }
 
 .homestay-card:hover .card-img-container img {
     transform: scale(1.05);
 }
 
-.price-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: rgba(139, 195, 74, 0.9);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
+/* Price badge removed - now using bottom price display */
 
-.location-info {
-    color: #666;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-}
+/* Location info styles moved to card-specific section */
 
-.rating-stars {
-    color: #ffc107;
-    display: flex;
-    align-items: center;
-}
-
-.rating-stars .text-muted {
-    color: #666 !important;
-    font-size: 0.9rem;
-}
+/* Rating stars styles moved to card-specific section */
 
 /* Card Body Styles */
 .homestay-card .card-body {
-    padding: 1.5rem;
+    padding: 1rem;
 }
 
 .homestay-card .card-title {
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: #333;
-    margin-bottom: 0.75rem;
+    font-weight: 600;
+    flex: 1;
+    margin-right: 0.5rem;
+    line-height: 1.3;
 }
 
-.homestay-card .card-text {
-    font-size: 0.95rem;
-    line-height: 1.5;
+.homestay-card .rating-section {
+    font-size: 0.85rem;
+}
+
+.homestay-card .rating-section i {
+    font-size: 0.8rem;
+}
+
+.homestay-card .location-info {
+    font-size: 0.85rem;
+}
+
+.homestay-card .price-info {
+    font-size: 0.9rem;
+}
+
+.homestay-card .btn-outline-primary {
+    border-radius: 6px;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* Button Styles */

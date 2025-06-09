@@ -797,7 +797,7 @@ def set_featured_image(image_id):
     flash("Đã đặt ảnh làm ảnh đại diện thành công!", "success")
     return redirect(url_for('owner.add_room_images', room_id=room.id))
 
-@owner_bp.route('/room-image/<int:image_id>/delete')
+@owner_bp.route('/room-image/<int:image_id>/delete', methods=['GET', 'POST'])
 @owner_required
 def delete_room_image(image_id):
     image = RoomImage.query.get_or_404(image_id)
@@ -832,7 +832,13 @@ def delete_room_image(image_id):
             db.session.commit()
     
     flash('Đã xóa ảnh thành công!', 'success')
-    return redirect(url_for('owner.add_room_images', room_id=room_id))
+    
+    # Check if the request came from edit_room page
+    referer = request.headers.get('Referer', '')
+    if '/edit-room/' in referer:
+        return redirect(url_for('owner.edit_room', room_id=room_id))
+    else:
+        return redirect(url_for('owner.add_room_images', room_id=room_id))
 
 
 @owner_bp.route('/room-detail/<int:room_id>')
