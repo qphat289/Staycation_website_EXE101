@@ -996,474 +996,140 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<!-- Mapbox GL CSS và JS -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
 <script>
-// Leaflet Map variables
-let map;
-let marker;
-let mapInitialized = false;
-
-// Initialize Leaflet Map
-function initMap() {
-    console.log('Initializing Leaflet Map...');
+document.addEventListener('DOMContentLoaded', function() {
+    // Mapbox access token của bạn
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
     
-    try {
-        const mapContainer = document.getElementById('map');
-        if (!mapContainer) {
-            console.error('Map container not found');
-            showMapFallback();
-            return;
-        }
-
-        // Đảm bảo container có kích thước
-        if (mapContainer.offsetHeight === 0) {
-            mapContainer.style.height = '400px';
-        }
-
-        // Ẩn loading indicator
-        const loadingElement = document.getElementById('map-loading');
-        if (loadingElement) {
-            loadingElement.style.display = 'none';
-        }
-
-        // Default center (TP.HCM)
-        const defaultCenter = [10.7769, 106.7009]; // [lat, lng] for Leaflet
+    // Tạo bản đồ Mapbox với style đẹp
+    const mapbox = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12', // Mapbox Streets style
+        center: [106.6297, 10.8231], // [lng, lat] for Mapbox
+        zoom: 13,
+        attributionControl: true,
+        scrollZoom: false // Tắt scroll zoom
+    });
         
-        // Tạo Leaflet map với options tốt hơn
-        map = L.map('map', {
-            zoomControl: true,
-            scrollWheelZoom: true,
-            doubleClickZoom: true,
-            boxZoom: true,
-            keyboard: true,
-            zoomSnap: 0.5,
-            zoomDelta: 0.5
-        }).setView(defaultCenter, 15);
-        
-        // Thêm OpenStreetMap tiles (miễn phí) với chất lượng cao hơn
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19,
-            minZoom: 10,
-            tileSize: 256,
-            crossOrigin: true
-        }).addTo(map);
-        
-        mapInitialized = true;
-        console.log('Leaflet Map initialized successfully');
-        
-        // Geocode address
-        geocodeAndPlaceMarker();
-        
-    } catch (error) {
-        console.error('Error initializing map:', error);
-        showMapFallback();
-    }
-}
-
-// Geocode address và đặt marker (sử dụng Nominatim - miễn phí)
-function geocodeAndPlaceMarker() {
-    const address = getFullAddress();
+    // Thêm controls đẹp
+    mapbox.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    mapbox.addControl(new mapboxgl.FullscreenControl(), 'top-right');
     
-    if (!address.trim()) {
-        console.log('No address to geocode, showing default location');
-        placeDefaultMarker();
-        return;
-    }
-    
-    console.log('Geocoding address:', address);
-    
-    // Sử dụng Nominatim API (OpenStreetMap) - miễn phí
-    const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=vn`;
+    // Geocoding với Mapbox Geocoding API (chính xác hơn)
+    const address = "{{ map_address }}";
+    const geocodeUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(address) + '.json?access_token=' + mapboxgl.accessToken + '&country=vn&limit=1&types=address,poi';
     
     fetch(geocodeUrl)
         .then(response => response.json())
         .then(data => {
-            if (data && data.length > 0) {
-                const result = data[0];
-                const lat = parseFloat(result.lat);
-                const lng = parseFloat(result.lon);
+            if (data.features && data.features.length > 0) {
+                const coordinates = data.features[0].center; // [lng, lat]
+                const placeName = data.features[0].place_name;
                 
-                console.log('Geocoding successful:', lat, lng);
+                // Fly to location với animation mượt mà
+                mapbox.flyTo({
+                    center: coordinates,
+                    zoom: 15,
+                    duration: 2500,
+                    essential: true
+                });
                 
-                // Center map to location
-                map.setView([lat, lng], 16);
-                
-                // Place marker
-                placeMarker([lat, lng], 'Vị trí phòng');
-                
-            } else {
-                console.warn('Geocoding failed: No results found');
-                placeDefaultMarker();
-            }
-        })
-        .catch(error => {
-            console.error('Geocoding error:', error);
-            placeDefaultMarker();
-        });
-}
-
-// Đặt marker tại vị trí (Leaflet)
-function placeMarker(position, title) {
-    // Remove existing marker
-    if (marker) {
-        map.removeLayer(marker);
-    }
-    
-    // Create custom icon
-    const customIcon = L.divIcon({
-        html: `
-            <div style="color: #ff0101; font-size: 32px; text-align: center; line-height: 1;">
+                // Tạo custom marker element
+                const markerEl = document.createElement('div');
+                markerEl.innerHTML = `
+                    <div style="
+                        color: #8bc34a;
+                        font-size: 32px;
+                        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                        cursor: pointer;
+                    ">
                 <i class="fas fa-map-marker-alt"></i>
             </div>
-        `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        className: 'custom-marker'
-    });
-    
-    // Create new marker
-    marker = L.marker(position, { 
-        icon: customIcon,
-        title: title 
-    }).addTo(map);
-    
-    // Add popup với thông tin đầy đủ
-    const address = getFullAddress();
-    marker.bindPopup(`
-        <div style="text-align: center; max-width: 250px;">
-            <div style="color: #ff0101; font-size: 16px; margin-bottom: 8px;">
-                <i class="fas fa-map-marker-alt"></i>
-            </div>
-            <div style="font-weight: 600; margin-bottom: 8px; color: #333;">
-                ${title}
-            </div>
-            <div style="font-size: 13px; color: #666; line-height: 1.4;">
-                ${address}
-            </div>
-            <div style="margin-top: 8px;">
-                <a href="https://www.openstreetmap.org/directions?to=${encodeURIComponent(address)}" 
+                `;
+                
+                // Thêm marker với popup đơn giản
+                const marker = new mapboxgl.Marker(markerEl)
+                    .setLngLat(coordinates)
+                    .setPopup(new mapboxgl.Popup({ 
+                        offset: 30,
+                        closeButton: true,
+                        closeOnClick: false
+                    }).setHTML(`
+                        <div style="text-align: center; padding: 15px; min-width: 200px;">
+                            <h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">
+                                {{ room_data.title or room_data.street }}
+                            </h6>
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
                    target="_blank" 
-                   style="color: #007cba; text-decoration: none; font-size: 12px;">
-                    <i class="fas fa-directions"></i> Chỉ đường
+                               style="color: #007bff; text-decoration: none; font-size: 14px;">
+                                <i class="fas fa-external-link-alt" style="margin-right: 5px;"></i>
+                                Xem trên Google Maps
                 </a>
             </div>
-        </div>
-    `, {
-        maxWidth: 300,
-        className: 'custom-popup'
-    });
-}
-
-// Đặt marker mặc định
-function placeDefaultMarker() {
-    const defaultLocation = [10.7769, 106.7009]; // [lat, lng] for Leaflet
-    placeMarker(defaultLocation, 'Khu vực TP. Hồ Chí Minh');
-}
-
-// Lấy địa chỉ đầy đủ
-function getFullAddress() {
-    const addressParts = [];
-    
-    // Lấy từ template variables
-    const street = '{{ room_data.street or "" }}';
-    const ward = '{{ location_names.ward_name or "" }}';
-    const district = '{{ location_names.district_name or "" }}';
-    const province = '{{ location_names.province_name or "" }}';
-    
-    if (street && street !== 'Chưa chọn') {
-        addressParts.push(street);
+                    `))
+                    .addTo(mapbox);
+                
+                // Mở popup ngay lập tức
+                marker.getPopup().addTo(mapbox);
+                
+                // Add some animation to marker
+                setTimeout(() => {
+                    markerEl.style.animation = 'bounce 1s ease-in-out';
+                }, 2500);
     }
-    
-    if (ward && ward !== 'Chưa chọn') {
-        addressParts.push(ward);
-    }
-    
-    if (district && district !== 'Chưa chọn') {
-        addressParts.push(district);
-    }
-    
-    if (province && province !== 'Chưa chọn') {
-        addressParts.push(province);
-    }
-    
-    addressParts.push('Vietnam');
-    
-    return addressParts.join(', ');
-}
-
-// Fallback khi Google Maps không load được
-function showMapFallback() {
-    const mapContainer = document.getElementById('map');
-    if (mapContainer) {
-        // Ẩn loading indicator trước
-        const loadingElement = document.getElementById('map-loading');
-        if (loadingElement) {
-            loadingElement.style.display = 'none';
-        }
-        
-        mapContainer.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #f8fdf4 0%, #f0f9e6 100%); color: #2d3748; flex-direction: column; border: 1px solid #e5f3d3; border-radius: 8px;">
-                <i class="fas fa-map-marker-alt" style="font-size: 32px; margin-bottom: 12px; color: #9ed649;"></i>
-                <div style="text-align: center;">
-                    <div style="font-weight: 600; margin-bottom: 4px;">Vị trí phòng</div>
-                    <div style="font-size: 14px; color: #6b7280; line-height: 1.4; max-width: 250px;">
-                        ${getFullAddress()}
-                    </div>
-                </div>
+        })
+        .catch(error => {
+            console.log('Geocoding error, using fallback:', error);
+            // Fallback: hiển thị tọa độ mặc định
+            const fallbackCoords = [106.6297, 10.8231]; // Default to HCMC
+            
+            mapbox.flyTo({ center: fallbackCoords, zoom: 13 });
+            
+            const markerEl = document.createElement('div');
+            markerEl.innerHTML = `
+                <div style="
+                    color: #8bc34a;
+                    font-size: 32px;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                    cursor: pointer;
+                ">
+                    <i class="fas fa-map-marker-alt"></i>
             </div>
         `;
-    }
-}
-
-// Đảm bảo initMap có thể được gọi từ Google Maps API
-window.initMap = initMap;
-
-// Load Leaflet Map sau khi DOM sẵn sàng
-document.addEventListener('DOMContentLoaded', function() {
-    // Kiểm tra xem có container map không
-    const mapContainer = document.getElementById('map');
-    if (mapContainer) {
-        // Khởi tạo map ngay (không cần load thêm script)
-        initMap();
-    }
-});
-
-// Functions để điều khiển modal
-function showAllRulesModal() {
-    document.getElementById('allRulesModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function closeAllRulesModal() {
-    document.getElementById('allRulesModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-function showAllAmenitiesModal() {
-    document.getElementById('allAmenitiesModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function closeAllAmenitiesModal() {
-    document.getElementById('allAmenitiesModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Image Gallery Functions
-let currentImageIndex = 0;
-let totalImages = 0;
-
-// Khởi tạo gallery khi trang load
-document.addEventListener('DOMContentLoaded', function() {
-    initializeImageGallery();
-});
-
-function initializeImageGallery() {
-    // Lấy tất cả ảnh từ server data
-    const allImages = [
-        {% if room_data.main_image %}
-        { src: "{{ room_data.main_image }}", isMain: true },
-        {% endif %}
-        {% if room_data.images %}
-            {% for image_path in room_data.images %}
-            { src: "{{ image_path }}", isMain: false },
-            {% endfor %}
-        {% endif %}
-    ];
-    
-    totalImages = allImages.length;
-    
-    if (totalImages > 0) {
-        // Store images data globally
-        window.galleryImages = allImages;
-        currentImageIndex = 0;
-    }
-}
-
-function nextImage() {
-    if (totalImages <= 1) return;
-    
-    currentImageIndex = (currentImageIndex + 1) % totalImages;
-    updateImageDisplay();
-}
-
-function prevImage() {
-    if (totalImages <= 1) return;
-    
-    currentImageIndex = (currentImageIndex - 1 + totalImages) % totalImages;
-    updateImageDisplay();
-}
-
-function currentSlide(index) {
-    if (index >= 0 && index < totalImages) {
-        currentImageIndex = index;
-        updateImageDisplay();
-    }
-}
-
-function updateImageDisplay() {
-    if (!window.galleryImages || totalImages === 0) return;
-    
-    const currentImage = document.getElementById('currentImage');
-    const mainImageBadge = document.querySelector('.main-image-badge');
-    const dots = document.querySelectorAll('.dot');
-    
-    if (currentImage && window.galleryImages[currentImageIndex]) {
-        // Fade out hiệu ứng
-        currentImage.classList.add('fade-out');
-        
-        // Chờ fade out hoàn thành rồi mới thay đổi ảnh
-        setTimeout(() => {
-            // Cập nhật ảnh hiện tại
-            currentImage.src = window.galleryImages[currentImageIndex].src;
             
-            // Hiển thị/ẩn badge "Ảnh bìa" với hiệu ứng
-            if (mainImageBadge) {
-                if (window.galleryImages[currentImageIndex].isMain) {
-                    mainImageBadge.style.opacity = '0';
-                    mainImageBadge.style.display = 'block';
-                    setTimeout(() => {
-                        mainImageBadge.style.opacity = '1';
-                    }, 50);
-                } else {
-                    mainImageBadge.style.opacity = '0';
-                    setTimeout(() => {
-                        mainImageBadge.style.display = 'none';
-                    }, 200);
-                }
-            }
-            
-            // Fade in hiệu ứng
-            currentImage.classList.remove('fade-out');
-            currentImage.classList.add('fade-in');
-            
-            // Loại bỏ fade-in class sau khi hoàn thành
-            setTimeout(() => {
-                currentImage.classList.remove('fade-in');
-            }, 300);
-            
-        }, 150); // Thời gian fade out
-        
-        // Cập nhật dots với hiệu ứng
-        dots.forEach((dot, index) => {
-            if (index === currentImageIndex) {
-                dot.classList.add('active');
-            } else {
-                dot.classList.remove('active');
-            }
+            new mapboxgl.Marker(markerEl)
+                .setLngLat(fallbackCoords)
+                .setPopup(new mapboxgl.Popup({ offset: 30 })
+                    .setHTML(`
+                        <div style="text-align: center; padding: 15px; min-width: 200px;">
+                            <h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">
+                                {{ room_data.title or room_data.street }}
+                            </h6>
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
+                               target="_blank" 
+                               style="color: #007bff; text-decoration: none; font-size: 14px;">
+                                <i class="fas fa-external-link-alt" style="margin-right: 5px;"></i>
+                                Xem trên Google Maps
+                            </a>
+                        </div>
+                    `))
+                .addTo(mapbox);
         });
-    }
+    
+    // Thêm CSS cho animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0) rotate(-45deg); }
+            40% { transform: translateY(-20px) rotate(-45deg); }
+            80% { transform: translateY(-10px) rotate(-45deg); }
 }
-
-// Modal functions
-function openImageModal(imageSrc) {
-    const modal = document.getElementById('imageModal');
-    const modalImage = document.getElementById('modalImage');
-    
-    modal.classList.add('show');
-    modalImage.src = imageSrc;
-    
-    // Sync modal với gallery hiện tại
-    if (window.galleryImages) {
-        // Tìm index của ảnh hiện tại
-        const currentIndex = window.galleryImages.findIndex(img => img.src === imageSrc);
-        if (currentIndex !== -1) {
-            currentImageIndex = currentIndex;
-        }
-        
-        updateModalDisplay();
-        
-        // Hiển thị/ẩn nút navigation
-        const prevBtn = document.getElementById('modalPrevBtn');
-        const nextBtn = document.getElementById('modalNextBtn');
-        
-        if (window.galleryImages.length <= 1) {
-            prevBtn.style.display = 'none';
-            nextBtn.style.display = 'none';
-        } else {
-            prevBtn.style.display = 'flex';
-            nextBtn.style.display = 'flex';
-        }
-    }
-    
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-}
-
-function closeImageModal(event) {
-    // Only close if clicked outside modal content or explicitly called
-    if (!event || event.target.classList.contains('image-modal') || event.target.classList.contains('modal-close')) {
-        const modal = document.getElementById('imageModal');
-        modal.classList.remove('show');
-        
-        // Restore body scroll
-        document.body.style.overflow = 'auto';
-    }
-}
-
-function nextImageInModal() {
-    if (!window.galleryImages || window.galleryImages.length <= 1) return;
-    
-    currentImageIndex = (currentImageIndex + 1) % window.galleryImages.length;
-    updateModalDisplay();
-    updateImageDisplay(); // Sync với gallery bên ngoài
-}
-
-function prevImageInModal() {
-    if (!window.galleryImages || window.galleryImages.length <= 1) return;
-    
-    currentImageIndex = (currentImageIndex - 1 + window.galleryImages.length) % window.galleryImages.length;
-    updateModalDisplay();
-    updateImageDisplay(); // Sync với gallery bên ngoài
-}
-
-function updateModalDisplay() {
-    if (!window.galleryImages || window.galleryImages.length === 0) return;
-    
-    const modalImage = document.getElementById('modalImage');
-    const modalCounter = document.getElementById('modalCounter');
-    const modalMainBadge = document.getElementById('modalMainBadge');
-    
-    const currentImage = window.galleryImages[currentImageIndex];
-    
-    if (modalImage && currentImage) {
-        modalImage.src = currentImage.src;
-    }
-    
-    if (modalCounter) {
-        modalCounter.textContent = `${currentImageIndex + 1}/${window.galleryImages.length}`;
-    }
-    
-    if (modalMainBadge) {
-        if (currentImage.isMain) {
-            modalMainBadge.style.display = 'block';
-        } else {
-            modalMainBadge.style.display = 'none';
-        }
-    }
-}
-
-// Event listeners
-window.onclick = function(event) {
-    const rulesModal = document.getElementById('allRulesModal');
-    const amenitiesModal = document.getElementById('allAmenitiesModal');
-    
-    if (event.target === rulesModal) {
-        closeAllRulesModal();
-    }
-    
-    if (event.target === amenitiesModal) {
-        closeAllAmenitiesModal();
-    }
-}
-
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeAllRulesModal();
-        closeAllAmenitiesModal();
-        closeImageModal();
-    }
+    `;
+    document.head.appendChild(style);
 });
 </script>
 {% endblock %}
@@ -1754,6 +1420,16 @@ document.addEventListener('keydown', function(event) {
                             <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
                             Đang tải bản đồ...
                         </div>
+                    </div>
+                    
+                    <!-- Nút mở trên Google Maps -->
+                    <div class="position-absolute top-0 end-0 m-2" style="z-index: 1000;">
+                        {% set map_address = room_data.street + ', ' + location_names.ward_name + ', ' + location_names.district_name + ', ' + location_names.province_name + ', Vietnam' %}
+                        {% set encoded_map_address = map_address|urlencode %}
+                        {% set directions_url = 'https://www.google.com/maps/search/?api=1&query=' + encoded_map_address %}
+                        <a href="{{ directions_url }}" class="btn btn-light btn-sm shadow-sm" target="_blank" title="Mở trên Google Maps">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
                     </div>
                 </div>
             </div>

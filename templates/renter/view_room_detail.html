@@ -343,6 +343,90 @@
                 // Mapbox access token của bạn
                 mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
                 
+                // Custom style cho popup
+                const customPopupStyle = `
+                    .mapboxgl-popup {
+                        max-width: 300px !important;
+                    }
+                    .mapboxgl-popup-content {
+                        padding: 0 !important;
+                        border-radius: 12px !important;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+                        overflow: hidden !important;
+                    }
+                    .mapboxgl-popup-close-button {
+                        padding: 8px !important;
+                        color: #666 !important;
+                        font-size: 20px !important;
+                        line-height: 14px !important;
+                        right: 4px !important;
+                        top: 4px !important;
+                        z-index: 10 !important;
+                    }
+                    .mapboxgl-popup-close-button:hover {
+                        background: none !important;
+                        color: #333 !important;
+                    }
+                    .custom-popup-header {
+                        background: #8bc34a;
+                        color: white;
+                        padding: 12px 15px;
+                        font-weight: 600;
+                        font-size: 16px;
+                        text-align: left;
+                        border-bottom: 1px solid rgba(0,0,0,0.05);
+                    }
+                    .custom-popup-content {
+                        padding: 15px;
+                        background: white;
+                    }
+                    .custom-popup-address {
+                        color: #666;
+                        font-size: 14px;
+                        margin-bottom: 12px;
+                        line-height: 1.4;
+                    }
+                    .custom-popup-actions {
+                        display: flex;
+                        gap: 8px;
+                    }
+                    .custom-popup-btn {
+                        flex: 1;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        font-size: 13px;
+                        font-weight: 500;
+                        text-decoration: none;
+                        transition: all 0.2s ease;
+                    }
+                    .custom-popup-btn.primary {
+                        background: #8bc34a;
+                        color: white;
+                    }
+                    .custom-popup-btn.primary:hover {
+                        background: #7cb342;
+                    }
+                    .custom-popup-btn.secondary {
+                        background: #f8f9fa;
+                        color: #333;
+                        border: 1px solid #dee2e6;
+                    }
+                    .custom-popup-btn.secondary:hover {
+                        background: #e9ecef;
+                    }
+                    .custom-popup-btn i {
+                        margin-right: 6px;
+                    }
+                `;
+
+                // Thêm style vào head
+                const styleElement = document.createElement('style');
+                styleElement.textContent = customPopupStyle;
+                document.head.appendChild(styleElement);
+                
                 // Tạo bản đồ Mapbox với style đẹp
                 var map = new mapboxgl.Map({
                     container: 'map',
@@ -350,8 +434,20 @@
                     center: [106.6297, 10.8231], // [lng, lat] for Mapbox
                     zoom: 13,
                     attributionControl: true,
-                    scrollZoom: false // Tắt scroll zoom
+                    scrollZoom: false // Tắt scroll zoom mặc định
                 });
+
+                // Thêm event listener cho hover
+                const mapContainer = document.getElementById('map');
+                if (mapContainer) {
+                    mapContainer.addEventListener('mouseenter', () => {
+                        map.scrollZoom.enable(); // Bật scroll zoom khi hover
+                    });
+                    
+                    mapContainer.addEventListener('mouseleave', () => {
+                        map.scrollZoom.disable(); // Tắt scroll zoom khi không hover
+                    });
+                }
                 
                 // Thêm controls đẹp
                 map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
@@ -397,16 +493,30 @@
                                     closeButton: true,
                                     closeOnClick: false
                                 }).setHTML(`
-                                    <div style="text-align: center; padding: 15px; min-width: 200px;">
-                                        <h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">
-                                            {{ room.title or room.address }}
-                                        </h6>
-                                        <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
-                                           target="_blank" 
-                                           style="color: #007bff; text-decoration: none; font-size: 14px;">
-                                            <i class="bi bi-box-arrow-up-right" style="margin-right: 5px;"></i>
-                                            Xem trên Google Maps
-                                        </a>
+                                    <div>
+                                        <div class="custom-popup-header">
+                                            {{ room.homestay.business_name }}
+                                        </div>
+                                        <div class="custom-popup-content">
+                                            <div class="custom-popup-address">
+                                                <i class="bi bi-geo-alt me-1"></i>
+                                                {{ room.address }}, {{ district_full }}, {{ city_full }}
+                                            </div>
+                                            <div class="custom-popup-actions">
+                                                <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
+                                                   target="_blank" 
+                                                   class="custom-popup-btn primary">
+                                                    <i class="bi bi-signpost-2"></i>
+                                                    Chỉ đường
+                                                </a>
+                                                <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
+                                                   target="_blank" 
+                                                   class="custom-popup-btn secondary">
+                                                    <i class="bi bi-box-arrow-up-right"></i>
+                                                    Google Maps
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 `))
                                 .addTo(map);
@@ -452,16 +562,30 @@
                             .setLngLat(fallbackCoords)
                             .setPopup(new mapboxgl.Popup({ offset: 30 })
                                 .setHTML(`
-                                    <div style="text-align: center; padding: 15px; min-width: 200px;">
-                                        <h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">
-                                            {{ room.title or room.address }}
-                                        </h6>
-                                        <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
-                                           target="_blank" 
-                                           style="color: #007bff; text-decoration: none; font-size: 14px;">
-                                            <i class="bi bi-box-arrow-up-right" style="margin-right: 5px;"></i>
-                                            Xem trên Google Maps
-                                        </a>
+                                    <div>
+                                        <div class="custom-popup-header">
+                                            {{ room.homestay.business_name }}
+                                        </div>
+                                        <div class="custom-popup-content">
+                                            <div class="custom-popup-address">
+                                                <i class="bi bi-geo-alt me-1"></i>
+                                                {{ room.address }}, {{ district_full }}, {{ city_full }}
+                                            </div>
+                                            <div class="custom-popup-actions">
+                                                <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
+                                                   target="_blank" 
+                                                   class="custom-popup-btn primary">
+                                                    <i class="bi bi-signpost-2"></i>
+                                                    Chỉ đường
+                                                </a>
+                                                <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
+                                                   target="_blank" 
+                                                   class="custom-popup-btn secondary">
+                                                    <i class="bi bi-box-arrow-up-right"></i>
+                                                    Google Maps
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 `))
                             .addTo(map);
