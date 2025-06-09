@@ -410,6 +410,16 @@
         background: #f8fff0;
     }
 
+    .main-image-upload {
+        cursor: pointer !important;
+        border: 2px dashed #9ed649 !important;
+    }
+
+    .main-image-upload:hover {
+        background: #f0f9e8 !important;
+        transform: scale(1.02);
+    }
+
     .upload-placeholder {
         position: absolute;
         top: 0;
@@ -423,6 +433,8 @@
         gap: 8px;
         color: #999;
         font-size: 14px;
+        cursor: pointer;
+        z-index: 5;
     }
 
     .upload-placeholder i {
@@ -437,6 +449,8 @@
         height: 100%;
         cursor: pointer;
         z-index: 10;
+        top: 0;
+        left: 0;
     }
 
     .upload-item img {
@@ -1000,17 +1014,17 @@
                                 {% endfor %}
                             {% endif %}
                             
-                            <!-- Upload slot for new images only if needed -->
-                            {% set existing_count = room.images|length if room.images else 0 %}
-                            {% if existing_count == 0 %}
-                            <div class="upload-item">
-                                <span class="upload-label">Ảnh bìa</span>
-                                <input type="file" name="main_image" accept="image/*">
-                                <div class="upload-placeholder">
+                            <!-- Upload slot for new main image - always show for testing -->
+                            {% set has_main_image = room.images and room.images|selectattr('is_featured', 'equalto', True)|list|length > 0 %}
+                            <!-- Temporarily always show for testing -->
+                            <div class="upload-item main-image-upload">
+                                <span class="upload-label">{% if has_main_image %}Thay ảnh bìa{% else %}Ảnh bìa{% endif %}</span>
+                                <input type="file" name="main_image" accept="image/*" id="main-image-input" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;" onchange="console.log('🔧 DIRECT onchange triggered:', this.files[0]); if(this.files[0]) { testPreview(this); }">
+                                <div class="upload-placeholder" style="pointer-events: none;">
                                     <i class="bi bi-camera"></i>
+                                    <span>{% if has_main_image %}Thay đổi{% else %}Chọn ảnh{% endif %}</span>
                                 </div>
                             </div>
-                            {% endif %}
                             
                             <div class="upload-item add-more">
                                 <div class="upload-placeholder">
@@ -1126,6 +1140,7 @@ function formatPriceInput(input) {
 
 // Rental type change
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 DOM Content Loaded - starting setup');
     const hourlyRadio = document.getElementById('hourly');
     const nightlyRadio = document.getElementById('nightly');
     
@@ -1164,8 +1179,11 @@ document.addEventListener('DOMContentLoaded', function() {
         loadExistingRulesAndAmenities();
     });
 
-    // Setup upload functionality
-    setupUploadFunctionality();
+    // Setup main image upload
+    setupMainImageUpload();
+    
+    // Setup add more images functionality
+    setupAddMoreImages();
 });
 
 function updatePricingDisplay() {
@@ -1425,23 +1443,94 @@ window.onclick = function(event) {
 
 // Image handling functions
 function previewImage(input) {
+    console.log('🔧 previewImage called with:', input.files[0]);
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
+            console.log('🔧 FileReader onload triggered');
             const uploadItem = input.closest('.upload-item');
             const placeholder = uploadItem.querySelector('.upload-placeholder');
             
-            // Create preview image
-            let preview = uploadItem.querySelector('.preview-img');
-            if (!preview) {
-                preview = document.createElement('img');
-                preview.className = 'preview-img';
-                preview.style.cssText = 'width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 8px;';
-                uploadItem.appendChild(preview);
+            if (!uploadItem) {
+                console.error('🔧 Upload item not found');
+                return;
             }
             
-            preview.src = e.target.result;
-            placeholder.style.display = 'none';
+            // Remove existing preview if any
+            const existingPreview = uploadItem.querySelector('.preview-img');
+            if (existingPreview) {
+                existingPreview.remove();
+            }
+            
+            // Remove existing remove button if any
+            const existingRemoveBtn = uploadItem.querySelector('.remove-preview-btn');
+            if (existingRemoveBtn) {
+                existingRemoveBtn.remove();
+            }
+            
+            // Create preview image
+            const preview = document.createElement('img');
+            preview.className = 'preview-img';
+            preview.style.cssText = 'width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 8px; z-index: 5;';
+            console.log('🔧 Preview element created:', preview);
+            
+            // Create remove button for preview
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-preview-btn';
+            removeBtn.type = 'button';
+            removeBtn.innerHTML = '×';
+            removeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: 20px;
+                height: 20px;
+                border: none;
+                background: rgba(220, 53, 69, 0.8);
+                color: white;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 12px;
+                z-index: 25;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            removeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔧 Remove preview clicked');
+                // Reset the file input
+                input.value = '';
+                // Remove preview and show placeholder
+                preview.remove();
+                removeBtn.remove();
+                if (placeholder) {
+                    placeholder.style.display = 'flex';
+                }
+            });
+            
+            // Set the image source
+            try {
+                preview.src = e.target.result;
+                console.log('🔧 Preview image src set successfully:', e.target.result ? 'has data' : 'no data');
+            } catch (error) {
+                console.error('🔧 Error setting preview src:', error);
+                console.error('🔧 Preview element:', preview);
+                console.error('🔧 e.target.result:', e.target.result);
+                return;
+            }
+            
+            // Hide placeholder and add preview elements
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+            
+            uploadItem.appendChild(preview);
+            uploadItem.appendChild(removeBtn);
+            
+            console.log('🔧 Preview setup complete');
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -1730,16 +1819,142 @@ document.getElementById('edit-room-form').addEventListener('submit', function(e)
     }
 });
 
+// Simple main image upload handler
+function setupMainImageUpload() {
+    console.log('🔧 Setting up main image upload...');
+    const mainInput = document.getElementById('main-image-input');
+    if (mainInput) {
+        console.log('🔧 Found main image input');
+        
+        // Remove any existing event listeners first
+        mainInput.removeEventListener('change', handleMainImageChange);
+        
+        // Add the change event listener
+        mainInput.addEventListener('change', handleMainImageChange);
+        
+        console.log('🔧 Main image input setup complete');
+    } else {
+        console.error('🔧 Main image input not found!');
+    }
+}
+
+function handleMainImageChange(event) {
+    console.log('🔧 Main image file selected:', event.target.files[0]);
+    if (event.target.files && event.target.files[0]) {
+        console.log('🔧 File name:', event.target.files[0].name);
+        console.log('🔧 File size:', event.target.files[0].size);
+        previewImage(event.target);
+    }
+}
+
+// Simple test preview function
+function testPreview(input) {
+    console.log('🔧 testPreview called with:', input.files[0].name);
+    const uploadItem = input.closest('.upload-item');
+    const placeholder = uploadItem.querySelector('.upload-placeholder');
+    
+    console.log('🔧 Upload item found:', !!uploadItem);
+    console.log('🔧 Placeholder found:', !!placeholder);
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            console.log('🔧 testPreview FileReader onload');
+            
+            // Simple approach - just create and insert image
+            const img = document.createElement('img');
+            img.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 5;
+                border-radius: 8px;
+            `;
+            
+            console.log('🔧 About to set img.src...');
+            img.src = e.target.result;
+            console.log('🔧 img.src set successfully');
+            
+            // Hide placeholder
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+            
+            // Add image to upload item
+            uploadItem.appendChild(img);
+            
+            console.log('🔧 testPreview completed successfully!');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Setup add more images functionality
+function setupAddMoreImages() {
+    console.log('🔧 Setting up add more images...');
+    const addMoreItem = document.querySelector('.upload-item.add-more');
+    if (addMoreItem) {
+        const placeholder = addMoreItem.querySelector('.upload-placeholder');
+        if (placeholder) {
+            placeholder.addEventListener('click', function(e) {
+                console.log('🔧 Add more images clicked');
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Create temporary file input
+                const tempInput = document.createElement('input');
+                tempInput.type = 'file';
+                tempInput.accept = 'image/*';
+                tempInput.multiple = true;
+                tempInput.style.display = 'none';
+                
+                tempInput.addEventListener('change', function() {
+                    console.log('🔧 Additional files selected:', this.files.length);
+                    if (this.files && this.files.length > 0) {
+                        Array.from(this.files).forEach((file) => {
+                            console.log('🔧 Adding file:', file.name);
+                            addImageToUploadGrid(file);
+                        });
+                    }
+                    tempInput.remove();
+                });
+                
+                document.body.appendChild(tempInput);
+                tempInput.click();
+            });
+            console.log('🔧 Add more images setup complete');
+        }
+    } else {
+        console.error('🔧 Add more images button not found!');
+    }
+}
+
 // Setup upload functionality for images
 function setupUploadFunctionality() {
+    console.log('🔧 Setting up upload functionality...');
     const uploadItems = document.querySelectorAll('.upload-item');
+    console.log('🔧 Found upload items:', uploadItems.length);
     
-    uploadItems.forEach(item => {
+    uploadItems.forEach((item, index) => {
         const placeholder = item.querySelector('.upload-placeholder');
+        const fileInput = item.querySelector('input[type="file"]');
+        const isAddMore = item.classList.contains('add-more');
         
-        if (item.classList.contains('add-more')) {
+        console.log(`🔧 Item ${index}:`, {
+            hasPlaceholder: !!placeholder,
+            hasFileInput: !!fileInput,
+            isAddMore: isAddMore,
+            classes: item.className
+        });
+        
+        if (isAddMore) {
             // Handle "Thêm ảnh" button - create new file input
+            console.log('🔧 Setting up add-more button');
             placeholder.addEventListener('click', function(e) {
+                console.log('🔧 Add-more clicked');
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -1764,14 +1979,49 @@ function setupUploadFunctionality() {
                 document.body.appendChild(tempInput);
                 tempInput.click();
             });
+        } else if (fileInput && placeholder) {
+            // Handle regular upload items (like main image)
+            console.log('🔧 Setting up regular upload item with file input');
+            
+            // Add click event to placeholder
+            placeholder.addEventListener('click', function(e) {
+                console.log('🔧 Placeholder clicked for main image');
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+            
+            // Add click event to the whole upload item as backup
+            item.addEventListener('click', function(e) {
+                console.log('🔧 Upload item clicked for main image');
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+            
+            // Handle file selection for regular upload items
+            fileInput.addEventListener('change', function() {
+                console.log('🔧 File selected for main image:', this.files[0]);
+                if (this.files && this.files[0]) {
+                    previewImage(this);
+                }
+            });
+        } else {
+            console.log('🔧 Skipping item - no file input or placeholder found');
         }
     });
 }
 
 // Add image to upload grid
 function addImageToUploadGrid(file) {
+    console.log('🔧 addImageToUploadGrid called with file:', file.name);
     const uploadGrid = document.querySelector('.upload-grid');
     const addMoreButton = uploadGrid.querySelector('.add-more');
+    
+    if (!uploadGrid || !addMoreButton) {
+        console.error('🔧 Upload grid or add more button not found');
+        return;
+    }
     
     // Create new upload item
     const newUploadItem = document.createElement('div');
@@ -1784,10 +2034,11 @@ function addImageToUploadGrid(file) {
     fileInput.accept = 'image/*';
     fileInput.style.display = 'none';
     
-    // Create placeholder
+    // Create placeholder (initially hidden since we'll show preview)
     const placeholder = document.createElement('div');
     placeholder.className = 'upload-placeholder';
     placeholder.innerHTML = '<i class="bi bi-camera"></i>';
+    placeholder.style.display = 'none';
     
     // Add elements to upload item
     newUploadItem.appendChild(fileInput);
@@ -1797,23 +2048,29 @@ function addImageToUploadGrid(file) {
     uploadGrid.insertBefore(newUploadItem, addMoreButton);
     
     // Set the file to the input
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
-    fileInput.files = dataTransfer.files;
+    try {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        console.log('🔧 File set to input successfully');
+    } catch (error) {
+        console.error('🔧 Error setting file to input:', error);
+    }
     
-    // Show preview
-    handleFilePreview(fileInput, newUploadItem);
+    // Show preview directly
+    showFilePreview(file, newUploadItem);
 }
 
-// Handle file preview for new images
-function handleFilePreview(input, uploadItem) {
-    const file = input.files[0];
+// Show file preview for new images
+function showFilePreview(file, uploadItem) {
+    console.log('🔧 showFilePreview called with file:', file.name);
     if (file && file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = function(e) {
+            console.log('🔧 FileReader onload for new image');
+            
             // Create preview image
             const img = document.createElement('img');
-            img.src = e.target.result;
             img.style.cssText = `
                 width: 100%;
                 height: 100%;
@@ -1821,10 +2078,11 @@ function handleFilePreview(input, uploadItem) {
                 position: absolute;
                 top: 0;
                 left: 0;
-                z-index: 1;
+                z-index: 5;
+                border-radius: 8px;
             `;
             
-            // Add remove button
+            // Create remove button
             const removeBtn = document.createElement('button');
             removeBtn.innerHTML = '×';
             removeBtn.type = 'button';
@@ -1849,15 +2107,23 @@ function handleFilePreview(input, uploadItem) {
             removeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('🔧 Remove additional image clicked');
                 // Remove the entire upload item
                 uploadItem.remove();
             });
             
-            // Hide placeholder and add preview
-            uploadItem.querySelector('.upload-placeholder').style.display = 'none';
+            // Set image source and add to DOM
+            img.src = e.target.result;
             uploadItem.appendChild(img);
             uploadItem.appendChild(removeBtn);
+            
+            console.log('🔧 Additional image preview setup complete');
         };
+        
+        reader.onerror = function(error) {
+            console.error('🔧 FileReader error:', error);
+        };
+        
         reader.readAsDataURL(file);
     }
 }
