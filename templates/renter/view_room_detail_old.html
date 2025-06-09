@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% block title %}{{ room.homestay.business_name or room.homestay.full_name }} - Phòng {{ room.room_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">{{ room.homestay.business_name or room.homestay.full_name }}</h1>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        {{ room.address }}, {{ room.district }}, {{ room.city }}
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-dark btn-sm">
+                        <i class="bi bi-share me-1"></i> Chia sẻ
+                    </button>
+                    <button class="btn btn-outline-dark btn-sm">
+                        <i class="bi bi-heart me-1"></i> Lưu
+                    </button>
+                    <button class="btn btn-success btn-sm">
+                        Đội ngũ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Gallery Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="row g-2">
+                <!-- Main Image -->
+                <div class="col-lg-8 col-md-7">
+                    <div style="height: 400px;">
+                        {% if room.images %}
+                            {% set featured_image = room.images|selectattr('is_featured', 'equalto', True)|list|first %}
+                            <img src="{{ url_for('static', filename=featured_image.image_path if featured_image else room.images[0].image_path) }}" 
+                                 class="img-fluid w-100 h-100 rounded-3" 
+                                 style="object-fit: cover;" 
+                                 alt="Main room image"
+                                 id="mainImage">
+                        {% else %}
+                            <div class="bg-light w-100 h-100 rounded-3 d-flex align-items-center justify-content-center">
+                                <span class="text-muted">Không có hình ảnh</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Side Images Grid -->
+                <div class="col-lg-4 col-md-5">
+                    <div class="row g-2" style="height: 400px;">
+                        {% if room.images and room.images|length > 1 %}
+                            {% for image in room.images[1:5] %}
+                                <div class="col-6" style="height: 48%;">
+                                    <img src="{{ url_for('static', filename=image.image_path) }}" 
+                                         class="img-fluid w-100 h-100 rounded-2" 
+                                         style="object-fit: cover; cursor: pointer;" 
+                                         onclick="showImage({{ loop.index }})"
+                                         alt="Room image {{ loop.index }}">
+                                </div>
+                            {% endfor %}
+                            
+                            {% if room.images|length > 5 %}
+                                <div class="col-6 position-relative" style="height: 48%;">
+                                    <img src="{{ url_for('static', filename=room.images[4].image_path) }}" 
+                                         class="img-fluid w-100 h-100 rounded-2" 
+                                         style="object-fit: cover;" 
+                                         alt="More images">
+                                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 rounded-2 d-flex align-items-center justify-content-center">
+                                        <button class="btn btn-outline-light btn-sm" onclick="openGallery()">
+                                            <i class="bi bi-grid-3x3-gap"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="col-6" style="height: 48%;">
+                                <div class="bg-light w-100 h-100 rounded-2"></div>
+                            </div>
+                            <div class="col-6" style="height: 48%;">
+                                <div class="bg-light w-100 h-100 rounded-2"></div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="row">
+        <!-- Left Column - Room Details -->
+        <div class="col-lg-8">
+            <!-- Room Info -->
+            <div class="mb-4">
+                <h2 class="h4 fw-bold mb-3">Mô tả</h2>
+                {% if '|AMENITIES|' in room.description %}
+                    {% set description_parts = room.description.split('|AMENITIES|') %}
+                    {% set user_description = description_parts[0]|trim %}
+                    <p class="text-muted">{{ user_description or 'Phòng thoải mái với đầy đủ tiện nghi hiện đại, phù hợp cho kỳ nghỉ của bạn.' }}</p>
+                {% else %}
+                    <p class="text-muted">{{ room.description or 'Phòng thoải mái với đầy đủ tiện nghi hiện đại, phù hợp cho kỳ nghỉ của bạn.' }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Room Amenities -->
+            <div class="mb-4">
+                <h2 class="h4 fw-bold mb-3">Tiện nghi</h2>
+                {% if '|AMENITIES|' in room.description %}
+                    {% set description_parts = room.description.split('|AMENITIES|') %}
+                    {% set amenities_part = description_parts[1]|trim %}
+                    {% set amenities_list = amenities_part.split('|') %}
+                    
+                    <div class="row">
+                        {% for amenity in amenities_list[:6] %}
+                            <div class="col-md-6 mb-2">
+                                <div class="d-flex align-items-center">
+                                    {% if 'Wifi' in amenity %}
+                                        <i class="bi bi-wifi me-2"></i>
+                                    {% elif 'Điều hòa' in amenity %}
+                                        <i class="bi bi-snow me-2"></i>
+                                    {% elif 'Tủ lạnh' in amenity %}
+                                        <i class="bi bi-thermometer-snow me-2"></i>
+                                    {% elif 'TV' in amenity or 'Netflix' in amenity %}
+                                        <i class="bi bi-tv me-2"></i>
+                                    {% elif 'Bếp' in amenity %}
+                                        <i class="bi bi-fire me-2"></i>
+                                    {% elif 'Bãi đậu xe' in amenity %}
+                                        <i class="bi bi-p-square me-2"></i>
+                                    {% else %}
+                                        <i class="bi bi-check-circle me-2"></i>
+                                    {% endif %}
+                                    <span>{{ amenity.strip() }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if amenities_list|length > 6 %}
+                        <button class="btn btn-outline-dark btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#amenitiesModal">
+                            Xem tất cả {{ amenities_list|length }} tiện nghi
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-wifi me-2"></i>
+                                <span>Wi-Fi miễn phí</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-snow me-2"></i>
+                                <span>Điều hòa</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- House Rules -->
+            <div class="mb-4">
+                <h2 class="h4 fw-bold mb-3">Nội quy phòng</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Không hút thuốc</strong></p>
+                        <p class="mb-1"><strong>Không nấu nướng</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Check-in:</strong> 14:00</p>
+                        <p class="mb-1"><strong>Check-out:</strong> 12:00</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Map -->
+            <div class="mb-4">
+                <h2 class="h4 fw-bold mb-3">Địa điểm</h2>
+                <p class="text-muted mb-3">{{ room.address }}, {{ room.district }}, {{ room.city }}</p>
+                
+                <!-- Map placeholder -->
+                <div class="bg-light rounded-3 p-4 text-center" style="height: 200px;">
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <div>
+                            <i class="bi bi-geo-alt fs-1 text-muted mb-2"></i>
+                            <p class="text-muted">Bản đồ vị trí</p>
+                            {% set map_address = room.address + ', ' + room.district + ', ' + room.city + ', Vietnam' %}
+                            {% set encoded_map_address = map_address|urlencode %}
+                            {% set directions_url = 'https://www.google.com/maps/search/?api=1&query=' + encoded_map_address %}
+                            <a href="{{ directions_url }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                                Xem trên Google Maps
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Booking Card -->
+        <div class="col-lg-4">
+            <div class="card shadow border-0 sticky-top" style="top: 20px;">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h4 class="mb-0 fw-bold">{{ "{:,}".format(room.display_price) }} VND</h4>
+                            <small class="text-muted">/ giờ</small>
+                        </div>
+                        {% if room.reviews %}
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-star-fill text-warning me-1"></i>
+                                <span class="fw-bold">{{ "%.1f"|format(room.reviews|map(attribute='rating')|sum / room.reviews|length) }}</span>
+                                <small class="text-muted ms-1">({{ room.reviews|length }})</small>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Room Capacity -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Số khách tối đa</small>
+                            <strong>{{ room.max_guests }} khách</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Giường</small>
+                            <strong>{{ room.bed_count }} giường</strong>
+                        </div>
+                    </div>
+
+                    <!-- Booking Button -->
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('renter.book_room', room_id=room.id) }}" class="btn btn-success w-100 py-2 mb-2">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Đặt phòng
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-success w-100 py-2 mb-2">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Đăng nhập để đặt phòng
+                        </a>
+                    {% endif %}
+
+                    <a href="{{ url_for('home') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Quay lại Trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Amenities Modal -->
+{% if '|AMENITIES|' in room.description %}
+    {% set description_parts = room.description.split('|AMENITIES|') %}
+    {% set amenities_part = description_parts[1]|trim %}
+    {% set amenities_list = amenities_part.split('|') %}
+    
+    <div class="modal fade" id="amenitiesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tất cả tiện nghi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        {% for amenity in amenities_list %}
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    {% if 'Wifi' in amenity %}
+                                        <i class="bi bi-wifi me-2"></i>
+                                    {% elif 'Điều hòa' in amenity %}
+                                        <i class="bi bi-snow me-2"></i>
+                                    {% elif 'Tủ lạnh' in amenity %}
+                                        <i class="bi bi-thermometer-snow me-2"></i>
+                                    {% elif 'TV' in amenity or 'Netflix' in amenity %}
+                                        <i class="bi bi-tv me-2"></i>
+                                    {% elif 'Bếp' in amenity %}
+                                        <i class="bi bi-fire me-2"></i>
+                                    {% elif 'Bãi đậu xe' in amenity %}
+                                        <i class="bi bi-p-square me-2"></i>
+                                    {% else %}
+                                        <i class="bi bi-check-circle me-2"></i>
+                                    {% endif %}
+                                    <span>{{ amenity.strip() }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- JavaScript for Gallery -->
+{% if room.images and room.images|length > 0 %}
+<script>
+    var galleryImages = {{ room.images | map(attribute='image_path') | list | tojson }};
+    var currentImageIndex = 0;
+
+    function showImage(index) {
+        currentImageIndex = index;
+        document.getElementById('mainImage').src = "{{ url_for('static', filename='') }}" + galleryImages[index];
+    }
+
+    function openGallery() {
+        // You can implement a full gallery modal here
+        alert('Gallery feature coming soon!');
+    }
+</script>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}{% endblock %}
