@@ -335,30 +335,91 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    
+    /* Header action buttons styling */
+    .header-action-btn {
+        min-width: 44px;
+        height: 36px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-width: 1.5px;
+    }
+    
+    .header-action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .header-action-btn i {
+        font-size: 14px;
+    }
+    
+    /* Saved state for heart button */
+    .header-action-btn.saved {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: white !important;
+    }
+    
+    .header-action-btn.saved:hover {
+        background-color: #c82333 !important;
+        border-color: #c82333 !important;
+    }
+    
+    /* Success button custom styling */
+    .btn-success.header-action-btn {
+        background: linear-gradient(135deg, #8bc34a, #7cb342);
+        border-color: #8bc34a;
+        font-weight: 600;
+    }
+    
+    .btn-success.header-action-btn:hover {
+        background: linear-gradient(135deg, #7cb342, #689f38);
+        border-color: #7cb342;
+    }
 </style>
 <div class="container-fluid px-4 pt-4 pb-5 room-detail-container">
     <!-- Header -->
     <div class="section-card">
-                    <h1 class="h2 fw-bold mb-2">{{ room.homestay.business_name}}</h1>
-        <p class="address-text mb-0">
-            <i class="bi bi-geo-alt"></i>
-                        {{ room.address }}, 
-                        {% if room.district.lower().startswith('quan') %}
-                            {{ room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') }}
-                        {% else %}
-                            {{ room.district }}
-                        {% endif %}, 
-                        {% if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' %}
-                            Thành phố Hồ Chí Minh
-                        {% elif room.city.lower() == 'hn' or room.city.lower() == 'hanoi' %}
-                            Thành phố Hà Nội
-                        {% elif room.city.lower() == 'dn' or room.city.lower() == 'da nang' %}
-                            Thành phố Đà Nẵng
-                        {% else %}
-                            {{ room.city }}
-                        {% endif %}
-                    </p>
-                </div>
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="h2 fw-bold mb-2">{{ room.homestay.business_name}}</h1>
+                <p class="address-text mb-0">
+                    <i class="bi bi-geo-alt"></i>
+                    {{ room.address }}, 
+                    {% if room.district.lower().startswith('quan') %}
+                        {{ room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') }}
+                    {% else %}
+                        {{ room.district }}
+                    {% endif %}, 
+                    {% if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' %}
+                        Thành phố Hồ Chí Minh
+                    {% elif room.city.lower() == 'hn' or room.city.lower() == 'hanoi' %}
+                        Thành phố Hà Nội
+                    {% elif room.city.lower() == 'dn' or room.city.lower() == 'da nang' %}
+                        Thành phố Đà Nẵng
+                    {% else %}
+                        {{ room.city }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm header-action-btn" onclick="shareRoom()" title="Chia sẻ">
+                    <i class="bi bi-share"></i>
+                    <span class="d-none d-md-inline ms-1">Chia sẻ</span>
+                </button>
+                <button class="btn btn-outline-danger btn-sm header-action-btn" onclick="toggleSaveRoom()" title="Lưu" id="saveRoomBtn">
+                    <i class="bi bi-heart"></i>
+                    <span class="d-none d-md-inline ms-1">Lưu</span>
+                </button>
+                <a href="{{ url_for('renter.book_room', room_id=room.id) }}" class="btn btn-success btn-sm header-action-btn" title="Đặt ngay">
+                    <i class="bi bi-calendar-check"></i>
+                    <span class="d-none d-md-inline ms-1">Đặt ngay</span>
+                </a>
+            </div>
+        </div>
+    </div>
                 
     <!-- Gallery -->
     <div class="section-card">
@@ -1072,5 +1133,106 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Header action buttons functionality
+function shareRoom() {
+    const roomTitle = "{{ room.homestay.business_name|e }}";
+    const roomUrl = window.location.href;
+    
+    if (navigator.share) {
+        // Web Share API (mobile)
+        navigator.share({
+            title: roomTitle,
+            text: 'Xem homestay tuyệt vời này!',
+            url: roomUrl
+        }).catch(err => {
+            console.log('Error sharing:', err);
+            copyToClipboard(roomUrl);
+        });
+    } else {
+        // Fallback: copy to clipboard
+        copyToClipboard(roomUrl);
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Show success message
+        showToast('Đã sao chép link vào clipboard!', 'success');
+    }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Đã sao chép link vào clipboard!', 'success');
+    });
+}
+
+function toggleSaveRoom() {
+    const saveBtn = document.getElementById('saveRoomBtn');
+    const icon = saveBtn.querySelector('i');
+    const text = saveBtn.querySelector('span');
+    
+    if (saveBtn.classList.contains('saved')) {
+        // Remove from saved
+        saveBtn.classList.remove('saved');
+        saveBtn.classList.add('btn-outline-danger');
+        icon.className = 'bi bi-heart';
+        if (text) text.textContent = 'Lưu';
+        showToast('Đã bỏ lưu homestay!', 'info');
+    } else {
+        // Add to saved
+        saveBtn.classList.add('saved');
+        saveBtn.classList.remove('btn-outline-danger');
+        icon.className = 'bi bi-heart-fill';
+        if (text) text.textContent = 'Đã lưu';
+        showToast('Đã lưu homestay!', 'success');
+    }
+}
+
+function showToast(message, type = 'info') {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Create toast element
+    const toastId = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.className = `toast align-items-center text-bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'info' ? 'info-circle' : 'exclamation-triangle'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    const bsToast = new bootstrap.Toast(toast, {
+        autohide: true,
+        delay: 3000
+    });
+    
+    bsToast.show();
+    
+    // Remove toast element after it's hidden
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
 </script>
 {% endblock %}
