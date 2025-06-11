@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from models import Province, District, Ward, Rule, AmenityCategory, Amenity
+from app.models.models import Province, District, Ward, Rule, AmenityCategory, Amenity
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 

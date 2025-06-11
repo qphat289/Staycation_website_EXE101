@@ -1,4 +1,4 @@
-from models import db, Owner
+from app.models.models import db, Owner
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 

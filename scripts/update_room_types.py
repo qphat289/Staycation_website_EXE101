@@ -1,5 +1,5 @@
 from app import app, db
-from models import Room
+from app.models.models import Room
 
 with app.app_context():
     # Update tất cả phòng có room_type = 'Standard' thành 'Mô hình chuẩn'

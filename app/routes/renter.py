@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user, logout_user
-from models import Booking, Review, db, Room, RoomImage, Admin, Owner, Renter, Amenity
+from app.models.models import Booking, Review, db, Room, RoomImage, Admin, Owner, Renter, Amenity
 from datetime import datetime, timedelta
 from PIL import Image
 import io

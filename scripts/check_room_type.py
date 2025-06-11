@@ -1,5 +1,5 @@
 from app import app, db
-from models import Room
+from app.models.models import Room
 
 with app.app_context():
     rooms = Room.query.all()

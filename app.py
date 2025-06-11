@@ -3,9 +3,9 @@ from flask import Flask, render_template, session, send_from_directory, request,
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_migrate import Migrate
-from config import Config
-from models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity, RoomImage
-from utils import get_rank_info, get_location_name
+from config.config import Config
+from app.models.models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity, RoomImage
+from app.utils.utils import get_rank_info, get_location_name
 from dotenv import load_dotenv
 import json
 from datetime import datetime, timedelta
@@ -148,12 +148,12 @@ with app.app_context():
         print(f"Error creating statistics: {e}")
 
 # Import and register blueprints
-from routes.auth import auth_bp
-from routes.owner import owner_bp
-from routes.renter import renter_bp
-from routes.admin import admin_bp
-from routes.payment import payment_bp
-from routes.api import api_bp
+from app.routes.auth import auth_bp
+from app.routes.owner import owner_bp
+from app.routes.renter import renter_bp
+from app.routes.admin import admin_bp
+from app.routes.payment import payment_bp
+from app.routes.api import api_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(owner_bp)
