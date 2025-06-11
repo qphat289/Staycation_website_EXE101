@@ -1,7 +1,7 @@
 # routes/payment.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app
 from flask_login import login_required, current_user
-from models import db, Booking
+from app.models.models import db, Booking
 from datetime import datetime, timedelta
 import json
 import os

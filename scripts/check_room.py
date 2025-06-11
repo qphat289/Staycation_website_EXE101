@@ -1,5 +1,5 @@
 from app import app, db
-from models import Room, RoomImage
+from app.models.models import Room, RoomImage
 
 with app.app_context():
     room = Room.query.filter_by(title="Vitamin Homestay").first()

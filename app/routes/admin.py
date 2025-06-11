@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
-from models import db, Admin, Owner, Renter, Room, Booking, Statistics, Review
+from app.models.models import db, Admin, Owner, Renter, Room, Booking, Statistics, Review
 from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
