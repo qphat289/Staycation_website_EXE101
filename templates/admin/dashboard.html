@@ -23,8 +23,6 @@ body {
     overflow-y: auto;
 }
 
-
-
 /* Sidebar - MATCH OWNER STYLE */
 .admin-sidebar {
     width: 250px;
@@ -203,7 +201,6 @@ a#menu-manage-admin.active {
     visibility: visible !important;
     z-index: 1060 !important;
 }
-
 
 /* Đảm bảo không có element nào che khuất dropdown */
 .admin-sidebar {
@@ -2220,19 +2217,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Debug và khởi tạo navbar dropdown sau khi đóng modal
-    setTimeout(() => {
-        console.log('Admin dashboard loaded');
+        setTimeout(() => {
         // Get all dropdown toggles, including the navbar dropdown
         const allDropdownToggles = document.querySelectorAll('.dropdown-toggle');
-        console.log('Found dropdown toggles:', allDropdownToggles.length);
-
-        
         // Specifically target the navbarDropdown in the user menu
         const navbarDropdown = document.getElementById('navbarDropdown');
         if (navbarDropdown) {
-            console.log('User dropdown found by ID:', navbarDropdown);
-            
             // Remove previous event listeners and bootstrap instances
             const existingDropdown = bootstrap.Dropdown.getInstance(navbarDropdown);
             if (existingDropdown) {
@@ -2252,7 +2242,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add manual click handler for additional reliability
             navbarDropdown.addEventListener('click', function(e) {
                 e.stopPropagation();
-                console.log('Navbar dropdown clicked');
                 const dropdownMenu = navbarDropdown.nextElementSibling;
                 
                 if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
@@ -2264,13 +2253,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            console.log('Bootstrap user dropdown initialized successfully');
-        } else {
+            } else {
             // Fallback to query selector if ID not found
             const dropdownToggle = document.querySelector('.navbar .dropdown-toggle');
             if (dropdownToggle) {
-                console.log('Dropdown toggle found by class:', dropdownToggle);
-                
                 // Remove previous event listeners
                 dropdownToggle.removeAttribute('data-bs-toggle');
                 
@@ -2285,21 +2271,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         existingDropdown.dispose();
                     }
                     new bootstrap.Dropdown(dropdownToggle);
-                    console.log('Bootstrap dropdown re-initialized');
-                } catch (e) {
+                    } catch (e) {
                     console.error('Error initializing dropdown:', e);
                 }
             } else {
-                console.log('User dropdown toggle not found');
-            }
+                }
         }
 
         // Kiểm tra Bootstrap
         if (typeof bootstrap === 'undefined') {
             console.error('Bootstrap is not loaded!');
         } else {
-            console.log('Bootstrap loaded successfully');
-        }
+            }
     }, 500);
 
     // Sidebar Menu Handling
@@ -2612,8 +2595,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const action = this.getAttribute('data-action');
                 if (action) {
                     // Xử lý các hành động khác nhau
-                    console.log('Action:', action);
-                }
+                    }
             }
         });
     });
@@ -2830,77 +2812,47 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // DEBUG AND FIX DROPDOWN FUNCTIONALITY
-    console.log('=== DROPDOWN DEBUG START ===');
-    
     // Check if Bootstrap is loaded
     if (typeof bootstrap !== 'undefined') {
-        console.log('✓ Bootstrap is loaded');
-        
         // Find dropdown elements
         const dropdownElements = document.querySelectorAll('.dropdown-toggle');
-        console.log('Found dropdown elements:', dropdownElements.length);
-        
         // Specifically check navbar dropdown
         const navbarDropdown = document.getElementById('navbarDropdown');
         if (navbarDropdown) {
-            console.log('✓ Navbar dropdown found:', navbarDropdown);
-            
             // Manually initialize Bootstrap dropdown
             const dropdownInstance = new bootstrap.Dropdown(navbarDropdown);
-            console.log('✓ Bootstrap dropdown initialized:', dropdownInstance);
-            
             // Add event listeners
             navbarDropdown.addEventListener('click', function(e) {
-                console.log('🔍 Dropdown clicked!');
-                console.log('- Event:', e);
-                console.log('- Target:', e.target);
-                console.log('- Current target:', e.currentTarget);
-                
                 // Prevent default if needed
                 e.preventDefault();
                 
                 // Toggle dropdown manually if bootstrap fails
                 const dropdownMenu = navbarDropdown.nextElementSibling;
                 if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
-                    console.log('- Dropdown menu found:', dropdownMenu);
-                    console.log('- Current classes:', dropdownMenu.className);
-                    
                     if (dropdownMenu.classList.contains('show')) {
                         dropdownMenu.classList.remove('show');
-                        console.log('✓ Dropdown hidden manually');
-                    } else {
+                        } else {
                         dropdownMenu.classList.add('show');
-                        console.log('✓ Dropdown shown manually');
-                    }
+                        }
                 }
             });
             
             // Add Bootstrap events
             navbarDropdown.addEventListener('shown.bs.dropdown', function() {
-                console.log('✓ Bootstrap dropdown shown event fired');
-            });
+                });
             
             navbarDropdown.addEventListener('hidden.bs.dropdown', function() {
-                console.log('✓ Bootstrap dropdown hidden event fired');
-            });
+                });
             
         } else {
-            console.log('❌ Navbar dropdown not found!');
-        }
+            }
         
         // Check for conflicts
         const conflictingElements = document.querySelectorAll('[style*="overflow: hidden"]');
-        console.log('Elements with overflow hidden:', conflictingElements.length);
-        
         // Check z-index
         const navbarZIndex = window.getComputedStyle(document.querySelector('.navbar')).zIndex;
-        console.log('Navbar z-index:', navbarZIndex);
-        
-    } else {
-        console.log('❌ Bootstrap not loaded!');
-    }
-    
-    console.log('=== DROPDOWN DEBUG END ===');
+        } else {
+        }
     
     // Handle Add Admin Form
     const addAdminModal = document.getElementById('addAdminModal');

@@ -618,8 +618,6 @@
         margin-bottom: 20px;
     }
 
-
-
     .actions {
         display: flex;
         justify-content: space-between;
@@ -1019,7 +1017,7 @@
                             <!-- Temporarily always show for testing -->
                             <div class="upload-item main-image-upload">
                                 <span class="upload-label">{% if has_main_image %}Thay ảnh bìa{% else %}Ảnh bìa{% endif %}</span>
-                                <input type="file" name="main_image" accept="image/*" id="main-image-input" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;" onchange="console.log('🔧 DIRECT onchange triggered:', this.files[0]); if(this.files[0]) { testPreview(this); }">
+                                <input type="file" name="main_image" accept="image/*" id="main-image-input" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;" onchange="if(this.files[0]) { testPreview(this); }">
                                 <div class="upload-placeholder" style="pointer-events: none;">
                                     <i class="bi bi-camera"></i>
                                     <span>{% if has_main_image %}Thay đổi{% else %}Chọn ảnh{% endif %}</span>
@@ -1102,11 +1100,8 @@ let locationData = null;
 let amenitiesData = null;
 let rulesData = null;
 
-// Debug logs
-console.log('🔧 Edit Room Initial selectedAmenities:', selectedAmenities);
-console.log('🔧 Edit Room Initial selectedRules:', selectedRules);
-console.log('🔧 selectedAmenities type:', typeof selectedAmenities, Array.isArray(selectedAmenities));
-console.log('🔧 selectedRules type:', typeof selectedRules, Array.isArray(selectedRules));
+);
+);
 
 // Counter functions
 function increaseCount(type) {
@@ -1140,7 +1135,6 @@ function formatPriceInput(input) {
 
 // Rental type change
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 DOM Content Loaded - starting setup');
     const hourlyRadio = document.getElementById('hourly');
     const nightlyRadio = document.getElementById('nightly');
     
@@ -1172,8 +1166,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update displays after data is loaded
         updateSelectedAmenitiesDisplay();
         updateSelectedRulesDisplay();
-        
-        console.log('✅ Edit Room - All data loaded and displays updated');
         
         // Load existing room rules and amenities
         loadExistingRulesAndAmenities();
@@ -1222,8 +1214,7 @@ async function loadAmenitiesData() {
         const result = await response.json();
         if (result.success) {
             amenitiesData = result.data;
-            console.log('Amenities data loaded successfully');
-        }
+            }
     } catch (error) {
         console.error('Error loading amenities data:', error);
     }
@@ -1235,8 +1226,7 @@ async function loadRulesData() {
         const result = await response.json();
         if (result.success) {
             rulesData = result.data;
-            console.log('Rules data loaded successfully');
-        }
+            }
     } catch (error) {
         console.error('Error loading rules data:', error);
     }
@@ -1271,16 +1261,12 @@ function fillCurrentLocation() {
 
 // Function to load existing room rules and amenities
 function loadExistingRulesAndAmenities() {
-    console.log('🔄 Loading existing room rules and amenities...');
-    
     // Clear current selections first
     selectedRules = [];
     selectedAmenities = [];
     
     // Load amenities from room data
     const roomAmenities = {{ room.amenities|tojson if room.amenities else '[]' }};
-    console.log('🔧 Room amenities from server:', roomAmenities);
-    
     if (roomAmenities && Array.isArray(roomAmenities)) {
         roomAmenities.forEach(amenity => {
             if (amenity.id && amenity.name) {
@@ -1291,13 +1277,11 @@ function loadExistingRulesAndAmenities() {
                 });
             }
         });
-        console.log('✅ Loaded amenities:', selectedAmenities.length, selectedAmenities.map(a => a.name));
+        );
     }
     
     // Load rules from room data
     const roomRules = {{ room.rules|tojson if room.rules else '[]' }};
-    console.log('🔧 Room rules from server:', roomRules);
-    
     if (roomRules && Array.isArray(roomRules)) {
         roomRules.forEach(rule => {
             if (rule.id && rule.name) {
@@ -1307,15 +1291,14 @@ function loadExistingRulesAndAmenities() {
                 });
             }
         });
-        console.log('✅ Loaded rules:', selectedRules.length, selectedRules.map(r => r.name));
+        );
     }
     
     // Update displays after loading
     updateSelectedAmenitiesDisplay();
     updateSelectedRulesDisplay();
     
-    console.log('✅ Existing room data loaded successfully');
-}
+    }
 
 // Note: Duplicate functions removed - using the ones defined above
 
@@ -1443,11 +1426,9 @@ window.onclick = function(event) {
 
 // Image handling functions
 function previewImage(input) {
-    console.log('🔧 previewImage called with:', input.files[0]);
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            console.log('🔧 FileReader onload triggered');
             const uploadItem = input.closest('.upload-item');
             const placeholder = uploadItem.querySelector('.upload-placeholder');
             
@@ -1472,8 +1453,6 @@ function previewImage(input) {
             const preview = document.createElement('img');
             preview.className = 'preview-img';
             preview.style.cssText = 'width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 8px; z-index: 5;';
-            console.log('🔧 Preview element created:', preview);
-            
             // Create remove button for preview
             const removeBtn = document.createElement('button');
             removeBtn.className = 'remove-preview-btn';
@@ -1500,7 +1479,6 @@ function previewImage(input) {
             removeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🔧 Remove preview clicked');
                 // Reset the file input
                 input.value = '';
                 // Remove preview and show placeholder
@@ -1514,8 +1492,7 @@ function previewImage(input) {
             // Set the image source
             try {
                 preview.src = e.target.result;
-                console.log('🔧 Preview image src set successfully:', e.target.result ? 'has data' : 'no data');
-            } catch (error) {
+                } catch (error) {
                 console.error('🔧 Error setting preview src:', error);
                 console.error('🔧 Preview element:', preview);
                 console.error('🔧 e.target.result:', e.target.result);
@@ -1530,8 +1507,7 @@ function previewImage(input) {
             uploadItem.appendChild(preview);
             uploadItem.appendChild(removeBtn);
             
-            console.log('🔧 Preview setup complete');
-        };
+            };
         reader.readAsDataURL(input.files[0]);
     }
 }
@@ -1559,8 +1535,6 @@ function removeExistingImage(imageId) {
 }
 
 function updateSelectedAmenitiesDisplay() {
-    console.log('🔧 updateSelectedAmenitiesDisplay called with:', selectedAmenities);
-    console.log('🔧 selectedAmenities length:', selectedAmenities.length);
     const container = document.getElementById('selectedAmenities');
     const inputsContainer = document.getElementById('amenityInputs');
     
@@ -1613,8 +1587,6 @@ function updateSelectedAmenitiesDisplay() {
 }
 
 function updateSelectedRulesDisplay() {
-    console.log('🔧 updateSelectedRulesDisplay called with:', selectedRules);
-    console.log('🔧 selectedRules length:', selectedRules.length);
     const container = document.getElementById('selectedRules');
     
     if (!container) {
@@ -1821,46 +1793,33 @@ document.getElementById('edit-room-form').addEventListener('submit', function(e)
 
 // Simple main image upload handler
 function setupMainImageUpload() {
-    console.log('🔧 Setting up main image upload...');
     const mainInput = document.getElementById('main-image-input');
     if (mainInput) {
-        console.log('🔧 Found main image input');
-        
         // Remove any existing event listeners first
         mainInput.removeEventListener('change', handleMainImageChange);
         
         // Add the change event listener
         mainInput.addEventListener('change', handleMainImageChange);
         
-        console.log('🔧 Main image input setup complete');
-    } else {
+        } else {
         console.error('🔧 Main image input not found!');
     }
 }
 
 function handleMainImageChange(event) {
-    console.log('🔧 Main image file selected:', event.target.files[0]);
     if (event.target.files && event.target.files[0]) {
-        console.log('🔧 File name:', event.target.files[0].name);
-        console.log('🔧 File size:', event.target.files[0].size);
         previewImage(event.target);
     }
 }
 
 // Simple test preview function
 function testPreview(input) {
-    console.log('🔧 testPreview called with:', input.files[0].name);
     const uploadItem = input.closest('.upload-item');
     const placeholder = uploadItem.querySelector('.upload-placeholder');
-    
-    console.log('🔧 Upload item found:', !!uploadItem);
-    console.log('🔧 Placeholder found:', !!placeholder);
     
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            console.log('🔧 testPreview FileReader onload');
-            
             // Simple approach - just create and insert image
             const img = document.createElement('img');
             img.style.cssText = `
@@ -1874,10 +1833,7 @@ function testPreview(input) {
                 border-radius: 8px;
             `;
             
-            console.log('🔧 About to set img.src...');
             img.src = e.target.result;
-            console.log('🔧 img.src set successfully');
-            
             // Hide placeholder
             if (placeholder) {
                 placeholder.style.display = 'none';
@@ -1886,21 +1842,18 @@ function testPreview(input) {
             // Add image to upload item
             uploadItem.appendChild(img);
             
-            console.log('🔧 testPreview completed successfully!');
-        };
+            };
         reader.readAsDataURL(input.files[0]);
     }
 }
 
 // Setup add more images functionality
 function setupAddMoreImages() {
-    console.log('🔧 Setting up add more images...');
     const addMoreItem = document.querySelector('.upload-item.add-more');
     if (addMoreItem) {
         const placeholder = addMoreItem.querySelector('.upload-placeholder');
         if (placeholder) {
             placeholder.addEventListener('click', function(e) {
-                console.log('🔧 Add more images clicked');
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -1912,10 +1865,8 @@ function setupAddMoreImages() {
                 tempInput.style.display = 'none';
                 
                 tempInput.addEventListener('change', function() {
-                    console.log('🔧 Additional files selected:', this.files.length);
                     if (this.files && this.files.length > 0) {
                         Array.from(this.files).forEach((file) => {
-                            console.log('🔧 Adding file:', file.name);
                             addImageToUploadGrid(file);
                         });
                     }
@@ -1925,8 +1876,7 @@ function setupAddMoreImages() {
                 document.body.appendChild(tempInput);
                 tempInput.click();
             });
-            console.log('🔧 Add more images setup complete');
-        }
+            }
     } else {
         console.error('🔧 Add more images button not found!');
     }
@@ -1934,27 +1884,15 @@ function setupAddMoreImages() {
 
 // Setup upload functionality for images
 function setupUploadFunctionality() {
-    console.log('🔧 Setting up upload functionality...');
     const uploadItems = document.querySelectorAll('.upload-item');
-    console.log('🔧 Found upload items:', uploadItems.length);
-    
     uploadItems.forEach((item, index) => {
         const placeholder = item.querySelector('.upload-placeholder');
         const fileInput = item.querySelector('input[type="file"]');
         const isAddMore = item.classList.contains('add-more');
         
-        console.log(`🔧 Item ${index}:`, {
-            hasPlaceholder: !!placeholder,
-            hasFileInput: !!fileInput,
-            isAddMore: isAddMore,
-            classes: item.className
-        });
-        
         if (isAddMore) {
             // Handle "Thêm ảnh" button - create new file input
-            console.log('🔧 Setting up add-more button');
             placeholder.addEventListener('click', function(e) {
-                console.log('🔧 Add-more clicked');
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -1981,11 +1919,8 @@ function setupUploadFunctionality() {
             });
         } else if (fileInput && placeholder) {
             // Handle regular upload items (like main image)
-            console.log('🔧 Setting up regular upload item with file input');
-            
             // Add click event to placeholder
             placeholder.addEventListener('click', function(e) {
-                console.log('🔧 Placeholder clicked for main image');
                 e.preventDefault();
                 e.stopPropagation();
                 fileInput.click();
@@ -1993,7 +1928,6 @@ function setupUploadFunctionality() {
             
             // Add click event to the whole upload item as backup
             item.addEventListener('click', function(e) {
-                console.log('🔧 Upload item clicked for main image');
                 e.preventDefault();
                 e.stopPropagation();
                 fileInput.click();
@@ -2001,20 +1935,17 @@ function setupUploadFunctionality() {
             
             // Handle file selection for regular upload items
             fileInput.addEventListener('change', function() {
-                console.log('🔧 File selected for main image:', this.files[0]);
                 if (this.files && this.files[0]) {
                     previewImage(this);
                 }
             });
         } else {
-            console.log('🔧 Skipping item - no file input or placeholder found');
-        }
+            }
     });
 }
 
 // Add image to upload grid
 function addImageToUploadGrid(file) {
-    console.log('🔧 addImageToUploadGrid called with file:', file.name);
     const uploadGrid = document.querySelector('.upload-grid');
     const addMoreButton = uploadGrid.querySelector('.add-more');
     
@@ -2052,8 +1983,7 @@ function addImageToUploadGrid(file) {
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         fileInput.files = dataTransfer.files;
-        console.log('🔧 File set to input successfully');
-    } catch (error) {
+        } catch (error) {
         console.error('🔧 Error setting file to input:', error);
     }
     
@@ -2063,12 +1993,9 @@ function addImageToUploadGrid(file) {
 
 // Show file preview for new images
 function showFilePreview(file, uploadItem) {
-    console.log('🔧 showFilePreview called with file:', file.name);
     if (file && file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            console.log('🔧 FileReader onload for new image');
-            
             // Create preview image
             const img = document.createElement('img');
             img.style.cssText = `
@@ -2107,7 +2034,6 @@ function showFilePreview(file, uploadItem) {
             removeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🔧 Remove additional image clicked');
                 // Remove the entire upload item
                 uploadItem.remove();
             });
@@ -2117,8 +2043,7 @@ function showFilePreview(file, uploadItem) {
             uploadItem.appendChild(img);
             uploadItem.appendChild(removeBtn);
             
-            console.log('🔧 Additional image preview setup complete');
-        };
+            };
         
         reader.onerror = function(error) {
             console.error('🔧 FileReader error:', error);

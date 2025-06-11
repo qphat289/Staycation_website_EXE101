@@ -627,23 +627,17 @@ footer {
 window.addEventListener('scroll', function() {
     const navbar = document.querySelector('.navbar');
     if (navbar) {
-        console.log('Scroll position:', window.scrollY); // Debug
-        if (window.scrollY > 50) {
+                if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
-            console.log('Added scrolled class'); // Debug
-        } else {
+                    } else {
             navbar.classList.remove('scrolled');
-            console.log('Removed scrolled class'); // Debug
-        }
+                    }
     } else {
-        console.log('Navbar not found'); // Debug
-    }
+            }
 });
 
-// Debug: Check if navbar exists when page loads
 document.addEventListener('DOMContentLoaded', function() {
     const navbar = document.querySelector('.navbar');
-    console.log('Navbar found on page load:', navbar);
-});
+    });
 </script>
 {% endblock %}

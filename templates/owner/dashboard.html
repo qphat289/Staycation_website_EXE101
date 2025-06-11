@@ -945,8 +945,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('created') === 'success') {
         sessionStorage.removeItem('room_form_data');
-        console.log('Cleared room form session data after successful creation');
-        
         // Clean up URL
         if (window.history.replaceState) {
             const cleanUrl = window.location.pathname;
@@ -961,26 +959,18 @@ function checkForDraftRoomData() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('created') === 'success') {
         // Don't show alert if we just created a room
-        console.log('Room created successfully - not showing draft alert');
         return;
     }
     
     const sessionStorageData = sessionStorage.getItem('room_form_data');
     const hasServerData = {{ 'true' if session.get('room_preview_data') else 'false' }};
     
-    console.log('Checking draft data:', {
-        sessionStorage: !!sessionStorageData,
-        serverSession: hasServerData,
-        currentPath: window.location.pathname
-    });
-    
     // Only show alert if we have actual draft data AND we're in dashboard
     if ((sessionStorageData || hasServerData) && window.location.pathname === '/owner/dashboard') {
         const alert = document.getElementById('draft-room-alert');
         if (alert) {
             alert.style.display = 'block';
-            console.log('Found draft room data - showing alert');
-        }
+            }
     }
 }
 
@@ -996,8 +986,6 @@ function clearDraftData() {
             'Content-Type': 'application/json'
         }
     }).then(response => {
-        console.log('Cleared all draft data');
-        
         // Hide alert
         const alert = document.getElementById('draft-room-alert');
         if (alert) {
@@ -1151,8 +1139,6 @@ function applyFilters() {
     currentFilters.city = formData.get('city') || '';
     currentFilters.district = formData.get('district') || '';
     
-    console.log('Applying filters:', currentFilters);
-    
     // Filter rooms
     filterRooms();
     
@@ -1189,8 +1175,7 @@ function clearAllFilters() {
     // Update filter button state
     updateFilterButtonState();
     
-    console.log('Filters cleared');
-}
+    }
 
 // Filter rooms based on current filters
 function filterRooms() {
@@ -1334,8 +1319,7 @@ function filterRooms() {
         }
     });
     
-    console.log(`Filtered results: ${visibleCount} rooms visible`);
-}
+    }
 
 // Update filter button state
 function updateFilterButtonState() {
