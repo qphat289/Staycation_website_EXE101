@@ -41,8 +41,7 @@ def dashboard():
         search_term = f"%{search_query}%"
         query = query.filter(
             (
-                Owner.username.ilike(search_term),
-                Owner.email.ilike(search_term),
+                Owner.username.ilike(search_term),                Owner.email.ilike(search_term),
                 Owner.phone.ilike(search_term)
             )
         )
@@ -52,6 +51,9 @@ def dashboard():
     total_count = Owner.query.count()
     active_count = Owner.query.filter_by(is_active=True).count()
     inactive_count = Owner.query.filter_by(is_active=False).count()
+
+    # Fetch admin users for the admin management section
+    admins = Admin.query.all()
 
     # --- PHẦN 2: LOGIC THỐNG KÊ ---
     try:
@@ -139,17 +141,16 @@ def dashboard():
         print(f"CRITICAL ERROR in statistics calculation: {e}")
         # Tạo một đối tượng stats rỗng để trang không bị crash
         stats = Statistics(date=datetime.now().date())
-
-
-    # --- PHẦN 3: TRẢ VỀ TEMPLATE ---
-    return render_template('admin/dashboard.html',
-                           owners=owners,
-                           total_count=total_count,
-                           active_count=active_count,
-                           inactive_count=inactive_count,
-                           current_filter=status_filter,
-                           search_query=search_query,
-                           stats=stats)
+    # --- PHẦN 3: TRẢ VỀ TEMPLATE ---    
+    return render_template('admin/dashboard.html', 
+                          owners=owners,
+                          total_count=total_count,
+                          active_count=active_count,
+                          inactive_count=inactive_count,
+                          current_filter=status_filter,
+                          search_query=search_query,
+                          stats=stats,
+                          admins=admins)
 
         
 @admin_bp.route('/profile', methods=['GET', 'POST'])
@@ -403,27 +404,54 @@ def create_admin():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
         full_name = request.form.get('full_name')
         is_super_admin = request.form.get('is_super_admin') == 'on'
+          # Validate required fields
+        if not all([username, email, password, confirm_password, full_name]):
+            flash('Vui lòng điền đầy đủ thông tin bắt buộc', 'danger')
+            return render_template('admin/create_admin.html')
         
-        # Kiểm tra username và email đã tồn tại chưa
+        # Validate username format (4-20 characters, letters, numbers, underscores)
+        import re
+        if not re.match(r'^[a-zA-Z0-9_]{4,20}$', username):
+            flash('Username phải từ 4-20 ký tự, chỉ bao gồm chữ cái, số và dấu gạch dưới', 'danger')
+            return render_template('admin/create_admin.html')
+        
+        # Validate password complexity
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$', password):
+            flash('Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số', 'danger')
+            return render_template('admin/create_admin.html')
+        
+        # Validate password match
+        if password != confirm_password:
+            flash('Mật khẩu xác nhận không khớp', 'danger')
+            return render_template('admin/create_admin.html')
+        
+        # Check if username exists
         if Admin.query.filter_by(username=username).first():
             flash('Username đã tồn tại.', 'danger')
-            return redirect(url_for('admin.create_admin'))
+            return render_template('admin/create_admin.html')
             
+        # Check if email exists
         if Admin.query.filter_by(email=email).first():
             flash('Email đã tồn tại.', 'danger')
-            return redirect(url_for('admin.create_admin'))
+            return render_template('admin/create_admin.html')
         
-        # Tạo admin mới
-        new_admin = Admin(username=username, email=email, full_name=full_name, is_super_admin=is_super_admin)
-        new_admin.set_password(password)
-        
-        db.session.add(new_admin)
-        db.session.commit()
-        
-        flash('Tạo admin mới thành công!', 'success')
-        return redirect(url_for('admin.manage_admins'))
+        try:
+            # Tạo admin mới
+            new_admin = Admin(username=username, email=email, full_name=full_name, is_super_admin=is_super_admin)
+            new_admin.set_password(password)
+            
+            db.session.add(new_admin)
+            db.session.commit()
+            
+            flash('Tạo admin mới thành công!', 'success')
+            return redirect(url_for('admin.manage_admins'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Lỗi khi tạo admin: {str(e)}', 'danger')
+            return render_template('admin/create_admin.html')
         
     return render_template('admin/create_admin.html')
 
@@ -643,13 +671,13 @@ def create_admin_ajax():
         
         username = data.get('username')
         email = data.get('email')
-        full_name = data.get('full_name')
         password = data.get('password')
         confirm_password = data.get('confirm_password')
-        is_super_admin = data.get('is_super_admin', False)
+        full_name = data.get('full_name')
+        is_super_admin = data.get('is_super_admin') == 'on'
         
         # Validate required fields
-        if not all([username, email, full_name, password, confirm_password]):
+        if not all([username, email, password, confirm_password, full_name]):
             return jsonify({'success': False, 'message': 'Vui lòng điền đầy đủ thông tin!'}), 400
         
         # Validate password match
@@ -692,5 +720,67 @@ def create_admin_ajax():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
+
+@admin_bp.route('/add-admin', methods=['POST'])
+@login_required
+@super_admin_required
+def add_admin_ajax():
+    """Handle AJAX request to create a new admin user from the modal"""
+    try:
+        # Get JSON data from request
+        data = request.get_json()
+        
+        # Extract form data
+        username = data.get('username', '')
+        email = data.get('email', '')
+        password = data.get('password', '')
+        confirm_password = data.get('confirm_password', '')
+        role = data.get('role', '')
+        is_super_admin = role == 'super_admin'
+        
+        # Basic validation
+        if not all([username, email, password]):
+            return jsonify({'success': False, 'error': 'Vui lòng điền đầy đủ thông tin bắt buộc'}), 400
+            
+        # Validate password match
+        if password != confirm_password:
+            return jsonify({'success': False, 'error': 'Mật khẩu xác nhận không khớp!'}), 400
+        
+        # Check if username exists
+        if Admin.query.filter_by(username=username).first():
+            return jsonify({'success': False, 'error': 'Username đã tồn tại'}), 400
+            
+        # Check if email exists
+        if Admin.query.filter_by(email=email).first():
+            return jsonify({'success': False, 'error': 'Email đã được sử dụng'}), 400
+        
+        # Create new admin
+        new_admin = Admin(
+            username=username,
+            email=email,
+            full_name=username,  # Default to username if no full name provided
+            is_super_admin=is_super_admin
+        )
+        
+        # Set admin permissions based on super admin status
+        if is_super_admin:
+            new_admin.can_manage_admins = True
+            new_admin.can_approve_changes = True
+            new_admin.can_view_all_stats = True
+            new_admin.can_manage_users = True
+        
+        new_admin.set_password(password)
+        
+        db.session.add(new_admin)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Tạo admin {username} thành công!'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'Lỗi: {str(e)}'}), 500
 
 
