@@ -1622,14 +1622,52 @@ nav[aria-label="Page navigation"] {
                                 <th>Trạng thái</th>
                                 <th></th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    Tính năng đang được phát triển...
-                                </td>
-                            </tr>
+                        </thead>                        <tbody></tbody>
+                            {% if admins %}
+                                {% for admin in admins %}
+                                <tr>
+                                    <td>{{ admin.username }}</td>
+                                    <td>{{ admin.email }}</td>
+                                    <td>
+                                        {% if admin.is_super_admin %}
+                                            <span class="badge bg-danger">Super Admin</span>
+                                        {% else %}
+                                            <span class="badge bg-primary">Admin</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ admin.created_at.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ admin.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ admin.id }}">
+                                                <li><a class="dropdown-item" href="{{ url_for('admin.edit_admin', admin_id=admin.id) }}"><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa</a></li>
+                                                {% if admin.id != current_user.id %}
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="{{ url_for('admin.delete_admin', admin_id=admin.id) }}" 
+                                                       onclick="return confirm('Bạn có chắc chắn muốn xóa admin này?');">
+                                                       <i class="bi bi-trash me-2"></i>Xóa
+                                                    </a>
+                                                </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Không có dữ liệu admin nào
+                                    </td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -2846,8 +2884,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } else {
             }
-        
-        // Check for conflicts
+          // Check for conflicts
         const conflictingElements = document.querySelectorAll('[style*="overflow: hidden"]');
         // Check z-index
         const navbarZIndex = window.getComputedStyle(document.querySelector('.navbar')).zIndex;
@@ -2867,10 +2904,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Check if passwords match
+            const password = document.getElementById('adminPassword').value;
+            const confirmPassword = document.getElementById('adminConfirmPassword').value;
+            const confirmPasswordField = document.getElementById('adminConfirmPassword');
+            
+            if (password !== confirmPassword) {
+                confirmPasswordField.classList.add('is-invalid');
+                return;
+            } else {
+                confirmPasswordField.classList.remove('is-invalid');
+            }
+            
             const formData = {
                 username: document.getElementById('adminUsername').value.trim(),
                 email: document.getElementById('adminEmail').value.trim(),
-                password: document.getElementById('adminPassword').value,
+                password: password,
+                confirm_password: confirmPassword,
                 role: document.getElementById('adminRole').value
             };
             
@@ -2935,10 +2985,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="mb-3">
                         <label for="adminEmail" class="form-label">Email</label>
                         <input type="email" class="form-control" id="adminEmail" required>
-                    </div>
-                    <div class="mb-3">
+                    </div>                    <div class="mb-3">
                         <label for="adminPassword" class="form-label">Mật khẩu</label>
                         <input type="password" class="form-control" id="adminPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adminConfirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                        <input type="password" class="form-control" id="adminConfirmPassword" required>
+                        <div class="invalid-feedback">Mật khẩu xác nhận không khớp</div>
                     </div>
                     <div class="mb-3">
                         <label for="adminRole" class="form-label">Quyền hạn</label>
