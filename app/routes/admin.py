@@ -41,7 +41,8 @@ def dashboard():
         search_term = f"%{search_query}%"
         query = query.filter(
             (
-                Owner.username.ilike(search_term),                Owner.email.ilike(search_term),
+                Owner.username.ilike(search_term),                
+                Owner.email.ilike(search_term),
                 Owner.phone.ilike(search_term)
             )
         )
