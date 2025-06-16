@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, session
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.models import db, Room, Booking, RoomImage, Renter, Admin, Owner, Province, District, Ward, Rule, Amenity, RoomDeletionLog
 import os
 import shutil
@@ -943,8 +944,64 @@ def booking_details(booking_id):
 
 @owner_bp.route('/settings')
 @login_required
+@owner_required
 def settings():
     return render_template('owner/settings.html')
+
+@owner_bp.route('/change_password', methods=['POST'])
+@login_required
+@owner_required
+def change_password():
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+    
+    # Validate input
+    if not current_password or not new_password or not confirm_password:
+        flash('Vui lòng điền đầy đủ thông tin', 'danger')
+        return redirect(url_for('owner.settings'))
+    
+    # Check if current password is correct
+    if not current_user.check_password(current_password):
+        flash('Mật khẩu hiện tại không đúng', 'danger')
+        return redirect(url_for('owner.settings'))
+    
+    # Check if new passwords match
+    if new_password != confirm_password:
+        flash('Mật khẩu mới không khớp', 'danger')
+        return redirect(url_for('owner.settings'))
+    
+    # Update password
+    current_user.set_password(new_password)
+    db.session.commit()
+    
+    flash('Mật khẩu đã được cập nhật thành công', 'success')
+    return redirect(url_for('owner.settings'))
+
+@owner_bp.route('/update_profile', methods=['POST'])
+@login_required
+@owner_required
+def update_profile():
+    try:
+        # Update account settings
+        if 'username' in request.form:
+            current_user.username = request.form.get('username')
+            current_user.email = request.form.get('email')
+        
+        # Update business information
+        if 'business_name' in request.form:
+            current_user.business_name = request.form.get('business_name')
+            current_user.tax_code = request.form.get('tax_code')
+            current_user.bank_name = request.form.get('bank_name')
+            current_user.bank_account = request.form.get('bank_account')
+        
+        db.session.commit()
+        flash('Thông tin đã được cập nhật thành công', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Lỗi cập nhật thông tin: {str(e)}', 'danger')
+    
+    return redirect(url_for('owner.settings'))
 
 @owner_bp.route('/profile', methods=['GET', 'POST'])
 @owner_required
@@ -1119,17 +1176,16 @@ def check_email():
         'available': not bool(existing_owner or existing_admin or existing_renter)
     })
 
-@owner_bp.route('/toggle-room-status/<int:room_id>', methods=['POST'])
+@owner_bp.route('/toggle-room-status/<int:room_id>', methods=['GET', 'POST'])
 @login_required
 def toggle_room_status(room_id):
     room = Room.query.get_or_404(room_id)
     if room.owner_id != current_user.id:
         flash('Bạn không có quyền thay đổi trạng thái phòng này!', 'danger')
-        return redirect(url_for('owner.dashboard'))
-    
-    room.is_available = not room.is_available
+        return redirect(url_for('owner.dashboard'))    # Toggle the room's active status
+    room.is_active = not room.is_active
     db.session.commit()
     
-    status = 'mở khóa' if room.is_available else 'khóa'
+    status = 'mở khóa' if room.is_active else 'khóa'
     flash(f'Đã {status} phòng thành công!', 'success')
     return redirect(url_for('owner.dashboard'))

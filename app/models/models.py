@@ -315,6 +315,11 @@ class Room(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    @property
+    def is_available(self):
+        # A room is available if it's both active and not currently booked
+        return self.is_active and not self.is_booked
+    
     # Liên kết với Owner
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
     owner = db.relationship('Owner', backref=db.backref('rooms', lazy=True))

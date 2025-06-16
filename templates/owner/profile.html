@@ -28,8 +28,13 @@
                                 class="avatar-circle-owner">
                                 {% endif %}
                             </div>
+                      <h5 class="owner-name">{{ current_user.username }}</h5>
                     
-                    <h5 class="owner-name">{{ current_user.username }}</h5>
+                    <div class="mb-3">
+                        <a href="{{ url_for('owner.settings') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-cog me-1"></i> Thiết lập tài khoản
+                        </a>
+                    </div>
                     
                     <div class="owner-status">
                         <div class="status-dot"></div>
