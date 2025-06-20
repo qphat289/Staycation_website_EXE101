@@ -749,6 +749,154 @@ def calendar():
                           bookings=bookings_data,
                           rooms=rooms_data)
 
+@owner_bp.route('/calendar/api/bookings/<date>')
+@owner_required
+def get_bookings_by_date(date):
+    """API endpoint to get bookings for a specific date"""
+    try:
+        from datetime import datetime
+        target_date = datetime.strptime(date, '%Y-%m-%d').date()
+        
+        # Get all rooms owned by current user
+        rooms = Room.query.filter_by(owner_id=current_user.id).all()
+        room_ids = [room.id for room in rooms]
+        
+        # Get bookings for the specific date
+        bookings = Booking.query.filter(
+            Booking.room_id.in_(room_ids),
+            func.date(Booking.start_time) == target_date
+        ).all()
+        
+        bookings_data = []
+        for booking in bookings:
+            booking_dict = {
+                'id': booking.id,
+                'start_time': booking.start_time.isoformat() if booking.start_time else None,
+                'end_time': booking.end_time.isoformat() if booking.end_time else None,
+                'booking_type': booking.booking_type,
+                'total_hours': booking.total_hours,
+                'total_price': float(booking.total_price) if booking.total_price else 0,
+                'status': booking.status,
+                'room': {
+                    'id': booking.room.id if booking.room else None,
+                    'title': booking.room.title if booking.room else None
+                } if booking.room else None,
+                'renter': {
+                    'id': booking.renter.id if booking.renter else None,
+                    'username': booking.renter.username if booking.renter else None,
+                    'full_name': booking.renter.full_name if booking.renter else None,
+                    'email': booking.renter.email if booking.renter else None,
+                    'phone': booking.renter.phone if booking.renter else None
+                } if booking.renter else None
+            }
+            bookings_data.append(booking_dict)
+        
+        return jsonify({
+            'success': True,
+            'bookings': bookings_data,
+            'date': date
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+
+@owner_bp.route('/calendar/api/booking/<int:booking_id>')
+@owner_required
+def get_booking_detail(booking_id):
+    """API endpoint to get detailed booking information"""
+    try:
+        booking = Booking.query.get_or_404(booking_id)
+        
+        # Check if booking belongs to current user's room
+        if booking.room.owner_id != current_user.id:
+            return jsonify({
+                'success': False,
+                'error': 'Unauthorized access'
+            }), 403
+        
+        booking_detail = {
+            'id': booking.id,
+            'start_time': booking.start_time.isoformat() if booking.start_time else None,
+            'end_time': booking.end_time.isoformat() if booking.end_time else None,
+            'created_at': booking.created_at.isoformat() if booking.created_at else None,
+            'booking_type': booking.booking_type,
+            'total_hours': booking.total_hours,
+            'total_price': float(booking.total_price) if booking.total_price else 0,
+            'status': booking.status,
+            'special_requests': booking.special_requests,
+            'room': {
+                'id': booking.room.id,
+                'title': booking.room.title,
+                'room_type': booking.room.room_type,
+                'city': booking.room.city,
+                'district': booking.room.district,
+                'price_per_hour': float(booking.room.price_per_hour) if booking.room.price_per_hour else 0
+            } if booking.room else None,
+            'renter': {
+                'id': booking.renter.id,
+                'username': booking.renter.username,
+                'full_name': booking.renter.full_name,
+                'email': booking.renter.email,
+                'phone': booking.renter.phone
+            } if booking.renter else None
+        }
+        
+        return jsonify({
+            'success': True,
+            'booking': booking_detail
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+
+@owner_bp.route('/calendar/api/dates-with-bookings/<int:year>/<int:month>')
+@owner_required
+def get_dates_with_bookings(year, month):
+    """API endpoint to get dates that have bookings for calendar dots"""
+    try:
+        from datetime import datetime, date
+        from calendar import monthrange
+        
+        # Get first and last day of the month
+        first_day = date(year, month, 1)
+        last_day = date(year, month, monthrange(year, month)[1])
+        
+        # Get all rooms owned by current user
+        rooms = Room.query.filter_by(owner_id=current_user.id).all()
+        room_ids = [room.id for room in rooms]
+        
+        # Get bookings for the month
+        bookings = Booking.query.filter(
+            Booking.room_id.in_(room_ids),
+            func.date(Booking.start_time) >= first_day,
+            func.date(Booking.start_time) <= last_day
+        ).all()
+        
+        # Extract unique dates
+        dates_with_bookings = set()
+        for booking in bookings:
+            if booking.start_time:
+                dates_with_bookings.add(booking.start_time.date().day)
+        
+        return jsonify({
+            'success': True,
+            'dates': list(dates_with_bookings),
+            'year': year,
+            'month': month
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+
 @owner_bp.route('/view-bookings')
 @owner_bp.route('/view-bookings/<status>')
 @owner_required
@@ -769,7 +917,7 @@ def view_bookings(status=None):
     all_bookings.sort(key=lambda x: x.created_at, reverse=True)
     
     return render_template('owner/view_bookings.html', 
-                          bookings=all_bookings,
+                          bookings=all_bookings, 
                           filtered_bookings=all_bookings,
                           current_status=status)
 
@@ -1214,7 +1362,7 @@ def book_room(room_id=None):
     # Add title property if not exists
     if not hasattr(homestay, 'title'):
         homestay.title = homestay.full_name or homestay.username or "My Homestay"
-    
+
     return render_template('owner/book_room.html', room=room, homestay=homestay)
 
 @owner_bp.route('/check-username', methods=['POST'])
@@ -1259,7 +1407,9 @@ def toggle_room_status(room_id):
     room = Room.query.get_or_404(room_id)
     if room.owner_id != current_user.id:
         flash('Bạn không có quyền thay đổi trạng thái phòng này!', 'danger')
-        return redirect(url_for('owner.dashboard'))    # Toggle the room's active status
+        return redirect(url_for('owner.dashboard'))
+    
+    # Toggle the room's active status
     room.is_active = not room.is_active
     db.session.commit()
     

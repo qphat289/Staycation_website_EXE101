@@ -118,7 +118,7 @@ class Owner(UserMixin, db.Model):
         
     def is_renter(self):
         return False
-    
+        
     @property
     def title(self):
         """Return a title for the homestay (owner)"""

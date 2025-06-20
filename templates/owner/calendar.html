@@ -1,926 +1,1335 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch - Staycation</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #FDFBFA;
-            margin: 0;
-            padding: 0;
+{% extends 'base.html' %}
+{% block title %}Lịch đặt phòng{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: #FDFBFA;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+        width: 250px;
+        background: transparent;
+        height: calc(100vh - 80px);
+        padding: 1.5rem;
+        position: fixed;
+        left: 85px;
+        top: 0px;
+        z-index: 1051;
+    }
+
+    .admin-sidebar::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 160px;
+        bottom: 0;
+        width: 2px;
+        background: #7C7C7C;
+        opacity: 0.2;
+        z-index: 1;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        margin-top: 9rem;
+    }
+
+    .sidebar-menu-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .sidebar-menu-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        color: #7C7C7C;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .sidebar-menu-link:hover {
+        color: #101917;
+        transform: translateX(5px);
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-menu-link.active {
+        color: #101917;
+        font-weight: 600;
+        background: #E0EC9B;
+    }
+
+    .sidebar-menu-link i {
+        font-size: 1rem;
+    }
+
+    /* Main Content */
+    .admin-main {
+        margin-left: 250px;
+        padding: 0;
+        min-height: 100vh;
+        margin-top: -3rem;
+    }
+
+    /* Date Navigation Header */
+    .date-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 0;
+    }
+
+    .date-nav-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .date-nav-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+
+    .date-nav-btn:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .current-date {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0.5rem;
+    }
+
+    .calendar-label {
+        font-size: 0.875rem;
+        color: #666;
+    }
+
+    /* Calendar Layout */
+    .calendar-layout {
+        display: flex;
+        height: calc(100vh - 200px);
+        min-height: 800px;
+        max-height: calc(100vh - 200px);
+    }
+
+    /* Timeline Container */
+    .timeline-container {
+        flex: 1;
+        background-color: white;
+        border-right: 1px solid #e0e0e0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Room Headers */
+    .room-headers {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        height: 60px;
+    }
+
+    .time-column-header {
+        width: 80px;
+        flex-shrink: 0;
+        background-color: #f8f9fa;
+        border-right: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+    }
+
+    .rooms-header-container {
+        flex: 1;
+        overflow-x: auto;
+        display: flex;
+    }
+
+    .rooms-header {
+        display: flex;
+        min-width: max-content;
+    }
+
+    .room-header {
+        width: 200px;
+        flex-shrink: 0;
+        padding: 10px;
+        text-align: center;
+        border-right: 1px solid #e0e0e0;
+        background-color: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .room-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .room-info {
+        font-size: 10px;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Timeline Body */
+    .timeline-body {
+        display: flex !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
+        height: calc(100vh - 320px); /* Fixed height to enable scrolling */
+        max-height: calc(100vh - 320px);
+    }
+
+    /* Time Labels */
+    .time-labels {
+        width: 80px;
+        flex-shrink: 0;
+        background-color: white;
+        border-right: 1px solid #e0e0e0;
+        position: sticky;
+        left: 0;
+        z-index: 50;
+        height: 1440px; /* 24 hours × 60px - ensure full height */
+        overflow: visible;
+    }
+
+    .time-label {
+        height: 60px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        font-size: 11px;
+        color: #666;
+        font-weight: 500;
+        border-bottom: 1px solid #f0f0f0;
+        background-color: white;
+        padding-top: 4px;
+    }
+
+    /* Rooms Timeline */
+    .rooms-timeline-container {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        background-color: #f0f9ff; /* Debug background color */
+    }
+
+    .rooms-timeline {
+        display: flex;
+        min-width: 100%;
+        width: max-content;
+        height: 1440px; /* 24 hours × 60px - ensure full height */
+        position: relative;
+    }
+
+    .room-timeline {
+        width: 200px;
+        flex-shrink: 0;
+        position: relative;
+        border-right: 1px solid #e0e0e0;
+        background-color: white;
+        height: 1440px; /* 24 hours × 60px - fixed height */
+    }
+
+    .timeline-row {
+        height: 60px;
+        border-bottom: 1px solid #f0f0f0;
+        position: relative;
+    }
+
+    .timeline-row:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Booking Blocks */
+    .booking-block {
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        background-color: #4ade80;
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 10;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        color: white;
+    }
+
+    .booking-block:hover {
+        background-color: #22c55e;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .booking-customer {
+        font-size: 11px;
+        font-weight: 600;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .booking-time {
+        font-size: 10px;
+        font-weight: 400;
+        opacity: 0.9;
+        white-space: nowrap;
+    }
+
+    /* Right Sidebar - Calendar */
+    .calendar-sidebar {
+        width: 320px;
+        background-color: white;
+        border-left: 1px solid #e0e0e0;
+        padding: 1.5rem;
+        flex-shrink: 0;
+        overflow-y: auto;
+    }
+
+    .calendar-widget {
+        margin-bottom: 2rem;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .calendar-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .calendar-nav {
+        display: flex;
+        gap: 8px;
+    }
+
+    .calendar-nav-btn {
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .calendar-nav-btn:hover {
+        color: #333;
+        background-color: #f0f0f0;
+    }
+
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+
+    .calendar-weekday {
+        text-align: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+        padding: 8px;
+    }
+
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+    }
+
+    .calendar-day {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 400;
+        color: #999;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .calendar-day.current-month {
+        color: #333;
+    }
+
+    .calendar-day.selected {
+        background-color: #3b82f6;
+        color: white;
+        font-weight: 600;
+    }
+
+    .calendar-day.today {
+        border: 2px solid #3b82f6;
+        font-weight: 600;
+    }
+
+    .calendar-day:hover {
+        background-color: #f0f0f0;
+    }
+
+    .calendar-day.selected:hover {
+        background-color: #2563eb;
+    }
+
+    /* Booking indicator dot */
+    .booking-dot {
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        background-color: #22c55e;
+        border-radius: 50%;
+    }
+
+    /* Booking Summary */
+    .booking-summary {
+        margin-top: 2rem;
+    }
+
+    .booking-summary h4 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .booking-item {
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .booking-item:hover {
+        background: #e5e7eb;
+    }
+
+    .booking-item-customer {
+        font-size: 12px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 2px;
+    }
+
+    .booking-item-room {
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 2px;
+    }
+
+    .booking-item-time {
+        font-size: 11px;
+        color: #666;
+    }
+
+    /* Current time indicator */
+    .current-time-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #ef4444;
+        z-index: 20;
+    }
+
+    .current-time-dot {
+        position: absolute;
+        left: -4px;
+        top: -3px;
+        width: 8px;
+        height: 8px;
+        background-color: #ef4444;
+        border-radius: 50%;
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 8px;
+        width: 400px;
+        max-width: 90%;
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+        padding: 20px 25px 15px;
+        border-bottom: 1px solid #e0e0e0;
+        position: relative;
+    }
+
+    .modal-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-title i {
+        margin-right: 10px;
+        width: 16px;
+        height: 16px;
+    }
+
+    .modal-body {
+        padding: 20px 25px;
+    }
+
+    .modal-field {
+        margin-bottom: 15px;
+    }
+
+    .modal-field:last-child {
+        margin-bottom: 0;
+    }
+
+    .modal-field-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .modal-field-value {
+        font-size: 12px;
+        font-weight: 400;
+        color: #666;
+    }
+
+    .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: #666;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .close:hover {
+        color: #333;
+        background-color: #f0f0f0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .admin-sidebar {
+            width: 200px;
+            left: 20px;
         }
         
-        .container {
-            display: flex;
-            min-height: 100vh;
+        .admin-main {
+            margin-left: 200px;
         }
         
-        /* Sidebar */
-        .sidebar {
-            width: 213px;
-            background-color: #FDFBFA;
-            border-right: 0.5px solid #CCC8B4;
-            padding: 0;
-        }
-        
-        .sidebar-header {
-            padding: 15px 65px;
-            border-bottom: 0.5px solid #CCC8B4;
-        }
-        
-        .sidebar-header h2 {
-            font-size: 20px;
-            font-weight: 600;
-            color: #101917;
-            margin: 0;
-        }
-        
-        .sidebar-menu {
-            padding: 50px 0;
-        }
-        
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 9px 75px;
-            color: #7C7C7C;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border-bottom: 0.5px solid #7C7C7C;
-        }
-        
-        .menu-item:first-child {
-            border-top: 0.5px solid #7C7C7C;
-        }
-        
-        .menu-item i {
-            width: 12px;
-            height: 12px;
-            margin-right: 21px;
-            font-size: 10px;
-        }
-        
-        .menu-item:hover,
-        .menu-item.active {
-            color: #101917;
-            background-color: #E0EC9B;
-            border-radius: 8px;
-            margin: 0 10px;
-            border: none;
-        }
-        
-        .menu-item.active {
-            color: #101917;
-        }
-        
-        /* Main content */
-        .main-content {
-            flex: 1;
-            padding: 40px 65px;
-        }
-        
-        .content-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
-        
-        .date-display {
-            font-size: 16px;
-            font-weight: 500;
-            color: #000000;
-        }
-        
-        .calendar-container {
-            display: flex;
-            gap: 20px;
-        }
-        
-        /* Timeline */
-        .timeline-container {
-            flex: 1;
-            background-color: #FDFBFA;
-            border: 0.3px solid #7C7C7C;
-            border-radius: 8px;
-            padding: 0;
-            height: 654px;
-            overflow: hidden;
-            display: flex;
+        .calendar-layout {
             flex-direction: column;
+            height: auto;
         }
         
-        .timeline-header {
-            background-color: #FDFBFA;
-            border-bottom: 0.3px solid #7C7C7C;
-            display: flex;
-            overflow-x: auto;
-            flex-shrink: 0;
-        }
-        
-        .time-column-header {
-            width: 80px;
-            flex-shrink: 0;
-            background-color: #FDFBFA;
-            border-right: 0.2px solid #CCC8B4;
-            text-align: center;
-            padding: 15px 0;
-            font-size: 12px;
-            font-weight: 500;
-            color: #101917;
-        }
-        
-        .homestay-header {
-            min-width: 200px;
-            flex-shrink: 0;
-            padding: 15px;
-            text-align: center;
-            border-right: 0.2px solid #CCC8B4;
-            background-color: #FDFBFA;
-        }
-        
-        .homestay-title {
-            font-size: 12px;
-            font-weight: 500;
-            color: #101917;
-            margin-bottom: 4px;
-        }
-        
-        .homestay-info {
-            font-size: 10px;
-            color: #7C7C7C;
-        }
-        
-        .timeline-body {
-            flex: 1;
-            overflow: auto;
-            display: flex;
-        }
-        
-        .time-labels {
-            width: 80px;
-            flex-shrink: 0;
-            background-color: #FDFBFA;
-            border-right: 0.2px solid #CCC8B4;
-        }
-        
-        .time-label {
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 15px;
-            font-size: 10px;
-            color: #101917;
-            font-weight: 400;
-            border-bottom: 0.2px solid #CCC8B4;
-        }
-        
-        .homestays-timeline {
-            flex: 1;
-            display: flex;
-            overflow-x: auto;
-        }
-        
-        .homestay-timeline {
-            min-width: 200px;
-            flex-shrink: 0;
-            position: relative;
-            border-right: 0.2px solid #CCC8B4;
-            background-color: #FDFBFA;
-        }
-        
-        .timeline-row {
-            height: 50px;
-            border-bottom: 0.2px solid #CCC8B4;
-            position: relative;
-        }
-        
-        .timeline-row:last-child {
-            border-bottom: 0.3px solid #CCC8B4;
-        }
-        
-        /* Booking Blocks */
-        .booking-block {
-            position: absolute;
-            left: 10px;
-            right: 10px;
-            background-color: #E0EC9B;
-            border-left: 5px solid #C3D600;
-            border-radius: 4px;
-            padding: 6px 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            z-index: 10;
-            overflow: hidden;
-        }
-        
-        .booking-block:hover {
-            opacity: 0.8;
-        }
-        
-        .booking-customer {
-            font-size: 10px;
-            font-weight: 400;
-            color: #101917;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .booking-time {
-            font-size: 10px;
-            font-weight: 400;
-            color: #7C7C7C;
-            white-space: nowrap;
-        }
-        
-        .booking-icon {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 10px;
-            height: 10px;
-            color: #7C7C7C;
-            font-size: 8px;
-        }
-        
-        /* Calendar widget */
-        .calendar-widget {
-            width: 310px;
-            background-color: #FDFBFA;
-            border: 0.3px solid #7C7C7C;
-            border-radius: 8px;
-            padding: 15px;
-            height: fit-content;
-        }
-        
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .calendar-title {
-            font-size: 14px;
-            font-weight: 500;
-            color: #000000;
-        }
-        
-        .calendar-nav {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .calendar-nav-btn {
-            width: 20px;
-            height: 20px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #7C7C7C;
-        }
-        
-        .calendar-nav-btn:hover {
-            color: #101917;
-        }
-        
-        .calendar-weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .calendar-weekday {
-            text-align: center;
-            font-size: 12px;
-            font-weight: 500;
-            color: #000000;
-            padding: 5px;
-        }
-        
-        .calendar-days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-        }
-        
-        .calendar-day {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 400;
-            color: #7C7C7C;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-        
-        .calendar-day.current-month {
-            color: #101917;
-        }
-        
-        .calendar-day.selected {
-            background-color: #101917;
-            color: #FDFBFA;
-        }
-        
-        .calendar-day.today {
-            border: 0.7px solid #101917;
-        }
-        
-        .calendar-day:hover {
-            background-color: #E0EC9B;
-        }
-        
-        /* Current time indicator */
-        .current-time-line {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 0.3px;
-            background-color: #CCC8B4;
-            z-index: 20;
-        }
-        
-        .current-time-dot {
-            position: absolute;
-            left: -3px;
-            top: -3px;
-            width: 6px;
-            height: 6px;
-            background-color: #D9D9D9;
-            border-radius: 50%;
-        }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
+        .calendar-sidebar {
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
         }
-        
-        .modal-content {
-            background-color: #FDFBFA;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 8px;
-            width: 400px;
-            max-width: 90%;
-            box-shadow: 0px 1px 14px 2px rgba(12, 12, 13, 0.08);
-        }
-        
-        .modal-header {
-            padding: 20px 25px 15px;
-            border-bottom: 1px solid #E0E0E0;
-        }
-        
-        .modal-title {
-            font-size: 12px;
-            font-weight: 500;
-            color: #101917;
-            margin: 0;
-            display: flex;
-            align-items: center;
-        }
-        
-        .modal-title i {
-            margin-right: 10px;
-            width: 10px;
-            height: 10px;
-        }
-        
-        .modal-body {
-            padding: 20px 25px;
-        }
-        
-        .modal-field {
-            margin-bottom: 15px;
-        }
-        
-        .modal-field:last-child {
-            margin-bottom: 0;
-        }
-        
-        .modal-field-label {
-            font-size: 10px;
-            font-weight: 400;
-            color: #101917;
-            margin-bottom: 5px;
-        }
-        
-        .modal-field-value {
-            font-size: 10px;
-            font-weight: 400;
-            color: #7C7C7C;
-        }
-        
-        .close {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            color: #7C7C7C;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .close:hover {
-            color: #101917;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Lịch</h2>
-            </div>
-            <nav class="sidebar-menu">
-                <a href="{{ url_for('owner.profile') }}" class="menu-item">
-                    <i class="fas fa-user"></i>
-                    Tài khoản
-                </a>
-                <a href="{{ url_for('owner.statistics') }}" class="menu-item">
-                    <i class="fas fa-chart-bar"></i>
-                    Thống kê
-                </a>
-                <a href="{{ url_for('owner.calendar') }}" class="menu-item active">
-                    <i class="fas fa-calendar"></i>
-                    Lịch
-                </a>
-                <a href="{{ url_for('owner.dashboard') }}" class="menu-item">
-                    <i class="fas fa-home"></i>
-                    Tất cả phòng
-                </a>
-            </nav>
-        </div>
+    }
+</style>
+{% endblock %}
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="content-header">
-                <div class="date-display">23 Tháng 5, 2025</div>
+{% block content %}
+<!-- Sidebar -->
+<aside class="admin-sidebar">
+    <ul class="sidebar-menu">
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.profile') }}" class="sidebar-menu-link">
+                <i class="fas fa-user"></i>
+                <span>Tài khoản</span>
+            </a>
+        </li>
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.statistics') }}" class="sidebar-menu-link">
+                <i class="fas fa-chart-bar"></i>
+                <span>Thống kê</span>
+            </a>
+        </li>
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.calendar') }}" class="sidebar-menu-link active">
+                <i class="fas fa-calendar"></i>
+                <span>Lịch</span>
+            </a>
+        </li>
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.dashboard') }}" class="sidebar-menu-link">
+                <i class="fas fa-home"></i>
+                <span>Tất cả phòng</span>
+            </a>
+        </li>
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.view_bookings') }}" class="sidebar-menu-link">
+                <i class="fas fa-calendar-check"></i>
+                <span>Quản lý đặt phòng</span>
+            </a>
+        </li>
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.settings') }}" class="sidebar-menu-link">
+                <i class="fas fa-cog"></i>
+                <span>Cài đặt</span>
+            </a>
+        </li>
+    </ul>
+</aside>
+
+<!-- Main Content -->
+<main class="admin-main">
+    <!-- Date Navigation Header -->
+    <div class="date-navigation">
+        <div class="date-nav-left">
+            <button class="date-nav-btn" onclick="goToPreviousDay()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            
+            <h1 class="current-date" id="currentDate">23 Tháng 5, 2025</h1>
+            
+            <button class="date-nav-btn" onclick="goToNextDay()">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        
+        <div class="calendar-label">
+            Lịch đặt phòng
+        </div>
+    </div>
+
+    <!-- Calendar Layout -->
+    <div class="calendar-layout">
+        <!-- Timeline Container -->
+        <div class="timeline-container">
+            <!-- Room Headers -->
+            <div class="room-headers">
+                <div class="time-column-header">Thời gian</div>
+                <div class="rooms-header-container">
+                    <div class="rooms-header" id="roomsHeader">
+                        <!-- Room headers will be generated by JavaScript -->
+                    </div>
+                </div>
             </div>
             
-            <div class="calendar-container">
-                <!-- Timeline -->
-                <div class="timeline-container">
-                    <!-- Timeline Header -->
-                    <div class="timeline-header">
-                        <div class="time-column-header">Thời gian</div>
-                        <div id="homestays-header">
-                            <!-- Homestay headers will be generated by JavaScript -->
-                        </div>
+            <!-- Timeline Body -->
+            <div class="timeline-body">
+                <div class="time-labels" id="timeLabels">
+                    <!-- Time labels will be generated by JavaScript -->
+                </div>
+                <div class="rooms-timeline-container">
+                    <div class="rooms-timeline" id="roomsTimeline">
+                        <!-- Room timelines will be generated by JavaScript -->
                     </div>
-                    
-                    <!-- Timeline Body -->
-                    <div class="timeline-body">
-                        <div class="time-labels" id="time-labels">
-                            <!-- Time labels will be generated by JavaScript -->
-                        </div>
-                        <div class="homestays-timeline" id="homestays-timeline">
-                            <!-- Homestay timelines will be generated by JavaScript -->
-                        </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar - Calendar -->
+        <div class="calendar-sidebar">
+            <div class="calendar-widget">
+                <div class="calendar-header">
+                    <div class="calendar-title" id="calendarTitle">Tháng 5, 2025</div>
+                    <div class="calendar-nav">
+                        <button class="calendar-nav-btn" onclick="previousMonth()">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="calendar-nav-btn" onclick="nextMonth()">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
                 
-                <!-- Calendar Widget -->
-                <div class="calendar-widget">
-                    <div class="calendar-header">
-                        <div class="calendar-title">Tháng 5, 2025</div>
-                        <div class="calendar-nav">
-                            <button class="calendar-nav-btn" onclick="previousMonth()">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button class="calendar-nav-btn" onclick="nextMonth()">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="calendar-weekdays">
-                        <div class="calendar-weekday">S</div>
-                        <div class="calendar-weekday">M</div>
-                        <div class="calendar-weekday">T</div>
-                        <div class="calendar-weekday">W</div>
-                        <div class="calendar-weekday">T</div>
-                        <div class="calendar-weekday">F</div>
-                        <div class="calendar-weekday">S</div>
-                    </div>
-                    
-                    <div class="calendar-days" id="calendarDays">
-                        <!-- Calendar days will be generated by JavaScript -->
-                    </div>
+                <div class="calendar-weekdays">
+                    <div class="calendar-weekday">CN</div>
+                    <div class="calendar-weekday">T2</div>
+                    <div class="calendar-weekday">T3</div>
+                    <div class="calendar-weekday">T4</div>
+                    <div class="calendar-weekday">T5</div>
+                    <div class="calendar-weekday">T6</div>
+                    <div class="calendar-weekday">T7</div>
+                </div>
+                
+                <div class="calendar-days" id="calendarDays">
+                    <!-- Calendar days will be generated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="booking-summary">
+                <h4>Đặt phòng hôm nay</h4>
+                <div id="bookingSummary">
+                    <!-- Today's bookings will be shown here -->
                 </div>
             </div>
         </div>
     </div>
+</main>
 
-    <!-- Booking Detail Modal -->
-    <div id="bookingModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-calendar-check"></i>
-                    Đơn đặt phòng
-                </h3>
+<!-- Booking Detail Modal -->
+<div id="bookingModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i class="fas fa-calendar-check"></i>
+                Chi tiết đặt phòng
+            </h3>
+        </div>
+        <div class="modal-body">
+            <div class="modal-field">
+                <div class="modal-field-label">Khách hàng</div>
+                <div class="modal-field-value" id="modalCustomerName"></div>
             </div>
-            <div class="modal-body">
-                <div class="modal-field">
-                    <div class="modal-title">
-                        <i class="fas fa-user"></i>
-                        Khách hàng:
-                    </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-label" id="modalCustomerName">Họ Tên: </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-label" id="modalPhone">Số điện thoại: </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-label" id="modalEmail">Email: </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-value" id="modalUsername">Username: </div>
-                </div>
-                
-                <div class="modal-field">
-                    <div class="modal-title">
-                        <i class="fas fa-home"></i>
-                        Phòng
-                    </div>
-                </div>
-                
-                <div class="modal-field">
-                    <div class="modal-title">
-                        <i class="fas fa-calendar-check"></i>
-                        Đơn đặt phòng
-                    </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-label" id="modalBookingDate">Đặt vào: </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-label" id="modalBookingType">Hình thức: </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-label" id="modalCheckin">Check-in: </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-label" id="modalCheckout">Check-out: </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-label" id="modalDuration">Khoảng thời gian: </div>
-                </div>
-                <div class="modal-field">
-                    <div class="modal-field-label" id="modalTotal">Thanh toán tổng: </div>
-                </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Số điện thoại</div>
+                <div class="modal-field-value" id="modalPhone"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Email</div>
+                <div class="modal-field-value" id="modalEmail"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Username</div>
+                <div class="modal-field-value" id="modalUsername"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Phòng</div>
+                <div class="modal-field-value" id="modalRoomTitle"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Ngày đặt</div>
+                <div class="modal-field-value" id="modalBookingDate"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Hình thức</div>
+                <div class="modal-field-value" id="modalBookingType"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Check-in</div>
+                <div class="modal-field-value" id="modalCheckin"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Check-out</div>
+                <div class="modal-field-value" id="modalCheckout"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Thời gian</div>
+                <div class="modal-field-value" id="modalDuration"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Tổng tiền</div>
+                <div class="modal-field-value" id="modalTotal"></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Trạng thái</div>
+                <div class="modal-field-value" id="modalStatus"></div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Sample data - replace with real data from server
-        const homestays = [
-            { id: 1, title: 'Bonita Signature The View', type: 'Villa', city: 'Hồ Chí Minh' },
-            { id: 2, title: 'Altar Palace', type: 'Homestay', city: 'Đà Nẵng' },
-            { id: 3, title: 'Ấm Stay', type: 'Apartment', city: 'Hà Nội' },
-            { id: 4, title: 'Sunset Villa', type: 'Villa', city: 'Nha Trang' }
-        ];
+<script>
+    // Get real data from server
+    const rooms = {% if rooms %}{{ rooms|tojson|safe }}{% else %}[]{% endif %};
+    const bookings = {% if bookings %}{{ bookings|tojson|safe }}{% else %}[]{% endif %};
+    
+    // Calendar functionality
+    let currentDate = new Date();
+    let selectedDate = new Date();
+    
+    // Generate hours array (24 hours)
+    const hours = Array.from({ length: 24 }, (_, i) => {
+        const hour = i.toString().padStart(2, '0');
+        return `${hour}:00`;
+    });
+
+    const monthNames = [
+        'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    ];
+    
+    function initializeCalendar() {
+        generateTimeLabels();
+        generateRoomHeaders();
+        generateRoomTimelines();
+        renderBookings();
+        generateCalendar();
+        updateCurrentTimeIndicator();
+        updateDateDisplay();
+        updateBookingSummary();
         
-        const bookings = [
-            {
-                id: 1,
-                homestay_id: 1,
-                customer_name: 'Nguyễn Văn Anh',
-                phone: '0937931555',
-                email: 'nguyenvananh@gmail.com',
-                username: 'Van Anh',
-                start_hour: 9,
-                end_hour: 11,
-                booking_date: '10:52, 29-5-2025',
-                type: 'Theo giờ',
-                checkin: '9:00',
-                checkout: '11:00',
-                duration: '2h',
-                total: '400.000đ'
-            },
-            {
-                id: 2,
-                homestay_id: 2,
-                customer_name: 'Cao Huy',
-                phone: '0123456789',
-                email: 'caohuy@gmail.com',
-                username: 'Cao Huy',
-                start_hour: 11,
-                end_hour: 12,
-                booking_date: '10:30, 29-5-2025',
-                type: 'Theo giờ',
-                checkin: '11:00',
-                checkout: '12:00',
-                duration: '1h',
-                total: '200.000đ'
-            },
-            {
-                id: 3,
-                homestay_id: 3,
-                customer_name: 'Trần Minh Bảo',
-                phone: '0987654321',
-                email: 'tranminhbao@gmail.com',
-                username: 'Minh Bao',
-                start_hour: 12,
-                end_hour: 13.5,
-                booking_date: '11:15, 29-5-2025',
-                type: 'Theo giờ',
-                checkin: '12:00',
-                checkout: '13:30',
-                duration: '1.5h',
-                total: '300.000đ'
-            },
-            {
-                id: 4,
-                homestay_id: 3,
-                customer_name: 'Cao Thị Kim Lan',
-                phone: '0369852147',
-                email: 'caothikimlan@gmail.com',
-                username: 'Kim Lan',
-                start_hour: 13,
-                end_hour: 15,
-                booking_date: '09:45, 29-5-2025',
-                type: 'Theo giờ',
-                checkin: '13:00',
-                checkout: '15:00',
-                duration: '2h',
-                total: '400.000đ'
-            }
-        ];
+        // Sync scroll between headers and timeline
+        syncScrolling();
         
-        // Calendar functionality
-        let currentDate = new Date(2025, 4, 23); // May 23, 2025
+        // Debug: Check if all 24 hours are generated
+        console.log('Hours array length:', hours.length);
+        console.log('Time labels count:', document.querySelectorAll('.time-label').length);
+        console.log('Timeline rows per room:', document.querySelectorAll('.timeline-row').length / rooms.length);
         
-        function initializeCalendar() {
-            generateTimeLabels();
-            generateHomestayHeaders();
-            generateHomestayTimelines();
-            renderBookings();
-            generateCalendar();
-            updateCurrentTimeIndicator();
+        // Debug: Check container dimensions
+        setTimeout(() => {
+            const timelineContainer = document.querySelector('.timeline-container');
+            const timelineBody = document.querySelector('.timeline-body');
+            const roomsTimelineContainer = document.querySelector('.rooms-timeline-container');
             
-            // Update current time indicator every minute
-            setInterval(updateCurrentTimeIndicator, 60000);
+            console.log('Timeline container width:', timelineContainer?.offsetWidth);
+            console.log('Timeline body width:', timelineBody?.offsetWidth);
+            console.log('Rooms timeline container width:', roomsTimelineContainer?.offsetWidth);
+            console.log('Rooms timeline container flex:', window.getComputedStyle(roomsTimelineContainer)?.flex);
+            console.log('Rooms timeline container min-width:', window.getComputedStyle(roomsTimelineContainer)?.minWidth);
+        }, 100);
+        
+        // Update current time indicator every minute
+        setInterval(updateCurrentTimeIndicator, 60000);
+    }
+
+    function syncScrolling() {
+        const roomsHeaderContainer = document.querySelector('.rooms-header-container');
+        const roomsTimelineContainer = document.querySelector('.rooms-timeline-container');
+        
+        if (roomsHeaderContainer && roomsTimelineContainer) {
+            roomsHeaderContainer.addEventListener('scroll', function() {
+                roomsTimelineContainer.scrollLeft = this.scrollLeft;
+            });
+            
+            roomsTimelineContainer.addEventListener('scroll', function() {
+                roomsHeaderContainer.scrollLeft = this.scrollLeft;
+            });
         }
+    }
+
+    function updateDateDisplay() {
+        const dateStr = `${selectedDate.getDate()} ${monthNames[selectedDate.getMonth()]}, ${selectedDate.getFullYear()}`;
+        document.getElementById('currentDate').textContent = dateStr;
+    }
+
+
+    
+    function generateTimeLabels() {
+        const timeLabels = document.getElementById('timeLabels');
+        timeLabels.innerHTML = '';
         
-        function generateTimeLabels() {
-            const timeLabels = document.getElementById('time-labels');
-            timeLabels.innerHTML = '';
-            
-            for (let hour = 0; hour < 24; hour++) {
-                const timeLabel = document.createElement('div');
-                timeLabel.className = 'time-label';
-                timeLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
-                timeLabels.appendChild(timeLabel);
-            }
-        }
+        hours.forEach(hour => {
+            const timeLabel = document.createElement('div');
+            timeLabel.className = 'time-label';
+            timeLabel.textContent = hour;
+            timeLabels.appendChild(timeLabel);
+        });
+    }
+    
+    function generateRoomHeaders() {
+        const roomsHeader = document.getElementById('roomsHeader');
+        roomsHeader.innerHTML = '';
         
-        function generateHomestayHeaders() {
-            const homestaysHeader = document.getElementById('homestays-header');
-            homestaysHeader.innerHTML = '';
+        rooms.forEach(room => {
+            const roomHeader = document.createElement('div');
+            roomHeader.className = 'room-header';
+            roomHeader.innerHTML = `
+                <div class="room-title" title="${room.title}">${room.title}</div>
+                <div class="room-info">${room.room_type} • ${room.city}</div>
+            `;
+            roomsHeader.appendChild(roomHeader);
+        });
+    }
+    
+    function generateRoomTimelines() {
+        const roomsTimeline = document.getElementById('roomsTimeline');
+        roomsTimeline.innerHTML = '';
+        
+        rooms.forEach(room => {
+            const roomTimeline = document.createElement('div');
+            roomTimeline.className = 'room-timeline';
+            roomTimeline.setAttribute('data-room-id', room.id);
             
-            homestays.forEach(homestay => {
-                const homestayHeader = document.createElement('div');
-                homestayHeader.className = 'homestay-header';
-                homestayHeader.innerHTML = `
-                    <div class="homestay-title">${homestay.title}</div>
-                    <div class="homestay-info">${homestay.type} • ${homestay.city}</div>
+            // Create 24 hour rows for each room
+            hours.forEach(() => {
+                const timelineRow = document.createElement('div');
+                timelineRow.className = 'timeline-row';
+                roomTimeline.appendChild(timelineRow);
+            });
+            
+            roomsTimeline.appendChild(roomTimeline);
+        });
+    }
+    
+    function renderBookings() {
+        // Clear existing booking blocks
+        const roomTimelines = document.querySelectorAll('.room-timeline');
+        roomTimelines.forEach(timeline => {
+            const existingBlocks = timeline.querySelectorAll('.booking-block');
+            existingBlocks.forEach(block => block.remove());
+        });
+        
+        bookings.forEach(booking => {
+            if (!booking.start_time || !booking.end_time || !booking.room) return;
+            
+            const startTime = new Date(booking.start_time);
+            const endTime = new Date(booking.end_time);
+            
+            // Only show bookings for selected date
+            if (startTime.toDateString() !== selectedDate.toDateString()) return;
+            
+            const startHour = startTime.getHours();
+            const startMinute = startTime.getMinutes();
+            const endHour = endTime.getHours();
+            const endMinute = endTime.getMinutes();
+            
+            // Calculate position (each hour = 60px, align with time labels)
+            const startPosition = startHour * 60 + (startMinute / 60) * 60;
+            const endPosition = endHour * 60 + (endMinute / 60) * 60;
+            const duration = endPosition - startPosition;
+            
+            // Find the room timeline for this booking
+            const roomTimeline = document.querySelector(`[data-room-id="${booking.room.id}"]`);
+            if (roomTimeline) {
+                const blockElement = document.createElement('div');
+                blockElement.className = 'booking-block';
+                blockElement.style.top = `${startPosition}px`;
+                blockElement.style.height = `${Math.max(duration, 30)}px`;
+                
+                const customerName = booking.renter ? 
+                    (booking.renter.full_name || booking.renter.username || 'Khách hàng') : 
+                    'Khách hàng';
+                
+                const startTimeStr = startTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                const endTimeStr = endTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                
+                blockElement.innerHTML = `
+                    <div class="booking-customer">${customerName}</div>
+                    <div class="booking-time">${startTimeStr} - ${endTimeStr}</div>
                 `;
-                homestaysHeader.appendChild(homestayHeader);
-            });
-        }
+                
+                blockElement.addEventListener('click', () => showBookingModal(booking));
+                
+                roomTimeline.appendChild(blockElement);
+            }
+        });
+    }
+
+    function updateBookingSummary() {
+        const summaryContainer = document.getElementById('bookingSummary');
         
-        function generateHomestayTimelines() {
-            const homestaysTimeline = document.getElementById('homestays-timeline');
-            homestaysTimeline.innerHTML = '';
-            
-            homestays.forEach(homestay => {
-                const homestayTimeline = document.createElement('div');
-                homestayTimeline.className = 'homestay-timeline';
-                homestayTimeline.setAttribute('data-homestay-id', homestay.id);
-                
-                // Create 24 hour rows for each homestay
-                for (let hour = 0; hour < 24; hour++) {
-                    const timelineRow = document.createElement('div');
-                    timelineRow.className = 'timeline-row';
-                    homestayTimeline.appendChild(timelineRow);
-                }
-                
-                homestaysTimeline.appendChild(homestayTimeline);
-            });
+        // Get bookings for selected date
+        const todayBookings = bookings.filter(booking => {
+            if (!booking.start_time) return false;
+            const startTime = new Date(booking.start_time);
+            return startTime.toDateString() === selectedDate.toDateString();
+        });
+
+        if (todayBookings.length === 0) {
+            summaryContainer.innerHTML = '<p style="color: #666; font-size: 12px;">Không có đặt phòng nào</p>';
+            return;
         }
-        
-        function renderBookings() {
-            // Clear existing booking blocks
-            const homestayTimelines = document.querySelectorAll('.homestay-timeline');
-            homestayTimelines.forEach(timeline => {
-                const existingBlocks = timeline.querySelectorAll('.booking-block');
-                existingBlocks.forEach(block => block.remove());
-            });
+
+        summaryContainer.innerHTML = '';
+        todayBookings.forEach(booking => {
+            const room = rooms.find(r => r.id === booking.room.id);
+            const startTime = new Date(booking.start_time);
+            const endTime = new Date(booking.end_time);
+            const customerName = booking.renter ? 
+                (booking.renter.full_name || booking.renter.username || 'Khách hàng') : 
+                'Khách hàng';
+
+            const bookingItem = document.createElement('div');
+            bookingItem.className = 'booking-item';
+            bookingItem.innerHTML = `
+                <div class="booking-item-customer">${customerName}</div>
+                <div class="booking-item-room">${room ? room.title : 'N/A'}</div>
+                <div class="booking-item-time">
+                    ${startTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})} - 
+                    ${endTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}
+                </div>
+            `;
             
-            bookings.forEach(booking => {
-                const startHour = booking.start_hour;
-                const endHour = booking.end_hour;
-                
-                // Calculate position (each hour = 50px)
-                const startPosition = startHour * 50;
-                const duration = (endHour - startHour) * 50;
-                
-                // Find the homestay timeline for this booking
-                const homestayTimeline = document.querySelector(`[data-homestay-id="${booking.homestay_id}"]`);
-                if (homestayTimeline) {
-                    const blockElement = document.createElement('div');
-                    blockElement.className = 'booking-block';
-                    blockElement.style.top = `${startPosition}px`;
-                    blockElement.style.height = `${Math.max(duration, 30)}px`;
-                    
-                    blockElement.innerHTML = `
-                        <div class="booking-customer">${booking.customer_name}</div>
-                        <div class="booking-time">${booking.checkin} - ${booking.checkout}</div>
-                        <i class="fas fa-chevron-right booking-icon"></i>
-                    `;
-                    
-                    blockElement.addEventListener('click', () => showBookingModal(booking));
-                    
-                    homestayTimeline.appendChild(blockElement);
-                }
-            });
-        }
+            bookingItem.addEventListener('click', () => showBookingModal(booking));
+            summaryContainer.appendChild(bookingItem);
+        });
+    }
+    
+    function updateCurrentTimeIndicator() {
+        const now = new Date();
         
-        function updateCurrentTimeIndicator() {
-            const now = new Date();
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            
+        // Only show current time line if viewing today
+        if (now.toDateString() !== selectedDate.toDateString()) {
             // Remove existing time lines
             const existingLines = document.querySelectorAll('.current-time-line');
             existingLines.forEach(line => line.remove());
-            
-            // Calculate position (each hour = 50px)
-            const position = (currentHour + currentMinute / 60) * 50;
-            
-            // Add time line to each homestay timeline
-            const homestayTimelines = document.querySelectorAll('.homestay-timeline');
-            homestayTimelines.forEach(timeline => {
-                const timeLine = document.createElement('div');
-                timeLine.className = 'current-time-line';
-                timeLine.style.top = `${position}px`;
-                
-                const timeDot = document.createElement('div');
-                timeDot.className = 'current-time-dot';
-                timeLine.appendChild(timeDot);
-                
-                timeline.appendChild(timeLine);
-            });
+            return;
         }
         
-        function generateCalendar() {
-            const calendarDays = document.getElementById('calendarDays');
-            calendarDays.innerHTML = '';
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        
+        // Remove existing time lines
+        const existingLines = document.querySelectorAll('.current-time-line');
+        existingLines.forEach(line => line.remove());
+        
+        // Calculate position (each hour = 60px)
+        const position = (currentHour + currentMinute / 60) * 60;
+        
+        // Add time line to each room timeline
+        const roomTimelines = document.querySelectorAll('.room-timeline');
+        roomTimelines.forEach(timeline => {
+            const timeLine = document.createElement('div');
+            timeLine.className = 'current-time-line';
+            timeLine.style.top = `${position}px`;
             
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
+            const timeDot = document.createElement('div');
+            timeDot.className = 'current-time-dot';
+            timeLine.appendChild(timeDot);
             
-            // Get first day of month and number of days
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const daysInMonth = lastDay.getDate();
-            const startingDayOfWeek = firstDay.getDay();
+            timeline.appendChild(timeLine);
+        });
+    }
+
+    // Get dates with bookings for calendar dots
+    function getDatesWithBookings() {
+        const dates = new Set();
+        bookings.forEach(booking => {
+            if (!booking.start_time) return;
+            const date = new Date(booking.start_time);
+            if (date.getMonth() === currentDate.getMonth() && 
+                date.getFullYear() === currentDate.getFullYear()) {
+                dates.add(date.getDate());
+            }
+        });
+        return dates;
+    }
+
+    // Enhanced API functions for better calendar management
+    async function loadBookingsForDate(date) {
+        try {
+            const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+            const response = await fetch(`/owner/calendar/api/bookings/${dateStr}`);
+            const data = await response.json();
             
-            // Add empty cells for days before month starts
-            for (let i = 0; i < startingDayOfWeek; i++) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                dayElement.textContent = new Date(year, month, -startingDayOfWeek + i + 1).getDate();
-                calendarDays.appendChild(dayElement);
+            if (data.success) {
+                // Update global bookings array with new data
+                bookings.length = 0; // Clear existing bookings
+                bookings.push(...data.bookings);
+                
+                // Re-render the timeline
+                renderBookings();
+                updateBookingSummary();
+                
+                console.log(`Loaded ${data.bookings.length} bookings for ${dateStr}`);
+            } else {
+                console.error('Failed to load bookings:', data.error);
+            }
+        } catch (error) {
+            console.error('Error loading bookings:', error);
+        }
+    }
+
+    async function loadDatesWithBookings(year, month) {
+        try {
+            const response = await fetch(`/owner/calendar/api/dates-with-bookings/${year}/${month}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                return new Set(data.dates);
+            } else {
+                console.error('Failed to load dates with bookings:', data.error);
+                return new Set();
+            }
+        } catch (error) {
+            console.error('Error loading dates with bookings:', error);
+            return new Set();
+        }
+    }
+
+    async function showBookingModal(booking) {
+        try {
+            // Get detailed booking information from API
+            const response = await fetch(`/owner/calendar/api/booking/${booking.id}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                const detailedBooking = data.booking;
+                
+                // Populate modal with detailed information
+                document.getElementById('modalCustomerName').textContent = 
+                    detailedBooking.renter?.full_name || detailedBooking.renter?.username || 'Khách hàng';
+                document.getElementById('modalPhone').textContent = 
+                    detailedBooking.renter?.phone || 'Chưa cung cấp';
+                document.getElementById('modalEmail').textContent = 
+                    detailedBooking.renter?.email || 'Chưa cung cấp';
+                document.getElementById('modalUsername').textContent = 
+                    detailedBooking.renter?.username || 'Chưa cung cấp';
+                document.getElementById('modalRoomTitle').textContent = 
+                    detailedBooking.room?.title || 'N/A';
+                
+                // Format dates and times
+                const startTime = new Date(detailedBooking.start_time);
+                const endTime = new Date(detailedBooking.end_time);
+                const createdAt = new Date(detailedBooking.created_at);
+                
+                document.getElementById('modalBookingDate').textContent = 
+                    createdAt.toLocaleDateString('vi-VN');
+                document.getElementById('modalBookingType').textContent = 
+                    detailedBooking.booking_type === 'hourly' ? 'Theo giờ' : 'Qua đêm';
+                document.getElementById('modalCheckin').textContent = 
+                    startTime.toLocaleString('vi-VN');
+                document.getElementById('modalCheckout').textContent = 
+                    endTime.toLocaleString('vi-VN');
+                document.getElementById('modalDuration').textContent = 
+                    `${detailedBooking.total_hours} giờ`;
+                document.getElementById('modalTotal').textContent = 
+                    `${detailedBooking.total_price.toLocaleString('vi-VN')} VNĐ`;
+                
+                // Status with color coding
+                const statusElement = document.getElementById('modalStatus');
+                const statusMap = {
+                    'pending': { text: 'Chờ xác nhận', class: 'text-warning' },
+                    'confirmed': { text: 'Đã xác nhận', class: 'text-success' },
+                    'active': { text: 'Đang sử dụng', class: 'text-primary' },
+                    'completed': { text: 'Hoàn thành', class: 'text-info' },
+                    'cancelled': { text: 'Đã hủy', class: 'text-danger' },
+                    'rejected': { text: 'Từ chối', class: 'text-danger' }
+                };
+                
+                const status = statusMap[detailedBooking.status] || { text: detailedBooking.status, class: '' };
+                statusElement.textContent = status.text;
+                statusElement.className = `modal-field-value ${status.class}`;
+                
+                // Show modal
+                document.getElementById('bookingModal').style.display = 'block';
+            } else {
+                console.error('Failed to load booking details:', data.error);
+                alert('Không thể tải thông tin đặt phòng');
+            }
+        } catch (error) {
+            console.error('Error loading booking details:', error);
+            alert('Có lỗi xảy ra khi tải thông tin đặt phòng');
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('bookingModal').style.display = 'none';
+    }
+
+    // Enhanced date navigation with API integration
+    async function goToPreviousDay() {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(selectedDate.getDate() - 1);
+        selectedDate = newDate;
+        updateDateDisplay();
+        
+        // Load bookings for the new date
+        await loadBookingsForDate(selectedDate);
+        
+        updateCurrentTimeIndicator();
+        generateCalendar(); // Update calendar selection
+    }
+
+    async function goToNextDay() {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(selectedDate.getDate() + 1);
+        selectedDate = newDate;
+        updateDateDisplay();
+        
+        // Load bookings for the new date
+        await loadBookingsForDate(selectedDate);
+        
+        updateCurrentTimeIndicator();
+        generateCalendar(); // Update calendar selection
+    }
+    
+    function generateCalendar() {
+        const calendarDays = document.getElementById('calendarDays');
+        calendarDays.innerHTML = '';
+        
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        // Get first day of month and number of days
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+        
+        const datesWithBookings = getDatesWithBookings();
+        
+        // Add empty cells for days before month starts
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = new Date(year, month, -startingDayOfWeek + i + 1).getDate();
+            calendarDays.appendChild(dayElement);
+        }
+        
+        // Add days of current month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day current-month';
+            dayElement.textContent = day;
+            
+            const dayDate = new Date(year, month, day);
+            
+            // Mark selected day
+            if (dayDate.toDateString() === selectedDate.toDateString()) {
+                dayElement.classList.add('selected');
             }
             
-            // Add days of current month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day current-month';
-                dayElement.textContent = day;
-                
-                // Mark selected day (23rd)
-                if (day === 23) {
-                    dayElement.classList.add('selected');
-                }
-                
-                // Mark today (22nd with circle)
-                if (day === 22) {
-                    dayElement.classList.add('today');
-                }
-                
-                dayElement.addEventListener('click', function() {
-                    document.querySelectorAll('.calendar-day.selected').forEach(el => {
-                        el.classList.remove('selected');
-                    });
-                    this.classList.add('selected');
-                    
-                    // Update date display
-                    document.querySelector('.date-display').textContent = 
-                        `${day} Tháng ${month + 1}, ${year}`;
+            // Mark today
+            if (dayDate.toDateString() === new Date().toDateString()) {
+                dayElement.classList.add('today');
+            }
+
+            // Add booking indicator dot
+            if (datesWithBookings.has(day)) {
+                const dot = document.createElement('div');
+                dot.className = 'booking-dot';
+                dayElement.appendChild(dot);
+            }
+            
+            dayElement.addEventListener('click', function() {
+                document.querySelectorAll('.calendar-day.selected').forEach(el => {
+                    el.classList.remove('selected');
                 });
+                this.classList.add('selected');
                 
-                calendarDays.appendChild(dayElement);
-            }
+                // Update selected date and refresh bookings
+                selectedDate = new Date(year, month, day);
+                updateDateDisplay();
+                renderBookings();
+                updateCurrentTimeIndicator();
+                updateBookingSummary();
+            });
             
-            // Add empty cells for days after month ends
-            const totalCells = calendarDays.children.length;
-            const remainingCells = 42 - totalCells; // 6 rows × 7 days
-            for (let i = 1; i <= remainingCells; i++) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                dayElement.textContent = i;
-                calendarDays.appendChild(dayElement);
-            }
+            calendarDays.appendChild(dayElement);
         }
         
-        function previousMonth() {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            updateCalendarTitle();
-            generateCalendar();
+        // Add empty cells for days after month ends
+        const totalCells = calendarDays.children.length;
+        const remainingCells = 42 - totalCells; // 6 rows × 7 days
+        for (let i = 1; i <= remainingCells; i++) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = i;
+            calendarDays.appendChild(dayElement);
         }
-        
-        function nextMonth() {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            updateCalendarTitle();
-            generateCalendar();
+    }
+    
+    function previousMonth() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        updateCalendarTitle();
+        generateCalendar();
+    }
+    
+    function nextMonth() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        updateCalendarTitle();
+        generateCalendar();
+    }
+    
+    function updateCalendarTitle() {
+        document.getElementById('calendarTitle').textContent = 
+            `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    }
+    
+
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('bookingModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
         }
-        
-        function updateCalendarTitle() {
-            const monthNames = [
-                'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-                'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
-            ];
-            document.querySelector('.calendar-title').textContent = 
-                `${monthNames[currentDate.getMonth()]}, ${currentDate.getFullYear()}`;
-        }
-        
-        // Modal functionality
-        function showBookingModal(booking) {
-            document.getElementById('modalCustomerName').textContent = 'Họ Tên: ' + booking.customer_name;
-            document.getElementById('modalPhone').textContent = 'Số điện thoại: ' + booking.phone;
-            document.getElementById('modalEmail').textContent = 'Email: ' + booking.email;
-            document.getElementById('modalUsername').textContent = 'Username: ' + booking.username;
-            document.getElementById('modalBookingDate').textContent = 'Đặt vào: ' + booking.booking_date;
-            document.getElementById('modalBookingType').textContent = 'Hình thức: ' + booking.type;
-            document.getElementById('modalCheckin').textContent = 'Check-in: ' + booking.checkin;
-            document.getElementById('modalCheckout').textContent = 'Check-out: ' + booking.checkout;
-            document.getElementById('modalDuration').textContent = 'Khoảng thời gian: ' + booking.duration;
-            document.getElementById('modalTotal').textContent = 'Thanh toán tổng: ' + booking.total;
-            
-            document.getElementById('bookingModal').style.display = 'block';
-        }
-        
-        function closeModal() {
-            document.getElementById('bookingModal').style.display = 'none';
-        }
-        
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('bookingModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        }
-        
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', initializeCalendar);
-    </script>
-</body>
-</html>
+    }
+    
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', initializeCalendar);
+</script>
+{% endblock %}
