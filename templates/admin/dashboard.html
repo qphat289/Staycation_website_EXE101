@@ -1321,14 +1321,73 @@ nav[aria-label="Page navigation"] {
     background-color: #f8fdf4;
 }
 
-.stats-overview .stat-card {
+/* Statistics Cards - Modern Clean Design */
+.stats-overview .stat-card,
+.owner-stats-overview .stat-card {
+    padding: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
     height: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #ffffff;
+    min-height: 100px;
 }
 
-.stats-overview .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+.stats-overview .stat-card:hover,
+.owner-stats-overview .stat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #9ed649;
+}
+
+.stats-overview .stat-card h6,
+.owner-stats-overview .stat-card h6 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+.stats-overview .stat-card h4,
+.owner-stats-overview .stat-card h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+    line-height: 1.1;
+}
+
+.stats-overview .stat-card small,
+.owner-stats-overview .stat-card small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: block;
+    margin-top: 0.25rem;
+    line-height: 1.2;
+}
+
+.stats-overview .stat-card small.text-success,
+.owner-stats-overview .stat-card small.text-success {
+    color: #28a745 !important;
+}
+
+.stats-overview .stat-card small.text-muted,
+.owner-stats-overview .stat-card small.text-muted {
+    color: #6c757d !important;
+}
+
+/* Container spacing */
+.stats-overview,
+.owner-stats-overview {
+    margin-bottom: 1.5rem;
+}
+
+.owner-stats-overview {
+    margin-top: 1rem;
 }
 
 .bg-light-success {
@@ -1411,6 +1470,227 @@ nav[aria-label="Page navigation"] {
 .rating .fa-star {
     color: #ffc107;
 }
+
+/* Custom scrollbar for table responsive */
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* New Filter Section Styles */
+.filter-section-simple {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+}
+
+.status-tabs {
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f5f5f5;
+}
+
+.tab-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    color: #666;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tab-button:hover {
+    color: #9ed649;
+    text-decoration: none;
+    background: rgba(158, 214, 73, 0.1);
+}
+
+.tab-button.active {
+    color: #9ed649;
+    background: rgba(158, 214, 73, 0.15);
+    border-color: #9ed649;
+    font-weight: 600;
+}
+
+.tab-count {
+    background: #f8f9fa;
+    color: #666;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    min-width: 24px;
+    text-align: center;
+}
+
+.tab-button.active .tab-count {
+    background: #9ed649;
+    color: white;
+}
+
+.controls-row {
+    padding-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.search-container {
+    flex: 1;
+    max-width: 350px;
+    position: relative;
+}
+
+.search-container form {
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.search-input:focus {
+    border-color: #9ed649;
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+    outline: none;
+}
+
+.search-btn {
+    background: #9ed649;
+    border: 2px solid #9ed649;
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background: #8bc441;
+    border-color: #8bc441;
+    color: white;
+}
+
+.filter-btn, .sort-btn {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: white;
+    color: #666;
+}
+
+.filter-btn:hover, .sort-btn:hover {
+    border-color: #9ed649;
+    color: #9ed649;
+    background: rgba(158, 214, 73, 0.1);
+}
+
+.dropdown-menu {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+    z-index: 1050;
+    min-width: 150px;
+}
+
+.dropdown-item {
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.dropdown-item:hover {
+    background: rgba(158, 214, 73, 0.1);
+    color: #9ed649;
+}
+
+.dropdown-item.active {
+    background: #9ed649;
+    color: white;
+}
+
+.dropdown-item.active:hover {
+    background: #8bc441;
+    color: white;
+}
+
+.dropdown-item.active {
+    background: rgba(158, 214, 73, 0.2);
+    color: #9ed649;
+    font-weight: 600;
+}
+
+.dropdown-item.active:hover {
+    background: rgba(158, 214, 73, 0.3);
+    color: #8bc441;
+}
+
+.dropdown-item i {
+    width: 16px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-container {
+        max-width: none;
+        width: 100%;
+    }
+    
+    .status-tabs {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .tab-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
 </style>
 {% endblock %}
 
@@ -1458,41 +1738,175 @@ nav[aria-label="Page navigation"] {
             </div>
             
             <!-- Block: Quản lý Owner -->
-            <div id="owner-section" style="display: block; padding: 1.5rem;">
-                <!-- Filter Section -->
-                <div class="filter-section">
-                    <div class="filter-pills">
-                        <a href="{{ url_for('admin.dashboard') }}" 
-                           class="filter-pill {% if not current_filter %}active{% endif %}"
-                           data-status="all">
-                            Tất cả <span class="count">{{ total_count }}</span>
+            <div id="owner-section" style="display: block; padding: 1.5rem;">                <!-- Filter Section - Simple Layout (Image 2 Style) -->
+                <div class="filter-section-simple mb-4">                    <!-- Status Filter Tabs -->
+                    <div class="status-tabs mb-3">
+                        <a href="{{ url_for('admin.dashboard', role=current_role_filter, status='all', search=search_query) }}" 
+                           class="tab-button {% if not current_filter or current_filter == 'all' %}active{% endif %}">
+                            Tất cả <span class="tab-count">{{ total_count }}</span>
                         </a>
-                        <a href="{{ url_for('admin.dashboard', status='active') }}" 
-                           class="filter-pill {% if current_filter == 'active' %}active{% endif %}"
-                           data-status="active">
-                            Đang hoạt động <span class="count">{{ active_count }}</span>
+                        <a href="{{ url_for('admin.dashboard', role=current_role_filter, status='active', search=search_query) }}" 
+                           class="tab-button {% if current_filter == 'active' %}active{% endif %}">
+                            Active <span class="tab-count">{{ active_count }}</span>
                         </a>
-                        <a href="{{ url_for('admin.dashboard', status='inactive') }}" 
-                           class="filter-pill {% if current_filter == 'inactive' %}active{% endif %}"
-                           data-status="inactive">
-                            Đã khóa <span class="count">{{ inactive_count }}</span>
+                        <a href="{{ url_for('admin.dashboard', role=current_role_filter, status='inactive', search=search_query) }}" 
+                           class="tab-button {% if current_filter == 'inactive' %}active{% endif %}">
+                            Inactive <span class="tab-count">{{ inactive_count }}</span>
                         </a>
                     </div>
-                    <div class="search-box">
-                        <form method="GET" action="{{ url_for('admin.dashboard') }}" class="d-flex">
-                            {% if current_filter %}
-                            <input type="hidden" name="status" value="{{ current_filter }}">
-                            {% endif %}
-                            <input type="text" 
-                                   name="search" 
-                                   value="{{ search_query }}" 
-                                   class="form-control" 
-                                   placeholder="Tìm kiếm..."
-                                   autocomplete="off">
-                            <button type="submit" class="btn btn-primary ms-2">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
+                    
+                    <!-- Control Row with Search, Filter, Sort, Add Button -->
+                    <div class="controls-row d-flex align-items-center gap-3">                        <!-- Search Box -->
+                        <div class="search-container">
+                            <form method="GET" action="{{ url_for('admin.dashboard') }}" class="d-flex">
+                                {% if current_filter %}
+                                <input type="hidden" name="status" value="{{ current_filter }}">
+                                {% endif %}
+                                {% if current_role_filter %}
+                                <input type="hidden" name="role" value="{{ current_role_filter }}">
+                                {% endif %}
+                                <input type="text" 
+                                       name="search" 
+                                       value="{{ search_query }}" 
+                                       class="form-control search-input" 
+                                       placeholder="Tìm kiếm..."
+                                       autocomplete="off">
+                                <button type="submit" class="btn search-btn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </form>
+                        </div>                          <!-- Filter Dropdown -->
+                        <div class="filter-dropdown">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-filter me-2"></i>
+                                    {% if current_role_filter == 'owner' %}
+                                        Owner
+                                    {% elif current_role_filter == 'renter' %}
+                                        Renter
+                                    {% else %}
+                                        Tất cả
+                                    {% endif %}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item {% if not current_role_filter or current_role_filter == 'all' %}active{% endif %}" 
+                                           href="{{ url_for('admin.dashboard', role='all', status=current_filter, search=search_query) }}"
+                                           onclick="window.location.href=this.href; return false;">
+                                        <i class="fas fa-users me-2"></i>Tất cả
+                                    </a></li>
+                                    <li><a class="dropdown-item {% if current_role_filter == 'owner' %}active{% endif %}" 
+                                           href="{{ url_for('admin.dashboard', role='owner', status=current_filter, search=search_query) }}"
+                                           onclick="window.location.href=this.href; return false;">
+                                        <i class="fas fa-home me-2"></i>Owner
+                                    </a></li>
+                                    <li><a class="dropdown-item {% if current_role_filter == 'renter' %}active{% endif %}" 
+                                           href="{{ url_for('admin.dashboard', role='renter', status=current_filter, search=search_query) }}"
+                                           onclick="window.location.href=this.href; return false;">
+                                        <i class="fas fa-user me-2"></i>Renter
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Sort Dropdown -->
+                        <div class="sort-dropdown">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle sort-btn" type="button" data-bs-toggle="dropdown">
+                                    Sắp xếp
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.dashboard', role=current_role_filter, status=current_filter, search=search_query, sort='name_asc') }}">
+                                        Tên A-Z
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.dashboard', role=current_role_filter, status=current_filter, search=search_query, sort='name_desc') }}">
+                                        Tên Z-A
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.dashboard', role=current_role_filter, status=current_filter, search=search_query, sort='date_desc') }}">
+                                        Mới nhất
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.dashboard', role=current_role_filter, status=current_filter, search=search_query, sort='date_asc') }}">
+                                        Cũ nhất
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards for Owner Management -->
+                <div class="owner-stats-overview mb-4">
+                    <div class="row g-3">
+                        <!-- Tổng tài khoản -->
+                        <div class="col-md-2">
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <h6 class="mb-2 text-muted">Tổng tài khoản</h6>
+                                <h4 class="mb-1">{{ (stats.total_owners + stats.total_renters) if stats else 0 }}</h4>
+                                <small class="text-muted">+{{ (weekly_stats.new_owners_month + weekly_stats.new_renters_month) if weekly_stats else 0 }} trong tháng này</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Tổng Owner -->
+                        <div class="col-md-2">
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <h6 class="mb-2 text-muted">Tổng Owner</h6>
+                                <h4 class="mb-1">{{ stats.total_owners if stats else 0 }}</h4>
+                                <small class="text-muted">+{{ weekly_stats.new_owners_month if weekly_stats else 0 }} trong tháng này</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Tổng Renter -->
+                        <div class="col-md-2">
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <h6 class="mb-2 text-muted">Tổng Renter</h6>
+                                <h4 class="mb-1">{{ stats.total_renters if stats else 0 }}</h4>
+                                <small class="text-muted">+{{ weekly_stats.new_renters_month if weekly_stats else 0 }} trong tháng này</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Tài khoản thêm trong tuần -->
+                        <div class="col-md-2">
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <h6 class="mb-2 text-muted">Tài khoản thêm trong tuần</h6>
+                                <h4 class="mb-1">{{ (weekly_stats.new_owners + weekly_stats.new_renters) if weekly_stats else 0 }}</h4>
+                                <small class="text-success">
+                                    {% if stats and (stats.total_owners + stats.total_renters) > 0 %}
+                                        +{{ (((weekly_stats.new_owners + weekly_stats.new_renters) / (stats.total_owners + stats.total_renters)) * 100)|round(1) if weekly_stats else 0 }}% so với tuần trước ↗
+                                    {% else %}
+                                        +0% so với tuần trước
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Renter thêm trong tháng -->
+                        <div class="col-md-2">
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <h6 class="mb-2 text-muted">Renter thêm trong tháng</h6>
+                                <h4 class="mb-1">{{ weekly_stats.new_renters_month if weekly_stats else 0 }}</h4>
+                                <small class="text-success">
+                                    {% if stats and stats.total_renters > 0 %}
+                                        +{{ ((weekly_stats.new_renters_month / stats.total_renters) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước ↗
+                                    {% else %}
+                                        +0% so với tháng trước
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Owner thêm trong tháng -->
+                        <div class="col-md-2">
+                            <div class="stat-card bg-white p-3 rounded shadow-sm">
+                                <h6 class="mb-2 text-muted">Owner thêm trong tháng</h6>
+                                <h4 class="mb-1">{{ weekly_stats.new_owners_month if weekly_stats else 0 }}</h4>
+                                <small class="text-success">
+                                    {% if stats and stats.total_owners > 0 %}
+                                        +{{ ((weekly_stats.new_owners_month / stats.total_owners) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước ↗
+                                    {% else %}
+                                        +0% so với tháng trước
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1503,62 +1917,76 @@ nav[aria-label="Page navigation"] {
                         <i class="fas fa-plus"></i>
                         Thêm tài khoản
                     </button>
-                </div>
-
-                <!-- Table -->
+                </div>                <!-- Table -->
                 <div class="table-responsive">
                     <table class="table align-middle">
                         <thead>
                             <tr>
-                                <th>Tên tài khoản</th>
-                                <th>Họ & tên</th>
+                                <th>
+                                    <input type="checkbox" id="checkAll">
+                                </th>
+                                <th>ID</th>
+                                <th>Tên</th>
                                 <th>Email</th>
                                 <th>Số điện thoại</th>
-                                <th>Trạng thái</th>
+                                <th>Role</th>
+                                <th>Status</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for owner in owners.items %}
-                            <tr data-status="{{ 'active' if owner.is_active else 'inactive' }}">
-                                <td>{{ owner.username }}</td>
-                                <td>{{ owner.fullname if owner.fullname else 'Chưa cập nhật' }}</td>
-                                <td>{{ owner.email }}</td>
-                                <td>{{ owner.phone if owner.phone else 'Chưa cập nhật' }}</td>
+                            {% for user in users.items %}
+                            <tr data-status="{{ 'active' if user.is_active else 'inactive' }}">
                                 <td>
-                                    <span class="badge {% if owner.is_active %}bg-success{% else %}badge-inactive{% endif %}">
-                                        {{ 'ACTIVE' if owner.is_active else 'INACTIVE' }}
+                                    <input type="checkbox" name="user_id" value="{{ user.id }}">
+                                </td>
+                                <td>#{{ user.id }}</td>
+                                <td>{{ user.full_name if user.full_name else user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.phone if user.phone else 'Chưa cập nhật' }}</td>
+                                <td>
+                                    <span class="badge {% if user.role == 'Owner' %}bg-primary{% elif user.role == 'Renter' %}bg-success{% else %}bg-warning{% endif %}">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if user.is_active %}bg-success{% else %}badge-inactive{% endif %}">
+                                        {{ 'ACTIVE' if user.is_active else 'INACTIVE' }}
                                     </span>
                                 </td>
                                 <td class="text-end">
                                     <div class="dropdown">
                                         <button type="button" class="action-button" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="fas fa-ellipsis-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        </button>                                        <ul class="dropdown-menu dropdown-menu-end shadow">
                                             <li>
-                                                <a class="dropdown-item" href="{{ url_for('admin.owner_detail', owner_id=owner.id) }}">
+                                                <a class="dropdown-item" href="#" data-user-id="{{ user.id }}" data-role-type="{{ user.role_type }}" onclick="viewUserDetails(this)">
                                                     <i class="fas fa-eye me-2"></i>
                                                     <span>Xem chi tiết</span>
                                                 </a>
                                             </li>
+                                            {% if user.role_type != 'admin' %}
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
-                                                <form action="{{ url_for('admin.toggle_owner_status', owner_id=owner.id) }}" method="POST" class="d-block">
-                                                    <button type="button" class="dropdown-item text-{{ 'danger' if owner.is_active else 'success' }}" data-action="toggle-status" data-owner-id="{{ owner.id }}">
-                                                        <i class="fas fa-{{ 'ban' if owner.is_active else 'check-circle' }} me-2"></i>
-                                                        <span>{{ 'Vô hiệu hóa' if owner.is_active else 'Kích hoạt' }}</span>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="dropdown-item text-{{ 'danger' if user.is_active else 'success' }}" 
+                                                        data-user-id="{{ user.id }}" 
+                                                        data-role-type="{{ user.role_type }}" 
+                                                        data-is-active="{{ user.is_active|lower }}"
+                                                        onclick="toggleUserStatus(this)">
+                                                    <i class="fas fa-{{ 'ban' if user.is_active else 'check-circle' }} me-2"></i>
+                                                    <span>{{ 'Vô hiệu hóa' if user.is_active else 'Kích hoạt' }}</span>
+                                                </button>
                                             </li>
                                             <li>
-                                                <form action="{{ url_for('admin.delete_owner', owner_id=owner.id) }}" method="POST" class="d-block">
-                                                    <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="fas fa-trash-alt me-2"></i>
-                                                        <span>Xóa tài khoản</span>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="dropdown-item text-danger" 
+                                                        data-user-id="{{ user.id }}" 
+                                                        data-role-type="{{ user.role_type }}"
+                                                        onclick="deleteUser(this)">
+                                                    <i class="fas fa-trash-alt me-2"></i>
+                                                    <span>Xóa tài khoản</span>
+                                                </button>
                                             </li>
+                                            {% endif %}
                                         </ul>
                                     </div>
                                 </td>
@@ -1566,30 +1994,28 @@ nav[aria-label="Page navigation"] {
                             {% endfor %}
                         </tbody>
                     </table>
-                </div>
-
-                <!-- Pagination -->
+                </div>                <!-- Pagination -->
                 <nav aria-label="Page navigation" class="mt-4">
                     <ul class="pagination justify-content-center">
-                        {% if owners.has_prev %}
+                        {% if users.has_prev %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('admin.dashboard', page=owners.prev_num, status=current_filter, search=search_query) }}">
+                            <a class="page-link" href="{{ url_for('admin.dashboard', page=users.prev_num, role=current_role_filter, status=current_filter, search=search_query) }}">
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                         </li>
                         {% endif %}
                         
-                        {% for page_num in range(1, owners.pages + 1) %}
-                        <li class="page-item {% if page_num == owners.page %}active{% endif %}">
-                            <a class="page-link" href="{{ url_for('admin.dashboard', page=page_num, status=current_filter, search=search_query) }}">
+                        {% for page_num in range(1, users.pages + 1) %}
+                        <li class="page-item {% if page_num == users.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin.dashboard', page=page_num, role=current_role_filter, status=current_filter, search=search_query) }}">
                                 {{ page_num }}
                             </a>
                         </li>
                         {% endfor %}
                         
-                        {% if owners.has_next %}
+                        {% if users.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('admin.dashboard', page=owners.next_num, status=current_filter, search=search_query) }}">
+                            <a class="page-link" href="{{ url_for('admin.dashboard', page=users.next_num, role=current_role_filter, status=current_filter, search=search_query) }}">
                                 <i class="bi bi-chevron-right"></i>
                             </a>
                         </li>
@@ -1679,79 +2105,53 @@ nav[aria-label="Page navigation"] {
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="mb-0">Admin Dashboard</h4>
                     <p class="mb-0 text-muted">Quản lý tài khoản và thống kê hệ thống</p>
-                </div>
-
-                <!-- Stats Overview Cards - Updated to match original design -->
+                </div>                <!-- Stats Overview Cards - Clean design without icons -->
                 <div class="stats-overview mb-4">
                     <div class="row g-3">
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="stat-icon rounded-circle bg-light-success p-2 me-2">
-                                        <i class="fas fa-home text-success"></i>
-                                    </div>
-                                    <h6 class="mb-0">Tổng số chủ nhà</h6>
-                                </div>
-                                <h4 class="mb-0">{{ stats.total_owners }}</h4>
+                                <h6 class="mb-2 text-muted">Tổng số chủ nhà</h6>
+                                <h4 class="mb-1">{{ stats.total_owners }}</h4>
+                                <small class="text-muted">+{{ weekly_stats.new_owners if weekly_stats.new_owners else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="stat-icon rounded-circle bg-light-primary p-2 me-2">
-                                        <i class="fas fa-users text-primary"></i>
-                                    </div>
-                                    <h6 class="mb-0">Tổng số khách hàng</h6>
-                                </div>
-                                <h4 class="mb-0">{{ stats.total_renters }}</h4>
+                                <h6 class="mb-2 text-muted">Tổng người thuê</h6>
+                                <h4 class="mb-1">{{ stats.total_renters }}</h4>
+                                <small class="text-muted">+{{ weekly_stats.new_renters if weekly_stats.new_renters else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="stat-icon rounded-circle bg-light-warning p-2 me-2">
-                                        <i class="fas fa-clock text-warning"></i>
-                                    </div>
-                                    <h6 class="mb-0">Số giờ thuê</h6>
-                                </div>
-                                <h4 class="mb-0">{{ stats.total_hours }} <span class="fs-6 text-muted">giờ</span></h4>
+                                <h6 class="mb-2 text-muted">Tổng số phòng</h6>
+                                <h4 class="mb-1">{{ stats.total_rooms }}</h4>
+                                <small class="text-muted">+{{ weekly_stats.new_rooms if weekly_stats.new_rooms else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="stat-icon rounded-circle bg-light-info p-2 me-2">
-                                        <i class="fas fa-calendar-check text-info"></i>
-                                    </div>
-                                    <h6 class="mb-0">Số lần thuê</h6>
-                                </div>
-                                <h4 class="mb-0">{{ stats.total_bookings }} <span class="fs-6 text-muted">lần</span></h4>
+                                <h6 class="mb-2 text-muted">Phí dịch vụ</h6>
+                                <h4 class="mb-1">{{ '{:,.0f}'.format(admin_commission) if admin_commission else 0 }} <span class="fs-6 text-muted">đ</span></h4>
+                                <small class="text-success">+{{ weekly_stats.booking_growth_rate if weekly_stats.booking_growth_rate else 0 }}% so với tuần trước</small>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="stat-icon rounded-circle bg-light-danger p-2 me-2">
-                                        <i class="fas fa-chart-line text-danger"></i>
-                                    </div>
-                                    <h6 class="mb-0">Hình thức phổ biến</h6>
-                                </div>
-                                <h4 class="mb-0">{{ stats.common_type }}</h4>
+                                <h6 class="mb-2 text-muted">Tổng lượt đặt phòng</h6>
+                                <h4 class="mb-1">{{ stats.total_bookings }} <span class="fs-6 text-muted">lần</span></h4>
+                                <small class="text-muted">+{{ weekly_stats.new_bookings if weekly_stats.new_bookings else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="stat-icon rounded-circle bg-light-warning p-2 me-2">
-                                        <i class="fas fa-star text-warning"></i>
-                                    </div>
-                                    <h6 class="mb-0">Đánh giá trung bình</h6>
-                                </div>
-                                <h4 class="mb-0">{{ stats.average_rating }}/5.0</h4>
+                                <h6 class="mb-2 text-muted">Hình thức phổ biến</h6>
+                                <h4 class="mb-1">{{ stats.common_type }}</h4>
+                                <small class="text-muted">Loại phòng được ưa chuộng</small>
                             </div>
                         </div>
                     </div>
-                </div>                <!-- Chart Sections -->
+                </div><!-- Chart Sections -->
                 <!-- <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="chart-card bg-white p-3 rounded shadow-sm">
@@ -1773,16 +2173,13 @@ nav[aria-label="Page navigation"] {
 
                 <!-- Homestay Table -->
                 <div class="homestay-stats bg-white p-4 rounded shadow-sm">
-                    <h5 class="mb-3">Các homestay nổi bật</h5>
+                    <h5 class="mb-3">Chủ phòng có doanh thu cao nhất</h5>
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
+                        <table class="table table-hover">                            <thead>                                <tr>
                                     <th>Tên</th>
-                                    <th>Hình thức</th>
+                                    <th>Số phòng</th>
                                     <th>Doanh thu tháng</th>
-                                    <th>Số đơn thuê</th>
-                                    <th>Tỷ lệ thuê</th>
+                                    <th>Phí dịch vụ đã trả</th>
                                     <th>Đánh giá</th>
                                 </tr>
                             </thead>
@@ -1790,19 +2187,22 @@ nav[aria-label="Page navigation"] {
                                 {% if stats and stats.top_rooms %}
                                     {% set homestays_data = stats.top_rooms|from_json %}
                                     {% if homestays_data %}
-                                        {% for homestay in homestays_data %}
-                                        <tr>
+                                        {% for homestay in homestays_data %}                                        <tr>
                                             <td>{{ homestay.name if homestay.name else 'N/A' }}</td>
-                                            <td>{{ homestay.type if homestay.type else 'N/A' }}</td>
+                                            <td>{{ homestay.room_count if homestay.room_count else 0 }}</td>
                                             <td>
                                                 {% if homestay.revenue %}
                                                     {{ '{:,.0f}'.format(homestay.revenue) }}đ
                                                 {% else %}
                                                     0đ
                                                 {% endif %}
+                                            </td><td>
+                                                {% if homestay.admin_commission %}
+                                                    {{ '{:,.0f}'.format(homestay.admin_commission) }}đ
+                                                {% else %}
+                                                    0đ
+                                                {% endif %}
                                             </td>
-                                            <td>{{ homestay.bookings if homestay.bookings else 0 }}</td>
-                                            <td>{{ homestay.rate if homestay.rate else 0 }}%</td>
                                             <td>
                                                 <div class="rating">
                                                     <i class="fas fa-star text-warning"></i>
@@ -1811,14 +2211,12 @@ nav[aria-label="Page navigation"] {
                                             </td>
                                         </tr>
                                         {% endfor %}
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted">Không có dữ liệu homestay</td>
+                                    {% else %}                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">Không có dữ liệu homestay</td>
                                         </tr>
                                     {% endif %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted">Đang tải dữ liệu...</td>
+                                {% else %}                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Đang tải dữ liệu...</td>
                                     </tr>
                                 {% endif %}
                             </tbody>
@@ -2290,8 +2688,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
-            
-            } else {
+              } else {
             // Fallback to query selector if ID not found
             const dropdownToggle = document.querySelector('.navbar .dropdown-toggle');
             if (dropdownToggle) {
@@ -2309,18 +2706,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         existingDropdown.dispose();
                     }
                     new bootstrap.Dropdown(dropdownToggle);
-                    } catch (e) {
+                } catch (e) {
                     console.error('Error initializing dropdown:', e);
                 }
-            } else {
-                }
-        }
-
-        // Kiểm tra Bootstrap
+            }
+        }        // Kiểm tra Bootstrap
         if (typeof bootstrap === 'undefined') {
             console.error('Bootstrap is not loaded!');
-        } else {
-            }
+        }
     }, 500);
 
     // Sidebar Menu Handling
@@ -2396,6 +2789,47 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     initializeSidebar();
+
+    // Initialize filter dropdowns
+    const initializeFilterDropdowns = () => {
+        // Initialize all dropdowns in the filter section
+        const filterDropdowns = document.querySelectorAll('.filter-dropdown .dropdown-toggle, .sort-dropdown .dropdown-toggle');
+        filterDropdowns.forEach(dropdown => {
+            try {
+                // Make sure dropdown has proper attributes
+                dropdown.setAttribute('data-bs-toggle', 'dropdown');
+                dropdown.setAttribute('aria-expanded', 'false');
+                
+                // Initialize Bootstrap dropdown
+                const existingDropdown = bootstrap.Dropdown.getInstance(dropdown);
+                if (existingDropdown) {
+                    existingDropdown.dispose();
+                }
+                new bootstrap.Dropdown(dropdown, {
+                    autoClose: true,
+                    boundary: 'viewport'
+                });
+                
+                console.log('Filter dropdown initialized:', dropdown);
+            } catch (e) {
+                console.error('Error initializing filter dropdown:', e);
+            }
+        });
+
+        // Add click event listeners to filter dropdown items
+        const filterItems = document.querySelectorAll('.filter-dropdown .dropdown-item');
+        filterItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                console.log('Filter item clicked:', this.href);
+                // Let the default behavior happen (navigate to the URL)
+            });
+        });
+    };
+
+    // Initialize filter dropdowns after a short delay
+    setTimeout(() => {
+        initializeFilterDropdowns();
+    }, 600);
 
     // Không tự động hiển thị modal development để tránh che dropdown
     // const developmentModal = new bootstrap.Modal(document.getElementById('developmentModal'));
@@ -2623,9 +3057,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Pagination handling - Đã có sẵn trong template Jinja
-
-    // Thêm xử lý click cho dropdown items
+    // Pagination handling - Đã có sẵn trong template Jinja    // Thêm xử lý click cho dropdown items
     document.querySelectorAll('.action-dropdown .dropdown-item').forEach(item => {
         item.addEventListener('click', function(e) {
             if (!this.closest('form')) {
@@ -2633,7 +3065,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const action = this.getAttribute('data-action');
                 if (action) {
                     // Xử lý các hành động khác nhau
-                    }
+                    console.log('Action:', action);
+                }
             }
         });
     });
@@ -2828,7 +3261,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 mode: 'index'
             }
         }
-    };    // Khởi tạo biểu đồ
+    };
+
+    // Khởi tạo biểu đồ
     const hourlyChartEl = document.getElementById('hourlyTaxChart');
     const overnightChartEl = document.getElementById('overnightTaxChart');
     
@@ -2865,32 +3300,112 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 
                 // Toggle dropdown manually if bootstrap fails
-                const dropdownMenu = navbarDropdown.nextElementSibling;
-                if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+                const dropdownMenu = navbarDropdown.nextElementSibling;                if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
                     if (dropdownMenu.classList.contains('show')) {
                         dropdownMenu.classList.remove('show');
-                        } else {
+                    } else {
                         dropdownMenu.classList.add('show');
-                        }
+                    }
                 }
             });
-            
-            // Add Bootstrap events
+              // Add Bootstrap events
             navbarDropdown.addEventListener('shown.bs.dropdown', function() {
-                });
+                console.log('Dropdown shown');
+            });
             
             navbarDropdown.addEventListener('hidden.bs.dropdown', function() {
-                });
-            
-        } else {
-            }
-          // Check for conflicts
+                console.log('Dropdown hidden');
+            });        } else {
+            console.log('navbarDropdown not found');
+        }
+        
+        // Check for conflicts
         const conflictingElements = document.querySelectorAll('[style*="overflow: hidden"]');
+        console.log('Conflicting elements:', conflictingElements.length);
+        
         // Check z-index
         const navbarZIndex = window.getComputedStyle(document.querySelector('.navbar')).zIndex;
-        } else {
-        }
+        console.log('Navbar z-index:', navbarZIndex);
+    } else {
+        console.error('Bootstrap not loaded');    }
     
+    // User action handlers for the unified user table
+    window.viewUserDetails = function(userId, userType) {
+        // Implement view user details functionality
+        console.log('View user details:', userId, userType);
+        // TODO: Show user details modal or redirect to user detail page
+    };
+    
+    window.toggleUserStatus = function(userId, userType, currentStatus) {
+        // Implement toggle user status functionality
+        console.log('Toggle user status:', userId, userType, currentStatus);
+        
+        const action = currentStatus === 'active' ? 'deactivate' : 'activate';
+        const actionText = currentStatus === 'active' ? 'vô hiệu hóa' : 'kích hoạt';
+        
+        if (confirm(`Bạn có chắc muốn ${actionText} người dùng này?`)) {
+            // Make API call to toggle status
+            fetch(`/admin/users/${userId}/toggle-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_type: userType,
+                    action: action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', data.message);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast('error', data.error || 'Có lỗi xảy ra');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Có lỗi xảy ra khi xử lý yêu cầu');
+            });
+        }
+    };
+    
+    window.deleteUser = function(userId, userType) {
+        // Implement delete user functionality
+        console.log('Delete user:', userId, userType);
+        
+        if (confirm('Bạn có chắc muốn xóa người dùng này? Hành động này không thể hoàn tác!')) {
+            // Make API call to delete user
+            fetch(`/admin/users/${userId}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_type: userType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', data.message);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast('error', data.error || 'Có lỗi xảy ra');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Có lỗi xảy ra khi xử lý yêu cầu');
+            });
+        }
+    };
+
     // Handle Add Admin Form
     const addAdminModal = document.getElementById('addAdminModal');
     const addAdminForm = document.getElementById('addAdminForm');
