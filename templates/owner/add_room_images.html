@@ -9,7 +9,7 @@
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('owner.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item">
-                        <a href="{{ url_for('owner.manage_rooms', homestay_id=room.homestay_id) }}">
+                        <a href="{{ url_for('owner.dashboard') }}">
                             Manage Rooms
                         </a>
                     </li>
@@ -110,7 +110,7 @@
 
 <!-- Nút Quay lại / Hoàn thành, canh phải -->
 <div class="mt-3 d-flex justify-content-end">
-    <a href="{{ url_for('owner.owner_room_detail', room_id=room.id) }}" 
+    <a href="{{ url_for('owner.room_detail', room_id=room.id) }}" 
        class="btn btn-success">
        Finished / Back to Room
     </a>

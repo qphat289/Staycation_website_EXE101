@@ -1,0 +1,1703 @@
+﻿{% extends 'base.html' %}
+{% block title %}Thống kê{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    body {
+        background: #FDFBFA;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        font-family: 'Fz Poppins', sans-serif;
+    }
+
+    .admin-sidebar {
+        width: 250px;
+        background: transparent;
+        height: calc(100vh - 80px);
+        padding: 1.5rem;
+        position: fixed;
+        left: 85px;
+        top: 0px;
+        z-index: 1051;
+    }
+
+    .admin-sidebar::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 160px;
+        bottom: 0;
+        width: 2px;
+        background: #7C7C7C;
+        opacity: 0.2;
+        z-index: 1;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        margin-top: 9rem;
+    }
+
+    .sidebar-menu-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .sidebar-menu-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        color: #7C7C7C;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .sidebar-menu-link:hover {
+        color: #101917;
+        transform: translateX(5px);
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-menu-link.active {
+        color: #101917;
+        font-weight: 600;
+        background: #E0EC9B;
+    }
+
+    .sidebar-menu-link i {
+        font-size: 1rem;
+    }
+
+    .admin-main {
+        margin-left: 250px;
+        padding: 1rem 2rem 2rem 2rem;
+        min-height: 100vh;
+        margin-top: -3rem;
+    }
+
+    .page-header {
+        padding: 1.5rem 0;
+        margin-bottom: 1rem;
+    }
+
+    .page-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #101917;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .master-filter-bar {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .master-filter-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .master-filter-group {
+        display: flex;
+        background: #F8F8F8;
+        border-radius: 10px;
+        padding: 4px;
+        border: 1px solid rgba(124, 124, 124, 0.1);
+        gap: 2px;
+    }
+
+    .master-filter-btn {
+        font-size: 12px;
+        font-weight: 500;
+        color: #7C7C7C;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 10px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        min-width: 80px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        position: relative;
+    }
+
+    .master-filter-btn:hover {
+        background: rgba(224, 236, 155, 0.3);
+        color: #101917;
+        transform: translateY(-1px);
+    }
+
+    .master-filter-btn.active {
+        color: #101917;
+        font-weight: 600;
+        background: #E0EC9B;
+        box-shadow: 0 3px 12px rgba(224, 236, 155, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .master-filter-btn i {
+        font-size: 11px;
+    }
+
+    .master-filter-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .chart-type-toggle {
+        display: flex;
+        background: #F8F8F8;
+        border-radius: 10px;
+        padding: 4px;
+        border: 1px solid rgba(124, 124, 124, 0.1);
+        gap: 2px;
+    }
+
+    .chart-type-btn {
+        font-size: 12px;
+        font-weight: 500;
+        color: #7C7C7C;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 10px 14px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        min-width: 85px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .chart-type-btn:hover {
+        background: rgba(224, 236, 155, 0.3);
+        color: #101917;
+        transform: translateY(-1px);
+    }
+
+    .chart-type-btn.active {
+        color: #101917;
+        font-weight: 600;
+        background: #E0EC9B;
+        box-shadow: 0 3px 12px rgba(224, 236, 155, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .chart-type-btn i {
+        font-size: 11px;
+    }
+
+    .master-custom-dropdown {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
+
+    .master-custom-dropdown.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .date-dropdown-content {
+        padding: 1.5rem;
+    }
+
+    .date-dropdown-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        color: #101917;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .date-dropdown-header i {
+        color: #E0EC9B;
+        font-size: 16px;
+    }
+
+    .date-inputs-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .date-input-group {
+        flex: 1;
+    }
+
+    .date-input-group label {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        color: #7C7C7C;
+        margin-bottom: 0.5rem;
+    }
+
+    .date-input-group .date-input {
+        width: 100%;
+        font-size: 12px;
+        padding: 8px 12px;
+        border: 1px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        background: white;
+        color: #101917;
+    }
+
+    .date-input-group .date-input:focus {
+        outline: none;
+        border-color: #E0EC9B;
+        box-shadow: 0 0 0 3px rgba(224, 236, 155, 0.2);
+    }
+
+    .date-dropdown-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .cancel-btn {
+        font-size: 11px;
+        font-weight: 500;
+        color: #7C7C7C;
+        background: transparent;
+        border: 1px solid rgba(124, 124, 124, 0.2);
+        cursor: pointer;
+        padding: 6px 16px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .cancel-btn:hover {
+        background: #f5f5f5;
+        color: #101917;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        position: relative;
+    }
+
+    .stat-icon {
+        width: 47px;
+        height: 47px;
+        background: #E0EC9B;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-icon i {
+        color: #101917;
+        font-size: 20px;
+    }
+
+    .stat-label {
+        font-size: 10px;
+        font-weight: 400;
+        color: #7C7C7C;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+        font-size: 12px;
+        font-weight: 500;
+        color: #101917;
+    }
+
+    .charts-section {
+        margin-bottom: 2rem;
+    }
+
+    .chart-toggle-bar {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 12px 12px 0 0;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: none;
+    }
+
+    .chart-toggle-buttons {
+        display: flex;
+        background: #F8F8F8;
+        border-radius: 8px;
+        padding: 4px;
+        border: 1px solid rgba(124, 124, 124, 0.1);
+    }
+
+    .chart-toggle-btn {
+        font-size: 12px;
+        font-weight: 500;
+        color: #7C7C7C;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 8px 16px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        min-width: 120px;
+        position: relative;
+    }
+
+    .chart-toggle-btn:hover {
+        background: rgba(224, 236, 155, 0.3);
+        color: #101917;
+    }
+
+    .chart-toggle-btn.active {
+        color: #101917;
+        font-weight: 600;
+        background: #E0EC9B;
+        box-shadow: 0 2px 8px rgba(224, 236, 155, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .chart-filters {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .chart-filter {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #F8F8F8;
+        border-radius: 8px;
+        padding: 4px;
+        border: 1px solid rgba(124, 124, 124, 0.1);
+    }
+
+    .filter-btn {
+        font-size: 11px;
+        font-weight: 500;
+        color: #7C7C7C;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 6px 12px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        min-width: 50px;
+    }
+
+    .filter-btn:hover {
+        background: rgba(224, 236, 155, 0.3);
+        color: #101917;
+    }
+
+    .filter-btn.active {
+        color: #101917;
+        font-weight: 600;
+        background: #E0EC9B;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .date-picker-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        border: 1px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        padding: 4px 8px;
+    }
+
+    .date-input {
+        font-size: 11px;
+        padding: 4px 6px;
+        border: none;
+        background: transparent;
+        color: #101917;
+        width: 90px;
+    }
+
+    .date-input:focus {
+        outline: none;
+    }
+
+    .apply-btn {
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+        background: #101917;
+        border: none;
+        cursor: pointer;
+        padding: 6px 12px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .apply-btn:hover {
+        background: #2a2a2a;
+        transform: translateY(-1px);
+    }
+
+    .chart-container {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 0 0 12px 12px;
+        padding: 2rem 1.5rem;
+        border-top: none;
+    }
+
+    .chart-container.hidden {
+        display: none;
+    }
+
+    .chart-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #101917;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .custom-date-dropdown {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
+
+    .date-dropdown-content {
+        padding: 1.5rem;
+    }
+
+    .date-dropdown-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        color: #101917;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .date-dropdown-header i {
+        color: #E0EC9B;
+        font-size: 16px;
+    }
+
+    .date-inputs-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .date-input-group {
+        flex: 1;
+    }
+
+    .date-input-group label {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        color: #7C7C7C;
+        margin-bottom: 0.5rem;
+    }
+
+    .date-input-group .date-input {
+        width: 100%;
+        font-size: 12px;
+        padding: 8px 12px;
+        border: 1px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        background: white;
+        color: #101917;
+    }
+
+    .date-input-group .date-input:focus {
+        outline: none;
+        border-color: #E0EC9B;
+        box-shadow: 0 0 0 3px rgba(224, 236, 155, 0.2);
+    }
+
+    .date-dropdown-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .cancel-btn {
+        font-size: 11px;
+        font-weight: 500;
+        color: #7C7C7C;
+        background: transparent;
+        border: 1px solid rgba(124, 124, 124, 0.2);
+        cursor: pointer;
+        padding: 6px 16px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .cancel-btn:hover {
+        background: #f5f5f5;
+        color: #101917;
+    }
+
+    .chart-wrapper {
+        height: 300px;
+        position: relative;
+    }
+
+    .dual-chart-wrapper {
+        margin-top: 1rem;
+    }
+
+    .dual-chart-legend {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: rgba(248, 248, 248, 0.5);
+        border-radius: 8px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 12px;
+        font-weight: 500;
+        color: #101917;
+    }
+
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+    }
+
+    .hourly-color {
+        background: #E0EC9B;
+    }
+
+    .nightly-color {
+        background: #A8D5BA;
+    }
+
+    .dual-chart-bars {
+        display: flex;
+        align-items: flex-end;
+        height: 220px;
+        gap: 8px;
+        padding: 0 10px;
+        margin: 20px 0;
+        padding-left: 50px;
+        position: relative;
+    }
+
+    .dual-bar-group {
+        flex: 1;
+        height: 220px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .stacked-bar {
+        width: 100%;
+        max-width: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        min-height: 2px;
+    }
+
+    .hourly-bar {
+        background: linear-gradient(to top, #E0EC9B, #F0F8D4);
+        border: 1px solid rgba(224, 236, 155, 0.8);
+        width: 100%;
+        transition: all 0.3s ease;
+        min-height: 1px;
+        border-bottom: none;
+    }
+
+    .nightly-bar {
+        background: linear-gradient(to top, #A8D5BA, #C8E6C9);
+        border: 1px solid rgba(168, 213, 186, 0.8);
+        width: 100%;
+        transition: all 0.3s ease;
+        min-height: 1px;
+    }
+
+    /* Stacked bar styling */
+    .stacked-bar .nightly-bar:first-child {
+        border-radius: 0 0 3px 3px;
+    }
+
+    .stacked-bar .hourly-bar:last-child {
+        border-radius: 3px 3px 0 0;
+    }
+
+    .stacked-bar .nightly-bar:only-child {
+        border-radius: 3px;
+    }
+
+    .stacked-bar .hourly-bar:only-child {
+        border-radius: 3px;
+    }
+
+    /* When both bars are present */
+    .stacked-bar .nightly-bar + .hourly-bar {
+        border-bottom: none;
+    }
+
+    .stacked-bar:hover .hourly-bar,
+    .stacked-bar:hover .nightly-bar {
+        filter: brightness(1.1);
+        transform: scaleX(1.05);
+    }
+
+    .table-section {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+
+    .table-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #101917;
+        margin-bottom: 1.5rem;
+    }
+
+    .stats-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .stats-table th {
+        font-size: 10px;
+        font-weight: 400;
+        color: #7C7C7C;
+        text-align: left;
+        padding: 0.75rem 1rem;
+        border-bottom: 0.5px solid #DFDBCF;
+    }
+
+    .stats-table td {
+        font-size: 12px;
+        font-weight: 500;
+        color: #101917;
+        padding: 0.75rem 1rem;
+        border-bottom: 0.2px solid rgba(124, 124, 124, 0.2);
+    }
+
+    .stats-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .chart-y-labels {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-size: 10px;
+        color: #7C7C7C;
+        text-align: right;
+        padding-right: 10px;
+    }
+
+    .chart-x-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 10px;
+        color: #101917;
+        padding-left: 50px;
+        gap: 4px;
+    }
+
+    #dualChartXLabels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 10px;
+        color: #101917;
+        padding-left: 50px;
+        gap: 4px;
+    }
+
+    .chart-label {
+        width: 20px;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .chart-bars {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        height: 220px;
+        margin: 20px 0;
+        padding-left: 50px;
+        position: relative;
+        gap: 4px;
+    }
+
+    .chart-bar {
+        background: linear-gradient(to top, #E0EC9B, #F0F8D4);
+        border: 1px solid rgba(224, 236, 155, 0.8);
+        width: 20px;
+        border-radius: 3px 3px 0 0;
+        min-height: 2px; /* Minimum 2px to show bar */
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        bottom: 0;
+    }
+
+    .chart-bar:hover {
+        transform: scaleY(1.05);
+        filter: brightness(1.1);
+    }
+
+    .chart-grid {
+        position: absolute;
+        top: 0;
+        left: 50px;
+        right: 0;
+        height: 220px;
+        pointer-events: none;
+    }
+
+    .grid-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0.2px;
+        background: rgba(124, 124, 124, 0.2);
+    }
+
+    .rating-stars {
+        color: #101917;
+    }
+
+    .rating-stars i {
+        font-size: 12px;
+    }
+    
+    /* Force refresh cache - v2.0 */
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-sidebar">
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('owner.profile') }}" class="sidebar-menu-link">
+                    <i class="fas fa-user"></i>
+                    <span>Tài khoản</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('owner.statistics') }}" class="sidebar-menu-link active">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Thống kê</span>
+                </a>
+            </li>
+                    <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.calendar') }}" class="sidebar-menu-link">
+                <i class="fas fa-calendar"></i>
+                <span>Lịch</span>
+            </a>
+        </li>
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('owner.dashboard') }}" class="sidebar-menu-link">
+                    <i class="fas fa-home"></i>
+                    <span>Tất cả phòng</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="admin-main">
+        <div class="page-header">
+            <h1 class="page-title">Thống kê</h1>
+            
+            <!-- Master Filter Bar -->
+            <div class="master-filter-bar">
+                <div class="master-filter-left">
+                    <div class="master-filter-group">
+                        <button class="master-filter-btn active" data-period="total">
+                            <i class="fas fa-chart-pie"></i>
+                            Tổng
+                        </button>
+                        <button class="master-filter-btn" data-period="week">
+                            <i class="fas fa-calendar-week"></i>
+                            Tuần
+                        </button>
+                        <button class="master-filter-btn" data-period="month">
+                            <i class="fas fa-calendar-alt"></i>
+                            Tháng
+                        </button>
+                        <button class="master-filter-btn" data-period="year">
+                            <i class="fas fa-calendar"></i>
+                            Năm
+                        </button>
+                        <button class="master-filter-btn" data-period="custom">
+                            <i class="fas fa-cog"></i>
+                            Tùy chọn
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="master-filter-right">
+                    <div class="chart-type-toggle">
+                        <button class="chart-type-btn active" data-chart="hourly">
+                            <i class="fas fa-clock"></i>
+                            Theo giờ
+                        </button>
+                        <button class="chart-type-btn" data-chart="nightly">
+                            <i class="fas fa-moon"></i>
+                            Theo ngày
+                        </button>
+                        <button class="chart-type-btn" data-chart="both">
+                            <i class="fas fa-chart-line"></i>
+                            Cả hai
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Custom Date Picker Dropdown -->
+            <div class="master-custom-dropdown" id="masterCustomDropdown" style="display: none;">
+                <div class="date-dropdown-content">
+                    <div class="date-dropdown-header">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Chọn khoảng thời gian</span>
+                    </div>
+                    <div class="date-inputs-row">
+                        <div class="date-input-group">
+                            <label>Từ ngày</label>
+                            <input type="date" class="date-input" id="masterStartDate">
+                        </div>
+                        <div class="date-input-group">
+                            <label>Đến ngày</label>
+                            <input type="date" class="date-input" id="masterEndDate">
+                        </div>
+                    </div>
+                    <div class="date-dropdown-actions">
+                        <button class="cancel-btn" onclick="closeMasterCustomDatePicker()">Hủy</button>
+                        <button class="apply-btn" onclick="applyMasterCustomDate()">Áp dụng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-label">Lợi nhuận</div>
+                <div class="stat-value">{{ "{:,}".format(stats.total_profit) }}đ</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-label">Số giờ đã thuê</div>
+                <div class="stat-value">{{ stats.total_hours }} giờ</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-label">Số lần thuê</div>
+                <div class="stat-value">{{ stats.total_bookings }} lần</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-label">Tỷ lệ thuê</div>
+                <div class="stat-value">{{ stats.booking_rate }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <div class="stat-label">Hình thức phổ biến</div>
+                <div class="stat-value">{{ stats.common_type }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-label">Đánh giá trung bình</div>
+                <div class="stat-value">{{ stats.average_rating }}</div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <!-- Unified Chart Container -->
+            <div class="chart-container" id="unifiedChart">
+                <div class="chart-title" id="chartTitle">
+                    <i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>
+                    Doanh thu thuê theo giờ
+                </div>
+                
+                <!-- Single Chart View -->
+                <div class="chart-wrapper" id="singleChartWrapper">
+                    <div class="chart-y-labels" id="chartYLabels">
+                        <div>2000k</div>
+                        <div>1500k</div>
+                        <div>1000k</div>
+                        <div>500k</div>
+                        <div>0k</div>
+                    </div>
+                    <div class="chart-grid">
+                        <div class="grid-line" style="top: 0%;"></div>
+                        <div class="grid-line" style="top: 25%;"></div>
+                        <div class="grid-line" style="top: 50%;"></div>
+                        <div class="grid-line" style="top: 75%;"></div>
+                        <div class="grid-line" style="bottom: 0%;"></div>
+                    </div>
+                    <div class="chart-bars" id="chartBars">
+                        {% for day in stats.chart_data %}
+                        <div class="chart-bar" style="height: {{ (day.revenue / 2000000 * 220) | int }}px;"></div>  
+                        {% endfor %}
+                    </div>
+                    <div class="chart-x-labels" id="chartXLabels">
+                        {% for day in stats.chart_data %}
+                        <div class="chart-label">{{ day.date }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Dual Chart View -->
+                <div class="dual-chart-wrapper" id="dualChartWrapper" style="display: none;">
+                    <div class="dual-chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color hourly-color"></div>
+                            <span>Theo giờ</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color nightly-color"></div>
+                            <span>Theo ngày</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-wrapper">
+                        <div class="chart-y-labels" id="dualChartYLabels">
+                            <div>2000k</div>
+                            <div>1500k</div>
+                            <div>1000k</div>
+                            <div>500k</div>
+                            <div>0k</div>
+                        </div>
+                        <div class="chart-grid">
+                            <div class="grid-line" style="top: 0%;"></div>
+                            <div class="grid-line" style="top: 25%;"></div>
+                            <div class="grid-line" style="top: 50%;"></div>
+                            <div class="grid-line" style="top: 75%;"></div>
+                            <div class="grid-line" style="bottom: 0%;"></div>
+                        </div>
+                        <div class="dual-chart-bars" id="dualChartBars" style="display: flex; align-items: flex-end; height: 220px; gap: 8px; padding-left: 50px; border-bottom: 1px solid #ccc;">
+                            <!-- Dynamic content will be loaded here by JavaScript -->
+                        </div>
+                        <div class="chart-x-labels" id="dualChartXLabels">
+                            <!-- Dynamic labels will be loaded here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="table-title">Các homestay nổi bật</div>
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Phòng</th>
+                        <th>Hình thức</th>
+                        <th>Doanh thu tổng</th>
+                        <th>Số lần thuê</th>
+                        <th>Tỷ lệ thuê</th>
+                        <th>Đánh giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for room in stats.top_rooms[:5] %}
+                    <tr>
+                        <td>{{ room.name }}</td>
+                        <td>{{ room.type }}</td>
+                        <td>{{ "{:,}".format(room.revenue) }}đ</td>
+                        <td>{{ room.bookings }}</td>
+                        <td>{{ room.booking_rate }}</td>
+                        <td>
+                            <span class="rating-stars">
+                                {{ room.rating }}
+                                <i class="fas fa-star"></i>
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #7C7C7C;">Chưa có dữ liệu</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Data cache and state
+let chartDataCache = {};
+let statsDataCache = {};
+let currentPeriod = 'total';
+let currentChart = 'hourly';
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    setupMasterFilters();
+    
+    // Load initial data with default chart type
+    loadAllDataWithChartType('total', currentChart);
+    
+    // Set default dates for date picker
+    const today = new Date();
+    const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    document.getElementById('masterStartDate').value = lastWeek.toISOString().split('T')[0];
+    document.getElementById('masterEndDate').value = today.toISOString().split('T')[0];
+});
+
+// Setup master filter functionality
+function setupMasterFilters() {
+    // Period filter buttons
+    document.querySelectorAll('.master-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const period = this.dataset.period;
+            const dropdown = document.getElementById('masterCustomDropdown');
+            
+            // Handle custom period toggle
+            if (period === 'custom') {
+                const isCurrentlyActive = this.classList.contains('active');
+                const isDropdownVisible = dropdown.style.display === 'block';
+                
+                if (isCurrentlyActive && isDropdownVisible) {
+                    // Close dropdown if clicking active custom button
+                    dropdown.classList.remove('show');
+                    setTimeout(() => dropdown.style.display = 'none', 300);
+                    
+                    // Reset to previous period or default to total
+                    const previousPeriod = currentPeriod !== 'custom' ? currentPeriod : 'total';
+                    document.querySelectorAll('.master-filter-btn').forEach(sibling => {
+                        sibling.classList.remove('active');
+                        if (sibling.dataset.period === previousPeriod) {
+                            sibling.classList.add('active');
+                        }
+                    });
+                    currentPeriod = previousPeriod;
+                    return;
+                }
+                
+                // Show dropdown
+                dropdown.style.display = 'block';
+                setTimeout(() => dropdown.classList.add('show'), 10);
+            } else {
+                // Hide dropdown for other periods
+                dropdown.classList.remove('show');
+                setTimeout(() => dropdown.style.display = 'none', 300);
+                loadAllData(period);
+            }
+            
+            // Update active state
+            document.querySelectorAll('.master-filter-btn').forEach(sibling => {
+                sibling.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            currentPeriod = period;
+        });
+    });
+    
+    // Chart type toggle buttons
+    document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active state
+            document.querySelectorAll('.chart-type-btn').forEach(sibling => {
+                sibling.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            const chartType = this.dataset.chart;
+            currentChart = chartType;
+            
+            // Update chart title and show/hide appropriate chart wrapper
+            const chartTitle = document.getElementById('chartTitle');
+            const singleWrapper = document.getElementById('singleChartWrapper');
+            const dualWrapper = document.getElementById('dualChartWrapper');
+            
+            if (chartType === 'hourly') {
+                chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo giờ';
+                singleWrapper.style.display = 'block';
+                dualWrapper.style.display = 'none';
+            } else if (chartType === 'nightly') {
+                chartTitle.innerHTML = '<i class="fas fa-chart-bar" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo ngày';
+                singleWrapper.style.display = 'block';
+                dualWrapper.style.display = 'none';
+            } else if (chartType === 'both') {
+                chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>So sánh doanh thu theo giờ và theo ngày';
+                singleWrapper.style.display = 'none';
+                dualWrapper.style.display = 'block';
+            }
+            
+            // Reload both chart and stats data with new chart type
+            loadAllDataWithChartType(currentPeriod, chartType);
+        });
+    });
+}
+
+// Setup filter buttons
+function setupFilterButtons() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active state
+            this.parentNode.querySelectorAll('.filter-btn').forEach(sibling => {
+                sibling.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Get period from data attribute
+            const period = this.getAttribute('data-period');
+            
+            // Show/hide date picker for custom option
+            const customDropdown = document.getElementById('customDateDropdown');
+            
+            if (period === 'custom') {
+                customDropdown.style.display = 'block';
+                // Add smooth animation
+                setTimeout(() => {
+                    customDropdown.style.opacity = '1';
+                    customDropdown.style.transform = 'translateY(0)';
+                }, 10);
+            } else {
+                customDropdown.style.display = 'none';
+                // Load new data if different period
+                if (period !== currentPeriod) {
+                    currentPeriod = period;
+                    loadChartData(period);
+                }
+            }
+        });
+    });
+}
+
+// Load all data (stats + chart)
+function loadAllData(period) {
+    // Show loading state
+    showLoadingState();
+    
+    // Use current chart type for loading
+    const cacheKey = `${period}_${currentChart}`;
+    
+    // Check cache first
+    if (statsDataCache[cacheKey] && chartDataCache[cacheKey]) {
+        updateAllUI(statsDataCache[cacheKey], chartDataCache[cacheKey]);
+        return;
+    }
+    
+    // Fetch stats data with chart type
+    Promise.all([
+        fetch(`/owner/api/stats-data/${period}/${currentChart}`).then(r => r.json()),
+        fetch(`/owner/api/chart-data/${period}/${currentChart}`).then(r => r.json())
+    ]).then(([statsData, chartData]) => {
+        statsDataCache[cacheKey] = statsData;
+        chartDataCache[cacheKey] = chartData;
+        updateAllUI(statsData, chartData);
+    }).catch(error => {
+        console.error('Error loading data:', error);
+        showNotification('Có lỗi xảy ra khi tải dữ liệu', 'error');
+        hideLoadingState();
+    });
+}
+
+// Load all data with specific chart type
+function loadAllDataWithChartType(period, chartType) {
+    // Show loading state
+    showLoadingState();
+    
+    const cacheKey = `${period}_${chartType}`;
+    
+    // Check cache first
+    if (statsDataCache[cacheKey] && chartDataCache[cacheKey]) {
+        updateAllUI(statsDataCache[cacheKey], chartDataCache[cacheKey]);
+        return;
+    }
+    
+    // Fetch stats data with chart type
+    Promise.all([
+        fetch(`/owner/api/stats-data/${period}/${chartType}`).then(r => r.json()),
+        fetch(`/owner/api/chart-data/${period}/${chartType}`).then(r => r.json())
+    ]).then(([statsData, chartData]) => {
+        statsDataCache[cacheKey] = statsData;
+        chartDataCache[cacheKey] = chartData;
+        updateAllUI(statsData, chartData);
+    }).catch(error => {
+        console.error('Error loading data:', error);
+        showNotification('Có lỗi xảy ra khi tải dữ liệu', 'error');
+        hideLoadingState();
+    });
+}
+
+// Load only chart data (not used anymore, kept for compatibility)
+function loadChartData(period) {
+    // Just redirect to loadAllDataWithChartType to ensure stats also update
+    loadAllDataWithChartType(period, currentChart);
+}
+
+// Update all UI components
+function updateAllUI(statsData, chartData) {
+    // Update statistics cards
+    updateStatsCards(statsData);
+    
+    // Update chart
+    updateChart(chartData);
+    
+    // Update table
+    updateTable(statsData.top_rooms);
+    
+    hideLoadingState();
+}
+
+// Update chart
+function updateChart(data) {
+    if (currentChart === 'both') {
+        updateDualChart(data);
+    } else {
+        updateSingleChart(currentChart, data[currentChart]);
+    }
+    document.getElementById('unifiedChart').style.opacity = '1';
+}
+
+// Update statistics cards
+function updateStatsCards(data) {
+    const cards = document.querySelectorAll('.stat-card');
+    const values = [
+        data.total_profit || '0đ',
+        data.total_hours || '0 giờ', 
+        data.total_bookings || '0 lần',
+        data.booking_rate || '0%',
+        data.common_type || 'Chưa có',
+        data.average_rating || '0/5'
+    ];
+    
+    cards.forEach((card, index) => {
+        const valueElement = card.querySelector('.stat-value');
+        if (valueElement && values[index] !== undefined) {
+            valueElement.textContent = values[index];
+        }
+    });
+}
+
+// Update table with top rooms
+function updateTable(topRooms) {
+    const tbody = document.querySelector('.stats-table tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (!topRooms || topRooms.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #7C7C7C;">Chưa có dữ liệu</td></tr>';
+        return;
+    }
+    
+    topRooms.slice(0, 5).forEach(room => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${room.name}</td>
+            <td>${room.type}</td>
+            <td>${room.revenue.toLocaleString()}đ</td>
+            <td>${room.bookings}</td>
+            <td>${room.booking_rate}</td>
+            <td>
+                <span class="rating-stars">
+                    ${room.rating}
+                    <i class="fas fa-star"></i>
+                </span>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function updateSingleChart(type, chartData) {
+    const barsContainer = document.getElementById('chartBars');
+    const labelsContainer = document.getElementById('chartXLabels');
+    
+    // Clear existing bars and labels
+    barsContainer.innerHTML = '';
+    labelsContainer.innerHTML = '';
+    
+    if (!chartData || chartData.length === 0) {
+        barsContainer.innerHTML = '<div style="text-align: center; color: #7C7C7C; padding: 50px; font-size: 14px;">📊 Không có dữ liệu</div>';
+        return;
+    }
+    
+    // Find max revenue for scaling (include all data, even zeros)
+    const maxRevenue = Math.max(...chartData.map(d => d.revenue), 1); // Minimum 1 to avoid division by 0
+    const chartHeight = 220; // Height of chart area
+    
+    // Create bars and labels for all data (including zeros)
+    chartData.forEach(item => {
+        // Create bar
+        const bar = document.createElement('div');
+        bar.className = 'chart-bar';
+        const barHeight = maxRevenue > 0 ? (item.revenue / maxRevenue * chartHeight) : 0;
+        bar.style.height = `${Math.max(barHeight, 2)}px`; // Minimum 2px height to show bar
+        bar.title = `${item.date}: ${formatCurrency(item.revenue)}`;
+        
+        // Add hover effect
+        bar.addEventListener('mouseenter', function() {
+            this.style.transform = 'scaleY(1.05)';
+            this.style.filter = 'brightness(1.1)';
+        });
+        bar.addEventListener('mouseleave', function() {
+            this.style.transform = 'scaleY(1)';
+            this.style.filter = 'brightness(1)';
+        });
+        
+        barsContainer.appendChild(bar);
+        
+        // Create label
+        const label = document.createElement('div');
+        label.className = 'chart-label';
+        label.textContent = item.date;
+        labelsContainer.appendChild(label);
+    });
+    
+    // Update Y-axis labels based on max revenue
+    const yLabels = document.querySelectorAll('#chartYLabels div');
+    const maxLabel = Math.ceil(maxRevenue / 1000000) * 1000000; // Round to nearest million
+    
+    yLabels.forEach((label, index) => {
+        const value = maxLabel * (1 - index / (yLabels.length - 1));
+        label.textContent = formatYAxisLabel(value);
+    });
+}
+
+// Update dual chart (both hourly and nightly)
+function updateDualChart(data) {
+    const barsContainer = document.getElementById('dualChartBars');
+    const labelsContainer = document.getElementById('dualChartXLabels');
+    
+    // Clear existing bars and labels
+    barsContainer.innerHTML = '';
+    labelsContainer.innerHTML = '';
+    
+    const hourlyData = data.hourly || [];
+    const nightlyData = data.nightly || [];
+    
+    if (hourlyData.length === 0 && nightlyData.length === 0) {
+        barsContainer.innerHTML = '<div style="text-align: center; color: #7C7C7C; padding: 50px; font-size: 14px;">📊 Không có dữ liệu</div>';
+        return;
+    }
+    
+    // Find max combined revenue for scaling (stacked bars)
+    let maxRevenue = 0;
+    const maxLength = Math.max(hourlyData.length, nightlyData.length);
+    for (let i = 0; i < maxLength; i++) {
+        const hourlyItem = hourlyData[i] || { revenue: 0 };
+        const nightlyItem = nightlyData[i] || { revenue: 0 };
+        const combinedRevenue = hourlyItem.revenue + nightlyItem.revenue;
+        maxRevenue = Math.max(maxRevenue, combinedRevenue);
+    }
+    const chartHeight = 220;
+    
+    // Ensure we have a minimum scale
+    if (maxRevenue === 0) {
+        maxRevenue = 1000000; // 1M minimum scale
+    }
+    
+    // Create bars for all days (including zeros) to maintain consistent timeline
+    for (let i = 0; i < maxLength; i++) {
+        const hourlyItem = hourlyData[i] || { date: '', revenue: 0 };
+        const nightlyItem = nightlyData[i] || { date: '', revenue: 0 };
+        
+        // Use the same date for both
+        const date = hourlyItem.date || nightlyItem.date || '';
+        
+        // Calculate revenue values
+        const hourlyRevenue = hourlyItem.revenue || 0;
+        const nightlyRevenue = nightlyItem.revenue || 0;
+        const totalRevenue = hourlyRevenue + nightlyRevenue;
+        
+        // Create bar group
+        const barGroup = document.createElement('div');
+        barGroup.className = 'dual-bar-group';
+        barGroup.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            width: 30px;
+            height: 100%;
+        `;
+        
+        // Calculate individual heights based on max revenue (allow 0 height)
+        const nightlyHeight = (nightlyRevenue / maxRevenue * chartHeight);
+        const hourlyHeight = (hourlyRevenue / maxRevenue * chartHeight);
+        
+        // Create stacked bar - SIMPLE approach
+        const stackedBar = document.createElement('div');
+        stackedBar.className = 'stacked-bar';
+        stackedBar.style.cssText = `
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+        `;
+        
+        // IMPORTANT: Add hourly bar FIRST (it will be on top due to flex-direction: column)
+        if (hourlyRevenue > 0) {
+            const hourlyBar = document.createElement('div');
+            hourlyBar.className = 'hourly-bar';
+            hourlyBar.style.cssText = `
+                height: ${Math.max(hourlyHeight, 2)}px;
+                width: 100%;
+                background-color: #facc15;
+                border-radius: 2px 2px 0 0;
+            `;
+            hourlyBar.title = `${date} - Theo giờ: ${formatCurrency(hourlyRevenue)}`;
+            stackedBar.appendChild(hourlyBar);
+        }
+        
+        // Add nightly bar SECOND (it will be at bottom due to flex-direction: column)
+        if (nightlyRevenue > 0) {
+            const nightlyBar = document.createElement('div');
+            nightlyBar.className = 'nightly-bar';
+            nightlyBar.style.cssText = `
+                height: ${Math.max(nightlyHeight, 2)}px;
+                width: 100%;
+                background-color: #4ade80;
+                border-radius: 0 0 2px 2px;
+            `;
+            nightlyBar.title = `${date} - Theo ngày: ${formatCurrency(nightlyRevenue)}`;
+            stackedBar.appendChild(nightlyBar);
+        }
+        
+        // Handle empty case - add minimal bar to show on baseline
+        if (totalRevenue === 0) {
+            const emptyBar = document.createElement('div');
+            emptyBar.style.cssText = `
+                height: 1px;
+                width: 100%;
+                background-color: #e5e7eb;
+            `;
+            stackedBar.appendChild(emptyBar);
+            stackedBar.title = `${date}\nKhông có doanh thu`;
+        } else {
+            stackedBar.title = `${date}\nTổng: ${formatCurrency(totalRevenue)}\nTheo ngày: ${formatCurrency(nightlyRevenue)}\nTheo giờ: ${formatCurrency(hourlyRevenue)}`;
+        }
+        
+        barGroup.appendChild(stackedBar);
+        
+        barsContainer.appendChild(barGroup);
+        
+        // Create label
+        const label = document.createElement('div');
+        label.className = 'chart-label';
+        label.textContent = date;
+        labelsContainer.appendChild(label);
+    }
+    
+    // Update Y-axis labels based on max combined revenue (stacked)
+    const yLabels = document.querySelectorAll('#dualChartYLabels div');
+    const maxLabel = Math.ceil(maxRevenue / 1000000) * 1000000;
+    
+    yLabels.forEach((label, index) => {
+        const value = maxLabel * (1 - index / (yLabels.length - 1));
+        label.textContent = formatYAxisLabel(value);
+    });
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0
+    }).format(amount);
+}
+
+function formatYAxisLabel(value) {
+    if (value >= 1000000) {
+        return `${(value / 1000000).toFixed(0)}M`;
+    } else if (value >= 1000) {
+        return `${(value / 1000).toFixed(0)}k`;
+    } else if (value === 0) {
+        return '0';
+    } else {
+        return value.toString();
+    }
+}
+
+// Utility functions
+function showLoadingState() {
+    document.querySelectorAll('.stat-card, .chart-container, .table-section').forEach(el => {
+        el.style.opacity = '0.6';
+    });
+}
+
+function hideLoadingState() {
+    document.querySelectorAll('.stat-card, .chart-container, .table-section').forEach(el => {
+        el.style.opacity = '1';
+    });
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 9999;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        ${type === 'error' ? 'background: #e74c3c;' : 
+          type === 'warning' ? 'background: #f39c12;' : 
+          'background: #27ae60;'}
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Master custom date picker functions
+function closeMasterCustomDatePicker() {
+    const dropdown = document.getElementById('masterCustomDropdown');
+    dropdown.classList.remove('show');
+    
+    setTimeout(() => {
+        dropdown.style.display = 'none';
+    }, 300);
+    
+    // Reset to total filter
+    document.querySelectorAll('.master-filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.master-filter-btn[data-period="total"]').classList.add('active');
+    currentPeriod = 'total';
+}
+
+function applyMasterCustomDate() {
+    const startDate = document.getElementById('masterStartDate').value;
+    const endDate = document.getElementById('masterEndDate').value;
+    
+    if (!startDate || !endDate) {
+        showNotification('Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc', 'error');
+        return;
+    }
+    
+    if (new Date(startDate) > new Date(endDate)) {
+        showNotification('Ngày bắt đầu không thể lớn hơn ngày kết thúc', 'error');
+        return;
+    }
+    
+    // Close dropdown
+    closeMasterCustomDatePicker();
+    
+    // Load data with custom range
+    const customPeriod = `custom_${startDate}_${endDate}`;
+    currentPeriod = customPeriod;
+    
+    // Show loading
+    showLoadingState();
+    
+    // Fetch both stats and chart data with custom date range and chart type
+    Promise.all([
+        fetch(`/owner/api/stats-data/custom/${currentChart}?start=${startDate}&end=${endDate}`).then(r => r.json()),
+        fetch(`/owner/api/chart-data/custom?start=${startDate}&end=${endDate}`).then(r => r.json())
+    ]).then(([statsData, chartData]) => {
+        const cacheKey = `${customPeriod}_${currentChart}`;
+        statsDataCache[cacheKey] = statsData;
+        chartDataCache[cacheKey] = chartData;
+        updateAllUI(statsData, chartData);
+        showNotification('Đã cập nhật dữ liệu theo khoảng thời gian đã chọn', 'info');
+    }).catch(error => {
+        console.error('Error loading custom date data:', error);
+        showNotification('Có lỗi xảy ra khi tải dữ liệu', 'error');
+        hideLoadingState();
+    });
+}
+</script>
+{% endblock %}

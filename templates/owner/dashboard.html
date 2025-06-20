@@ -5,10 +5,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
     body {
-        background: #f8fdf4;
+        background: #FDFBFA;
         min-height: 100vh;
         margin: 0;
         padding: 0;
+        font-family: 'Fz Poppins', sans-serif;
     }
 
     /* Sidebar */
@@ -30,7 +31,8 @@
         top: 160px;
         bottom: 0;
         width: 2px;
-        background: #e0e0e0;
+        background: #7C7C7C;
+        opacity: 0.2;
         z-index: 1;
     }
 
@@ -50,22 +52,24 @@
         align-items: center;
         gap: 0.75rem;
         padding: 0.875rem 1rem;
-        color: #333;
+        color: #7C7C7C;
         text-decoration: none;
         border-radius: 8px;
         transition: all 0.2s;
         font-weight: 500;
+        font-size: 12px;
     }
 
     .sidebar-menu-link:hover {
-        color: #9ed649;
+        color: #101917;
         transform: translateX(5px);
         transition: all 0.3s ease;
     }
 
     .sidebar-menu-link.active {
-        color: #9ed649;
+        color: #101917;
         font-weight: 600;
+        background: #E0EC9B;
     }
 
     .sidebar-menu-link {
@@ -73,7 +77,7 @@
     }
 
     .sidebar-menu-link i {
-        font-size: 1.25rem;
+        font-size: 1rem;
     }
 
     /* Main Content */
@@ -542,19 +546,25 @@
 <aside class="admin-sidebar">
     <ul class="sidebar-menu">
         <li class="sidebar-menu-item">
-            <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-stats" data-bs-toggle="modal" data-bs-target="#developmentModal">
-                <i class="fas fa-chart-line"></i>
+            <a href="{{ url_for('owner.profile') }}" class="sidebar-menu-link">
+                <i class="fas fa-user"></i>
+                <span>Tài khoản</span>
+            </a>
+        </li>
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.statistics') }}" class="sidebar-menu-link">
+                <i class="fas fa-chart-bar"></i>
                 <span>Thống kê</span>
             </a>
         </li>
         <li class="sidebar-menu-item">
-            <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-calendar" data-bs-toggle="modal" data-bs-target="#developmentModal">
-                <i class="fas fa-calendar-alt"></i>
+            <a href="{{ url_for('owner.calendar') }}" class="sidebar-menu-link">
+                <i class="fas fa-calendar"></i>
                 <span>Lịch</span>
             </a>
         </li>
         <li class="sidebar-menu-item">
-            <a href="javascript:void(0)" class="sidebar-menu-link active" id="menu-rooms">
+            <a href="{{ url_for('owner.dashboard') }}" class="sidebar-menu-link active">
                 <i class="fas fa-home"></i>
                 <span>Tất cả phòng</span>
             </a>

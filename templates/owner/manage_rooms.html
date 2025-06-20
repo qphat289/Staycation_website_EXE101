@@ -1,196 +1,247 @@
-<!-- templates/owner/manage_rooms.html -->
 {% extends "base.html" %}
+
+{% block title %}Quản lý phòng{% endblock %}
+
 {% block content %}
-<div class="card shadow-sm border-0 mb-4">
-  <div class="card-header py-3" style="background-color: #F7D9AF; color: #333;">
-    <h2 class="mb-0 fw-bold"><i class="bi bi-house-door me-2"></i><span data-translate="manage-rooms-for-homestay">Manage Rooms for Homestay</span>: <span style="color: #9A610E;">{{ homestay.title }}</span></h2>
-  </div>
-  <div class="card-body p-4" style="background-color: #FFFDFA;">
-    <!-- Thay đổi bộ lọc tầng sang dạng dropdown với thiết kế đẹp hơn -->
-    <div class="filter-container mb-4">
-      <div class="dropdown">
-        <button class="btn dropdown-toggle fw-semibold shadow-sm" type="button" id="floorFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #F1B55F; color: #333; border: none;">
-          <i class="bi bi-layers me-2"></i>
-          {% if request.args.get('floor') %}
-            <span data-translate="floor">Tầng</span> {{ request.args.get('floor') }}
-          {% else %}
-            <span data-translate="all-floors">Tất cả các tầng</span>
-          {% endif %}
-        </button>
-        <ul class="dropdown-menu shadow-sm" aria-labelledby="floorFilterDropdown">
-          <li>
-            <a class="dropdown-item {% if not request.args.get('floor') %}active{% endif %}" 
-               href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}">
-              <i class="bi bi-grid-3x3 me-2"></i><span data-translate="all-floors">Tất cả các tầng</span>
-            </a>
-          </li>
-          {% for floor_num in all_floors %}
-            <li>
-              <a class="dropdown-item {% if request.args.get('floor')|int == floor_num %}active{% endif %}" 
-                 href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id, floor=floor_num) }}">
-                <i class="bi bi-layers-half me-2"></i><span data-translate="floor">Tầng</span> {{ floor_num }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="page-header">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('owner.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Quản lý phòng</li>
+                    </ol>
+                </nav>
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="page-title">
+                        <i class="fas fa-home me-2"></i>
+                        Quản lý phòng - {{ homestay.title }}
+                    </h2>
+                    <div class="page-actions">
+                        <a href="{{ url_for('owner.add_room') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>
+                            Thêm phòng mới
+                        </a>
+                    </div>
+                </div>
+            </div>
 
-    {% if rooms_by_floor %}
-      {% for floor_num, rooms_on_floor in rooms_by_floor.items() %}
-        <div class="floor-section mb-4">
-          <div class="d-flex align-items-center mb-3">
-            <h3 class="mb-0 fw-bold"><i class="bi bi-building me-2"></i><span data-translate="floor">Tầng</span> {{ floor_num }} <span class="badge ms-2" style="background-color: #EA9415; color: white;">{{ rooms_on_floor|length }} <span data-translate="rooms">phòng</span></span></h3>
-          </div>
-          <div class="floor-container">
-            {% for room in rooms_on_floor %}
-              <div class="room-card {% if room.is_booked %}booked{% else %}available{% endif %} shadow-sm">
-                <a href="{{ url_for('owner.owner_room_detail', room_id=room.id) }}" class="text-decoration-none">
-                  <div class="room-number">{{ room.room_number }}</div>
-                  <div class="room-status">
-                    {% if room.is_booked %}
-                      <i class="bi bi-calendar-check"></i> <span data-translate="booked">Đã đặt</span>
-                    {% else %}
-                      <i class="bi bi-calendar-plus"></i> <span data-translate="available">Trống</span>
-                    {% endif %}
-                  </div>
-                </a>
-              </div>
-            {% endfor %}
-          </div>
+            <!-- Rooms by Floor -->
+            {% if rooms_by_floor %}
+                <div class="rooms-by-floor">
+                    {% for floor, floor_rooms in rooms_by_floor.items() %}
+                    <div class="floor-section mb-4">
+                        <div class="floor-header">
+                            <h4 class="floor-title">
+                                <i class="fas fa-building me-2"></i>
+                                Tầng {{ floor }}
+                                <span class="badge bg-secondary ms-2">{{ floor_rooms|length }} phòng</span>
+                            </h4>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Hình ảnh</th>
+                                        <th>Tên phòng</th>
+                                        <th>Loại phòng</th>
+                                        <th>Giá</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for room in floor_rooms %}
+                                    <tr>
+                                        <td>
+                                            <div class="room-image-thumb">
+                                                {% set featured_image = room.images|selectattr('is_featured')|first %}
+                                                {% if featured_image %}
+                                                    <img src="{{ url_for('static', filename=featured_image.image_path) }}" 
+                                                         alt="{{ room.title }}" 
+                                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                                {% elif room.images and room.images|length > 0 %}
+                                                    <img src="{{ url_for('static', filename=room.images[0].image_path) }}" 
+                                                         alt="{{ room.title }}" 
+                                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                                {% else %}
+                                                    <div class="no-image-placeholder" style="width: 60px; height: 60px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="fas fa-image text-muted"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('owner.room_detail', room_id=room.id) }}" class="text-decoration-none">
+                                                <strong>{{ room.title }}</strong>
+                                            </a>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                {{ room.address }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                {{ room.room_type | property_type_vn }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if room.price_per_hour %}
+                                                <strong>{{ "{:,.0f}".format(room.display_price) }}đ</strong>
+                                                <small class="text-muted d-block">/giờ</small>
+                                            {% elif room.price_per_night %}
+                                                <strong>{{ "{:,.0f}".format(room.display_price_per_night) }}đ</strong>
+                                                <small class="text-muted d-block">/đêm</small>
+                                            {% else %}
+                                                <span class="text-muted">Chưa có giá</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if room.is_active %}
+                                                <span class="badge bg-success">Hoạt động</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Đã khóa</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('owner.room_detail', room_id=room.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary" 
+                                                   title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('owner.edit_room', room_id=room.id) }}" 
+                                                   class="btn btn-sm btn-outline-warning" 
+                                                   title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ url_for('owner.toggle_room_status', room_id=room.id) }}" 
+                                                   class="btn btn-sm btn-outline-{{ 'secondary' if room.is_active else 'success' }}" 
+                                                   title="{{ 'Khóa phòng' if room.is_active else 'Mở khóa phòng' }}"
+                                                   onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái phòng?')">
+                                                    <i class="fas fa-{{ 'lock' if room.is_active else 'unlock' }}"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-danger" 
+                                                        title="Xóa phòng"
+                                                        onclick="openDeleteModal({{ room.id }}, '{{ room.title }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state text-center py-5">
+                    <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                    <h3>Chưa có phòng nào</h3>
+                    <p class="text-muted">Bắt đầu bằng cách thêm phòng đầu tiên của bạn</p>
+                    <a href="{{ url_for('owner.add_room') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>
+                        Thêm phòng mới
+                    </a>
+                </div>
+            {% endif %}
         </div>
-      {% endfor %}
-    {% else %}
-      <div class="alert d-flex align-items-center" role="alert" style="background-color: #FFDBA8; color: #94700E; border: none;">
-        <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
-        <div data-translate="no-rooms-found">Không tìm thấy phòng nào. Hãy thêm phòng mới cho homestay của bạn!</div>
-      </div>
-    {% endif %}
-
-    <div class="d-flex gap-3 mt-4">
-      <a href="{{ url_for('owner.add_room', homestay_id=homestay.id) }}" class="btn shadow-sm" style="background-color: #9A970E; color: white;">
-        <i class="bi bi-plus-circle-fill me-2"></i> <span data-translate="add-new-room">Add New Room</span>
-      </a>
-      <a href="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" class="btn shadow-sm" style="background-color: #EA9415; color: white;">
-        <i class="bi bi-calendar-plus-fill me-2"></i> <span data-translate="book-room-for-guest">Đặt phòng cho khách</span>
-      </a>
     </div>
-  </div>
 </div>
 
-<style>
-  .floor-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-  }
-  
-  .room-card {
-    border-radius: 12px;
-    height: 120px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-weight: bold;
-    cursor: pointer;
-    color: black;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-  }
-  
-  .room-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
-  }
-  
-  .room-card.available {
-    background: linear-gradient(135deg, #e2b77b, #d29d5c); /* Light beige to darker beige */
-    color: black;
-  }
-  
-  .room-card.booked {
-    background: linear-gradient(135deg, #ae8a56, #8e6d3e); /* Darker beige to brown */
-    color: black;
-  }
-  
-  .room-card:hover {
-    border-color: #F7D9AF;
-  }
-  
-  .room-number {
-    font-size: 24px;
-    margin-bottom: 8px;
-    font-weight: 700;
-  }
-  
-  .room-status {
-    font-size: 14px;
-    opacity: 0.9;
-  }
-  
-  .floor-section {
-    background-color: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
-  
-  .dropdown-menu {
-    min-width: 200px;
-    border: none;
-    border-radius: 10px;
-  }
-  
-  .dropdown-item {
-    padding: 10px 15px;
-    font-weight: 500;
-    border-radius: 6px;
-    margin: 3px 5px;
-  }
-  
-  .dropdown-item:hover {
-    background-color: #FFDBA8;
-    color: #333;
-  }
-  
-  .dropdown-item.active {
-    background-color: #F1B55F;
-    color: #333;
-  }
-  
-  /* Responsive adjustment */
-  @media (max-width: 768px) {
-    .floor-container {
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    }
-    
-    .room-card {
-      height: 110px;
-    }
-    
-    .room-number {
-      font-size: 20px;
-    }
-    
-    .room-status {
-      font-size: 12px;
-    }
-  }
+<!-- Delete Room Modal -->
+<div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteRoomModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Xác nhận xóa phòng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deleteRoomForm" method="POST">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning me-2"></i>
+                        <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
+                    </div>
+                    
+                    <p>Bạn có chắc chắn muốn xóa phòng <strong id="roomName"></strong>?</p>
+                    
+                    <div class="mb-3">
+                        <label for="deleteReason" class="form-label">Lý do xóa <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="deleteReason" name="delete_reason" rows="3" 
+                                  placeholder="Vui lòng nhập lý do xóa phòng này..." required></textarea>
+                        <div class="form-text">Tối thiểu 10 ký tự</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>
+                        Xóa phòng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-  .room-card a {
-    color: black;
-    text-decoration: none;
-  }
+<script>
+// Delete Room Modal Functions
+function openDeleteModal(roomId, roomTitle) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteRoomModal'));
+    const form = document.getElementById('deleteRoomForm');
+    const roomNameEl = document.getElementById('roomName');
+    const deleteReasonEl = document.getElementById('deleteReason');
+    
+    // Set room name
+    roomNameEl.textContent = roomTitle;
+    
+    // Set form action
+    form.action = `/owner/delete-room/${roomId}`;
+    
+    // Clear previous reason
+    deleteReasonEl.value = '';
+    
+    // Show modal
+    modal.show();
+    
+    // Focus on textarea after modal is shown
+    document.getElementById('deleteRoomModal').addEventListener('shown.bs.modal', function () {
+        deleteReasonEl.focus();
+    }, { once: true });
+}
 
-  .room-card .room-number, 
-  .room-card .room-status,
-  .room-card .room-status span {
-    color: black;
-  }
-</style>
-{% endblock %}
+// Form validation
+document.getElementById('deleteRoomForm').addEventListener('submit', function(e) {
+    const deleteReason = document.getElementById('deleteReason').value.trim();
+    
+    if (deleteReason.length < 10) {
+        e.preventDefault();
+        alert('Lý do xóa phải có ít nhất 10 ký tự.');
+        document.getElementById('deleteReason').focus();
+        return false;
+    }
+    
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xóa...';
+    confirmBtn.disabled = true;
+    
+    // Allow form to submit
+    return true;
+});
+</script>
+
+{% endblock %} 

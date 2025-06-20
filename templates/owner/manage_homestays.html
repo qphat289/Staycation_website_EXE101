@@ -27,7 +27,7 @@
           <div class="btn-group" role="group">
             <a href="{{ url_for('owner.edit_homestay', id=homestay.id) }}"
                class="btn btn-warning btn-sm">Edit</a>
-            <a href="{{ url_for('owner.manage_rooms', homestay_id=homestay.id) }}" 
+            <a href="{{ url_for('owner.dashboard') }}" 
                class="btn btn-primary btn-sm">Manage Rooms</a>
             <a href="{{ url_for('owner.book_room', homestay_id=homestay.id) }}" 
                class="btn btn-success btn-sm">Đặt phòng</a>

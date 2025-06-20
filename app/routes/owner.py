@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.models.models import db, Room, Booking, RoomImage, Renter, Admin, Owner, Province, District, Ward, Rule, Amenity, RoomDeletionLog
+from app.models.models import db, Room, Booking, RoomImage, Renter, Admin, Owner, Province, District, Ward, Rule, Amenity, RoomDeletionLog, Review
 import os
 import shutil
 from datetime import datetime, timedelta
@@ -12,6 +12,7 @@ import io
 import os
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
+from sqlalchemy import func
 
 
 owner_bp = Blueprint('owner', __name__, url_prefix='/owner')
@@ -125,15 +126,17 @@ def dashboard():
 
 
 @owner_bp.route('/manage-rooms')
+@owner_bp.route('/manage-rooms/<int:homestay_id>')
 @owner_required
-def manage_rooms():
-    rooms = Room.query.filter_by(owner_id=current_user.id).all()
-    return render_template('owner/manage_rooms.html', rooms=rooms)
+def manage_rooms(homestay_id=None):
+    # Redirect to dashboard instead of showing manage_rooms page
+    return redirect(url_for('owner.dashboard'))
 
 
 @owner_bp.route('/add-room', methods=['GET', 'POST'])
+@owner_bp.route('/add-room/<int:homestay_id>', methods=['GET', 'POST'])
 @login_required
-def add_room():
+def add_room(homestay_id=None):
     if request.method == 'POST':
         try:
             # Lưu dữ liệu vào session để preview
@@ -688,6 +691,64 @@ def delete_room(room_id):
     return redirect(url_for('owner.dashboard'))
 
 
+@owner_bp.route('/calendar')
+@owner_required
+def calendar():
+    # Get all rooms owned by current user
+    rooms = Room.query.filter_by(owner_id=current_user.id).all()
+    
+    # Get all bookings for these rooms
+    all_bookings = []
+    for room in rooms:
+        all_bookings.extend(room.bookings)
+    
+    # Sort bookings by start_time
+    all_bookings.sort(key=lambda x: x.start_time)
+    
+    # Convert bookings to JSON-serializable format
+    bookings_data = []
+    for booking in all_bookings:
+        booking_dict = {
+            'id': booking.id,
+            'start_time': booking.start_time.isoformat() if booking.start_time else None,
+            'end_time': booking.end_time.isoformat() if booking.end_time else None,
+            'created_at': booking.created_at.isoformat() if booking.created_at else None,
+            'booking_type': booking.booking_type,
+            'total_hours': booking.total_hours,
+            'total_price': float(booking.total_price) if booking.total_price else 0,
+            'status': booking.status,
+            'room': {
+                'id': booking.room.id if booking.room else None,
+                'title': booking.room.title if booking.room else None
+            } if booking.room else None,
+            'renter': {
+                'id': booking.renter.id if booking.renter else None,
+                'username': booking.renter.username if booking.renter else None,
+                'full_name': booking.renter.full_name if booking.renter else None,
+                'email': booking.renter.email if booking.renter else None,
+                'phone': booking.renter.phone if booking.renter else None
+            } if booking.renter else None
+        }
+        bookings_data.append(booking_dict)
+    
+    # Convert rooms to JSON-serializable format
+    rooms_data = []
+    for room in rooms:
+        room_dict = {
+            'id': room.id,
+            'title': room.title,
+            'room_type': room.room_type,
+            'city': room.city,
+            'district': room.district,
+            'price_per_hour': float(room.price_per_hour) if room.price_per_hour else 0,
+            'max_guests': room.max_guests
+        }
+        rooms_data.append(room_dict)
+    
+    return render_template('owner/calendar.html', 
+                          bookings=bookings_data,
+                          rooms=rooms_data)
+
 @owner_bp.route('/view-bookings')
 @owner_bp.route('/view-bookings/<status>')
 @owner_required
@@ -708,7 +769,8 @@ def view_bookings(status=None):
     all_bookings.sort(key=lambda x: x.created_at, reverse=True)
     
     return render_template('owner/view_bookings.html', 
-                          bookings=all_bookings, 
+                          bookings=all_bookings,
+                          filtered_bookings=all_bookings,
                           current_status=status)
 
 
@@ -859,8 +921,8 @@ def room_detail(room_id):
 def confirm_booking(id):
     booking = Booking.query.get_or_404(id)
     
-    # Make sure the owner owns this booking's homestay
-    if booking.homestay.owner_id != current_user.id:
+    # Make sure the owner owns this booking's room
+    if booking.room.owner_id != current_user.id:
         flash('You do not have permission to manage this booking.', 'danger')
         return redirect(url_for('owner.view_bookings'))
     
@@ -896,8 +958,8 @@ def confirm_booking(id):
 def reject_booking(id):
     booking = Booking.query.get_or_404(id)
     
-    # Ensure this booking belongs to one of the current owner's homestays
-    if booking.homestay.owner_id != current_user.id:
+    # Ensure this booking belongs to one of the current owner's rooms
+    if booking.room.owner_id != current_user.id:
         flash('Bạn không có quyền từ chối đặt phòng này.', 'danger')
         return redirect(url_for('owner.dashboard'))
 
@@ -1081,9 +1143,18 @@ def profile():
     return render_template('owner/profile.html')
 
 @owner_bp.route('/book-room/<int:room_id>', methods=['GET', 'POST'])
+@owner_bp.route('/book-room', methods=['GET', 'POST'])
 @owner_required
-def book_room(room_id):
-    room = Room.query.get_or_404(room_id)
+def book_room(room_id=None):
+    # If homestay_id is provided in URL params, use it (though we don't really need it since homestay = owner)
+    homestay_id = request.args.get('homestay_id', type=int)
+    
+    if room_id:
+        # Original functionality - book a specific room
+        room = Room.query.get_or_404(room_id)
+    else:
+        # If no room_id, redirect to manage rooms to select a room
+        return redirect(url_for('owner.dashboard'))
     
     if request.method == 'POST':
         start_date = request.form.get('start_date')
@@ -1092,24 +1163,24 @@ def book_room(room_id):
         
         if not start_date or not start_time or not duration_str:
             flash("You must select date, time and duration.", "warning")
-            return redirect(url_for('renter.book_room', room_id=room.id))
+            return redirect(url_for('owner.book_room', room_id=room.id))
         
         try:
             duration = int(duration_str)
         except ValueError:
             flash("Invalid duration value.", "danger")
-            return redirect(url_for('renter.book_room', room_id=room.id))
+            return redirect(url_for('owner.book_room', room_id=room.id))
         
         if duration < 1:
             flash("Minimum duration is 1 night.", "warning")
-            return redirect(url_for('renter.book_room', room_id=room.id))
+            return redirect(url_for('owner.book_room', room_id=room.id))
         
         start_str = f"{start_date} {start_time}"
         try:
             start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
         except ValueError:
             flash("Invalid date or time format.", "danger")
-            return redirect(url_for('renter.book_room', room_id=room.id))
+            return redirect(url_for('owner.book_room', room_id=room.id))
         
         end_datetime = start_datetime + timedelta(days=duration)
         # Calculate total price using the room's price per night
@@ -1120,7 +1191,7 @@ def book_room(room_id):
         for booking in existing_bookings:
             if start_datetime < booking.end_time and end_datetime > booking.start_time:
                 flash('This room is not available during the selected time period.', 'danger')
-                return redirect(url_for('renter.book_room', room_id=room.id))
+                return redirect(url_for('owner.book_room', room_id=room.id))
         
         new_booking = Booking(
             room_id=room.id,
@@ -1136,9 +1207,15 @@ def book_room(room_id):
         db.session.commit()
 
         flash('Booking request submitted successfully!', 'success')
-        return redirect(url_for('renter.dashboard'))
+        return redirect(url_for('owner.dashboard'))
 
-    return render_template('owner/book_room.html', room=room)
+    # Create homestay object (which is the owner)
+    homestay = current_user
+    # Add title property if not exists
+    if not hasattr(homestay, 'title'):
+        homestay.title = homestay.full_name or homestay.username or "My Homestay"
+    
+    return render_template('owner/book_room.html', room=room, homestay=homestay)
 
 @owner_bp.route('/check-username', methods=['POST'])
 @login_required
@@ -1189,3 +1266,752 @@ def toggle_room_status(room_id):
     status = 'mở khóa' if room.is_active else 'khóa'
     flash(f'Đã {status} phòng thành công!', 'success')
     return redirect(url_for('owner.dashboard'))
+
+@owner_bp.route('/statistics')
+@owner_required
+def statistics():
+    """Owner statistics page showing revenue, bookings, and performance data"""
+    try:
+        # Get all rooms owned by current user
+        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
+        room_ids = [room.id for room in owner_rooms]
+        
+        if not room_ids:
+            # If owner has no rooms, show empty stats
+            return render_template('owner/statistics.html', 
+                                   stats={
+                                       'total_profit': 0,
+                                       'total_hours': 0,
+                                       'total_bookings': 0,
+                                       'booking_rate': 0,
+                                       'common_type': 'N/A',
+                                       'average_rating': 0,
+                                       'hourly_revenue': 0,
+                                       'nightly_revenue': 0,
+                                       'top_rooms': []
+                                   })
+        
+        # Get all completed bookings for owner's rooms
+        completed_bookings = Booking.query.filter(
+            Booking.room_id.in_(room_ids),
+            Booking.status == 'completed'
+        ).all()
+        
+        # Calculate basic statistics
+        total_bookings = len(completed_bookings)
+        total_profit = sum(booking.total_price for booking in completed_bookings)
+        total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in completed_bookings)
+        
+        # Count booking types
+        hourly_count = sum(1 for b in completed_bookings if b.booking_type == 'hourly')
+        nightly_count = total_bookings - hourly_count
+        
+        # Calculate revenue by type
+        hourly_revenue = sum(b.total_price for b in completed_bookings if b.booking_type == 'hourly')
+        nightly_revenue = sum(b.total_price for b in completed_bookings if b.booking_type == 'nightly')
+        
+        # Determine common booking type
+        if hourly_count > nightly_count:
+            common_type = "Theo giờ"
+        elif nightly_count > hourly_count:
+            common_type = "Qua đêm"
+        else:
+            common_type = "N/A"
+        
+        # Calculate booking rate (percentage of time rooms are booked)
+        # This is a simplified calculation - you might want to make it more sophisticated
+        booking_rate = min((total_hours / (len(owner_rooms) * 24 * 30)) * 100, 100) if owner_rooms else 0
+        
+        # Calculate average rating
+        all_reviews = Review.query.filter(Review.room_id.in_(room_ids)).all()
+        average_rating = sum(r.rating for r in all_reviews) / len(all_reviews) if all_reviews else 0
+        
+        # Get top performing rooms
+        top_rooms_query = db.session.query(
+            Room.id,
+            Room.title,
+            func.count(Booking.id).label('booking_count'),
+            func.sum(Booking.total_price).label('total_revenue'),
+            func.avg(Review.rating).label('avg_rating')
+        ).select_from(Room)\
+         .outerjoin(Booking, (Room.id == Booking.room_id) & (Booking.status == 'completed'))\
+         .outerjoin(Review, Room.id == Review.room_id)\
+         .filter(Room.owner_id == current_user.id)\
+         .group_by(Room.id, Room.title)\
+         .order_by(func.sum(Booking.total_price).desc())\
+         .limit(5).all()
+        
+        top_rooms = []
+        for room_data in top_rooms_query:
+            room = Room.query.get(room_data.id)
+            room_bookings = [b for b in completed_bookings if b.room_id == room_data.id]
+            
+            # Determine most common booking type for this room
+            room_hourly = sum(1 for b in room_bookings if b.booking_type == 'hourly')
+            room_nightly = len(room_bookings) - room_hourly
+            room_common_type = "Theo giờ" if room_hourly >= room_nightly else "Qua đêm"
+            
+            # Calculate booking rate for this room
+            room_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in room_bookings)
+            room_booking_rate = min((room_total_hours / (24 * 30)) * 100, 100) if room_total_hours > 0 else 0
+            
+            top_rooms.append({
+                'name': room_data.title,
+                'type': room_common_type,
+                'revenue': int(room_data.total_revenue or 0),
+                'bookings': room_data.booking_count or 0,
+                'booking_rate': f"{room_booking_rate:.0f}%",
+                'rating': f"{room_data.avg_rating:.1f}" if room_data.avg_rating else "0.0"
+            })
+        
+        # Generate chart data for the last 7 days
+        chart_data = []
+        for i in range(6, -1, -1):
+            date = datetime.now().date() - timedelta(days=i)
+            day_bookings = [b for b in completed_bookings if b.created_at.date() == date]
+            day_revenue = sum(b.total_price for b in day_bookings)
+            chart_data.append({
+                'date': date.strftime('%d/%m'),
+                'revenue': int(day_revenue)
+            })
+        
+        stats = {
+            'total_profit': int(total_profit),
+            'total_hours': int(total_hours),
+            'total_bookings': total_bookings,
+            'booking_rate': f"{booking_rate:.0f}%",
+            'common_type': common_type,
+            'average_rating': f"{average_rating:.1f}/5.0",
+            'hourly_revenue': int(hourly_revenue),
+            'nightly_revenue': int(nightly_revenue),
+            'top_rooms': top_rooms,
+            'chart_data': chart_data
+        }
+        
+        return render_template('owner/statistics.html', stats=stats)
+        
+    except Exception as e:
+        print(f"Error in owner statistics: {e}")
+        # Return empty stats on error
+        return render_template('owner/statistics.html', 
+                               stats={
+                                   'total_profit': 0,
+                                   'total_hours': 0,
+                                   'total_bookings': 0,
+                                   'booking_rate': 0,
+                                   'common_type': 'N/A',
+                                   'average_rating': 0,
+                                   'hourly_revenue': 0,
+                                   'nightly_revenue': 0,
+                                   'top_rooms': []
+                               })
+
+@owner_bp.route('/api/chart-data/<period>')
+@owner_bp.route('/api/chart-data/<period>/<chart_type>')
+@owner_required
+def get_chart_data(period, chart_type='both'):
+    """API endpoint to get chart data for different periods"""
+    try:
+        # Get all rooms owned by current user
+        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
+        room_ids = [room.id for room in owner_rooms]
+        
+        if not room_ids:
+            return jsonify({'hourly': [], 'nightly': []})
+        
+        # Get completed bookings
+        completed_bookings = Booking.query.filter(
+            Booking.room_id.in_(room_ids),
+            Booking.status == 'completed'
+        ).all()
+        
+        if period == 'total':
+            # Generate data for the last 30 days (default view for total)
+            chart_data_hourly = []
+            chart_data_nightly = []
+            
+            for i in range(29, -1, -1):  # 30 days
+                date = datetime.now().date() - timedelta(days=i)
+                day_bookings = [b for b in completed_bookings if b.created_at.date() == date]
+                
+                # Separate hourly and nightly bookings
+                hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
+                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
+                
+                hourly_revenue = sum(b.total_price for b in hourly_bookings)
+                nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                
+                chart_data_hourly.append({
+                    'date': date.strftime('%d/%m'),
+                    'revenue': int(hourly_revenue)
+                })
+                
+                chart_data_nightly.append({
+                    'date': date.strftime('%d/%m'),
+                    'revenue': int(nightly_revenue)
+                })
+        
+        elif period == 'week':
+            # Generate data for the last 7 days
+            chart_data_hourly = []
+            chart_data_nightly = []
+            
+            for i in range(6, -1, -1):
+                date = datetime.now().date() - timedelta(days=i)
+                day_bookings = [b for b in completed_bookings if b.created_at.date() == date]
+                
+                # Separate hourly and nightly bookings
+                hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
+                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
+                
+                hourly_revenue = sum(b.total_price for b in hourly_bookings)
+                nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                
+                chart_data_hourly.append({
+                    'date': date.strftime('%d/%m'),
+                    'revenue': int(hourly_revenue)
+                })
+                
+                chart_data_nightly.append({
+                    'date': date.strftime('%d/%m'),
+                    'revenue': int(nightly_revenue)
+                })
+        
+        elif period == 'month':
+            # Generate data for the last 30 days
+            chart_data_hourly = []
+            chart_data_nightly = []
+            
+            for i in range(29, -1, -1):  # 30 days
+                date = datetime.now().date() - timedelta(days=i)
+                day_bookings = [b for b in completed_bookings if b.created_at.date() == date]
+                
+                # Separate hourly and nightly bookings
+                hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
+                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
+                
+                hourly_revenue = sum(b.total_price for b in hourly_bookings)
+                nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                
+                chart_data_hourly.append({
+                    'date': date.strftime('%d/%m'),
+                    'revenue': int(hourly_revenue)
+                })
+                
+                chart_data_nightly.append({
+                    'date': date.strftime('%d/%m'),
+                    'revenue': int(nightly_revenue)
+                })
+        
+        elif period == 'year':
+            # Generate data for the last 12 months
+            chart_data_hourly = []
+            chart_data_nightly = []
+            
+            for i in range(11, -1, -1):  # 12 months
+                # Calculate start and end of each month
+                current_date = datetime.now().date()
+                target_month = current_date.replace(day=1) - timedelta(days=i*30)
+                
+                # Get first day of target month
+                first_day = target_month.replace(day=1)
+                
+                # Get last day of target month
+                if first_day.month == 12:
+                    last_day = first_day.replace(year=first_day.year + 1, month=1) - timedelta(days=1)
+                else:
+                    last_day = first_day.replace(month=first_day.month + 1) - timedelta(days=1)
+                
+                month_bookings = [b for b in completed_bookings 
+                                if first_day <= b.created_at.date() <= last_day]
+                
+                # Separate hourly and nightly bookings
+                hourly_bookings = [b for b in month_bookings if b.booking_type == 'hourly']
+                nightly_bookings = [b for b in month_bookings if b.booking_type == 'nightly']
+                
+                hourly_revenue = sum(b.total_price for b in hourly_bookings)
+                nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                
+                month_label = first_day.strftime('%m/%Y')
+                
+                chart_data_hourly.append({
+                    'date': month_label,
+                    'revenue': int(hourly_revenue)
+                })
+                
+                chart_data_nightly.append({
+                    'date': month_label,
+                    'revenue': int(nightly_revenue)
+                })
+        
+        return jsonify({
+            'hourly': chart_data_hourly,
+            'nightly': chart_data_nightly
+        })
+        
+    except Exception as e:
+        print(f"Error getting chart data: {e}")
+        return jsonify({'hourly': [], 'nightly': []}), 500
+
+@owner_bp.route('/api/stats-data/<period>')
+@owner_bp.route('/api/stats-data/<period>/<chart_type>')
+@owner_required
+def get_stats_data(period, chart_type='both'):
+    """API endpoint to get statistics data for different periods"""
+    try:
+        # Get all rooms owned by current user
+        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
+        room_ids = [room.id for room in owner_rooms]
+        
+        if not room_ids:
+            return jsonify({
+                'total_profit': '0đ',
+                'total_hours': '0 giờ',
+                'total_bookings': '0 lần',
+                'booking_rate': '0%',
+                'common_type': 'N/A',
+                'average_rating': '0/5',
+                'top_rooms': []
+            })
+        
+        # Calculate date range based on period
+        end_date = datetime.now()
+        
+        if period == 'total':
+            start_date = None  # All time
+        elif period == 'week':
+            start_date = end_date - timedelta(days=7)
+        elif period == 'month':
+            start_date = end_date - timedelta(days=30)
+        elif period == 'year':
+            start_date = end_date - timedelta(days=365)
+        else:
+            return jsonify({'error': 'Invalid period'}), 400
+        
+        # Get completed bookings
+        query = Booking.query.filter(
+            Booking.room_id.in_(room_ids),
+            Booking.status == 'completed'
+        )
+        
+        if start_date:
+            query = query.filter(Booking.created_at >= start_date)
+        
+        # Filter by chart type
+        if chart_type == 'hourly':
+            query = query.filter(Booking.booking_type == 'hourly')
+        elif chart_type == 'nightly':
+            query = query.filter(Booking.booking_type == 'nightly')
+        # If chart_type == 'both', don't add any filter
+        
+        completed_bookings = query.all()
+        
+        # Calculate basic statistics
+        total_bookings = len(completed_bookings)
+        total_profit = sum(booking.total_price for booking in completed_bookings)
+        total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in completed_bookings)
+        
+        # Count booking types
+        hourly_count = sum(1 for b in completed_bookings if b.booking_type == 'hourly')
+        nightly_count = total_bookings - hourly_count
+        
+        # Determine common booking type
+        if hourly_count > nightly_count:
+            common_type = "Theo giờ"
+        elif nightly_count > hourly_count:
+            common_type = "Qua đêm"
+        else:
+            common_type = "N/A"
+        
+        # Calculate booking rate (percentage of time rooms are booked)
+        days_in_period = 30 if period == 'month' else (7 if period == 'week' else (365 if period == 'year' else 30))
+        booking_rate = min((total_hours / (len(owner_rooms) * 24 * days_in_period)) * 100, 100) if owner_rooms else 0
+        
+        # Calculate average rating
+        review_query = Review.query.filter(Review.room_id.in_(room_ids))
+        if start_date:
+            review_query = review_query.filter(Review.created_at >= start_date)
+        
+        all_reviews = review_query.all()
+        average_rating = sum(r.rating for r in all_reviews) / len(all_reviews) if all_reviews else 0
+        
+        # Get top performing rooms
+        top_rooms_query = db.session.query(
+            Room.id,
+            Room.title,
+            func.count(Booking.id).label('booking_count'),
+            func.sum(Booking.total_price).label('total_revenue'),
+            func.avg(Review.rating).label('avg_rating')
+        ).select_from(Room)\
+         .outerjoin(Booking, (Room.id == Booking.room_id) & (Booking.status == 'completed'))\
+         .outerjoin(Review, Room.id == Review.room_id)\
+         .filter(Room.owner_id == current_user.id)
+        
+        if start_date:
+            top_rooms_query = top_rooms_query.filter(Booking.created_at >= start_date)
+        
+        top_rooms_data = top_rooms_query.group_by(Room.id, Room.title)\
+                                       .order_by(func.sum(Booking.total_price).desc())\
+                                       .limit(5).all()
+        
+        top_rooms = []
+        for room_data in top_rooms_data:
+            room_bookings = [b for b in completed_bookings if b.room_id == room_data.id]
+            
+            # Determine most common booking type for this room
+            room_hourly = sum(1 for b in room_bookings if b.booking_type == 'hourly')
+            room_nightly = len(room_bookings) - room_hourly
+            room_common_type = "Theo giờ" if room_hourly >= room_nightly else "Qua đêm"
+            
+            # Calculate booking rate for this room
+            room_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in room_bookings)
+            room_booking_rate = min((room_total_hours / (24 * days_in_period)) * 100, 100) if room_total_hours > 0 else 0
+            
+            top_rooms.append({
+                'name': room_data.title,
+                'type': room_common_type,
+                'revenue': int(room_data.total_revenue or 0),
+                'bookings': room_data.booking_count or 0,
+                'booking_rate': f"{room_booking_rate:.0f}%",
+                'rating': f"{room_data.avg_rating:.1f}" if room_data.avg_rating else "0.0"
+            })
+        
+        return jsonify({
+            'total_profit': f"{int(total_profit):,}đ",
+            'total_hours': f"{int(total_hours):,} giờ",
+            'total_bookings': f"{total_bookings} lần",
+            'booking_rate': f"{booking_rate:.0f}%",
+            'common_type': common_type,
+            'average_rating': f"{average_rating:.1f}/5",
+            'top_rooms': top_rooms
+        })
+        
+    except Exception as e:
+        print(f"Error getting stats data: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@owner_bp.route('/api/chart-data/custom/<start_date>/<end_date>')
+@owner_required
+def get_custom_chart_data(start_date, end_date):
+    """API endpoint to get chart data for custom date range"""
+    try:
+        # Parse dates
+        start = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end = datetime.strptime(end_date, '%Y-%m-%d').date()
+        
+        # Get all rooms owned by current user
+        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
+        room_ids = [room.id for room in owner_rooms]
+        
+        if not room_ids:
+            return jsonify({'hourly': [], 'nightly': []})
+        
+        # Get completed bookings in date range
+        completed_bookings = Booking.query.filter(
+            Booking.room_id.in_(room_ids),
+            Booking.status == 'completed',
+            Booking.created_at >= start,
+            Booking.created_at <= end + timedelta(days=1)
+        ).all()
+        
+        # Calculate date range
+        date_diff = (end - start).days + 1
+        chart_data_hourly = []
+        chart_data_nightly = []
+        
+        if date_diff <= 7:
+            # Show daily data for short ranges
+            current_date = start
+            while current_date <= end:
+                day_bookings = [b for b in completed_bookings if b.created_at.date() == current_date]
+                
+                # Separate hourly and nightly bookings
+                hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
+                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
+                
+                hourly_revenue = sum(b.total_price for b in hourly_bookings)
+                nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                
+                chart_data_hourly.append({
+                    'date': current_date.strftime('%d/%m'),
+                    'revenue': int(hourly_revenue)
+                })
+                
+                chart_data_nightly.append({
+                    'date': current_date.strftime('%d/%m'),
+                    'revenue': int(nightly_revenue)
+                })
+                
+                current_date += timedelta(days=1)
+        
+        else:
+            # Show weekly data for longer ranges
+            current_date = start
+            while current_date <= end:
+                week_end = min(current_date + timedelta(days=6), end)
+                
+                week_bookings = [b for b in completed_bookings 
+                               if current_date <= b.created_at.date() <= week_end]
+                
+                # Separate hourly and nightly bookings
+                hourly_bookings = [b for b in week_bookings if b.booking_type == 'hourly']
+                nightly_bookings = [b for b in week_bookings if b.booking_type == 'nightly']
+                
+                hourly_revenue = sum(b.total_price for b in hourly_bookings)
+                nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                
+                week_label = f"{current_date.strftime('%d/%m')}-{week_end.strftime('%d/%m')}"
+                
+                chart_data_hourly.append({
+                    'date': week_label,
+                    'revenue': int(hourly_revenue)
+                })
+                
+                chart_data_nightly.append({
+                    'date': week_label,
+                    'revenue': int(nightly_revenue)
+                })
+                
+                current_date += timedelta(days=7)
+        
+        return jsonify({
+            'hourly': chart_data_hourly,
+            'nightly': chart_data_nightly
+        })
+        
+    except Exception as e:
+        print(f"Error getting custom chart data: {e}")
+        return jsonify({'hourly': [], 'nightly': []}), 500
+
+@owner_bp.route('/api/stats-data/custom')
+@owner_bp.route('/api/stats-data/custom/<chart_type>')
+@owner_required
+def get_custom_stats_data(chart_type='both'):
+    """API endpoint to get statistics data for custom date range"""
+    try:
+        start_date_str = request.args.get('start')
+        end_date_str = request.args.get('end')
+        
+        if not start_date_str or not end_date_str:
+            return jsonify({'error': 'Missing start or end date'}), 400
+        
+        # Parse dates
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)  # Include end date
+        
+        # Get all rooms owned by current user
+        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
+        room_ids = [room.id for room in owner_rooms]
+        
+        if not room_ids:
+            return jsonify({
+                'total_profit': '0đ',
+                'total_hours': '0 giờ',
+                'total_bookings': '0 lần',
+                'booking_rate': '0%',
+                'common_type': 'N/A',
+                'average_rating': '0/5',
+                'top_rooms': []
+            })
+        
+        # Get completed bookings in date range
+        query = Booking.query.filter(
+            Booking.room_id.in_(room_ids),
+            Booking.status == 'completed',
+            Booking.created_at >= start_date,
+            Booking.created_at < end_date
+        )
+        
+        # Filter by chart type
+        if chart_type == 'hourly':
+            query = query.filter(Booking.booking_type == 'hourly')
+        elif chart_type == 'nightly':
+            query = query.filter(Booking.booking_type == 'nightly')
+        # If chart_type == 'both', don't add any filter
+        
+        completed_bookings = query.all()
+        
+        # Calculate basic statistics
+        total_bookings = len(completed_bookings)
+        total_profit = sum(booking.total_price for booking in completed_bookings)
+        total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in completed_bookings)
+        
+        # Count booking types
+        hourly_count = sum(1 for b in completed_bookings if b.booking_type == 'hourly')
+        nightly_count = total_bookings - hourly_count
+        
+        # Determine common booking type
+        if hourly_count > nightly_count:
+            common_type = "Theo giờ"
+        elif nightly_count > hourly_count:
+            common_type = "Qua đêm"
+        else:
+            common_type = "N/A"
+        
+        # Calculate booking rate (percentage of time rooms are booked)
+        days_in_range = (end_date - start_date).days
+        booking_rate = min((total_hours / (len(owner_rooms) * 24 * days_in_range)) * 100, 100) if owner_rooms and days_in_range > 0 else 0
+        
+        # Calculate average rating
+        all_reviews = Review.query.filter(
+            Review.room_id.in_(room_ids),
+            Review.created_at >= start_date,
+            Review.created_at < end_date
+        ).all()
+        average_rating = sum(r.rating for r in all_reviews) / len(all_reviews) if all_reviews else 0
+        
+        # Get top performing rooms
+        top_rooms_query = db.session.query(
+            Room.id,
+            Room.title,
+            func.count(Booking.id).label('booking_count'),
+            func.sum(Booking.total_price).label('total_revenue'),
+            func.avg(Review.rating).label('avg_rating')
+        ).select_from(Room)\
+         .outerjoin(Booking, (Room.id == Booking.room_id) & (Booking.status == 'completed') & 
+                    (Booking.created_at >= start_date) & (Booking.created_at < end_date))\
+         .outerjoin(Review, (Room.id == Review.room_id) & 
+                    (Review.created_at >= start_date) & (Review.created_at < end_date))\
+         .filter(Room.owner_id == current_user.id)\
+         .group_by(Room.id, Room.title)\
+         .order_by(func.sum(Booking.total_price).desc())\
+         .limit(5).all()
+        
+        top_rooms = []
+        for room_data in top_rooms_query:
+            room_bookings = [b for b in completed_bookings if b.room_id == room_data.id]
+            
+            # Determine most common booking type for this room
+            room_hourly = sum(1 for b in room_bookings if b.booking_type == 'hourly')
+            room_nightly = len(room_bookings) - room_hourly
+            room_common_type = "Theo giờ" if room_hourly >= room_nightly else "Qua đêm"
+            
+            # Calculate booking rate for this room
+            room_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in room_bookings)
+            room_booking_rate = min((room_total_hours / (24 * days_in_range)) * 100, 100) if room_total_hours > 0 and days_in_range > 0 else 0
+            
+            top_rooms.append({
+                'name': room_data.title,
+                'type': room_common_type,
+                'revenue': int(room_data.total_revenue or 0),
+                'bookings': room_data.booking_count or 0,
+                'booking_rate': f"{room_booking_rate:.0f}%",
+                'rating': f"{room_data.avg_rating:.1f}" if room_data.avg_rating else "0.0"
+            })
+        
+        return jsonify({
+            'total_profit': f"{int(total_profit):,}đ",
+            'total_hours': f"{int(total_hours):,} giờ",
+            'total_bookings': f"{total_bookings} lần",
+            'booking_rate': f"{booking_rate:.0f}%",
+            'common_type': common_type,
+            'average_rating': f"{average_rating:.1f}/5",
+            'top_rooms': top_rooms
+        })
+        
+    except Exception as e:
+        print(f"Error getting custom stats data: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@owner_bp.route('/api/chart-data/custom')
+@owner_required
+def get_custom_chart_data_query():
+    """API endpoint to get chart data for custom date range via query parameters"""
+    try:
+        start_date_str = request.args.get('start')
+        end_date_str = request.args.get('end')
+        
+        if not start_date_str or not end_date_str:
+            return jsonify({'error': 'Missing start or end date'}), 400
+        
+        # Parse dates
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)  # Include end date
+        
+        # Get all rooms owned by current user
+        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
+        room_ids = [room.id for room in owner_rooms]
+        
+        if not room_ids:
+            return jsonify({'hourly': [], 'nightly': []})
+        
+        # Get completed bookings in date range
+        completed_bookings = Booking.query.filter(
+            Booking.room_id.in_(room_ids),
+            Booking.status == 'completed',
+            Booking.created_at >= start_date,
+            Booking.created_at < end_date
+        ).all()
+        
+        # Calculate date range
+        date_diff = (end_date - start_date).days
+        chart_data_hourly = []
+        chart_data_nightly = []
+        
+        if date_diff <= 7:
+            # Show daily data for short ranges
+            current_date = start_date.date()
+            end_date_only = end_date.date()
+            
+            while current_date < end_date_only:
+                day_bookings = [b for b in completed_bookings if b.created_at.date() == current_date]
+                
+                # Separate hourly and nightly bookings
+                hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
+                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
+                
+                hourly_revenue = sum(b.total_price for b in hourly_bookings)
+                nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                
+                chart_data_hourly.append({
+                    'date': current_date.strftime('%d/%m'),
+                    'revenue': int(hourly_revenue)
+                })
+                
+                chart_data_nightly.append({
+                    'date': current_date.strftime('%d/%m'),
+                    'revenue': int(nightly_revenue)
+                })
+                
+                current_date += timedelta(days=1)
+        
+        else:
+            # Show weekly data for longer ranges
+            current_date = start_date.date()
+            end_date_only = end_date.date()
+            
+            while current_date < end_date_only:
+                week_end = min(current_date + timedelta(days=6), end_date_only - timedelta(days=1))
+                
+                week_bookings = [b for b in completed_bookings 
+                               if current_date <= b.created_at.date() <= week_end]
+                
+                # Separate hourly and nightly bookings
+                hourly_bookings = [b for b in week_bookings if b.booking_type == 'hourly']
+                nightly_bookings = [b for b in week_bookings if b.booking_type == 'nightly']
+                
+                hourly_revenue = sum(b.total_price for b in hourly_bookings)
+                nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                
+                week_label = f"{current_date.strftime('%d/%m')}-{week_end.strftime('%d/%m')}"
+                
+                chart_data_hourly.append({
+                    'date': week_label,
+                    'revenue': int(hourly_revenue)
+                })
+                
+                chart_data_nightly.append({
+                    'date': week_label,
+                    'revenue': int(nightly_revenue)
+                })
+                
+                current_date += timedelta(days=7)
+        
+        return jsonify({
+            'hourly': chart_data_hourly,
+            'nightly': chart_data_nightly
+        })
+        
+    except Exception as e:
+        print(f"Error getting custom chart data: {e}")
+        return jsonify({'hourly': [], 'nightly': []}), 500

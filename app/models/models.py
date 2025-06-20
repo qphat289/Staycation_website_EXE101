@@ -118,6 +118,18 @@ class Owner(UserMixin, db.Model):
         
     def is_renter(self):
         return False
+    
+    @property
+    def title(self):
+        """Return a title for the homestay (owner)"""
+        return self.full_name or self.username or "My Homestay"
+    
+    @property
+    def city(self):
+        """Return the city from one of the owner's rooms"""
+        if self.rooms:
+            return self.rooms[0].city
+        return "Chưa cập nhật"
         
     def __repr__(self):
         return f'<Owner {self.username}>'
@@ -334,6 +346,10 @@ class Room(db.Model):
     @property
     def homestay(self):
         return self.owner
+    
+    @property
+    def homestay_id(self):
+        return self.owner_id
 
     @property
     def display_price(self):
@@ -457,6 +473,16 @@ class Booking(db.Model):
     payment_reference = db.Column(db.String(100), nullable=True)
     
     booking_type = db.Column(db.String(20), default='hourly')  # 'hourly' hoặc 'nightly'
+    
+    @property
+    def homestay(self):
+        """Return the homestay (owner) for this booking"""
+        return self.room.homestay if self.room else None
+    
+    @property
+    def homestay_id(self):
+        """Return the homestay (owner) ID for this booking"""
+        return self.room.owner_id if self.room else None
     
     def __repr__(self):
         return f'<Booking {self.id}>'
