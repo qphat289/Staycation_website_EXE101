@@ -19,27 +19,27 @@ body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* Sidebar - MATCH OWNER STYLE */
 .admin-sidebar {
     width: 250px;
     background: transparent;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 80px);
     padding: 1.5rem;
     position: fixed;
     left: 85px;
-    top: 40px;
+    top: 80px;
     z-index: 1051;
-    overflow: hidden;
 }
 
 .admin-sidebar::after {
     content: '';
     position: absolute;
     right: 0;
-    top: 110px;
+    top: 160px;
     bottom: 0;
     width: 2px;
     background: #e0e0e0;
@@ -50,7 +50,7 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
-    margin-top: 7rem;
+    margin-top: 9rem;
 }
 
 .sidebar-menu-item {
@@ -125,9 +125,9 @@ a#menu-manage-admin.active {
 .admin-main {
     margin-left: 250px;
     padding: 1rem 2rem 2rem 2rem;
-    height: calc(100vh - 30px);
-    margin-top: -40px;
-    overflow: hidden;
+    height: 100vh;
+    margin-top: 0;
+    overflow-y: auto;
 }
 
 .content-wrapper {
@@ -136,12 +136,6 @@ a#menu-manage-admin.active {
     padding: 0;
     margin: 1rem 0 1rem 0;
     background: white;
-    height: auto;
-    min-height: calc(100vh - 120px);
-    max-height: calc(100vh - 90px);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
 }
 
 .page-header {
@@ -151,7 +145,6 @@ a#menu-manage-admin.active {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #f1f1f1;
-    flex-shrink: 0;
 }
 
 /* Navbar và dropdown styling - FIX DROPDOWN ISSUES */
@@ -290,45 +283,6 @@ a#menu-manage-admin.active {
     margin: 0;
 }
 
-/* Section content scrolling */
-#owner-section,
-#stats-section,
-#manage-admin-section {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 1.5rem;
-    max-height: calc(100vh - 200px);
-    min-height: 0;
-}
-
-/* Custom scrollbar for sections */
-#owner-section::-webkit-scrollbar,
-#stats-section::-webkit-scrollbar,
-#manage-admin-section::-webkit-scrollbar {
-    width: 6px;
-}
-
-#owner-section::-webkit-scrollbar-track,
-#stats-section::-webkit-scrollbar-track,
-#manage-admin-section::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-#owner-section::-webkit-scrollbar-thumb,
-#stats-section::-webkit-scrollbar-thumb,
-#manage-admin-section::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-}
-
-#owner-section::-webkit-scrollbar-thumb:hover,
-#stats-section::-webkit-scrollbar-thumb:hover,
-#manage-admin-section::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
 .page-subtitle {
     color: #666;
     font-size: 0.9rem;
@@ -347,217 +301,18 @@ a#menu-manage-admin.active {
     flex-direction: column;
 }
 
-/* Compact Filter Section */
-.compact-filter-section {
-    padding: 0.75rem 1rem;
+/* Filter Section - MATCH OWNER STYLE */
+.filter-section {
+    padding: 1rem 1.5rem;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-/* Status Tabs Compact */
-.status-tabs-compact {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.status-tabs-compact .tab-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 12px;
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    color: #666;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.status-tabs-compact .tab-btn:hover {
-    background: #e9ecef;
-    color: #333;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.status-tabs-compact .tab-btn.active {
-    background: #9ed649;
-    border-color: #9ed649;
-    color: white;
-}
-
-.status-tabs-compact .count {
-    margin-left: 6px;
-    padding: 2px 6px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    min-width: 18px;
-    text-align: center;
-}
-
-.status-tabs-compact .tab-btn:not(.active) .count {
-    background: rgba(102, 102, 102, 0.1);
-    color: #666;
-}
-
-/* Controls Compact */
-.controls-compact {
-    gap: 8px;
-}
-
-.search-form {
-    margin: 0;
-}
-
-.search-box {
-    display: flex !important;
-    align-items: stretch !important;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: hidden;
-    height: 36px;
-    width: fit-content;
-    gap: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.search-input {
-    border: 2px solid transparent !important;
-    border-right: none !important;
-    padding: 0 12px !important;
-    font-size: 0.875rem;
-    width: 200px;
-    outline: none;
-    background: #f8fafc;
-    color: #333;
-    height: 100% !important;
-    margin: 0 !important;
-    flex-shrink: 0;
-    border-radius: 8px 0 0 8px !important;
-    transition: border-color 0.2s ease;
-}
-
-.search-input::placeholder {
-    color: #94a3b8;
-    font-weight: 400;
-}
-
-.search-input:hover {
-    background: #f1f5f9;
-    transition: background-color 0.2s ease;
-}
-
-.search-input:focus {
-    background: white !important;
-    border-color: #8ab82f !important;
-    box-shadow: none !important;
-    transition: all 0.2s ease;
-}
-
-.search-input:focus::placeholder {
-    color: #cbd5e1;
-}
-
-.search-btn {
-    background: #8ab82f !important;
-    border: none !important;
-    color: white;
-    padding: 0 12px !important;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 100% !important;
-    margin: 0 !important;
-    flex-shrink: 0;
-    border-radius: 0 8px 8px 0 !important;
-}
-
-.search-btn:hover {
-    background: #7da326 !important;
-}
-
-.search-btn i {
-    font-size: 0.875rem;
-}
-
-/* Table column widths */
-.table-fixed {
-    table-layout: auto;
-    width: 100%;
-    min-width: 800px;
-}
-
-.table-fixed th,
-.table-fixed td {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 12px 8px;
-}
-
-.table-fixed th:nth-child(1) { width: 60px; min-width: 60px; }  /* ID */
-.table-fixed th:nth-child(2) { width: 180px; min-width: 180px; } /* Họ và tên */
-.table-fixed th:nth-child(3) { width: 200px; min-width: 200px; } /* Email */
-.table-fixed th:nth-child(4) { width: 130px; min-width: 130px; } /* Số điện thoại */
-.table-fixed th:nth-child(5) { width: 100px; min-width: 100px; } /* Chức vụ */
-.table-fixed th:nth-child(6) { width: 120px; min-width: 120px; } /* Trạng thái */
-.table-fixed th:nth-child(7) { width: 50px; min-width: 50px; }  /* Action */
-
-/* Table responsive scrolling */
-.table-responsive {
-    max-height: none;
-    overflow-y: visible;
-}
-
-/* Pagination spacing */
-.pagination {
     margin-bottom: 1rem;
-}
-
-/* Ensure enough space for pagination */
-#owner-section .table-responsive + nav {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-}
-
-.compact-btn {
-    padding: 0 12px;
-    font-size: 0.875rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background: white;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    height: 36px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-
-.compact-btn:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: #475569;
-}
-
-.compact-btn i {
-    font-size: 0.85rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background: white;
+    overflow: visible !important;
 }
 
 /* Filter Pills - MATCH OWNER STYLE */
@@ -729,8 +484,6 @@ a#menu-manage-admin.active {
     max-height: 400px;
     overflow-y: auto;
     overflow-x: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
 }
 
 .table-responsive::-webkit-scrollbar {
@@ -1519,11 +1272,9 @@ td:contains('Chưa cập nhật') {
     font-size: 0.875rem;
 }
 
-/* Table Container - Allow scrolling for tables */
+/* Table Container */
 .table-responsive {
-    max-height: 400px;
-    overflow-y: auto;
-    overflow-x: auto;
+    overflow: visible !important;  /* Không cho phép cuộn */
 }
 
 /* Pagination Container */
@@ -1740,185 +1491,134 @@ nav[aria-label="Page navigation"] {
     background: #a8a8a8;
 }
 
-/* New Filter Section Styles */
-.filter-section-simple {
+/* Compact Filter Section Styles */
+.compact-filter-section {
     background: white;
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border: 1px solid #e0e0e0;
 }
 
-.status-tabs {
+.status-tabs-compact {
     display: flex;
-    gap: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #f5f5f5;
+    gap: 0.5rem;
 }
 
-.tab-button {
+.tab-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
+    padding: 0.5rem 1rem;
     background: transparent;
-    border: 2px solid transparent;
-    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
     color: #666;
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
-    position: relative;
 }
 
-.tab-button:hover {
+.tab-btn:hover {
     color: #9ed649;
     text-decoration: none;
+    border-color: #9ed649;
     background: rgba(158, 214, 73, 0.1);
 }
 
-.tab-button.active {
-    color: #9ed649;
-    background: rgba(158, 214, 73, 0.15);
+.tab-btn.active {
+    color: white;
+    background: #9ed649;
     border-color: #9ed649;
     font-weight: 600;
 }
 
-.tab-count {
-    background: #f8f9fa;
-    color: #666;
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    min-width: 24px;
+.tab-btn .count {
+    background: rgba(255, 255, 255, 0.2);
+    color: inherit;
+    padding: 0.2rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 20px;
     text-align: center;
 }
 
-.tab-button.active .tab-count {
-    background: #9ed649;
+.tab-btn.active .count {
+    background: rgba(255, 255, 255, 0.25);
     color: white;
 }
 
-.controls-row {
-    padding-top: 1rem;
+.controls-compact {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
-.search-container {
-    flex: 1;
-    max-width: 350px;
-    position: relative;
+.search-form {
+    margin: 0;
 }
 
-.search-container form {
+.search-box {
     display: flex;
     align-items: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: white;
 }
 
 .search-input {
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    border-right: none;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    outline: none;
+    width: 200px;
 }
 
 .search-input:focus {
-    border-color: #9ed649;
-    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
-    outline: none;
+    box-shadow: none;
 }
 
 .search-btn {
-    background: #9ed649;
-    border: 2px solid #9ed649;
-    border-left: none;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    color: white;
+    background: #f8f9fa;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    color: #666;
+    cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .search-btn:hover {
-    background: #8bc441;
-    border-color: #8bc441;
+    background: #9ed649;
     color: white;
 }
 
-.filter-btn, .sort-btn {
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
+.compact-btn {
     background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
     color: #666;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
-.filter-btn:hover, .sort-btn:hover {
+.compact-btn:hover {
     border-color: #9ed649;
     color: #9ed649;
     background: rgba(158, 214, 73, 0.1);
 }
 
-.dropdown-menu {
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    padding: 0.5rem;
-    z-index: 1050;
-    min-width: 150px;
+.compact-btn.dropdown-toggle::after {
+    margin-left: 0.5rem;
 }
 
-.dropdown-item {
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-    transition: all 0.2s ease;
-    font-weight: 500;
-}
-
-.dropdown-item:hover {
-    background: rgba(158, 214, 73, 0.1);
-    color: #9ed649;
-}
-
-.dropdown-item.active {
-    background: #9ed649;
-    color: white;
-}
-
-.dropdown-item.active:hover {
-    background: #8bc441;
-    color: white;
-}
-
-.dropdown-item.active {
-    background: rgba(158, 214, 73, 0.2);
-    color: #9ed649;
-    font-weight: 600;
-}
-
-.dropdown-item.active:hover {
-    background: rgba(158, 214, 73, 0.3);
-    color: #8bc441;
-}
-
-.dropdown-item i {
-    width: 16px;
-    text-align: center;
-}
-
+/* Responsive design */
 @media (max-width: 768px) {
     .controls-row {
         flex-direction: column;
@@ -1951,25 +1651,24 @@ nav[aria-label="Page navigation"] {
                     <i class="fas fa-chart-line"></i>
                     <span>Thống kê</span>
                 </a>
-            </li>
-            {% if current_user.is_super_admin %}
+            </li>            {% if current_user.is_super_admin %}
             <li class="sidebar-menu-item">
-                <a href="javascript:void(0)" class="sidebar-menu-link active" id="menu-manage-admin">
+                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-manage-admin">
                     <i class="fas fa-users-cog"></i>
                     <span>Quản lý Admin</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">
                 <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-owner">
-                    <i class="fas fa-home"></i>
+                    <i class="fas fa-user-plus"></i>
                     <span>Quản lý Owner</span>
                 </a>
             </li>
             {% else %}
             <li class="sidebar-menu-item">
-                <a href="javascript:void(0)" class="sidebar-menu-link active" id="menu-owner">
-                    <i class="fas fa-home"></i>
-                    <span>Quản lý Owner</span>
+                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-owner">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Thêm tài khoản &<br>Quản lý Owner</span>
                 </a>
             </li>
             {% endif %}
@@ -1987,8 +1686,7 @@ nav[aria-label="Page navigation"] {
             </div>
             
             <!-- Block: Quản lý Owner -->
-            <div id="owner-section" style="display: block; padding: 1.5rem;">                <!-- Compact Filter Section -->
-                <div class="compact-filter-section mb-3">
+            <div id="owner-section" style="display: block; padding: 1.5rem;">                <!-- Filter Section - Simple Layout (Image 2 Style) -->                <div class="compact-filter-section mb-3">
                     <div class="d-flex align-items-center justify-content-between">
                         <!-- Left: Status Tabs -->
                         <div class="status-tabs-compact">
@@ -2058,9 +1756,7 @@ nav[aria-label="Page navigation"] {
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Statistics Cards for Owner Management -->
+                </div>                <!-- Statistics Cards for Owner Management -->
                 <div class="owner-stats-overview mb-3">
                     <div class="row g-2">
                         <!-- Tổng tài khoản -->
@@ -2146,33 +1842,39 @@ nav[aria-label="Page navigation"] {
                     </button>
                 </div>                <!-- Table -->
                 <div class="table-responsive">
-                    <table class="table align-middle table-fixed">
+                    <table class="table align-middle">
                         <thead>
                             <tr>
+                                <th>
+                                    <input type="checkbox" id="checkAll">
+                                </th>
                                 <th>ID</th>
-                                <th>Họ và tên</th>
+                                <th>Tên</th>
                                 <th>Email</th>
                                 <th>Số điện thoại</th>
-                                <th>Chức vụ</th>
-                                <th>Trạng thái</th>
+                                <th>Role</th>
+                                <th>Status</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for user in users.items %}
                             <tr data-status="{{ 'active' if user.is_active else 'inactive' }}">
-                                <td>{{ user.id }}</td>
-                                <td>{{ user.full_name if user.full_name else 'Chưa cập nhật' }}</td>
+                                <td>
+                                    <input type="checkbox" name="user_id" value="{{ user.id }}">
+                                </td>
+                                <td>#{{ user.id }}</td>
+                                <td>{{ user.full_name if user.full_name else user.username }}</td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.phone if user.phone else 'Chưa cập nhật' }}</td>
                                 <td>
                                     <span class="badge {% if user.role == 'Owner' %}bg-primary{% elif user.role == 'Renter' %}bg-success{% else %}bg-warning{% endif %}">
-                                        {% if user.role == 'Owner' %}Chủ nhà{% elif user.role == 'Renter' %}Khách hàng{% else %}{{ user.role }}{% endif %}
+                                        {{ user.role }}
                                     </span>
                                 </td>
                                 <td>
                                     <span class="badge {% if user.is_active %}bg-success{% else %}badge-inactive{% endif %}">
-                                        {{ 'Hoạt động' if user.is_active else 'Ngưng hoạt động' }}
+                                        {{ 'Hoạt động' if user.is_active else 'Ngừng hoạt động' }}
                                     </span>
                                 </td>
                                 <td class="text-end">
@@ -2187,13 +1889,12 @@ nav[aria-label="Page navigation"] {
                                                 </a>
                                             </li>
                                             {% if user.role_type != 'admin' %}
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
+                                            <li><hr class="dropdown-divider"></li>                                            <li>
                                                 <button type="button" class="dropdown-item text-{{ 'danger' if user.is_active else 'success' }}" 
+                                                        data-action="toggle-status"
                                                         data-user-id="{{ user.id }}" 
                                                         data-role-type="{{ user.role_type }}" 
-                                                        data-is-active="{{ user.is_active|lower }}"
-                                                        onclick="toggleUserStatus(this)">
+                                                        data-is-active="{{ user.is_active|lower }}">
                                                     <i class="fas fa-{{ 'ban' if user.is_active else 'check-circle' }} me-2"></i>
                                                     <span>{{ 'Vô hiệu hóa' if user.is_active else 'Kích hoạt' }}</span>
                                                 </button>
@@ -2216,20 +1917,19 @@ nav[aria-label="Page navigation"] {
                         </tbody>
                     </table>
                 </div>                <!-- Pagination -->
-                {% if users.pages > 1 %}
                 <nav aria-label="Page navigation" class="mt-4">
                     <ul class="pagination justify-content-center">
                         {% if users.has_prev %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('admin.dashboard', page=users.prev_num, role=current_role_filter, status=current_filter, search=search_query, sort=request.args.get('sort', 'id_asc')) }}" title="Trang trước">
-                                <i class="fas fa-chevron-left"></i>
+                            <a class="page-link" href="{{ url_for('admin.dashboard', page=users.prev_num, role=current_role_filter, status=current_filter, search=search_query) }}">
+                                <i class="bi bi-chevron-left"></i>
                             </a>
                         </li>
                         {% endif %}
                         
                         {% for page_num in range(1, users.pages + 1) %}
                         <li class="page-item {% if page_num == users.page %}active{% endif %}">
-                            <a class="page-link" href="{{ url_for('admin.dashboard', page=page_num, role=current_role_filter, status=current_filter, search=search_query, sort=request.args.get('sort', 'id_asc')) }}">
+                            <a class="page-link" href="{{ url_for('admin.dashboard', page=page_num, role=current_role_filter, status=current_filter, search=search_query) }}">
                                 {{ page_num }}
                             </a>
                         </li>
@@ -2237,22 +1937,13 @@ nav[aria-label="Page navigation"] {
                         
                         {% if users.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('admin.dashboard', page=users.next_num, role=current_role_filter, status=current_filter, search=search_query, sort=request.args.get('sort', 'id_asc')) }}" title="Trang sau">
-                                <i class="fas fa-chevron-right"></i>
+                            <a class="page-link" href="{{ url_for('admin.dashboard', page=users.next_num, role=current_role_filter, status=current_filter, search=search_query) }}">
+                                <i class="bi bi-chevron-right"></i>
                             </a>
                         </li>
                         {% endif %}
                     </ul>
-                    
-                    <!-- Page info -->
-                    <div class="text-center mt-2">
-                        <small class="text-muted">
-                            Hiển thị {{ ((users.page - 1) * 5) + 1 }} - {{ users.page * 5 if users.page * 5 <= users.total else users.total }} 
-                            trong tổng số {{ users.total }} bản ghi
-                        </small>
-                    </div>
                 </nav>
-                {% endif %}
             </div>
 
             <!-- Block: Quản lý Admin -->
@@ -2373,12 +2064,11 @@ nav[aria-label="Page navigation"] {
                                 <h4 class="mb-1">{{ stats.total_bookings }} <span class="fs-6 text-muted">lần</span></h4>
                                 <small class="text-muted">+{{ weekly_stats.new_bookings if weekly_stats.new_bookings else 0 }} trong tuần</small>
                             </div>
-                        </div>
-                        <div class="col-md-2">
+                        </div>                        <div class="col-md-2">
                             <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <h6 class="mb-2 text-muted">Hình thức phổ biến</h6>
-                                <h4 class="mb-1">{{ stats.common_type }}</h4>
-                                <small class="text-muted">Loại phòng được ưa chuộng</small>
+                                <h6 class="mb-2 text-muted">Lượt đặt phòng</h6>
+                                <h4 class="mb-1">+{{ weekly_stats.booking_growth_rate if weekly_stats.booking_growth_rate else 0 }}%</h4>
+                                <small class="text-muted">So với tuần trước</small>
                             </div>
                         </div>
                     </div>
@@ -2852,26 +2542,288 @@ nav[aria-label="Page navigation"] {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Dropdown polyfill for better cross-browser support -->
+
 <script>
-// Custom polyfill to ensure dropdowns work consistently
-window.addEventListener('load', function() {
-    if (typeof bootstrap !== 'undefined') {
-        // Give dropdowns time to initialize
-        setTimeout(function() {
-            document.querySelectorAll('.dropdown-toggle').forEach(function(element) {
-                // Ensure dropdown has proper attributes
-                element.setAttribute('data-bs-toggle', 'dropdown');
-                // Initialize or re-initialize dropdown
-                const existingDropdown = bootstrap.Dropdown.getInstance(element);
-                if (existingDropdown) existingDropdown.dispose();
-                new bootstrap.Dropdown(element);
+// Ensure DOM is fully loaded before initializing anything
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing all dropdowns...');
+    
+    // Wait a bit for Bootstrap to be fully ready
+    setTimeout(function() {
+        console.log('Bootstrap check:', typeof bootstrap !== 'undefined' ? 'Loaded' : 'Not loaded');
+        
+        if (typeof bootstrap === 'undefined') {
+            console.error('Bootstrap is not loaded!');
+            return;
+        }
+
+        // Find and initialize ALL dropdown elements
+        const allDropdownToggles = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+        console.log('Found dropdown toggles:', allDropdownToggles.length);
+        
+        allDropdownToggles.forEach(function(element, index) {
+            console.log(`Initializing dropdown ${index + 1}:`, element.id || element.className);
+            
+            try {
+                // Dispose any existing instance first
+                const existingInstance = bootstrap.Dropdown.getInstance(element);
+                if (existingInstance) {
+                    existingInstance.dispose();
+                }
+                
+                // Create new dropdown instance
+                const dropdown = new bootstrap.Dropdown(element, {
+                    autoClose: true,
+                    boundary: 'viewport'
+                });
+                
+                // Add debugging event listeners
+                element.addEventListener('show.bs.dropdown', function() {
+                    console.log('Dropdown showing:', this.id || this.className);
+                });
+                
+                element.addEventListener('shown.bs.dropdown', function() {
+                    console.log('Dropdown shown:', this.id || this.className);
+                });
+                
+                element.addEventListener('hide.bs.dropdown', function() {
+                    console.log('Dropdown hiding:', this.id || this.className);
+                });
+                
+        console.log('✓ Dropdown initialized successfully for:', element.id || element.className);
+                
+            } catch (error) {
+                console.error('✗ Failed to initialize dropdown:', element.id || element.className, error);
+            }
+        });
+        
+        // Test specific dropdowns
+        const roleDropdown = document.getElementById('roleFilterDropdown');
+        const sortDropdown = document.getElementById('sortFilterDropdown');
+        const navbarDropdown = document.getElementById('navbarDropdown');
+        
+        console.log('Specific dropdown check:');        console.log('- Role filter dropdown:', roleDropdown ? 'Found' : 'Not found');
+        console.log('- Sort dropdown:', sortDropdown ? 'Found' : 'Not found');
+        console.log('- Navbar dropdown:', navbarDropdown ? 'Found' : 'Not found');
+        
+        // CRITICAL: Special handling for navbar dropdown (user profile dropdown)
+        if (navbarDropdown) {
+            console.log('Initializing navbar dropdown specifically...');
+            try {
+                // Dispose any existing instance
+                const existingNavbarInstance = bootstrap.Dropdown.getInstance(navbarDropdown);
+                if (existingNavbarInstance) {
+                    existingNavbarInstance.dispose();
+                }
+                
+                // Create new navbar dropdown instance with specific configuration
+                const navbarDropdownInstance = new bootstrap.Dropdown(navbarDropdown, {
+                    autoClose: true,
+                    boundary: 'viewport',
+                    popperConfig: {
+                        strategy: 'fixed',
+                        placement: 'bottom-end'
+                    }
+                });
+                
+                // Add specific event listeners for navbar dropdown
+                navbarDropdown.addEventListener('click', function(e) {
+                    console.log('Navbar dropdown clicked!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Force toggle the dropdown
+                    const menu = this.nextElementSibling;
+                    if (menu && menu.classList.contains('dropdown-menu')) {
+                        if (menu.classList.contains('show')) {
+                            navbarDropdownInstance.hide();
+                        } else {
+                            navbarDropdownInstance.show();
+                        }
+                    }
+                });
+                
+                console.log('✓ Navbar dropdown initialized successfully!');
+            } catch (error) {
+                console.error('✗ Failed to initialize navbar dropdown:', error);
+                
+                // Fallback: Add manual navbar dropdown functionality
+                navbarDropdown.addEventListener('click', function(e) {
+                    console.log('Using fallback navbar dropdown functionality');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const menu = this.nextElementSibling;
+                    if (menu && menu.classList.contains('dropdown-menu')) {
+                        // Close all other dropdowns
+                        document.querySelectorAll('.dropdown-menu.show').forEach(function(openMenu) {
+                            if (openMenu !== menu) {
+                                openMenu.classList.remove('show');
+                            }
+                        });
+                        
+                        // Toggle current navbar dropdown
+                        menu.classList.toggle('show');
+                        this.setAttribute('aria-expanded', menu.classList.contains('show'));
+                        
+                        console.log('Navbar dropdown toggled:', menu.classList.contains('show') ? 'open' : 'closed');
+                    }
+                });
+            }
+        } else {
+            console.warn('⚠️  Navbar dropdown not found! Looking for alternative...');
+            
+            // Try to find navbar dropdown by class or other selectors
+            const altNavbarDropdown = document.querySelector('.navbar .dropdown-toggle');
+            if (altNavbarDropdown) {
+                console.log('Found alternative navbar dropdown, initializing...');
+                
+                altNavbarDropdown.addEventListener('click', function(e) {
+                    console.log('Alternative navbar dropdown clicked');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const menu = this.nextElementSibling;
+                    if (menu && menu.classList.contains('dropdown-menu')) {
+                        menu.classList.toggle('show');
+                        this.setAttribute('aria-expanded', menu.classList.contains('show'));
+                    }
+                });
+            }
+        }
+        
+        // Debug: Check if elements are visible
+        if (roleDropdown) {
+            const style = window.getComputedStyle(roleDropdown);
+            console.log('Role dropdown display:', style.display, 'visibility:', style.visibility);
+        }
+        
+        if (sortDropdown) {
+            const style = window.getComputedStyle(sortDropdown);
+            console.log('Sort dropdown display:', style.display, 'visibility:', style.visibility);
+        }
+        
+        // Debug: Check if owner-section is visible
+        const ownerSection = document.getElementById('owner-section');
+        if (ownerSection) {
+            const style = window.getComputedStyle(ownerSection);
+            console.log('Owner section display:', style.display, 'visibility:', style.visibility);
+        }
+        
+        // Add manual click test for debugging
+        if (roleDropdown) {
+            roleDropdown.addEventListener('click', function(e) {
+                console.log('Role dropdown clicked manually');
+                const menu = this.nextElementSibling;
+                if (menu) {
+                    console.log('Menu element found:', menu.classList.contains('dropdown-menu'));
+                    console.log('Menu classes:', menu.className);
+                    console.log('Menu visibility:', window.getComputedStyle(menu).display);
+                }
             });
-        }, 1000);
-    }
+        }
+          if (sortDropdown) {
+            sortDropdown.addEventListener('click', function(e) {
+                console.log('Sort dropdown clicked manually');
+                const menu = this.nextElementSibling;
+                if (menu) {
+                    console.log('Menu element found:', menu.classList.contains('dropdown-menu'));
+                    console.log('Menu classes:', menu.className);
+                    console.log('Menu visibility:', window.getComputedStyle(menu).display);
+                }
+            });
+        }
+        
+        // Add fallback manual dropdown functionality
+        console.log('Adding fallback manual dropdown functionality...');
+        
+        // Manual dropdown toggle for all dropdowns
+        document.querySelectorAll('.dropdown-toggle').forEach(function(toggle) {
+            toggle.addEventListener('click', function(e) {
+                console.log('Manual dropdown toggle clicked:', this.id || this.className);
+                
+                // Prevent default behavior
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const menu = this.nextElementSibling;
+                if (menu && menu.classList.contains('dropdown-menu')) {
+                    console.log('Toggling dropdown menu manually');
+                    
+                    // Close all other dropdowns first
+                    document.querySelectorAll('.dropdown-menu.show').forEach(function(openMenu) {
+                        if (openMenu !== menu) {
+                            openMenu.classList.remove('show');
+                        }
+                    });
+                    
+                    // Toggle current dropdown
+                    menu.classList.toggle('show');
+                    
+                    // Update aria-expanded attribute
+                    const isOpen = menu.classList.contains('show');
+                    this.setAttribute('aria-expanded', isOpen);
+                    
+                    console.log('Dropdown menu is now:', isOpen ? 'open' : 'closed');
+                }
+            });
+        });
+          // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                console.log('Clicking outside dropdown, closing all');
+                document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+                    menu.classList.remove('show');
+                });
+                
+                // Reset all aria-expanded attributes
+                document.querySelectorAll('.dropdown-toggle').forEach(function(toggle) {
+                    toggle.setAttribute('aria-expanded', 'false');
+                });
+            }
+        });
+          // CRITICAL: Ensure all dropdown links (especially logout) work properly
+        document.querySelectorAll('.dropdown-menu a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                console.log('Dropdown link clicked:', this.href || this.textContent.trim());
+                
+                // Don't prevent default for actual links (like logout)
+                if (this.href && this.href !== '#' && this.href !== 'javascript:void(0)') {
+                    console.log('Allowing navigation to:', this.href);
+                    // Let the link navigate normally
+                    return true;
+                }
+            });
+        });
+        
+        // DEBUG: Add a global function to manually test navbar dropdown
+        window.testNavbarDropdown = function() {
+            console.log('Testing navbar dropdown manually...');
+            const navbarDropdown = document.getElementById('navbarDropdown') || document.querySelector('.navbar .dropdown-toggle');
+            
+            if (navbarDropdown) {
+                console.log('Found navbar dropdown element');
+                const menu = navbarDropdown.nextElementSibling;
+                
+                if (menu && menu.classList.contains('dropdown-menu')) {
+                    console.log('Found navbar dropdown menu');
+                    menu.classList.toggle('show');
+                    navbarDropdown.setAttribute('aria-expanded', menu.classList.contains('show'));
+                    console.log('Navbar dropdown is now:', menu.classList.contains('show') ? 'OPEN' : 'CLOSED');
+                } else {
+                    console.error('Navbar dropdown menu not found');
+                }
+            } else {
+                console.error('Navbar dropdown element not found');
+            }
+        };
+        
+        console.log('🔧 Debug: You can test the navbar dropdown by running: testNavbarDropdown() in the console');
+          }, 500); // Increased delay to ensure everything is ready
 });
 </script>
 
+<!-- Chart.js for Statistics -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -2883,69 +2835,6 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.hide();
         }
     }
-
-        setTimeout(() => {
-        // Get all dropdown toggles, including the navbar dropdown
-        const allDropdownToggles = document.querySelectorAll('.dropdown-toggle');
-        // Specifically target the navbarDropdown in the user menu
-        const navbarDropdown = document.getElementById('navbarDropdown');
-        if (navbarDropdown) {
-            // Remove previous event listeners and bootstrap instances
-            const existingDropdown = bootstrap.Dropdown.getInstance(navbarDropdown);
-            if (existingDropdown) {
-                existingDropdown.dispose();
-            }
-            
-            // Make sure dropdown has proper attributes
-            navbarDropdown.setAttribute('data-bs-toggle', 'dropdown');
-            navbarDropdown.setAttribute('aria-expanded', 'false');
-            
-            // Initialize dropdown with options
-            const dropdown = new bootstrap.Dropdown(navbarDropdown, {
-                autoClose: true,
-                boundary: 'viewport'
-            });
-            
-            // Add manual click handler for additional reliability
-            navbarDropdown.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const dropdownMenu = navbarDropdown.nextElementSibling;
-                
-                if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
-                    if (dropdownMenu.classList.contains('show')) {
-                        dropdown.hide();
-                    } else {
-                        dropdown.show();
-                    }
-                }
-            });
-              } else {
-            // Fallback to query selector if ID not found
-            const dropdownToggle = document.querySelector('.navbar .dropdown-toggle');
-            if (dropdownToggle) {
-                // Remove previous event listeners
-                dropdownToggle.removeAttribute('data-bs-toggle');
-                
-                // Add proper attributes back
-                dropdownToggle.setAttribute('data-bs-toggle', 'dropdown');
-                dropdownToggle.setAttribute('aria-expanded', 'false');
-                
-                // Initialize dropdown
-                try {
-                    const existingDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
-                    if (existingDropdown) {
-                        existingDropdown.dispose();
-                    }
-                    new bootstrap.Dropdown(dropdownToggle);
-                } catch (e) {
-                    console.error('Error initializing dropdown:', e);
-                }
-            }
-        }        // Kiểm tra Bootstrap
-        if (typeof bootstrap === 'undefined') {
-            console.error('Bootstrap is not loaded!');
-        }
-    }, 500);
 
     // Sidebar Menu Handling
     const initializeSidebar = () => {
@@ -2976,117 +2865,74 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
+        // Hàm để hiển thị section và lưu vào localStorage
+        const showSection = (sectionId, menuElement) => {
+            hideAllSections();
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'block';
+            }
+            setActiveMenu(menuElement);
+            // Lưu section hiện tại vào localStorage
+            localStorage.setItem('currentAdminSection', sectionId);
+        };
+
         // Gán sự kiện click cho từng menu item
         if (menuStats) {
             menuStats.addEventListener('click', () => {
-                hideAllSections();
-                statsSection.style.display = 'block';
-                setActiveMenu(menuStats);
+                showSection('stats-section', menuStats);
             });
         }
 
         if (menuOwner) {
             menuOwner.addEventListener('click', () => {
-                // Redirect to owner filter to ensure only owners are shown
-                const currentUrl = new URL(window.location);
-                currentUrl.searchParams.set('role', 'owner');
-                currentUrl.searchParams.delete('search'); // Clear search when switching to owner view
-                window.location.href = currentUrl.toString();
+                showSection('owner-section', menuOwner);
             });
         }
-
-
-
-
 
         if (menuManageAdmin) {
             menuManageAdmin.addEventListener('click', () => {
-                hideAllSections();
-                manageAdminSection.style.display = 'block';
-                setActiveMenu(menuManageAdmin);
+                showSection('manage-admin-section', menuManageAdmin);
             });
         }
 
-        // Logic hiển thị section mặc định khi tải trang
+        // Logic hiển thị section khi tải trang - ưu tiên localStorage
         hideAllSections(); // Ẩn tất cả trước
         
-        // Check URL parameters to determine which section to show
-        const urlParams = new URLSearchParams(window.location.search);
-        const roleFilter = urlParams.get('role');
+        // Lấy section đã lưu từ localStorage
+        const savedSection = localStorage.getItem('currentAdminSection');
         
-        // Show owner section and set appropriate active menu based on role filter
-        if (roleFilter === 'owner') {
-            ownerSection.style.display = 'block';
-            setActiveMenu(menuOwner);
-        } else if (roleFilter === 'all' || !roleFilter) {
-            // Default to owner view but ensure URL has role=owner parameter
-            const currentUrl = new URL(window.location);
-            currentUrl.searchParams.set('role', 'owner');
-            window.location.replace(currentUrl.toString());
-            return;
-        } else {
-            // For other cases, check active menu
-            const initiallyActiveMenu = document.querySelector('.sidebar-menu-link.active');
-            if (initiallyActiveMenu) {
-                if (initiallyActiveMenu.id === 'menu-stats') {
-                    statsSection.style.display = 'block';
-                } else if (initiallyActiveMenu.id === 'menu-manage-admin') {
-                    manageAdminSection.style.display = 'block';
-                } else {
-                    ownerSection.style.display = 'block';
+        if (savedSection) {
+            // Nếu có section đã lưu, hiển thị section đó
+            const section = document.getElementById(savedSection);
+            if (section) {
+                section.style.display = 'block';
+                
+                // Set active menu tương ứng
+                if (savedSection === 'stats-section') {
+                    setActiveMenu(menuStats);
+                } else if (savedSection === 'manage-admin-section') {
+                    setActiveMenu(menuManageAdmin);
+                } else if (savedSection === 'owner-section') {
+                    setActiveMenu(menuOwner);
                 }
             } else {
-                // Nếu không có menu nào active, redirect to owner view
-                const currentUrl = new URL(window.location);
-                currentUrl.searchParams.set('role', 'owner');
-                window.location.replace(currentUrl.toString());
-                return;
+                // Nếu section không tồn tại, fallback về owner
+                if (ownerSection) {
+                    ownerSection.style.display = 'block';
+                    setActiveMenu(menuOwner);
+                    localStorage.setItem('currentAdminSection', 'owner-section');
+                }
+            }
+        } else {
+            // Nếu chưa có section nào được lưu, mặc định hiển thị owner
+            if (ownerSection) {
+                ownerSection.style.display = 'block';
+                setActiveMenu(menuOwner);
+                localStorage.setItem('currentAdminSection', 'owner-section');
             }
         }
-    };
-
-    initializeSidebar();
-
-    // Initialize filter dropdowns
-    const initializeFilterDropdowns = () => {
-        // Initialize all dropdowns in the filter section
-        const filterDropdowns = document.querySelectorAll('.filter-dropdown .dropdown-toggle, .sort-dropdown .dropdown-toggle');
-        filterDropdowns.forEach(dropdown => {
-            try {
-                // Make sure dropdown has proper attributes
-                dropdown.setAttribute('data-bs-toggle', 'dropdown');
-                dropdown.setAttribute('aria-expanded', 'false');
-                
-                // Initialize Bootstrap dropdown
-                const existingDropdown = bootstrap.Dropdown.getInstance(dropdown);
-                if (existingDropdown) {
-                    existingDropdown.dispose();
-                }
-                new bootstrap.Dropdown(dropdown, {
-                    autoClose: true,
-                    boundary: 'viewport'
-                });
-                
-                console.log('Filter dropdown initialized:', dropdown);
-            } catch (e) {
-                console.error('Error initializing filter dropdown:', e);
-            }
-        });
-
-        // Add click event listeners to filter dropdown items
-        const filterItems = document.querySelectorAll('.filter-dropdown .dropdown-item');
-        filterItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                console.log('Filter item clicked:', this.href);
-                // Let the default behavior happen (navigate to the URL)
-            });
-        });
-    };
-
-    // Initialize filter dropdowns after a short delay
-    setTimeout(() => {
-        initializeFilterDropdowns();
-    }, 600);
+    };    initializeSidebar();
 
     // Không tự động hiển thị modal development để tránh che dropdown
     // const developmentModal = new bootstrap.Modal(document.getElementById('developmentModal'));
@@ -3354,59 +3200,74 @@ document.addEventListener('DOMContentLoaded', function() {
     const activateContent = document.getElementById('activateContent');
     const previousReason = document.getElementById('previousReason');
     const reasonTextarea = document.querySelector('textarea[name="reason"]');
-    let currentForm = null;
-
-    // Khi click vào nút toggle status trong dropdown
+    let currentForm = null;    // Khi click vào nút toggle status trong dropdown
     document.querySelectorAll('button[data-action="toggle-status"]').forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
-            const row = this.closest('tr');
-            const isActive = row.getAttribute('data-status') === 'active';
-            const ownerId = this.getAttribute('data-owner-id');
-            currentForm = this.closest('form');
+            const userId = this.getAttribute('data-user-id');
+            const userType = this.getAttribute('data-role-type');
+            const isActive = this.getAttribute('data-is-active') === 'true';
+            
+            // Store current button data for later use
+            currentForm = {
+                userId: userId,
+                userType: userType,
+                isActive: isActive
+            };
 
             // Reset form
-            reasonTextarea.value = '';
+            if (reasonTextarea) {
+                reasonTextarea.value = '';
+            }
             
             if (isActive) {
                 // Hiển thị form vô hiệu hóa
                 deactivateContent.style.display = 'block';
                 activateContent.style.display = 'none';
-                reasonTextarea.required = true;
+                if (reasonTextarea) {
+                    reasonTextarea.required = true;
+                }
             } else {
                 // Hiển thị form kích hoạt và lấy lý do trước đó
                 deactivateContent.style.display = 'none';
                 activateContent.style.display = 'block';
-                reasonTextarea.required = false;
+                if (reasonTextarea) {
+                    reasonTextarea.required = false;
+                }
                 
                 // Lấy lý do vô hiệu hóa trước đó
-                fetch(`/admin/owner/${ownerId}/reason`)
+                fetch(`/admin/users/${userId}/reason?user_type=${userType}`)
                     .then(response => response.json())
                     .then(data => {
-                        previousReason.textContent = data.reason || 'Không có lý do';
+                        if (previousReason) {
+                            previousReason.textContent = data.reason || 'Không có lý do';
+                        }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        previousReason.textContent = 'Không thể lấy lý do';
+                        if (previousReason) {
+                            previousReason.textContent = 'Không thể lấy lý do';
+                        }
                     });
-            }
-
-            toggleStatusModal.show();
+            }            toggleStatusModal.show();
         });
     });
 
     // Khi click nút xác nhận trong modal
     document.getElementById('confirmToggleBtn').addEventListener('click', function() {
         if (currentForm) {
-            const formData = new FormData();
-            formData.append('reason', reasonTextarea.value);
+            const reason = reasonTextarea ? reasonTextarea.value : '';
             
-            fetch(currentForm.action, {
+            // Make API call to toggle status with reason
+            fetch(`/admin/users/${currentForm.userId}/toggle-status`, {
                 method: 'POST',
-                body: formData,
                 headers: {
-                    'Accept': 'application/json'
-                }
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_type: currentForm.userType,
+                    action: currentForm.isActive ? 'deactivate' : 'activate',
+                    reason: reason                })
             })
             .then(response => response.json())
             .then(data => {
@@ -3585,53 +3446,20 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Navbar z-index:', navbarZIndex);
     } else {
         console.error('Bootstrap not loaded');    }
-    
-    // User action handlers for the unified user table
-    window.viewUserDetails = function(userId, userType) {
+      // User action handlers for the unified user table    window.viewUserDetails = function(element) {
+        const userId = element.getAttribute('data-user-id');
+        const userType = element.getAttribute('data-role-type');
+        
         // Implement view user details functionality
         console.log('View user details:', userId, userType);
         // TODO: Show user details modal or redirect to user detail page
-    };
+        alert(`Xem chi tiết người dùng ID: ${userId}, Loại: ${userType}\n(Chức năng này đang được phát triển)`);
+    });
     
-    window.toggleUserStatus = function(userId, userType, currentStatus) {
-        // Implement toggle user status functionality
-        console.log('Toggle user status:', userId, userType, currentStatus);
+    window.deleteUser = function(element) {
+        const userId = element.getAttribute('data-user-id');
+        const userType = element.getAttribute('data-role-type');
         
-        const action = currentStatus === 'active' ? 'deactivate' : 'activate';
-        const actionText = currentStatus === 'active' ? 'vô hiệu hóa' : 'kích hoạt';
-        
-        if (confirm(`Bạn có chắc muốn ${actionText} người dùng này?`)) {
-            // Make API call to toggle status
-            fetch(`/admin/users/${userId}/toggle-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    user_type: userType,
-                    action: action
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('success', data.message);
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                } else {
-                    showToast('error', data.error || 'Có lỗi xảy ra');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('error', 'Có lỗi xảy ra khi xử lý yêu cầu');
-            });
-        }
-    };
-    
-    window.deleteUser = function(userId, userType) {
-        // Implement delete user functionality
         console.log('Delete user:', userId, userType);
         
         if (confirm('Bạn có chắc muốn xóa người dùng này? Hành động này không thể hoàn tác!')) {
@@ -3736,7 +3564,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-});
 </script>
 
 <!-- Modal Thêm Admin -->
