@@ -901,6 +901,10 @@ def get_dates_with_bookings(year, month):
 @owner_bp.route('/view-bookings/<status>')
 @owner_required
 def view_bookings(status=None):
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 50  # 50 items per page
+    
     # Get all rooms owned by current user
     rooms = Room.query.filter_by(owner_id=current_user.id).all()
     
@@ -916,10 +920,32 @@ def view_bookings(status=None):
     # Sort bookings by created_at date, newest first
     all_bookings.sort(key=lambda x: x.created_at, reverse=True)
     
+    # Calculate pagination
+    total_bookings = len(all_bookings)
+    total_pages = (total_bookings + per_page - 1) // per_page  # Ceiling division
+    
+    # Get bookings for current page
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    paginated_bookings = all_bookings[start_idx:end_idx]
+    
+    # Create pagination info
+    pagination = {
+        'page': page,
+        'per_page': per_page,
+        'total': total_bookings,
+        'total_pages': total_pages,
+        'has_prev': page > 1,
+        'has_next': page < total_pages,
+        'prev_num': page - 1 if page > 1 else None,
+        'next_num': page + 1 if page < total_pages else None
+    }
+    
     return render_template('owner/view_bookings.html', 
-                          bookings=all_bookings, 
-                          filtered_bookings=all_bookings,
-                          current_status=status)
+                          bookings=all_bookings,  # All bookings for counts
+                          filtered_bookings=paginated_bookings,  # Paginated bookings for display
+                          current_status=status,
+                          pagination=pagination)
 
 
 @owner_bp.route('/room/<int:room_id>/add-images', methods=['GET', 'POST'])
