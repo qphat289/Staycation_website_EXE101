@@ -1,0 +1,1209 @@
+{% extends 'owner/base_owner.html' %}
+
+{% block title %}Tất cả phòng{% endblock %}
+
+{% block page_title %}Tất cả phòng{% endblock %}
+{% block page_subtitle %}Quản lý tất cả phòng của bạn{% endblock %}
+
+{% block page_css %}
+<style>
+    /* Dashboard specific styles */
+
+    .filter-section {
+        padding: 1rem 2rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin: 0 2rem 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .filter-left {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .search-box {
+        position: relative;
+        width: 240px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        outline: none;
+        font-size: 0.9rem;
+        background: #fafafa;
+    }
+
+    .search-box input:focus {
+        border-color: #9ed649;
+        background: white;
+    }
+
+    .filter-btn {
+        padding: 10px 16px;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .filter-btn:hover {
+        background: #f5f5f5;
+        border-color: #ccc;
+    }
+
+    .sort-dropdown {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .sort-dropdown select {
+        padding: 10px 35px 10px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        outline: none;
+        font-size: 0.9rem;
+        background: white;
+        appearance: none;
+        cursor: pointer;
+        color: #666;
+        font-weight: 500;
+        min-width: 120px;
+    }
+
+    .sort-dropdown select:focus {
+        border-color: #9ed649;
+    }
+
+    .sort-dropdown i {
+        position: absolute;
+        right: 12px;
+        color: #666;
+        pointer-events: none;
+        font-size: 0.8rem;
+    }
+
+    /* Filter Modal Styles */
+    .filter-options {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    .filter-options .form-check {
+        margin-bottom: 8px;
+    }
+
+    .filter-options .form-check-input:checked {
+        background-color: #9ed649;
+        border-color: #9ed649;
+    }
+
+    .filter-options .form-check-label {
+        font-weight: 500;
+        color: #333;
+        cursor: pointer;
+    }
+
+    #filterModal .form-control,
+    #filterModal .form-select {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    #filterModal .form-control:focus,
+    #filterModal .form-select:focus {
+        border-color: #9ed649;
+        box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+    }
+
+    /* Flash Messages */
+    .flash-messages {
+        margin: 1rem 1.5rem;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 1px solid;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+        transition: opacity 0.5s ease-out;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+        transition: opacity 0.5s ease-out;
+    }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        border-color: #ffeaa7;
+        color: #856404;
+        transition: opacity 0.5s ease-out;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+        transition: opacity 0.5s ease-out;
+    }
+
+    .btn-close {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        opacity: 0.7;
+    }
+
+    .btn-close:hover {
+        opacity: 1;
+    }
+
+    .add-room-btn {
+        padding: 10px 20px;
+        background: #9ed649;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 4px rgba(158, 214, 73, 0.3);
+        transition: all 0.2s;
+    }
+
+    .add-room-btn:hover {
+        background: #8ab82f;
+        box-shadow: 0 2px 6px rgba(158, 214, 73, 0.4);
+        transform: translateY(-1px);
+    }
+
+    /* Homestay List */
+    .homestay-list {
+        padding: 0;
+        margin: 0 2rem 2rem 2rem;
+    }
+
+    .homestay-item {
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem;
+        border-bottom: 1px solid #f1f1f1;
+        transition: background-color 0.2s;
+    }
+
+    .homestay-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .homestay-item:last-child {
+        border-bottom: none;
+    }
+
+    .homestay-main-content {
+        display: flex;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .homestay-image {
+        width: 160px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 1rem;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 2rem;
+    }
+
+    .homestay-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .homestay-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .clickable-title {
+        cursor: pointer;
+        transition: color 0.3s ease, transform 0.2s ease;
+        z-index: 1;
+        position: relative;
+    }
+
+    .clickable-title:hover {
+        color: #9ed649;
+        transform: translateX(4px);
+    }
+
+    .homestay-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .homestay-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .homestay-detail i {
+        width: 16px;
+        color: #999;
+    }
+
+    .homestay-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: -2.5rem;
+        z-index: 3;
+        position: relative;
+    }
+
+    .homestay-status {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        z-index: 2;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background: transparent;
+        border: 1px solid;
+    }
+
+    .status-active {
+        color: #2e7d32;
+        border-color: #2e7d32;
+    }
+
+    .status-inactive {
+        color: #c62828;
+        border-color: #c62828;
+    }
+
+    .status-new {
+        color: #2e7d32;
+        border-color: #2e7d32;
+    }
+
+    .status-rented {
+        background: #fff3e0;
+        color: #ef6c00;
+    }
+
+    .homestay-date {
+        color: #999;
+        font-size: 0.85rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+        background: transparent;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .btn-action:hover {
+        color: white;
+        background: #333;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 40px;
+        color: #666;
+        margin: 0 2rem 2rem 2rem;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    /* Custom styles for delete modal */
+    #deleteReason:focus {
+        border-color: #ff6b6b !important;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25) !important;
+    }
+
+    #deleteReason:invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .modal-backdrop {
+        backdrop-filter: blur(3px);
+    }
+
+    /* Animation for modal */
+    .modal.fade .modal-dialog {
+        transform: scale(0.8) translateY(-50px);
+        transition: all 0.3s ease;
+    }
+
+    .modal.show .modal-dialog {
+        transform: scale(1) translateY(0);
+    }
+
+    /* Button hover effects */
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #ee5a24, #ff6b6b) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(238, 90, 36, 0.4) !important;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268 !important;
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'warning' if category == 'warning' else 'danger' }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'info-circle' if category == 'info' else 'exclamation-triangle' if category == 'warning' else 'exclamation-circle' }}"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Draft Room Data Alert -->
+        <div id="draft-room-alert" class="alert alert-dismissible fade show" role="alert" style="display: none; background-color: #f0f9e6; border: 1px solid #9ed649; border-radius: 8px;">
+            <i class="fas fa-edit" style="color: #9ed649;"></i>
+            <span style="color: #5a7c0a; font-weight: 500;">
+                Bạn có thông tin phòng chưa hoàn thành. 
+            </span>
+            <a href="{{ url_for('owner.add_room') }}" style="color: #9ed649; font-weight: 600; text-decoration: none;">Tiếp tục hoàn thiện</a> 
+            <span style="color: #5a7c0a;">hoặc</span>
+            <button type="button" class="btn btn-sm ms-2" onclick="clearDraftData()" style="background-color: #fff; border: 1px solid #9ed649; color: #5a7c0a; border-radius: 4px; padding: 4px 12px; font-size: 0.85rem;">Xóa bỏ</button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: none; opacity: 0.6;"></button>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-left">
+                <div class="search-box">
+                    <input type="text" placeholder="Search" id="searchInput">
+                </div>
+                <button class="filter-btn" data-bs-toggle="modal" data-bs-target="#filterModal">
+                    <i class="fas fa-filter"></i>
+                    Filter
+                </button>
+                <div class="sort-dropdown">
+                    <select>
+                        <option>Sắp xếp</option>
+                        <option>Mới nhất</option>
+                        <option>Cũ nhất</option>
+                        <option>Giá cao</option>
+                        <option>Giá thấp</option>
+                    </select>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            <button class="add-room-btn" onclick="window.location.href='{{ url_for('owner.add_room') }}'">
+                <i class="fas fa-plus"></i>
+                Thêm phòng
+            </button>
+        </div>
+
+        <!-- Homestay List -->
+        {% if rooms %}
+        <div class="homestay-list">
+            {% for room in rooms %}
+            <div class="homestay-item">
+                <div class="homestay-main-content">
+                    <div class="homestay-status">
+                        <span class="status-badge {{ 'status-active' if room.is_active else 'status-inactive' }}">
+                            {{ 'Đã khóa' if not room.is_active else 'Hoạt động' }}
+                        </span>
+                        <span class="status-badge status-new">{{ room.room_type | property_type_vn }}</span>
+                    </div>
+                    <div class="homestay-image">
+                        {% set featured_image = room.images|selectattr('is_featured')|first %}
+                        {% if featured_image %}
+                            <img src="{{ url_for('static', filename=featured_image.image_path) }}" alt="{{ room.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        {% elif room.images and room.images|length > 0 %}
+                            <img src="{{ url_for('static', filename=room.images[0].image_path) }}" alt="{{ room.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        {% else %}
+                            <i class="fas fa-image"></i>
+                        {% endif %}
+                    </div>
+                    <div class="homestay-info">
+                        <h3 class="homestay-name clickable-title" onclick="window.location.href='{{ url_for('owner.room_detail', room_id=room.id) }}'">{{ room.title }}</h3>
+                        <div class="homestay-details">
+                            <div class="homestay-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ room.address }}, {{ room.district | location_name('district') }}, {{ room.city | location_name('city') }}</span>
+                            </div>
+                            <div class="homestay-detail">
+                                <i class="fas fa-money-bill"></i>
+                                <span>
+                                    {% if room.price_per_hour %}
+                                        {{ "{:,.0f}".format(room.display_price) }}đ /giờ
+                                    {% elif room.price_per_night %}
+                                        {{ "{:,.0f}".format(room.display_price_per_night) }}đ /đêm
+                                    {% else %}
+                                        Chưa có giá
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="homestay-detail">
+                                <span class="homestay-date">
+                                    {% if room.created_at %}
+                                        Thêm vào {{ room.created_at.strftime('%d-%m-%Y') }}
+                                    {% else %}
+                                        Mới thêm
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="homestay-actions">
+                    <div class="action-buttons">
+                        <a href="{{ url_for('owner.toggle_room_status', room_id=room.id) }}" class="btn-action btn-lock" onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái phòng?')">
+                            {{ 'Mở khóa' if not room.is_active else 'Lock phòng' }}
+                        </a>
+                        <a href="{{ url_for('owner.edit_room', room_id=room.id) }}" class="btn-action btn-edit">
+                            Edit
+                        </a>
+                        <button type="button" class="btn-action btn-delete" 
+                                onclick="openDeleteModal({{ room.id }}, '{{ room.title }}')">
+                            Xóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-home"></i>
+            <h3>Chưa có phòng nào</h3>
+            <p>Bắt đầu bằng cách thêm phòng đầu tiên của bạn</p>
+        </div>
+        {% endif %}
+{% endblock %}
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border: none; border-radius: 15px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #9ed649, #7bb93d); border-radius: 15px 15px 0 0; color: white; border: none;">
+                <h5 class="modal-title" id="filterModalLabel" style="font-weight: 600;">
+                    <i class="fas fa-filter me-2"></i>Lọc phòng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <form id="filterForm">
+                    <div class="row">
+                        <!-- Trạng thái phòng -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-toggle-on me-2"></i>Trạng thái phòng
+                            </label>
+                            <div class="filter-options">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" id="status_all" value="all" checked>
+                                    <label class="form-check-label" for="status_all">Tất cả</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" id="status_active" value="active">
+                                    <label class="form-check-label" for="status_active">Hoạt động</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" id="status_inactive" value="inactive">
+                                    <label class="form-check-label" for="status_inactive">Tạm khóa</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loại phòng -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-home me-2"></i>Loại phòng
+                            </label>
+                            <div class="filter-options">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="room_type" id="type_house" value="house">
+                                    <label class="form-check-label" for="type_house">Nhà nguyên căn</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="room_type" id="type_apartment" value="apartment">
+                                    <label class="form-check-label" for="type_apartment">Căn hộ</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="room_type" id="type_private" value="private_room">
+                                    <label class="form-check-label" for="type_private">Phòng riêng</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="room_type" id="type_studio" value="studio">
+                                    <label class="form-check-label" for="type_studio">Studio</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Khoảng giá -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-money-bill-wave me-2"></i>Khoảng giá (VND)
+                            </label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="price_min" name="price_min" placeholder="Giá thấp nhất" min="0">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="price_max" name="price_max" placeholder="Giá cao nhất" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ngày tạo -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-calendar me-2"></i>Ngày tạo
+                            </label>
+                            <select class="form-select" name="date_filter" id="date_filter">
+                                <option value="all">Tất cả</option>
+                                <option value="today">Hôm nay</option>
+                                <option value="week">7 ngày qua</option>
+                                <option value="month">30 ngày qua</option>
+                                <option value="custom">Tùy chọn</option>
+                            </select>
+                            <div id="custom_date_range" style="display: none;" class="mt-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="date" class="form-control" id="date_from" name="date_from">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="date" class="form-control" id="date_to" name="date_to">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Địa điểm -->
+                        <div class="col-12 mb-4">
+                            <label class="form-label fw-bold text-secondary">
+                                <i class="fas fa-map-marker-alt me-2"></i>Địa điểm
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <select class="form-select" name="city" id="filter_city">
+                                        <option value="">Tất cả tỉnh/thành</option>
+                                        <option value="hcm">TP. Hồ Chí Minh</option>
+                                        <option value="hanoi">Hà Nội</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-select" name="district" id="filter_district">
+                                        <option value="">Tất cả quận/huyện</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border: none; padding: 20px 30px;">
+                <button type="button" class="btn btn-secondary" onclick="clearAllFilters()" 
+                        style="border-radius: 8px; padding: 10px 20px; font-weight: 500;">
+                    <i class="fas fa-eraser me-1"></i>Xóa bộ lọc
+                </button>
+                <button type="button" class="btn btn-primary" onclick="applyFilters()" data-bs-dismiss="modal"
+                        style="border-radius: 8px; padding: 10px 20px; font-weight: 500; background: linear-gradient(135deg, #9ed649, #7bb93d); border: none;">
+                    <i class="fas fa-check me-1"></i>Áp dụng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Room Modal -->
+<div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); border-radius: 15px 15px 0 0; color: white; border: none;">
+                <h5 class="modal-title" id="deleteRoomModalLabel" style="font-weight: 600;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa phòng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deleteRoomForm" method="POST">
+                <div class="modal-body" style="padding: 30px;">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-home" style="font-size: 48px; color: #ff6b6b; margin-bottom: 15px;"></i>
+                        <h6 class="mb-3" style="color: #333; font-weight: 600;">Bạn có chắc chắn muốn xóa phòng này?</h6>
+                        <p id="roomName" class="mb-3" style="color: #e74c3c; font-weight: 500; font-size: 18px;"></p>
+                        <p style="color: #7f8c8d; margin-bottom: 25px;">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến phòng sẽ bị xóa vĩnh viễn.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="deleteReason" class="form-label" style="font-weight: 600; color: #333;">
+                            <i class="fas fa-comment-alt me-1"></i>Lý do xóa phòng <span style="color: #e74c3c;">*</span>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="deleteReason" 
+                            name="delete_reason" 
+                            rows="4" 
+                            placeholder="Vui lòng nhập lý do bạn muốn xóa phòng này..."
+                            required
+                            style="border-radius: 10px; border: 2px solid #e9ecef; transition: all 0.3s ease;"
+                        ></textarea>
+                        <div class="form-text" style="color: #6c757d;">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            Ví dụ: Phòng không còn cho thuê, chuyển đổi mục đích sử dụng, v.v.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border: none; padding: 20px 30px;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" 
+                            style="border-radius: 8px; padding: 10px 20px; font-weight: 500;">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirmDeleteBtn"
+                            style="border-radius: 8px; padding: 10px 20px; font-weight: 500; background: linear-gradient(135deg, #ff6b6b, #ee5a24); border: none;">
+                        <i class="fas fa-trash-alt me-1"></i>Xóa phòng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const homestayItems = document.querySelectorAll('.homestay-item');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        homestayItems.forEach(item => {
+            const homestayName = item.querySelector('.homestay-name').textContent.toLowerCase();
+            const homestayAddress = item.querySelector('.homestay-detail span').textContent.toLowerCase();
+            
+            if (homestayName.includes(searchTerm) || homestayAddress.includes(searchTerm)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+    
+    // Auto-hide flash messages after 4 seconds
+    const flashMessages = document.querySelectorAll('.alert-dismissible');
+    flashMessages.forEach(alert => {
+        setTimeout(() => {
+            if (alert.parentNode) {
+                // Fade out effect
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        }, 4000); // 4 seconds
+    });
+    
+    // Check for draft room data and show alert
+    checkForDraftRoomData();
+    
+    // Clear room form session data when successfully created room
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('created') === 'success') {
+        sessionStorage.removeItem('room_form_data');
+        // Clean up URL
+        if (window.history.replaceState) {
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, '', cleanUrl);
+        }
+    }
+});
+
+// Check for draft room data in sessionStorage and server session
+function checkForDraftRoomData() {
+    // First, check if we just created a room successfully
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('created') === 'success') {
+        // Don't show alert if we just created a room
+        return;
+    }
+    
+    const sessionStorageData = sessionStorage.getItem('room_form_data');
+    const hasServerData = {{ 'true' if session.get('room_preview_data') else 'false' }};
+    
+    // Only show alert if we have actual draft data AND we're in dashboard
+    if ((sessionStorageData || hasServerData) && window.location.pathname === '/owner/dashboard') {
+        const alert = document.getElementById('draft-room-alert');
+        if (alert) {
+            alert.style.display = 'block';
+            }
+    }
+}
+
+// Clear all draft data
+function clearDraftData() {
+    // Clear sessionStorage
+    sessionStorage.removeItem('room_form_data');
+    
+    // Clear server session
+    fetch('/owner/clear-room-session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        // Hide alert
+        const alert = document.getElementById('draft-room-alert');
+        if (alert) {
+            alert.style.display = 'none';
+        }
+        
+        // Show success message
+        showTempMessage('Đã xóa dữ liệu phòng tạm thời.', 'success');
+    }).catch(error => {
+        console.error('❌ Error clearing draft data:', error);
+        showTempMessage('Có lỗi khi xóa dữ liệu.', 'danger');
+    });
+}
+
+// Show temporary message
+function showTempMessage(message, type) {
+    const flashContainer = document.querySelector('.flash-messages') || document.querySelector('.page-header');
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    if (flashContainer) {
+        flashContainer.appendChild(alert);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 3000);
+    }
+}
+
+// Delete Room Modal Functions
+function openDeleteModal(roomId, roomTitle) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteRoomModal'));
+    const form = document.getElementById('deleteRoomForm');
+    const roomNameEl = document.getElementById('roomName');
+    const deleteReasonEl = document.getElementById('deleteReason');
+    
+    // Set room name
+    roomNameEl.textContent = roomTitle;
+    
+    // Set form action
+    form.action = `/owner/delete-room/${roomId}`;
+    
+    // Clear previous reason
+    deleteReasonEl.value = '';
+    
+    // Show modal
+    modal.show();
+    
+    // Focus on textarea after modal is shown
+    document.getElementById('deleteRoomModal').addEventListener('shown.bs.modal', function () {
+        deleteReasonEl.focus();
+    }, { once: true });
+}
+
+// Form validation
+document.getElementById('deleteRoomForm').addEventListener('submit', function(e) {
+    const deleteReason = document.getElementById('deleteReason').value.trim();
+    
+    if (deleteReason.length < 10) {
+        e.preventDefault();
+        showTempMessage('Lý do xóa phải có ít nhất 10 ký tự.', 'warning');
+        document.getElementById('deleteReason').focus();
+        return false;
+    }
+    
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xóa...';
+    confirmBtn.disabled = true;
+    
+    // Allow form to submit
+    return true;
+});
+
+// Filter Functions
+let currentFilters = {
+    status: 'all',
+    room_types: [],
+    price_min: null,
+    price_max: null,
+    date_filter: 'all',
+    date_from: null,
+    date_to: null,
+    city: '',
+    district: ''
+};
+
+// Show/hide custom date range
+document.getElementById('date_filter').addEventListener('change', function() {
+    const customDateRange = document.getElementById('custom_date_range');
+    if (this.value === 'custom') {
+        customDateRange.style.display = 'block';
+    } else {
+        customDateRange.style.display = 'none';
+    }
+});
+
+// City change handler for district dropdown
+document.getElementById('filter_city').addEventListener('change', function() {
+    const districtSelect = document.getElementById('filter_district');
+    districtSelect.innerHTML = '<option value="">Tất cả quận/huyện</option>';
+    
+    if (this.value === 'hcm') {
+        const hcmDistricts = [
+            'Quận 1', 'Quận 2', 'Quận 3', 'Quận 4', 'Quận 5', 'Quận 6', 'Quận 7', 'Quận 8', 'Quận 9', 'Quận 10',
+            'Quận 11', 'Quận 12', 'Quận Bình Thạnh', 'Quận Gò Vấp', 'Quận Phú Nhuận', 'Quận Tân Bình', 'Quận Tân Phú',
+            'Quận Thủ Đức', 'Huyện Bình Chánh', 'Huyện Cần Giờ', 'Huyện Củ Chi', 'Huyện Hóc Môn', 'Huyện Nhà Bè'
+        ];
+        hcmDistricts.forEach(district => {
+            const option = document.createElement('option');
+            option.value = district;
+            option.textContent = district;
+            districtSelect.appendChild(option);
+        });
+    } else if (this.value === 'hanoi') {
+        const hanoiDistricts = [
+            'Quận Ba Đình', 'Quận Hoàn Kiếm', 'Quận Tây Hồ', 'Quận Long Biên', 'Quận Cầu Giấy', 'Quận Đống Đa',
+            'Quận Hai Bà Trưng', 'Quận Hoàng Mai', 'Quận Thanh Xuân', 'Quận Nam Từ Liêm', 'Quận Bắc Từ Liêm', 'Quận Hà Đông'
+        ];
+        hanoiDistricts.forEach(district => {
+            const option = document.createElement('option');
+            option.value = district;
+            option.textContent = district;
+            districtSelect.appendChild(option);
+        });
+    }
+});
+
+// Apply filters function
+function applyFilters() {
+    // Get form data
+    const formData = new FormData(document.getElementById('filterForm'));
+    
+    // Update current filters
+    currentFilters.status = formData.get('status') || 'all';
+    currentFilters.room_types = formData.getAll('room_type');
+    currentFilters.price_min = formData.get('price_min') ? parseInt(formData.get('price_min')) : null;
+    currentFilters.price_max = formData.get('price_max') ? parseInt(formData.get('price_max')) : null;
+    currentFilters.date_filter = formData.get('date_filter') || 'all';
+    currentFilters.date_from = formData.get('date_from') || null;
+    currentFilters.date_to = formData.get('date_to') || null;
+    currentFilters.city = formData.get('city') || '';
+    currentFilters.district = formData.get('district') || '';
+    
+    // Filter rooms
+    filterRooms();
+    
+    // Update filter button to show active state
+    updateFilterButtonState();
+}
+
+// Clear all filters
+function clearAllFilters() {
+    // Reset form
+    document.getElementById('filterForm').reset();
+    document.getElementById('custom_date_range').style.display = 'none';
+    document.getElementById('filter_district').innerHTML = '<option value="">Tất cả quận/huyện</option>';
+    
+    // Reset filters object
+    currentFilters = {
+        status: 'all',
+        room_types: [],
+        price_min: null,
+        price_max: null,
+        date_filter: 'all',
+        date_from: null,
+        date_to: null,
+        city: '',
+        district: ''
+    };
+    
+    // Show all rooms
+    const homestayItems = document.querySelectorAll('.homestay-item');
+    homestayItems.forEach(item => {
+        item.style.display = '';
+    });
+    
+    // Update filter button state
+    updateFilterButtonState();
+    
+    }
+
+// Filter rooms based on current filters
+function filterRooms() {
+    const homestayItems = document.querySelectorAll('.homestay-item');
+    let visibleCount = 0;
+    
+    homestayItems.forEach(item => {
+        let shouldShow = true;
+        
+        // Status filter
+        if (currentFilters.status !== 'all') {
+            const statusBadge = item.querySelector('.status-badge');
+            const isActive = statusBadge && statusBadge.textContent.trim() === 'Hoạt động';
+            
+            if (currentFilters.status === 'active' && !isActive) {
+                shouldShow = false;
+            } else if (currentFilters.status === 'inactive' && isActive) {
+                shouldShow = false;
+            }
+        }
+        
+        // Room type filter
+        if (currentFilters.room_types.length > 0) {
+            const typeElements = item.querySelectorAll('.status-badge');
+            let roomType = '';
+            
+            typeElements.forEach(badge => {
+                const text = badge.textContent.trim();
+                if (text !== 'Hoạt động' && text !== 'Đã khóa') {
+                    roomType = text;
+                }
+            });
+            
+            const typeMapping = {
+                'house': 'Nhà nguyên căn',
+                'apartment': 'Căn hộ', 
+                'private_room': 'Phòng riêng',
+                'studio': 'Studio'
+            };
+            
+            const matchesType = currentFilters.room_types.some(filterType => 
+                typeMapping[filterType] === roomType
+            );
+            
+            if (!matchesType) {
+                shouldShow = false;
+            }
+        }
+        
+        // Price filter
+        if (currentFilters.price_min !== null || currentFilters.price_max !== null) {
+            const priceElement = item.querySelector('.homestay-detail:nth-child(2) span');
+            if (priceElement) {
+                const priceText = priceElement.textContent;
+                const priceMatch = priceText.match(/([0-9,]+)đ/);
+                if (priceMatch) {
+                    const price = parseInt(priceMatch[1].replace(/,/g, ''));
+                    
+                    if (currentFilters.price_min !== null && price < currentFilters.price_min) {
+                        shouldShow = false;
+                    }
+                    if (currentFilters.price_max !== null && price > currentFilters.price_max) {
+                        shouldShow = false;
+                    }
+                }
+            }
+        }
+        
+        // Date filter
+        if (currentFilters.date_filter !== 'all') {
+            const dateElement = item.querySelector('.homestay-date');
+            if (dateElement) {
+                const dateText = dateElement.textContent;
+                const dateMatch = dateText.match(/(\d{2})-(\d{2})-(\d{4})/);
+                if (dateMatch) {
+                    const [_, day, month, year] = dateMatch;
+                    const roomDate = new Date(year, month - 1, day);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    let showDate = true;
+                    
+                    if (currentFilters.date_filter === 'today') {
+                        const todayStr = today.toDateString();
+                        showDate = roomDate.toDateString() === todayStr;
+                    } else if (currentFilters.date_filter === 'week') {
+                        const weekAgo = new Date(today);
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        showDate = roomDate >= weekAgo && roomDate <= today;
+                    } else if (currentFilters.date_filter === 'month') {
+                        const monthAgo = new Date(today);
+                        monthAgo.setDate(monthAgo.getDate() - 30);
+                        showDate = roomDate >= monthAgo && roomDate <= today;
+                    } else if (currentFilters.date_filter === 'custom') {
+                        if (currentFilters.date_from) {
+                            const fromDate = new Date(currentFilters.date_from);
+                            if (roomDate < fromDate) showDate = false;
+                        }
+                        if (currentFilters.date_to) {
+                            const toDate = new Date(currentFilters.date_to);
+                            if (roomDate > toDate) showDate = false;
+                        }
+                    }
+                    
+                    if (!showDate) {
+                        shouldShow = false;
+                    }
+                }
+            }
+        }
+        
+        // Location filter
+        if (currentFilters.city || currentFilters.district) {
+            const locationElement = item.querySelector('.homestay-detail:nth-child(1) span');
+            if (locationElement) {
+                const locationText = locationElement.textContent.toLowerCase();
+                
+                if (currentFilters.city) {
+                    const cityMapping = {
+                        'hcm': 'hồ chí minh',
+                        'hanoi': 'hà nội'
+                    };
+                    const cityName = cityMapping[currentFilters.city];
+                    if (cityName && !locationText.includes(cityName)) {
+                        shouldShow = false;
+                    }
+                }
+                
+                if (currentFilters.district && !locationText.includes(currentFilters.district.toLowerCase())) {
+                    shouldShow = false;
+                }
+            }
+        }
+        
+        // Show/hide item
+        if (shouldShow) {
+            item.style.display = '';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    }
+
+// Update filter button state
+function updateFilterButtonState() {
+    const filterBtn = document.querySelector('.filter-btn');
+    const hasActiveFilters = 
+        currentFilters.status !== 'all' ||
+        currentFilters.room_types.length > 0 ||
+        currentFilters.price_min !== null ||
+        currentFilters.price_max !== null ||
+        currentFilters.date_filter !== 'all' ||
+        currentFilters.city ||
+        currentFilters.district;
+    
+    if (hasActiveFilters) {
+        filterBtn.style.background = '#9ed649';
+        filterBtn.style.color = 'white';
+    } else {
+        filterBtn.style.background = '';
+        filterBtn.style.color = '';
+    }
+}
+</script>
+{% endblock %} 

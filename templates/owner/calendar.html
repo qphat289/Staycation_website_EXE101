@@ -1,87 +1,13 @@
-{% extends 'base.html' %}
+{% extends 'owner/base_owner.html' %}
+
 {% block title %}Lịch đặt phòng{% endblock %}
 
-{% block extra_css %}
+{% block page_title %}Lịch{% endblock %}
+{% block page_subtitle %}Xem lịch đặt phòng của bạn{% endblock %}
+
+{% block page_css %}
 <style>
-    body {
-        background: #FDFBFA;
-        min-height: 100vh;
-        margin: 0;
-        padding: 0;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    /* Sidebar */
-    .admin-sidebar {
-        width: 250px;
-        background: transparent;
-        height: calc(100vh - 80px);
-        padding: 1.5rem;
-        position: fixed;
-        left: 85px;
-        top: 0px;
-        z-index: 1051;
-    }
-
-    .admin-sidebar::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        top: 160px;
-        bottom: 0;
-        width: 2px;
-        background: #7C7C7C;
-        opacity: 0.2;
-        z-index: 1;
-    }
-
-    .sidebar-menu {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        margin-top: 9rem;
-    }
-
-    .sidebar-menu-item {
-        margin-bottom: 0.5rem;
-    }
-
-    .sidebar-menu-link {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.875rem 1rem;
-        color: #7C7C7C;
-        text-decoration: none;
-        border-radius: 8px;
-        transition: all 0.2s;
-        font-weight: 500;
-        font-size: 12px;
-    }
-
-    .sidebar-menu-link:hover {
-        color: #101917;
-        transform: translateX(5px);
-        transition: all 0.3s ease;
-    }
-
-    .sidebar-menu-link.active {
-        color: #101917;
-        font-weight: 600;
-        background: #E0EC9B;
-    }
-
-    .sidebar-menu-link i {
-        font-size: 1rem;
-    }
-
-    /* Main Content */
-    .admin-main {
-        margin-left: 250px;
-        padding: 0;
-        min-height: 100vh;
-        margin-top: -3rem;
-    }
+    /* Calendar specific styles */
 
     /* Date Navigation Header */
     .date-navigation {
@@ -89,9 +15,11 @@
         justify-content: space-between;
         align-items: center;
         padding: 1rem 2rem;
-        background: white;
-        border-bottom: 1px solid #e0e0e0;
-        margin-bottom: 0;
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin: 0 2rem 1rem 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .date-nav-left {
@@ -120,7 +48,7 @@
     }
 
     .current-date {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         font-weight: 600;
         color: #333;
         margin: 0 0.5rem;
@@ -134,9 +62,13 @@
     /* Calendar Layout */
     .calendar-layout {
         display: flex;
-        height: calc(100vh - 200px);
-        min-height: 800px;
-        max-height: calc(100vh - 200px);
+        height: calc(100vh - 300px);
+        min-height: 700px;
+        max-height: calc(100vh - 300px);
+        margin: 0 2rem 2rem 2rem;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     /* Timeline Container */
@@ -222,8 +154,8 @@
         overflow-y: auto;
         overflow-x: hidden;
         position: relative;
-        height: calc(100vh - 320px); /* Fixed height to enable scrolling */
-        max-height: calc(100vh - 320px);
+        height: calc(100vh - 420px); /* Fixed height to enable scrolling */
+        max-height: calc(100vh - 420px);
     }
 
     /* Time Labels */
@@ -624,72 +556,29 @@
 </style>
 {% endblock %}
 
-{% block content %}
-<!-- Sidebar -->
-<aside class="admin-sidebar">
-    <ul class="sidebar-menu">
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.profile') }}" class="sidebar-menu-link">
-                <i class="fas fa-user"></i>
-                <span>Tài khoản</span>
-            </a>
-        </li>
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.statistics') }}" class="sidebar-menu-link">
-                <i class="fas fa-chart-bar"></i>
-                <span>Thống kê</span>
-            </a>
-        </li>
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.calendar') }}" class="sidebar-menu-link active">
-                <i class="fas fa-calendar"></i>
-                <span>Lịch</span>
-            </a>
-        </li>
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.dashboard') }}" class="sidebar-menu-link">
-                <i class="fas fa-home"></i>
-                <span>Tất cả phòng</span>
-            </a>
-        </li>
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.view_bookings') }}" class="sidebar-menu-link">
-                <i class="fas fa-calendar-check"></i>
-                <span>Quản lý đặt phòng</span>
-            </a>
-        </li>
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.settings') }}" class="sidebar-menu-link">
-                <i class="fas fa-cog"></i>
-                <span>Cài đặt</span>
-            </a>
-        </li>
-    </ul>
-</aside>
+{% block page_content %}
 
-<!-- Main Content -->
-<main class="admin-main">
-    <!-- Date Navigation Header -->
-    <div class="date-navigation">
-        <div class="date-nav-left">
-            <button class="date-nav-btn" onclick="goToPreviousDay()">
-                <i class="fas fa-chevron-left"></i>
-            </button>
+        <!-- Date Navigation Header -->
+        <div class="date-navigation">
+            <div class="date-nav-left">
+                <button class="date-nav-btn" onclick="goToPreviousDay()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                
+                <h2 class="current-date" id="currentDate">23 Tháng 5, 2025</h2>
+                
+                <button class="date-nav-btn" onclick="goToNextDay()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
             
-            <h1 class="current-date" id="currentDate">23 Tháng 5, 2025</h1>
-            
-            <button class="date-nav-btn" onclick="goToNextDay()">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+            <div class="calendar-label">
+                Lịch đặt phòng
+            </div>
         </div>
-        
-        <div class="calendar-label">
-            Lịch đặt phòng
-        </div>
-    </div>
 
-    <!-- Calendar Layout -->
-    <div class="calendar-layout">
+        <!-- Calendar Layout -->
+        <div class="calendar-layout">
         <!-- Timeline Container -->
         <div class="timeline-container">
             <!-- Room Headers -->
@@ -707,11 +596,11 @@
                 <div class="time-labels" id="timeLabels">
                     <!-- Time labels will be generated by JavaScript -->
                 </div>
-                <div class="rooms-timeline-container">
+
                     <div class="rooms-timeline" id="roomsTimeline">
                         <!-- Room timelines will be generated by JavaScript -->
                     </div>
-                </div>
+
             </div>
         </div>
         
@@ -754,7 +643,7 @@
             </div>
         </div>
     </div>
-</main>
+    </div>
 
 <!-- Booking Detail Modal -->
 <div id="bookingModal" class="modal">

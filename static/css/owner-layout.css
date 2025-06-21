@@ -1,0 +1,121 @@
+/* Owner Layout - Shared CSS for Statistics, Calendar, Dashboard pages */
+
+body {
+    background: #FDFBFA;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Sidebar */
+.admin-sidebar {
+    width: 250px;
+    background: transparent;
+    height: calc(100vh - 80px);
+    padding: 1.5rem;
+    position: fixed;
+    left: 85px;
+    top: 0px;
+    z-index: 1051;
+}
+
+.admin-sidebar::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 160px;
+    bottom: 0;
+    width: 2px;
+    background: #7C7C7C;
+    opacity: 0.2;
+    z-index: 1;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 9rem;
+}
+
+.sidebar-menu-item {
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    color: #7C7C7C;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.sidebar-menu-link:hover {
+    color: #101917;
+    transform: translateX(5px);
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu-link.active {
+    color: #101917;
+    font-weight: 600;
+    background: #E0EC9B;
+}
+
+.sidebar-menu-link i {
+    font-size: 1rem;
+}
+
+/* Main Content */
+.admin-main {
+    margin-left: 250px;
+    padding: 0;
+    min-height: 100vh;
+    margin-top: -3rem;
+}
+
+.content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.page-header {
+    padding: 1.5rem 2rem;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.page-subtitle {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        width: 200px;
+        left: 20px;
+    }
+    
+    .admin-main {
+        margin-left: 200px;
+    }
+} 

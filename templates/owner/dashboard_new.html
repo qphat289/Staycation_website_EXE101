@@ -91,13 +91,12 @@
         background: white;
         border: 1px solid #e0e0e0;
         border-radius: 8px;
-        padding: 1.5rem;
+        padding: 1rem;
         margin-bottom: 1rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
         transition: all 0.2s ease;
-        position: relative;
     }
 
     .homestay-item:hover {
@@ -113,8 +112,8 @@
     }
 
     .homestay-image {
-        width: 120px;
-        height: 90px;
+        width: 80px;
+        height: 80px;
         border-radius: 8px;
         background: #f0f0f0;
         display: flex;
@@ -122,27 +121,13 @@
         justify-content: center;
         color: #999;
         font-size: 24px;
-        overflow: hidden;
-    }
-
-    .homestay-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 8px;
     }
 
     .homestay-info h3 {
         margin: 0 0 0.5rem 0;
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 600;
         color: #333;
-        cursor: pointer;
-        transition: color 0.2s ease;
-    }
-
-    .homestay-info h3:hover {
-        color: #9ed649;
     }
 
     .homestay-details {
@@ -152,48 +137,16 @@
 
     .homestay-detail {
         margin-bottom: 0.25rem;
-        display: flex;
-        align-items: center;
     }
 
     .homestay-detail i {
         margin-right: 0.5rem;
         width: 12px;
-        color: #999;
-    }
-
-    .homestay-status {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .status-badge {
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        border: 1px solid;
-    }
-
-    .status-active {
-        color: #2e7d32;
-        border-color: #2e7d32;
-        background: #e8f5e8;
-    }
-
-    .status-inactive {
-        color: #c62828;
-        border-color: #c62828;
-        background: #ffebee;
     }
 
     .homestay-actions {
         display: flex;
         gap: 0.5rem;
-        margin-top: 2rem;
     }
 
     .btn-action {
@@ -205,7 +158,6 @@
         text-decoration: none;
         font-size: 0.8rem;
         transition: all 0.2s ease;
-        cursor: pointer;
     }
 
     .btn-action:hover {
@@ -233,21 +185,10 @@
         color: white;
     }
 
-    .btn-lock {
-        border-color: #f39c12;
-        color: #f39c12;
-    }
-
-    .btn-lock:hover {
-        background: #f39c12;
-        color: white;
-    }
-
     .empty-state {
         text-align: center;
         padding: 3rem 2rem;
         color: #666;
-        margin: 0 2rem 2rem 2rem;
     }
 
     .empty-state i {
@@ -265,28 +206,13 @@
 {% endblock %}
 
 {% block page_content %}
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <div style="margin: 0 2rem 1rem 2rem;">
-            {% for category, message in messages %}
-                <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'warning' if category == 'warning' else 'danger' }} alert-dismissible fade show" role="alert">
-                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'info-circle' if category == 'info' else 'exclamation-triangle' if category == 'warning' else 'exclamation-circle' }}"></i>
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-{% endwith %}
-
 <!-- Filter Section -->
 <div class="filter-section">
     <div class="filter-left">
         <div class="search-box">
             <input type="text" placeholder="Tìm kiếm phòng..." id="searchInput">
         </div>
-        <button class="filter-btn" data-bs-toggle="modal" data-bs-target="#filterModal">
+        <button class="filter-btn">
             <i class="fas fa-filter"></i>
             Lọc
         </button>
@@ -302,28 +228,16 @@
 <div class="homestay-list">
     {% for room in rooms %}
     <div class="homestay-item">
-        <div class="homestay-status">
-            <span class="status-badge {{ 'status-active' if room.is_active else 'status-inactive' }}">
-                {{ 'Hoạt động' if room.is_active else 'Đã khóa' }}
-            </span>
-            <span class="status-badge" style="color: #2e7d32; border-color: #2e7d32; background: #e8f5e8;">
-                {{ room.room_type | title }}
-            </span>
-        </div>
-        
         <div class="homestay-main-content">
             <div class="homestay-image">
-                {% set featured_image = room.images|selectattr('is_featured')|first %}
-                {% if featured_image %}
-                    <img src="{{ url_for('static', filename=featured_image.image_path) }}" alt="{{ room.title }}">
-                {% elif room.images and room.images|length > 0 %}
-                    <img src="{{ url_for('static', filename=room.images[0].image_path) }}" alt="{{ room.title }}">
+                {% if room.images and room.images|length > 0 %}
+                    <img src="{{ url_for('static', filename=room.images[0].image_path) }}" alt="{{ room.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
                 {% else %}
                     <i class="fas fa-image"></i>
                 {% endif %}
             </div>
             <div class="homestay-info">
-                <h3 onclick="window.location.href='{{ url_for('owner.room_detail', room_id=room.id) if url_for('owner.room_detail', room_id=room.id) else '#' }}'">{{ room.title }}</h3>
+                <h3>{{ room.title }}</h3>
                 <div class="homestay-details">
                     <div class="homestay-detail">
                         <i class="fas fa-map-marker-alt"></i>
@@ -342,31 +256,18 @@
                         </span>
                     </div>
                     <div class="homestay-detail">
-                        <i class="fas fa-calendar"></i>
-                        <span>
-                            {% if room.created_at %}
-                                Thêm vào {{ room.created_at.strftime('%d-%m-%Y') }}
-                            {% else %}
-                                Mới thêm
-                            {% endif %}
-                        </span>
+                        <span>{{ room.room_type }}</span>
                     </div>
                 </div>
-                
-                <div class="homestay-actions">
-                    <a href="{{ url_for('owner.toggle_room_status', room_id=room.id) if url_for('owner.toggle_room_status', room_id=room.id) else '#' }}" 
-                       class="btn-action btn-lock" 
-                       onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái phòng?')">
-                        {{ 'Mở khóa' if not room.is_active else 'Khóa phòng' }}
-                    </a>
-                    <a href="{{ url_for('owner.edit_room', room_id=room.id) if url_for('owner.edit_room', room_id=room.id) else '#' }}" class="btn-action btn-edit">
-                        Sửa
-                    </a>
-                    <button type="button" class="btn-action btn-delete" onclick="deleteRoom({{ room.id }}, '{{ room.title }}')">
-                        Xóa
-                    </button>
-                </div>
             </div>
+        </div>
+        <div class="homestay-actions">
+            <a href="{{ url_for('owner.edit_room', room_id=room.id) }}" class="btn-action btn-edit">
+                Sửa
+            </a>
+            <button type="button" class="btn-action btn-delete" onclick="deleteRoom({{ room.id }})">
+                Xóa
+            </button>
         </div>
     </div>
     {% endfor %}
@@ -380,29 +281,11 @@
 {% endif %}
 
 <script>
-function deleteRoom(roomId, roomTitle) {
-    if (confirm(`Bạn có chắc muốn xóa phòng "${roomTitle}"?`)) {
+function deleteRoom(roomId) {
+    if (confirm('Bạn có chắc muốn xóa phòng này?')) {
         // Add delete logic here
         console.log('Delete room:', roomId);
-        // You can add AJAX call here to delete the room
     }
 }
-
-// Search functionality
-document.getElementById('searchInput').addEventListener('input', function(e) {
-    const searchTerm = e.target.value.toLowerCase();
-    const homestayItems = document.querySelectorAll('.homestay-item');
-    
-    homestayItems.forEach(item => {
-        const title = item.querySelector('h3').textContent.toLowerCase();
-        const address = item.querySelector('.homestay-detail span').textContent.toLowerCase();
-        
-        if (title.includes(searchTerm) || address.includes(searchTerm)) {
-            item.style.display = 'flex';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-});
 </script>
 {% endblock %} 

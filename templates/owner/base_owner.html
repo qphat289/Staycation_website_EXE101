@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/owner-layout.css') }}">
+{% block page_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+<aside class="admin-sidebar">
+    <ul class="sidebar-menu">
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.profile') }}" class="sidebar-menu-link {{ 'active' if request.endpoint == 'owner.profile' }}">
+                <i class="fas fa-user"></i>
+                <span>Tài khoản</span>
+            </a>
+        </li>
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.statistics') }}" class="sidebar-menu-link {{ 'active' if request.endpoint == 'owner.statistics' }}">
+                <i class="fas fa-chart-bar"></i>
+                <span>Thống kê</span>
+            </a>
+        </li>
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.calendar') }}" class="sidebar-menu-link {{ 'active' if request.endpoint == 'owner.calendar' }}">
+                <i class="fas fa-calendar"></i>
+                <span>Lịch</span>
+            </a>
+        </li>
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('owner.dashboard') }}" class="sidebar-menu-link {{ 'active' if request.endpoint == 'owner.dashboard' }}">
+                <i class="fas fa-home"></i>
+                <span>Tất cả phòng</span>
+            </a>
+        </li>
+    </ul>
+</aside>
+
+<!-- Main Content -->
+<main class="admin-main">
+    <div class="content-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+                <p class="page-subtitle">{% block page_subtitle %}{% endblock %}</p>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        {% block page_content %}{% endblock %}
+    </div>
+</main>
+{% endblock %} 

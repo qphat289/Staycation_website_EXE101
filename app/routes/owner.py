@@ -826,7 +826,7 @@ def get_booking_detail(booking_id):
             'total_hours': booking.total_hours,
             'total_price': float(booking.total_price) if booking.total_price else 0,
             'status': booking.status,
-            'special_requests': booking.special_requests,
+            'special_requests': getattr(booking, 'special_requests', None),
             'room': {
                 'id': booking.room.id,
                 'title': booking.room.title,

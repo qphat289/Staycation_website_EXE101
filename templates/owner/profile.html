@@ -1,786 +1,1051 @@
-{% extends "base.html" %}
+{% extends 'owner/base_owner.html' %}
 
-{% block content %}
-<div class="container py-4">
-    <div class="text-center mb-4">
-        <h2 class="profile-title" data-translate="my-profile">
-                        <i class="fas fa-user-circle me-2"></i>
-            Hồ Sơ Của Tôi
-        </h2>
-        <div class="title-underline"></div>
-                </div>
+{% block title %}Tài khoản{% endblock %}
+
+{% block page_title %}Tài khoản{% endblock %}
+{% block page_subtitle %}Quản lý thông tin tài khoản của bạn{% endblock %}
+
+{% block page_css %}
+<style>
+    .profile-container {
+        margin: 0 2rem 2rem 2rem;
+    }
     
-    <!-- OWNER LAYOUT: Avatar bên trái, Form bên phải -->
-                    <div class="row">
-        <!-- LEFT COLUMN: Avatar Display -->
-        <div class="col-md-4">
-            <div class="owner-profile-card mt-2">
-                <div class="card-body text-center">
-                            <!-- Avatar -->
-                    <div class="avatar-container-owner">
-                                {% if current_user.avatar %}
-                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
-                                alt="Avatar"
-                                class="avatar-circle-owner">
-                                {% else %}
-                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}"
-                                alt="Avatar"
-                                class="avatar-circle-owner">
-                                {% endif %}
-                            </div>
-                      <h5 class="owner-name">{{ current_user.username }}</h5>
-                    
-                    <div class="mb-3">
-                        <a href="{{ url_for('owner.settings') }}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-cog me-1"></i> Thiết lập tài khoản
-                        </a>
+    .profile-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .profile-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #E0EC9B 0%, #C3D600 100%);
+    }
+    
+    .profile-section:hover {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #101917;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .section-title i {
+        color: #C3D600;
+        font-size: 1.2rem;
+    }
+    
+    .avatar-section {
+        display: flex;
+        align-items: center;
+        gap: 2.5rem;
+        margin-bottom: 2.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .avatar-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .avatar-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #E0EC9B 0%, #C3D600 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 4px solid white;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .avatar-circle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+    }
+    
+    .avatar-circle::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #E0EC9B, #C3D600, #9ed649);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .avatar-circle:hover::before {
+        opacity: 1;
+    }
+    
+    .avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    
+    .avatar-icon {
+        font-size: 48px;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .upload-btn {
+        background: linear-gradient(135deg, #C3D600 0%, #9ed649 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(195, 214, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(195, 214, 0, 0.4);
+        background: linear-gradient(135deg, #9ed649 0%, #8bc34a 100%);
+    }
+    
+    .avatar-info {
+        text-align: center;
+        flex: 1;
+    }
+    
+    .user-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #101917;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-role {
+        color: #7C7C7C;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .user-stats {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #C3D600;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #7C7C7C;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-grid.three-col {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    
+    .form-grid.full-width {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: #7C7C7C;
+        margin: 0;
+    }
+    
+    .form-input {
+        padding: 14px 18px;
+        border: 1.5px solid #e8e8e8;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #101917;
+        background: #fafafa;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #C3D600;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(195, 214, 0, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .form-input:hover {
+        border-color: #d0d0d0;
+        background: white;
+    }
+    
+    .form-input.highlighted {
+        background: linear-gradient(135deg, #E0EC9B 0%, #f0f8d0 100%);
+        border-color: #C3D600;
+        box-shadow: 0 4px 12px rgba(224, 236, 155, 0.3);
+    }
+    
+    .date-inputs-container {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .date-input-group {
+        position: relative;
+        flex: 1;
+        max-width: 120px;
+    }
+    
+    .date-select {
+        width: 100%;
+        appearance: none;
+        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+        border: 2px solid #e8e8e8;
+        border-radius: 12px;
+        padding: 16px 40px 16px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #101917;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .date-select:focus {
+        outline: none;
+        border-color: #C3D600;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(195, 214, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .date-select:hover {
+        border-color: #C3D600;
+        background: white;
+    }
+    
+    .date-select:disabled {
+        background: #f8f9fa;
+        color: #6c757d;
+        cursor: not-allowed;
+        border-color: #e9ecef;
+    }
+    
+    .date-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #C3D600;
+        font-size: 14px;
+        pointer-events: none;
+        transition: all 0.3s ease;
+    }
+    
+    .date-input-group:hover .date-icon {
+        color: #9ed649;
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .date-separator {
+        color: #C3D600;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0.5rem;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+    
+    .email-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .email-input {
+        flex: 1;
+        padding-right: 60px;
+        background: linear-gradient(135deg, #E0EC9B 0%, #f0f8d0 100%);
+        border-color: #C3D600;
+        box-shadow: 0 4px 12px rgba(224, 236, 155, 0.3);
+    }
+    
+    .verified-badge {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #34C759 0%, #28a745 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+        animation: verified-glow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes verified-glow {
+        from { box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3); }
+        to { box-shadow: 0 4px 16px rgba(52, 199, 89, 0.5); }
+    }
+    
+    .verified-icon {
+        font-size: 12px;
+        color: white;
+    }
+    
+    .verified-text {
+        font-size: 9px;
+        font-weight: 700;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .edit-toggle-btn {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+    
+    .edit-toggle-btn:hover {
+        background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(108, 117, 125, 0.4);
+    }
+    
+    .edit-toggle-btn.editing {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+    
+    .edit-toggle-btn.editing:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #C3D600 0%, #9ed649 100%);
+        border: none;
+        color: white;
+        padding: 14px 28px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(195, 214, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #9ed649 0%, #8bc34a 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(195, 214, 0, 0.4);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #34C759 0%, #28a745 100%);
+        border: none;
+        color: white;
+        padding: 14px 28px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-secondary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-secondary:hover::before {
+        left: 100%;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(52, 199, 89, 0.4);
+    }
+    
+    .password-field {
+        position: relative;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7C7C7C;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .delete-section {
+        border-top: 1px solid #e0e0e0;
+        padding-top: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .delete-text {
+        color: #7C7C7C;
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+    
+    .section-divider {
+        height: 1px;
+        background: #7C7C7C;
+        opacity: 0.2;
+        margin: 2rem 0;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        color: white;
+        padding: 14px 28px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-danger::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-danger:hover::before {
+        left: 100%;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(220, 53, 69, 0.4);
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #C3D600;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .success-message {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from { transform: translateY(-100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @media (max-width: 768px) {
+        .profile-container {
+            margin: 0 1rem 1rem 1rem;
+        }
+        
+        .profile-section {
+            padding: 1.5rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .form-grid.three-col {
+            grid-template-columns: 1fr;
+        }
+        
+        .avatar-section {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+        
+        .user-stats {
+            gap: 1rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .avatar-circle {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .user-name {
+            font-size: 1.3rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="profile-container">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="margin-bottom: 1rem;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'warning' if category == 'warning' else 'danger' }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'info-circle' if category == 'info' else 'exclamation-triangle' if category == 'warning' else 'exclamation-circle' }}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    
-                    <div class="owner-status">
-                        <div class="status-dot"></div>
-                        <span class="status-text">Chủ kinh doanh lưu trú</span>
-                    </div>
-                    
-                    <div class="owner-badge">
-                        <i class="fas fa-home me-2"></i>
-                        Chủ nhà
-                    </div>
-                    </div>
-                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="profile-sections">
+        <!-- Personal Information Section -->
+        <div class="profile-section">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-user"></i>
+                    Thông tin cá nhân
+                </h3>
+                <button type="button" class="edit-toggle-btn" id="editToggleBtn" onclick="toggleEditMode()">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </button>
             </div>
             
-        <!-- RIGHT COLUMN: Owner Profile Form -->
-        <div class="col-md-8">
-            <div class="form-card-owner">
-                <div class="card-body">
-                    <h5 class="form-title-owner">
-                        <i class="fas fa-edit me-2"></i>
-                        Thông Tin Chủ Sở Hữu
-                    </h5>
-                    <form method="POST" enctype="multipart/form-data" id="profileForm" onsubmit="return validateForm()">
-                        <!-- Tên đăng nhập, Họ, Tên và Giới tính cùng hàng -->
-                        <div class="row">
-                            <div class="col-md-3 mb-2">
-                                <label for="username" class="form-label">
-                                    <i class="fas fa-user me-1"></i>
-                                    Tên đăng nhập
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-input-owner" 
-                                       id="username" 
-                                       name="username" 
-                                       value="{{ current_user.username }}"
-                                       required>
-                                <div class="invalid-feedback">
-                                    Vui lòng nhập tên đăng nhập
-                                </div>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <label for="first_name" class="form-label">
-                                    <i class="fas fa-user me-1"></i>
-                                    Họ
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-input-owner" 
-                                       id="first_name" 
-                                       name="first_name" 
-                                       value="{{ current_user.first_name or '' }}"
-                                       placeholder="Nguyễn"
-                                       required>
-                                <div class="invalid-feedback">
-                                    Vui lòng nhập họ
-                                </div>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <label for="last_name" class="form-label">
-                                    <i class="fas fa-user me-1"></i>
-                                    Tên
-                                </label>
-                                <input type="text" 
-                                       class="form-control form-input-owner" 
-                                       id="last_name" 
-                                       name="last_name" 
-                                       value="{{ current_user.last_name or '' }}"
-                                       placeholder="Văn A"
-                                       required>
-                                <div class="invalid-feedback">
-                                    Vui lòng nhập tên
-                                </div>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <label for="gender" class="form-label">
-                                    <i class="fas fa-venus-mars me-1"></i>
-                                    Giới tính
-                                </label>
-                                <select class="form-control form-input-owner" id="gender" name="gender">
-                                    <option value="Nam" {{ 'selected' if current_user.gender == 'Nam' else '' }}>Nam</option>
-                                    <option value="Nữ" {{ 'selected' if current_user.gender == 'Nữ' else '' }}>Nữ</option>
-                                    <option value="Khác" {{ 'selected' if current_user.gender == 'Khác' else '' }}>Khác</option>
-                                </select>
-                            </div>
+            <form method="POST" enctype="multipart/form-data" id="personalInfoForm">
+                <!-- Avatar Section -->
+                <div class="avatar-section">
+                    <div class="avatar-container">
+                        <div class="avatar-circle">
+                            {% if current_user.avatar %}
+                                <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar">
+                            {% else %}
+                                <i class="fas fa-user avatar-icon"></i>
+                            {% endif %}
                         </div>
-
-                        <!-- Ngày sinh -->
-                        <div class="mb-2">
-                            <label for="birth_date" class="form-label">
-                                <i class="fas fa-calendar me-1"></i>
-                                Ngày sinh
-                            </label>
-                            <div class="row">
-                                <div class="col-4">
-                                    <select class="form-control form-input-owner" name="birth_day">
-                                        <option value="">Ngày</option>
-                                        {% for day in range(1, 32) %}
-                                            <option value="{{ day }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.day == day else '' }}>
-                                                {{ day }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-4">
-                                    <select class="form-control form-input-owner" name="birth_month">
-                                        <option value="">Tháng</option>
-                                        {% for month in range(1, 13) %}
-                                            <option value="{{ month }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.month == month else '' }}>
-                                                {{ month }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-4">
-                                    <select class="form-control form-input-owner" name="birth_year">
-                                        <option value="">Năm</option>
-                                        {% for year in range(1950, 2010) %}
-                                            <option value="{{ year }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.year == year else '' }}>
-                                                {{ year }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Email và Phone cùng hàng -->
-                        <div class="row">
-                            <div class="col-md-6 mb-2">
-                                <label for="email" class="form-label">
-                                    <i class="fas fa-envelope me-1"></i>
-                                    Email
-                                </label>
-                                <input type="email" 
-                                       class="form-control form-input-owner" 
-                                       id="email" 
-                                       name="email" 
-                                       value="{{ current_user.email }}"
-                                       required>
-                                <div class="invalid-feedback">
-                                    Vui lòng nhập email hợp lệ
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label for="phone" class="form-label">
-                                    <i class="fas fa-phone me-1"></i>
-                                    Số điện thoại
-                                </label>
-                                <input type="tel" 
-                                       class="form-control form-input-owner" 
-                                       id="phone" 
-                                       name="phone" 
-                                       value="{{ current_user.phone or '' }}"
-                                       placeholder="0937956211">
-                            </div>
-                        </div>
-
-                        <!-- Địa chỉ -->
-                        <div class="mb-2">
-                            <label for="address" class="form-label">
-                                <i class="fas fa-map-marker-alt me-1"></i>
-                                Địa chỉ
-                            </label>
-                            <input type="text" 
-                                   class="form-control form-input-owner" 
-                                   id="address" 
-                                   name="address" 
-                                   value="{{ current_user.address or '' }}"
-                                   placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố">
-                        </div>
+                        <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+                        <label for="avatar" class="upload-btn">Chọn Ảnh</label>
+                    </div>
+                    
+                    <div class="avatar-info">
+                        <div class="user-name">{{ current_user.first_name or 'Nguyễn' }} {{ current_user.last_name or 'Trần' }}</div>
+                        <div class="user-role">Chủ sở hữu • {{ current_user.username }}</div>
                         
-                        <!-- Ảnh đại diện và Đổi mật khẩu -->
-                        <div class="row">
-                            <div class="col-md-8 mb-2">
-                                <label for="avatar" class="form-label">
-                                    <i class="fas fa-camera me-1"></i>
-                                    Ảnh đại diện
-                                </label>
-                                <input type="file" 
-                                       class="form-control form-input-owner" 
-                                       id="avatar" 
-                                       name="avatar" 
-                                       accept="image/*"
-                                       onchange="previewImage(this)">
-                                <div class="form-text">
-                                    Chọn ảnh có kích thước tối đa 5MB
-                                </div>
+                        <div class="user-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">{{ current_user.rooms|length if current_user.rooms else '0' }}</span>
+                                <span class="stat-label">Phòng</span>
                             </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">
-                                    <i class="fas fa-lock me-1"></i>
-                                    Bảo mật
-                                </label>
-                                <div>
-                                    <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-                                        <i class="fas fa-key me-1"></i>
-                                        Đổi mật khẩu
-                                    </button>
-                                </div>
+                            <div class="stat-item">
+                                <span class="stat-number">4.8</span>
+                                <span class="stat-label">Đánh giá</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ current_user.created_at.strftime('%Y') if current_user.created_at else '2024' }}</span>
+                                <span class="stat-label">Tham gia</span>
                             </div>
                         </div>
-                        
-                        <!-- Action Buttons -->
-                        <div class="d-flex justify-content-start mt-3">
-                            <button type="submit" class="btn btn-owner-primary">
-                                <i class="fas fa-save me-1"></i>
-                                Lưu thay đổi
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+                
+                <!-- Name Fields -->
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">Họ</label>
+                        <input type="text" name="first_name" class="form-input" value="{{ current_user.first_name or 'Nguyễn' }}" placeholder="Nguyễn" disabled>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Tên</label>
+                        <input type="text" name="last_name" class="form-input" value="{{ current_user.last_name or 'Trần' }}" placeholder="Huy" disabled>
+                    </div>
+                </div>
+                
+                <!-- Username and Gender -->
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">Tên đăng nhập</label>
+                        <input type="text" name="username" class="form-input" value="{{ current_user.username }}" required disabled>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Giới tính</label>
+                        <select name="gender" class="form-input" disabled>
+                            <option value="Nam" {{ 'selected' if current_user.gender == 'Nam' else '' }}>Nam</option>
+                            <option value="Nữ" {{ 'selected' if current_user.gender == 'Nữ' else '' }}>Nữ</option>
+                            <option value="Khác" {{ 'selected' if current_user.gender == 'Khác' else '' }}>Khác</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Birth Date -->
+                <div class="form-field">
+                    <label class="form-label">Ngày sinh</label>
+                    <div class="date-inputs-container">
+                        <div class="date-input-group">
+                            <select name="birth_day" class="date-select" disabled>
+                                <option value="">Ngày</option>
+                                {% for day in range(1, 32) %}
+                                    <option value="{{ day }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.day == day else 'selected' if day == 19 else '' }}>
+                                        {{ '%02d'|format(day) }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="date-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="date-separator">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                        
+                        <div class="date-input-group">
+                            <select name="birth_month" class="date-select" disabled>
+                                <option value="">Tháng</option>
+                                {% for month in range(1, 13) %}
+                                    <option value="{{ month }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.month == month else 'selected' if month == 1 else '' }}>
+                                        {{ '%02d'|format(month) }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="date-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="date-separator">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                        
+                        <div class="date-input-group">
+                            <select name="birth_year" class="date-select" disabled>
+                                <option value="">Năm</option>
+                                {% for year in range(1950, 2010) %}
+                                    <option value="{{ year }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.year == year else 'selected' if year == 2000 else '' }}>
+                                        {{ year }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="date-icon">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Email and Phone -->
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">Email</label>
+                        <div class="email-container">
+                            <input type="email" name="email" class="form-input email-input" value="{{ current_user.email or 'owner@gmail.com' }}" required disabled>
+                            <div class="verified-badge">
+                                <div class="verified-icon">
+                                    <i class="fas fa-shield-check"></i>
+                                </div>
+                                <span class="verified-text">Đã xác thực</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="tel" name="phone" class="form-input" value="{{ current_user.phone or '937956211' }}" placeholder="937956211" disabled>
+                    </div>
+                </div>
+                
+                <!-- Address -->
+                <div class="form-field">
+                    <label class="form-label">Địa chỉ</label>
+                    <input type="text" name="address" class="form-input" value="{{ current_user.address or '197/7, đường 11, phường Linh Xuân, Quận Thủ Đức, Hồ Chí Minh' }}" placeholder="Nhập địa chỉ của bạn" disabled>
+                </div>
+                
+                <div class="action-buttons" id="saveButtons" style="display: none;">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="cancelEdit()">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                </div>
+            </form>
         </div>
-    </div>
-</div>
 
-<!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
-                <h5 class="modal-title" id="changePasswordModalLabel">
-                    <i class="fas fa-lock me-2"></i>
-                    Thông báo
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        
+        <!-- Delete Account Section -->
+        <div class="profile-section">
+            <h3 class="section-title">
+                <i class="fas fa-trash"></i>
+                Xóa tài khoản
+            </h3>
+            
+            <div class="delete-text">
+                Xóa tài khoản của tôi
             </div>
-            <div class="modal-body text-center py-4">
-                <div class="mb-3">
-                    <i class="fas fa-tools text-warning" style="font-size: 3rem;"></i>
-                </div>
-                <h6 class="fw-bold mb-2">Chức năng đang được phát triển</h6>
-                <p class="text-muted mb-0">
-                    Tính năng đổi mật khẩu sẽ sớm được cập nhật trong phiên bản tiếp theo.
-                </p>
-            </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
-                    <i class="fas fa-check me-1"></i>
-                    Đã hiểu
+            
+            <div class="action-buttons">
+                <button type="button" class="btn-danger" onclick="confirmDeleteAccount()">
+                    Xóa tài khoản
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-.profile-title {
-    color: #000000;
-    font-weight: 700;
-    font-size: 2rem;
-    margin-bottom: 10px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
 
-.container.py-4 {
-    margin-top: -85px;
-}
-
-.title-underline {
-    width: 80px;
-    height: 4px;
-    background: linear-gradient(90deg, #9ed649, #8ab82f);
-    border-radius: 2px;
-    margin: 0 auto;
-}
-
-.owner-profile-card {
-    background: linear-gradient(135deg, #9ed649 0%, #8ab82f 100%);
-    background-size: 200% 200%;
-    animation: rotateBackground 15s ease infinite;
-    border: none;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(158, 214, 73, 0.2);
-    overflow: hidden;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.owner-profile-card:hover {
-    transform: translateY(-5px);
-    animation: glowAnimation 2s ease-in-out infinite;
-}
-
-@keyframes rotateBackground {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-@keyframes glowAnimation {
-    0%, 100% { box-shadow: 0 10px 30px rgba(158, 214, 73, 0.2); }
-    50% { box-shadow: 0 15px 40px rgba(158, 214, 73, 0.4); }
-}
-
-@keyframes floatAnimation {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-}
-
-.avatar-container-owner {
-    width: 140px;
-    height: 140px;
-    margin: 0 auto 20px;
-    position: relative;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    padding: 8px;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    animation: floatAnimation 3s ease-in-out infinite;
-}
-
-.avatar-container-owner:hover {
-    transform: scale(1.05) translateY(-5px);
-    background: rgba(255,255,255,0.3);
-}
-
-.avatar-circle-owner {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 4px solid white;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
-
-.avatar-circle-owner:hover {
-    transform: rotate(5deg);
-    border-width: 5px;
-}
-
-.owner-name {
-    color: white;
-    font-weight: 600;
-    font-size: 1.4rem;
-    margin-bottom: 15px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
-}
-
-.owner-name:hover {
-    transform: scale(1.05);
-    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
-
-.owner-status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin: 15px auto;
-    background: rgba(255,255,255,0.2);
-    padding: 10px 20px;
-    border-radius: 20px;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255,255,255,0.3);
-    width: fit-content;
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    background: #ffffff;
-    border-radius: 50%;
-    animation: pulse-status 2s infinite;
-    box-shadow: 0 0 0 rgba(255, 255, 255, 0.4);
-}
-
-@keyframes pulse-status {
-    0% {
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-    }
-}
-
-.status-text {
-    color: white;
-    font-size: 0.95rem;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-}
-
-.owner-badge {
-    display: inline-flex;
-    align-items: center;
-    background: linear-gradient(45deg, #ea580c, #fb923c);
-    color: white;
-    padding: 8px 20px;
-    border-radius: 25px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin: 10px auto;
-    box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.owner-badge i {
-    color: white;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-}
-
-.form-card-owner {
-    background: white;
-    border: none;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 2px solid rgba(158, 214, 73, 0.1);
-}
-
-.form-card-owner:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-    border-color: rgba(158, 214, 73, 0.3);
-}
-
-.form-title-owner {
-    color: #8ab82f;
-    font-weight: 600;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #f8f9fa;
-    display: flex;
-    align-items: center;
-}
-
-.form-label {
-    color: #8ab82f;
-    font-weight: 500;
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-}
-
-.form-input-owner {
-    border: 2px solid #E5E9FA;
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-            background: #f8fdf4;
-}
-
-.form-input-owner:focus {
-    border-color: #8ab82f;
-    box-shadow: 0 0 0 3px rgba(138, 184, 47, 0.1);
-    background: white;
-    transform: translateY(-1px);
-    outline: none;
-}
-
-.form-input-owner:hover {
-    border-color: #9ed649;
-    background: white;
-}
-
-.btn-owner-primary {
-    background: linear-gradient(135deg, #9ed649 0%, #b2e254 100%);
-    color: #18282C;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 25px;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(158, 214, 73, 0.4);
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.btn-owner-primary:hover {
-    background: linear-gradient(135deg, #b2e254 0%, #9ed649 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(158, 214, 73, 0.6);
-    color: #18282C;
-}
-
-.btn-owner-primary:active {
-    transform: translateY(0);
-}
-
-.btn-owner-secondary {
-    background: linear-gradient(45deg, #6c757d, #5a6268);
-    color: white;
-        border: none;
-    padding: 12px 30px;
-    border-radius: 25px;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-}
-
-.btn-owner-secondary:hover {
-    background: linear-gradient(45deg, #5a6268, #6c757d);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-    color: white;
-}
-
-.avatar-section {
-    margin-bottom: 1rem !important;
-}
-
-.form-control-plaintext {
-    background: #f8f9fa;
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    padding: 12px 15px;
-    color: #6c757d;
-}
-
-.badge {
-    font-size: 0.9rem;
-    padding: 8px 12px;
-    border-radius: 8px;
-}
-
-.form-text {
-    color: #6c757d;
-    font-size: 0.875rem;
-    margin-top: 5px;
-}
-
-@media (max-width: 768px) {
-    .profile-title {
-        font-size: 1.8rem;
-    }
-    
-    .owner-profile-card .card-body {
-        padding: 20px;
-    }
-    
-    .avatar-container-owner {
-        width: 120px;
-        height: 120px;
-    }
-}
-
-/* Thêm style mới để giảm khoảng cách */
-.form-control {
-    padding: 8px 12px;
-}
-
-.card-body {
-    padding: 20px;
-}
-
-.mb-2 {
-    margin-bottom: 0.75rem !important;
-}
-
-/* Keyframes cho các animation */
-@keyframes floatAnimation {
-    0% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-    100% {
-        transform: translateY(0px);
-    }
-}
-
-@keyframes glowAnimation {
-    0% {
-        box-shadow: 0 5px 15px rgba(158, 214, 73, 0.2);
-    }
-    50% {
-        box-shadow: 0 5px 25px rgba(158, 214, 73, 0.4);
-    }
-    100% {
-        box-shadow: 0 5px 15px rgba(158, 214, 73, 0.2);
-    }
-    }
-</style>
+<div class="success-message" id="successMessage">
+    <i class="fas fa-check-circle"></i>
+    <span>Thông tin đã được cập nhật thành công!</span>
+</div>
 
 <script>
-function validateForm() {
-    let isValid = true;
-    const form = document.getElementById('profileForm');
-    const inputs = form.querySelectorAll('input[required]');
-    
-    inputs.forEach(input => {
-        if (!input.value.trim()) {
-            input.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            input.classList.remove('is-invalid');
-        }
+// Add fade-in animation to sections
+document.addEventListener('DOMContentLoaded', function() {
+    const sections = document.querySelectorAll('.profile-section');
+    sections.forEach((section, index) => {
+        setTimeout(() => {
+            section.classList.add('fade-in');
+        }, index * 100);
     });
-    
-    // Email validation
-    const emailInput = document.getElementById('email');
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailInput.value)) {
-        emailInput.classList.add('is-invalid');
-        isValid = false;
-    }
-    
-    return isValid;
+});
+
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
 }
 
-function resetForm() {
-    const form = document.getElementById('profileForm');
-    form.reset();
-    
-    // Remove validation classes
-    const inputs = form.querySelectorAll('.form-control');
-    inputs.forEach(input => {
-        input.classList.remove('is-invalid', 'is-valid');
-    });
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
 }
 
-function previewImage(input) {
+function showSuccess(message) {
+    const successDiv = document.getElementById('successMessage');
+    successDiv.querySelector('span').textContent = message;
+    successDiv.style.display = 'flex';
+    setTimeout(() => {
+        successDiv.style.display = 'none';
+    }, 3000);
+}
+
+function previewAvatar(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            const avatar = document.querySelector('.avatar-circle-owner');
-            avatar.src = e.target.result;
+            const avatarCircle = document.querySelector('.avatar-circle');
+            avatarCircle.style.transform = 'scale(0.8)';
+            
+            setTimeout(() => {
+                avatarCircle.innerHTML = `<img src="${e.target.result}" alt="Avatar Preview">`;
+                avatarCircle.style.transform = 'scale(1)';
+            }, 150);
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
 
-// Real-time validation
-document.addEventListener('DOMContentLoaded', function() {
-    const inputs = document.querySelectorAll('.form-input-owner');
-    const usernameInput = document.getElementById('username');
-    const emailInput = document.getElementById('email');
+let isEditMode = false;
+
+function toggleEditMode() {
+    const editBtn = document.getElementById('editToggleBtn');
+    const saveButtons = document.getElementById('saveButtons');
+    const formInputs = document.querySelectorAll('.form-input, .date-select');
+    const avatarInput = document.getElementById('avatar');
     
-    inputs.forEach(input => {
-        input.addEventListener('input', function() {
-            if (this.hasAttribute('required') && this.value.trim()) {
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
+    isEditMode = !isEditMode;
+    
+    if (isEditMode) {
+        // Enable edit mode
+        editBtn.innerHTML = '<i class="fas fa-times"></i> Hủy chỉnh sửa';
+        editBtn.classList.add('editing');
+        saveButtons.style.display = 'flex';
+        
+        formInputs.forEach(input => {
+            if (input.name !== 'email') { // Keep email readonly
+                input.disabled = false;
             }
         });
-    });
-    
-    // Username validation
-    if (usernameInput) {
-        usernameInput.addEventListener('input', function() {
-            const username = this.value.trim();
-            if (username && username !== '{{ current_user.username }}') {
-                checkUsernameAvailability(username, this);
-            } else if (username === '{{ current_user.username }}') {
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
-            }
+        
+        avatarInput.disabled = false;
+        
+        // Add edit mode animation
+        document.querySelector('.profile-section').style.borderColor = '#C3D600';
+        document.querySelector('.profile-section').style.boxShadow = '0 8px 24px rgba(195, 214, 0, 0.15)';
+        
+    } else {
+        // Disable edit mode
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> Chỉnh sửa';
+        editBtn.classList.remove('editing');
+        saveButtons.style.display = 'none';
+        
+        formInputs.forEach(input => {
+            input.disabled = true;
         });
+        
+        avatarInput.disabled = true;
+        
+        // Remove edit mode animation
+        document.querySelector('.profile-section').style.borderColor = '#f0f0f0';
+        document.querySelector('.profile-section').style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+    }
+}
+
+function cancelEdit() {
+    // Reset form to original values
+    const form = document.getElementById('personalInfoForm');
+    form.reset();
+    
+    // Exit edit mode
+    toggleEditMode();
+    
+    showSuccess('Đã hủy chỉnh sửa');
+}
+
+function confirmDeleteAccount() {
+    if (confirm('Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.')) {
+        // Add delete account logic here
+        alert('Chức năng xóa tài khoản đang được phát triển');
+        // window.location.href = "/owner/delete-account";
+    }
+}
+
+// Form validation with animations
+document.getElementById('personalInfoForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (!isEditMode) {
+        return; // Don't submit if not in edit mode
     }
     
-    // Email validation
-    if (emailInput) {
-        emailInput.addEventListener('input', function() {
-            const email = this.value.trim();
-            if (email && email !== '{{ current_user.email }}') {
-                checkEmailAvailability(email, this);
-            } else if (email === '{{ current_user.email }}') {
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
-            }
-        });
+    const requiredFields = this.querySelectorAll('input[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.disabled && !field.value.trim()) {
+            field.style.borderColor = '#dc3545';
+            field.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
+            field.style.animation = 'shake 0.5s ease-in-out';
+            isValid = false;
+        } else {
+            field.style.borderColor = '#e8e8e8';
+            field.style.boxShadow = 'none';
+            field.style.animation = 'none';
+        }
+    });
+    
+    if (isValid) {
+        showLoading();
+        
+        // Simulate API call
+        setTimeout(() => {
+            hideLoading();
+            showSuccess('Thông tin cá nhân đã được cập nhật thành công!');
+            
+            // Update user name display
+            const firstName = this.querySelector('input[name="first_name"]').value;
+            const lastName = this.querySelector('input[name="last_name"]').value;
+            document.querySelector('.user-name').textContent = `${firstName} ${lastName}`;
+            
+            // Exit edit mode after successful save
+            toggleEditMode();
+        }, 1500);
     }
 });
 
-// Check username availability
-function checkUsernameAvailability(username, inputElement) {
-    fetch('/owner/check-username', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({username: username})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.available) {
-            inputElement.classList.remove('is-invalid');
-            inputElement.classList.add('is-valid');
-        } else {
-            inputElement.classList.remove('is-valid');
-            inputElement.classList.add('is-invalid');
-            const feedback = inputElement.nextElementSibling;
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.textContent = 'Tên đăng nhập đã tồn tại';
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error checking username:', error);
-    });
-}
-
-// Check email availability
-function checkEmailAvailability(email, inputElement) {
-    fetch('/owner/check-email', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({email: email})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.available) {
-            inputElement.classList.remove('is-invalid');
-            inputElement.classList.add('is-valid');
-        } else {
-            inputElement.classList.remove('is-valid');
-            inputElement.classList.add('is-invalid');
-            const feedback = inputElement.nextElementSibling;
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.textContent = 'Email đã tồn tại';
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error checking email:', error);
-    });
-}
-
-// Toggle password visibility
-function togglePassword(inputId) {
-    const input = document.getElementById(inputId);
-    const button = input.nextElementSibling.querySelector('i');
-    
-    if (input.type === 'password') {
-        input.type = 'text';
-        button.classList.remove('fa-eye');
-        button.classList.add('fa-eye-slash');
-    } else {
-        input.type = 'password';
-        button.classList.remove('fa-eye-slash');
-        button.classList.add('fa-eye');
+// Add shake animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
     }
-}
+`;
+document.head.appendChild(style);
 </script>
 {% endblock %} 

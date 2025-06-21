@@ -3,96 +3,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/owner-layout.css') }}">
 <style>
-    body {
-        background: #FDFBFA;
-        min-height: 100vh;
-        margin: 0;
-        padding: 0;
-        font-family: 'Fz Poppins', sans-serif;
-    }
-
-    .admin-sidebar {
-        width: 250px;
-        background: transparent;
-        height: calc(100vh - 80px);
-        padding: 1.5rem;
-        position: fixed;
-        left: 85px;
-        top: 0px;
-        z-index: 1051;
-    }
-
-    .admin-sidebar::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        top: 160px;
-        bottom: 0;
-        width: 2px;
-        background: #7C7C7C;
-        opacity: 0.2;
-        z-index: 1;
-    }
-
-    .sidebar-menu {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        margin-top: 9rem;
-    }
-
-    .sidebar-menu-item {
-        margin-bottom: 0.5rem;
-    }
-
-    .sidebar-menu-link {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.875rem 1rem;
-        color: #7C7C7C;
-        text-decoration: none;
-        border-radius: 8px;
-        transition: all 0.2s;
-        font-weight: 500;
-        font-size: 12px;
-    }
-
-    .sidebar-menu-link:hover {
-        color: #101917;
-        transform: translateX(5px);
-        transition: all 0.3s ease;
-    }
-
-    .sidebar-menu-link.active {
-        color: #101917;
-        font-weight: 600;
-        background: #E0EC9B;
-    }
-
-    .sidebar-menu-link i {
-        font-size: 1rem;
-    }
-
-    .admin-main {
-        margin-left: 250px;
-        padding: 1rem 2rem 2rem 2rem;
-        min-height: 100vh;
-        margin-top: -3rem;
-    }
-
-    .page-header {
-        padding: 1.5rem 0;
-        margin-bottom: 1rem;
-    }
-
-    .page-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #101917;
-        margin: 0 0 1.5rem 0;
-    }
+    /* Statistics specific styles */
 
     .master-filter-bar {
         background: #FDFBFA;
@@ -102,7 +15,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.5rem;
+        margin: 0 2rem 1.5rem 2rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
@@ -207,7 +120,7 @@
         background: #FDFBFA;
         border: 0.3px solid rgba(124, 124, 124, 0.2);
         border-radius: 12px;
-        margin-bottom: 1.5rem;
+        margin: 0 2rem 1.5rem 2rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         opacity: 0;
         transform: translateY(-10px);
@@ -299,7 +212,7 @@
         display: grid;
         grid-template-columns: repeat(6, 1fr);
         gap: 0.75rem;
-        margin-bottom: 2rem;
+        margin: 0 2rem 2rem 2rem;
     }
 
     .stat-card {
@@ -340,7 +253,7 @@
     }
 
     .charts-section {
-        margin-bottom: 2rem;
+        margin: 0 2rem 2rem 2rem;
     }
 
     .chart-toggle-bar {
@@ -864,8 +777,14 @@
     </div>
 
     <div class="admin-main">
-        <div class="page-header">
-            <h1 class="page-title">Thống kê</h1>
+        <div class="content-wrapper">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Thống kê</h1>
+                    <p class="page-subtitle">Xem thống kê doanh thu và hiệu suất</p>
+                </div>
+            </div>
             
             <!-- Master Filter Bar -->
             <div class="master-filter-bar">
@@ -1700,4 +1619,6 @@ function applyMasterCustomDate() {
     });
 }
 </script>
+        </div>
+    </div>
 {% endblock %}
