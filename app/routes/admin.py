@@ -25,11 +25,11 @@ def dashboard():
         return redirect(url_for('auth.login'))
       # Get filter parameters
     page = request.args.get('page', 1, type=int)
-    per_page = 6
+    per_page = 5
     status_filter = request.args.get('status', 'all')
     role_filter = request.args.get('role', 'all')
     search_query = request.args.get('search', '')
-    sort_by = request.args.get('sort', 'name_asc')
+    sort_by = request.args.get('sort', 'id_asc')
     
     def get_all_users():
         """Get all users combined with role information (excluding admins)"""
@@ -100,7 +100,11 @@ def dashboard():
         all_users = filtered_users
     
     # Apply sorting
-    if sort_by == 'name_asc':
+    if sort_by == 'id_asc':
+        all_users.sort(key=lambda x: x['id'])
+    elif sort_by == 'id_desc':
+        all_users.sort(key=lambda x: x['id'], reverse=True)
+    elif sort_by == 'name_asc':
         all_users.sort(key=lambda x: x['full_name'] or x['username'])
     elif sort_by == 'name_desc':
         all_users.sort(key=lambda x: x['full_name'] or x['username'], reverse=True)
