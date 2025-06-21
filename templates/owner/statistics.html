@@ -1,11 +1,16 @@
-﻿{% extends 'base.html' %}
+﻿{% extends 'owner/base_owner.html' %}
+
 {% block title %}Thống kê{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/owner-layout.css') }}">
+{% block page_title %}Thống kê{% endblock %}
+{% block page_subtitle %}Xem thống kê doanh thu và hiệu suất{% endblock %}
+
+{% block page_css %}
 <style>
     /* Statistics specific styles */
+    .content-wrapper {
+        margin: 0 2rem 2rem 2rem;
+    }
 
     .master-filter-bar {
         background: #FDFBFA;
@@ -15,7 +20,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin: 0 2rem 1.5rem 2rem;
+        margin: 0 0 1.5rem 0;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
@@ -745,48 +750,9 @@
 </style>
 {% endblock %}
 
-{% block content %}
-<div class="admin-container">
-    <div class="admin-sidebar">
-        <ul class="sidebar-menu">
-            <li class="sidebar-menu-item">
-                <a href="{{ url_for('owner.profile') }}" class="sidebar-menu-link">
-                    <i class="fas fa-user"></i>
-                    <span>Tài khoản</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="{{ url_for('owner.statistics') }}" class="sidebar-menu-link active">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Thống kê</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.calendar') }}" class="sidebar-menu-link">
-                    <i class="fas fa-calendar"></i>
-                    <span>Lịch</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="{{ url_for('owner.dashboard') }}" class="sidebar-menu-link">
-                    <i class="fas fa-home"></i>
-                    <span>Tất cả phòng</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <div class="admin-main">
-        <div class="content-wrapper">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Thống kê</h1>
-                    <p class="page-subtitle">Xem thống kê doanh thu và hiệu suất</p>
-                </div>
-            </div>
-            
-            <!-- Master Filter Bar -->
+{% block page_content %}
+<div class="content-wrapper">
+    <!-- Master Filter Bar -->
             <div class="master-filter-bar">
                 <div class="master-filter-left">
                     <div class="master-filter-group">
@@ -1017,7 +983,6 @@
                 </tbody>
             </table>
         </div>
-    </div>
 </div>
 
 <script>
@@ -1619,6 +1584,4 @@ function applyMasterCustomDate() {
     });
 }
 </script>
-        </div>
-    </div>
 {% endblock %}

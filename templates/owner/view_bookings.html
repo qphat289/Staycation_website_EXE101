@@ -1,613 +1,1507 @@
-{% extends 'base.html' %}
+{% extends 'owner/base_owner.html' %}
+
 {% block title %}Quản lý đặt phòng{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+{% block page_title %}Quản lý đặt phòng{% endblock %}
+{% block page_subtitle %}Xem và quản lý tất cả đặt phòng của bạn{% endblock %}
+
+{% block page_css %}
 <style>
-    body {
-        background: #FDFBFA;
-        min-height: 100vh;
-        margin: 0;
-        padding: 0;
-        font-family: 'Fz Poppins', sans-serif;
-    }
-
-    .admin-sidebar {
-        width: 250px;
-        background: transparent;
-        height: calc(100vh - 80px);
-        padding: 1.5rem;
-        position: fixed;
-        left: 85px;
-        top: 0px;
-        z-index: 1051;
-    }
-
-    .admin-sidebar::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        top: 160px;
-        bottom: 0;
-        width: 2px;
-        background: #7C7C7C;
-        opacity: 0.2;
-        z-index: 1;
-    }
-
-    .sidebar-menu {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        margin-top: 9rem;
-    }
-
-    .sidebar-menu-item {
-        margin-bottom: 0.5rem;
-    }
-
-    .sidebar-menu-link {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.875rem 1rem;
-        color: #7C7C7C;
-        text-decoration: none;
-        border-radius: 8px;
-        transition: all 0.2s;
-        font-weight: 500;
-        font-size: 12px;
-    }
-
-    .sidebar-menu-link:hover {
-        color: #101917;
-        transform: translateX(5px);
-        transition: all 0.3s ease;
-    }
-
-    .sidebar-menu-link.active {
-        color: #101917;
-        font-weight: 600;
-        background: #E0EC9B;
-    }
-
-    .sidebar-menu-link i {
-        font-size: 1rem;
-    }
-
-    .admin-main {
-        margin-left: 250px;
-        padding: 1rem 2rem 2rem 2rem;
-        min-height: 100vh;
-        margin-top: -3rem;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<!-- Sidebar -->
-<aside class="admin-sidebar">
-    <ul class="sidebar-menu">
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.profile') }}" class="sidebar-menu-link">
-                <i class="fas fa-user"></i>
-                <span>Tài khoản</span>
-            </a>
-        </li>
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.statistics') }}" class="sidebar-menu-link">
-                <i class="fas fa-chart-bar"></i>
-                <span>Thống kê</span>
-            </a>
-        </li>
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.calendar') }}" class="sidebar-menu-link">
-                <i class="fas fa-calendar"></i>
-                <span>Lịch</span>
-            </a>
-        </li>
-        <li class="sidebar-menu-item">
-            <a href="{{ url_for('owner.dashboard') }}" class="sidebar-menu-link">
-                <i class="fas fa-home"></i>
-                <span>Tất cả phòng</span>
-            </a>
-        </li>
-    </ul>
-</aside>
-
-<!-- Main Content -->
-<main class="admin-main">
-<div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-primary mb-0">Quản Lý Đặt Phòng</h2>
-    <div class="d-flex gap-2">
-      <a href="{{ url_for('owner.dashboard') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Quay lại Dashboard
-      </a>
-    </div>
-  </div>
-
-  <!-- Status Filters -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body p-3">
-      <div class="d-flex justify-content-between align-items-center flex-wrap">
-        <div class="mb-2 mb-md-0">
-          <h5 class="mb-0">Lọc theo trạng thái:</h5>
-        </div>
-        <div class="d-flex flex-wrap gap-2">
-          <a href="{{ url_for('owner.view_bookings') }}" 
-            class="btn {% if request.args.get('status') is none %}btn-primary{% else %}btn-outline-primary{% endif %}">
-            Tất cả <span class="badge bg-light text-dark ms-1">{{ bookings|length }}</span>
-          </a>
-          <a href="{{ url_for('owner.view_bookings', status='pending') }}" 
-            class="btn {% if request.args.get('status') == 'pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">
-            <i class="bi bi-hourglass-split me-1"></i> Đang Chờ 
-            <span class="badge bg-light text-dark ms-1">
-              {{ bookings|selectattr('status', 'eq', 'pending')|list|length }}
-            </span>
-          </a>
-          <a href="{{ url_for('owner.view_bookings', status='confirmed') }}" 
-            class="btn {% if request.args.get('status') == 'confirmed' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-            <i class="bi bi-check-circle me-1"></i> Đã Xác Nhận 
-            <span class="badge bg-light text-dark ms-1">
-              {{ bookings|selectattr('status', 'eq', 'confirmed')|list|length }}
-            </span>
-          </a>
-          <a href="{{ url_for('owner.view_bookings', status='completed') }}"
-            class="btn {% if request.args.get('status') == 'completed' %}btn-success{% else %}btn-outline-success{% endif %}">
-            <i class="bi bi-check-all me-1"></i> Hoàn Thành 
-            <span class="badge bg-light text-dark ms-1">
-              {{ bookings|selectattr('status', 'eq', 'completed')|list|length }}
-            </span>
-          </a>
-          <a href="{{ url_for('owner.view_bookings', status='rejected') }}"
-            class="btn {% if request.args.get('status') == 'rejected' %}btn-danger{% else %}btn-outline-danger{% endif %}">
-            <i class="bi bi-x-circle me-1"></i> Từ Chối 
-            <span class="badge bg-light text-dark ms-1">
-              {{ bookings|selectattr('status', 'eq', 'rejected')|list|length }}
-            </span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {% if bookings %}
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-gradient d-flex justify-content-between align-items-center">
-        <h4 class="mb-0 text-primary">
-          {% if request.args.get('status') %}
-            {{ request.args.get('status')|capitalize }} Bookings
-          {% else %}
-            Tất cả Bookings
-          {% endif %}
-        </h4>
-        <span class="badge bg-primary rounded-pill px-3 py-2">{{ filtered_bookings|length }} bookings</span>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr class="text-nowrap">
-                <th class="ps-3">ID</th>
-                <th>Người đặt</th>
-                <th>Homestay / Room</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
-                <th>Price</th>
-                <th class="text-center">Status</th>
-                <th class="text-center pe-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for booking in filtered_bookings %}
-                <tr class="align-middle {% if booking.status == 'pending' %}table-warning bg-opacity-25{% elif booking.status == 'confirmed' %}table-primary bg-opacity-25{% elif booking.status == 'completed' %}table-success bg-opacity-25{% elif booking.status == 'rejected' or booking.status == 'cancelled' %}table-danger bg-opacity-25{% endif %}">
-                  <td class="fw-bold ps-3">#{{ booking.id }}</td>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <div class="avatar bg-primary rounded-circle me-2">{{ booking.renter.display_name|truncate(1, True, '') }}</div>
-                      <div class="renter-info">
-                        <div class="fw-semibold">{{ booking.renter.display_name }}</div>
-                        <small class="text-muted">{{ booking.renter.email }}</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="fw-semibold">
-                      {% if booking.room %}
-                        {{ booking.room.title }}
-                      {% else %}
-                        <em>Phòng không tồn tại</em>
-                      {% endif %}
-                    </div>
-                    <small class="text-muted">
-                      {% if booking.room %}
-                        {{ booking.room.address }}
-                      {% else %}
-                        <em>Chưa có thông tin</em>
-                      {% endif %}
-                    </small>
-                  </td>
-                  <td>
-                    <div class="fw-semibold">{{ booking.start_time.strftime('%d-%m-%Y') }}</div>
-                    <small class="text-muted">{{ booking.start_time.strftime('%H:%M') }}</small>
-                  </td>
-                  <td>
-                    <div class="fw-semibold">{{ booking.end_time.strftime('%d-%m-%Y') }}</div>
-                    <small class="text-muted">{{ booking.end_time.strftime('%H:%M') }}</small>
-                  </td>
-                  <td class="fw-semibold">{{ "{:,.0f}".format(booking.total_price) }} VND</td>
-                  <td class="text-center">
-                    {% if booking.status == 'pending' %}
-                      <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-hourglass-split me-1"></i> Đang Chờ</span>
-                    {% elif booking.status == 'confirmed' %}
-                      <span class="badge bg-primary px-3 py-2"><i class="bi bi-check-circle me-1"></i> Đã Xác Nhận</span>
-                      {% if booking.payment_status == 'paid' %}
-                        <span class="badge bg-success px-3 py-2 mt-1"><i class="bi bi-credit-card me-1"></i> Đã Thanh Toán</span>
-                      {% else %}
-                        <span class="badge bg-danger px-3 py-2 mt-1"><i class="bi bi-credit-card me-1"></i> Chưa Thanh Toán</span>
-                      {% endif %}
-                    {% elif booking.status == 'active' %}
-                      <span class="badge bg-info px-3 py-2"><i class="bi bi-person-check me-1"></i> Đang Hoạt Động</span>
-                    {% elif booking.status == 'completed' %}
-                      <span class="badge bg-success px-3 py-2"><i class="bi bi-check-all me-1"></i> Hoàn Thành</span>
-                    {% elif booking.status == 'cancelled' %}
-                      <span class="badge bg-danger px-3 py-2"><i class="bi bi-x-octagon me-1"></i> Đã Hủy</span>
-                    {% elif booking.status == 'rejected' %}
-                      <span class="badge bg-danger px-3 py-2"><i class="bi bi-x-circle me-1"></i> Từ Chối</span>
-                    {% else %}
-                      <span class="badge bg-secondary px-3 py-2">{{ booking.status|capitalize }}</span>
-                    {% endif %}
-                  </td>
-                  <td class="text-center pe-3">
-                    <div class="d-flex gap-2 justify-content-center">
-                      {% if booking.status == 'pending' %}
-                        <a href="{{ url_for('owner.confirm_booking', id=booking.id) }}" 
-                          class="btn btn-sm btn-success px-2" 
-                          title="Xác nhận đặt phòng">
-                          <i class="bi bi-check-circle"></i>
-                        </a>
-                        <a href="{{ url_for('owner.reject_booking', id=booking.id) }}" 
-                          class="btn btn-sm btn-danger px-2" 
-                          title="Từ chối đặt phòng">
-                          <i class="bi bi-x-circle"></i>
-                        </a>
-                      {% else %}
-                        <a href="{{ url_for('owner.booking_details', booking_id=booking.id) }}" 
-                          class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Xem chi tiết">
-                          <i class="bi bi-info-circle"></i>
-                        </a>
-                      {% endif %}
-                    </div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pagination -->
-    {% if pagination.total_pages > 1 %}
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <nav aria-label="Pagination Navigation">
-          <ul class="pagination justify-content-center mb-0">
-            <!-- Previous Page -->
-            {% if pagination.has_prev %}
-              <li class="page-item">
-                <a class="page-link" href="{{ url_for('owner.view_bookings', status=current_status, page=pagination.prev_num) }}" 
-                   aria-label="Previous">
-                  <span aria-hidden="true">&laquo;</span>
-                  <span class="sr-only">Previous</span>
-                </a>
-              </li>
-            {% else %}
-              <li class="page-item disabled">
-                <span class="page-link" aria-label="Previous">
-                  <span aria-hidden="true">&laquo;</span>
-                </span>
-              </li>
-            {% endif %}
-
-            <!-- Page Numbers -->
-            {% set start_page = [1, pagination.page - 2]|max %}
-            {% set end_page = [pagination.total_pages, pagination.page + 2]|min %}
-            
-            {% if start_page > 1 %}
-              <li class="page-item">
-                <a class="page-link" href="{{ url_for('owner.view_bookings', status=current_status, page=1) }}">1</a>
-              </li>
-              {% if start_page > 2 %}
-                <li class="page-item disabled">
-                  <span class="page-link">...</span>
-                </li>
-              {% endif %}
-            {% endif %}
-
-            {% for page_num in range(start_page, end_page + 1) %}
-              {% if page_num == pagination.page %}
-                <li class="page-item active">
-                  <span class="page-link">{{ page_num }}</span>
-                </li>
-              {% else %}
-                <li class="page-item">
-                  <a class="page-link" href="{{ url_for('owner.view_bookings', status=current_status, page=page_num) }}">{{ page_num }}</a>
-                </li>
-              {% endif %}
-            {% endfor %}
-
-            {% if end_page < pagination.total_pages %}
-              {% if end_page < pagination.total_pages - 1 %}
-                <li class="page-item disabled">
-                  <span class="page-link">...</span>
-                </li>
-              {% endif %}
-              <li class="page-item">
-                <a class="page-link" href="{{ url_for('owner.view_bookings', status=current_status, page=pagination.total_pages) }}">{{ pagination.total_pages }}</a>
-              </li>
-            {% endif %}
-
-            <!-- Next Page -->
-            {% if pagination.has_next %}
-              <li class="page-item">
-                <a class="page-link" href="{{ url_for('owner.view_bookings', status=current_status, page=pagination.next_num) }}" 
-                   aria-label="Next">
-                  <span aria-hidden="true">&raquo;</span>
-                  <span class="sr-only">Next</span>
-                </a>
-              </li>
-            {% else %}
-              <li class="page-item disabled">
-                <span class="page-link" aria-label="Next">
-                  <span aria-hidden="true">&raquo;</span>
-                </span>
-              </li>
-            {% endif %}
-          </ul>
-        </nav>
-        
-        <!-- Pagination Info -->
-        <div class="text-center mt-3">
-          <small class="text-muted">
-            Hiển thị {{ ((pagination.page - 1) * pagination.per_page + 1) }} - {{ [pagination.page * pagination.per_page, pagination.total]|min }} 
-            trong tổng số {{ pagination.total }} booking(s)
-            {% if current_status %}
-              ({{ current_status }})
-            {% endif %}
-          </small>
-        </div>
-      </div>
-    </div>
-    {% endif %}
-  {% else %}
-    <div class="card shadow-sm mb-4">
-      <div class="card-body py-5">
-        <div class="text-center">
-          <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
-          <h4 class="mt-3">Chưa có đặt phòng</h4>
-          <p class="text-muted">
-            {% if request.args.get('status') %}
-              Không có đặt phòng {{ request.args.get('status') }} nào.
-            {% else %}
-              Bạn chưa có booking nào.
-            {% endif %}
-          </p>
-          <a href="{{ url_for('owner.dashboard') }}" class="btn btn-primary mt-2">
-            <i class="bi bi-arrow-left me-1"></i> Quay lại Dashboard
-          </a>
-        </div>
-      </div>
-    </div>
-  {% endif %}
-</div>
-</main>
-
-<style>
-  /* Table styles */
-  .table {
-    margin-bottom: 0;
-  }
-  .table th {
-    border-top: 0;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    color: #495057;
-    border-bottom: 2px solid #e9ecef;
-    padding: 1rem;
-  }
-  .table td {
-    padding: 0.8rem 1rem;
-    vertical-align: middle;
-  }
-  
-  /* Card styling */
-  .card {
-    border: none;
-    border-radius: 10px;
+  /* Main container styling */
+  .booking-management-container {
+    margin: 0 2rem 2rem 2rem;
+    background: #FDFBFA;
+    border-radius: 8px;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
-  .card-header.bg-gradient {
-            background: #f8fdf4;
-    border-bottom: 1px solid #e9ecef;
-    padding: 1rem 1.5rem;
+
+  /* Tab navigation */
+  .booking-tabs {
+    display: flex;
+    background: #FDFBFA;
+    border-bottom: 0.5px solid #CCC8B4;
   }
-  
-  /* Avatar styles */
-  .avatar {
-    width: 38px;
-    height: 38px;
+
+  .tab-button {
+    flex: 1;
+    padding: 16px 24px;
+    background: transparent;
+    border: none;
+    font-family: 'Fz Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #7C7C7C;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-weight: bold;
-    background-color: #0d6efd !important;
+    gap: 8px;
   }
-  
-  /* Badge styling */
-  .badge {
+
+  .tab-button:hover {
+    color: #101917;
+    background: rgba(224, 236, 155, 0.1);
+  }
+
+  .tab-button.active {
+    color: #101917;
+    font-weight: 600;
+    border-bottom-color: #E0EC9B;
+    background: rgba(224, 236, 155, 0.2);
+  }
+
+  /* Search and filter section */
+  .booking-controls {
+    padding: 20px 24px;
+    background: #FDFBFA;
+    border-bottom: 0.5px solid #CCC8B4;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .search-box {
+    flex: 1;
+    position: relative;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 0.3px solid #7C7C7C;
+    border-radius: 8px;
+    font-family: 'Fz Poppins', sans-serif;
+    font-size: 12px;
+    color: #101917;
+    background: #FDFBFA;
+  }
+
+  .search-input::placeholder {
+    color: #7C7C7C;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #E0EC9B;
+    box-shadow: 0 0 0 2px rgba(224, 236, 155, 0.2);
+  }
+
+  .filter-button, .sort-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border: 0.3px solid #7C7C7C;
+    border-radius: 8px;
+    background: transparent;
+    font-family: 'Fz Poppins', sans-serif;
+    font-size: 12px;
     font-weight: 500;
-    letter-spacing: 0.5px;
-    font-size: 0.8rem;
-    border-radius: 30px;
-  }
-
-  /* Status row highlighting */
-  .table-warning.bg-opacity-25 {
-    background-color: rgba(255, 193, 7, 0.1) !important;
-  }
-  .table-primary.bg-opacity-25 {
-    background-color: rgba(13, 110, 253, 0.1) !important;
-  }
-  .table-success.bg-opacity-25 {
-    background-color: rgba(25, 135, 84, 0.1) !important;
-  }
-  .table-danger.bg-opacity-25 {
-    background-color: rgba(220, 53, 69, 0.1) !important;
-  }
-
-  /* Status filter buttons - Original Bootstrap colors */
-  .btn-primary, .btn-outline-primary {
-    color: #0d6efd;
-    border-color: #0d6efd;
-  }
-  .btn-primary {
-    background-color: #0d6efd;
-    color: white;
-  }
-  .btn-primary:hover {
-    background-color: #0b5ed7;
-    border-color: #0a58ca;
-    color: white;
-  }
-  .btn-outline-primary:hover {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-  }
-
-  .btn-warning, .btn-outline-warning {
-    color: #ffc107;
-    border-color: #ffc107;
-  }
-  .btn-warning {
-    background-color: #ffc107;
-    color: #000;
-  }
-  .btn-warning:hover {
-    background-color: #ffca2c;
-    border-color: #ffc720;
-    color: #000;
-  }
-  .btn-outline-warning:hover {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #000;
-  }
-
-  .btn-success, .btn-outline-success {
-    color: #198754;
-    border-color: #198754;
-  }
-  .btn-success {
-    background-color: #198754;
-    color: white;
-  }
-  .btn-success:hover {
-    background-color: #157347;
-    border-color: #146c43;
-    color: white;
-  }
-  .btn-outline-success:hover {
-    background-color: #198754;
-    border-color: #198754;
-    color: white;
-  }
-
-  .btn-danger, .btn-outline-danger {
-    color: #dc3545;
-    border-color: #dc3545;
-  }
-  .btn-danger {
-    background-color: #dc3545;
-    color: white;
-  }
-  .btn-danger:hover {
-    background-color: #bb2d3b;
-    border-color: #b02a37;
-    color: white;
-  }
-  .btn-outline-danger:hover {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
-  }
-
-  /* Pagination styling */
-  .pagination {
-    margin: 0;
-  }
-  
-  .page-link {
-    color: #0d6efd;
-    border-color: #dee2e6;
-    padding: 0.5rem 0.75rem;
-    margin: 0 0.125rem;
-    border-radius: 0.375rem;
+    color: #7C7C7C;
+    cursor: pointer;
     transition: all 0.2s ease;
   }
-  
-  .page-link:hover {
-    color: #0a58ca;
-    background-color: #e9ecef;
-    border-color: #dee2e6;
-    transform: translateY(-1px);
-  }
-  
-  .page-item.active .page-link {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-    font-weight: 600;
-    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.25);
-  }
-  
-  .page-item.disabled .page-link {
-    color: #6c757d;
-    background-color: #fff;
-    border-color: #dee2e6;
-    cursor: not-allowed;
+
+  .filter-button:hover, .sort-button:hover {
+    border-color: #E0EC9B;
+    color: #101917;
+    background: rgba(224, 236, 155, 0.1);
   }
 
-  /* Responsive behavior */
-  @media (max-width: 768px) {
-    .table-responsive {
-      border: 0;
+  /* Table styling */
+  .booking-table-container {
+    background: #FDFBFA;
+    overflow-x: auto;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .booking-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Fz Poppins', sans-serif;
+  }
+
+  .booking-table thead {
+    background: #F5F5F5;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .booking-table th {
+    padding: 16px 24px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    color: #7C7C7C;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 0.5px solid #CCC8B4;
+  }
+
+  .booking-table td {
+    padding: 20px 24px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #101917;
+    border-bottom: 0.5px solid #CCC8B4;
+    vertical-align: middle;
+  }
+
+  .booking-table tbody tr:hover {
+    background: rgba(224, 236, 155, 0.05);
+  }
+
+  /* Month separator styling */
+  .month-separator {
+    background: #F5F5F5;
+    border-top: 0.3px solid #7C7C7C;
+    border-bottom: 0.3px solid #7C7C7C;
+  }
+
+  .month-separator td {
+    padding: 12px 24px;
+    font-weight: 600;
+    color: #7C7C7C;
+    border-bottom: none;
+  }
+
+  /* Action buttons */
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-view {
+    background: rgba(13, 110, 253, 0.1);
+    color: #084298;
+  }
+
+  .btn-view:hover {
+    background: rgba(13, 110, 253, 0.2);
+  }
+
+  .btn-confirm {
+    background: rgba(25, 135, 84, 0.1);
+    color: #0f5132;
+  }
+
+  .btn-confirm:hover {
+    background: rgba(25, 135, 84, 0.2);
+  }
+
+  .btn-reject {
+    background: rgba(220, 53, 69, 0.1);
+    color: #842029;
+  }
+
+  .btn-reject:hover {
+    background: rgba(220, 53, 69, 0.2);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7C7C7C;
+  }
+
+  .empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  .empty-state h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #101917;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  /* Loading state */
+  .loading-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #7C7C7C;
+  }
+
+  .loading-state i {
+    font-size: 24px;
+    margin-bottom: 12px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .page-ellipsis {
+    padding: 8px 4px;
+    color: #7C7C7C;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Receipt Modal Styles */
+  .receipt-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.3s ease;
+  }
+
+  .receipt-modal-content {
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    margin: 2% auto;
+    border-radius: 12px;
+    width: 500px;
+    max-width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
+    font-family: 'Courier New', monospace;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .receipt-header {
+    background: linear-gradient(135deg, #101917, #2d3748);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+    text-align: center;
+  }
+
+  .receipt-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .receipt-logo i {
+    font-size: 24px;
+    color: #E0EC9B;
+  }
+
+  .receipt-close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .receipt-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+  }
+
+  .receipt-body {
+    padding: 25px;
+    background: white;
+  }
+
+  .receipt-company {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .receipt-company h3 {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #101917;
+    letter-spacing: 2px;
+  }
+
+  .receipt-company p {
+    margin: 0;
+    color: #7C7C7C;
+    font-size: 14px;
+    font-style: italic;
+  }
+
+  .receipt-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #CCC8B4, transparent);
+    margin: 15px 0;
+  }
+
+  .receipt-divider-thick {
+    height: 2px;
+    background: linear-gradient(to right, transparent, #101917, transparent);
+    margin: 20px 0;
+  }
+
+  .receipt-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid #E0EC9B;
+  }
+
+  .receipt-section {
+    margin-bottom: 20px;
+  }
+
+  .receipt-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #101917;
+    margin: 0 0 12px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed #CCC8B4;
+  }
+
+  .receipt-section-title i {
+    color: #E0EC9B;
+    background: #101917;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+  }
+
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 5px 0;
+  }
+
+  .receipt-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .receipt-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+  }
+
+  .receipt-value {
+    font-size: 13px;
+    color: #101917;
+    font-weight: 600;
+    text-align: right;
+    max-width: 60%;
+    word-break: break-word;
+  }
+
+  .receipt-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .receipt-status.status-pending {
+    background: rgba(255, 193, 7, 0.2);
+    color: #856404;
+  }
+
+  .receipt-status.status-confirmed {
+    background: rgba(13, 110, 253, 0.2);
+    color: #084298;
+  }
+
+  .receipt-status.status-active {
+    background: rgba(40, 167, 69, 0.2);
+    color: #155724;
+  }
+
+  .receipt-status.status-completed {
+    background: rgba(25, 135, 84, 0.2);
+    color: #0f5132;
+  }
+
+  .receipt-status.status-cancelled,
+  .receipt-status.status-rejected {
+    background: rgba(220, 53, 69, 0.2);
+    color: #842029;
+  }
+
+  .receipt-payment {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px dashed #CCC8B4;
+  }
+
+  .receipt-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .receipt-total-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #101917;
+  }
+
+  .receipt-total-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #E0EC9B;
+    background: #101917;
+    padding: 8px 12px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+  }
+
+  .receipt-payment-method {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .receipt-footer {
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  .receipt-footer p {
+    margin: 5px 0;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .receipt-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-style: italic;
+    color: #7C7C7C !important;
+  }
+
+  .receipt-note i {
+    color: #E0EC9B;
+  }
+
+  .receipt-actions {
+    padding: 20px 25px;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .receipt-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .receipt-btn-print {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+  }
+
+  .receipt-btn-print:hover {
+    background: linear-gradient(135deg, #5a6268, #3d4142);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .receipt-btn-download {
+    background: linear-gradient(135deg, #E0EC9B, #C3D600);
+    color: #101917;
+  }
+
+  .receipt-btn-download:hover {
+    background: linear-gradient(135deg, #C3D600, #A8B800);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(224, 236, 155, 0.4);
+  }
+
+  /* Print styles */
+  @media print {
+    .receipt-modal {
+      position: static !important;
+      background: none !important;
+      backdrop-filter: none !important;
     }
-    
+
+    .receipt-modal-content {
+      box-shadow: none !important;
+      margin: 0 !important;
+      max-width: 100% !important;
+      width: 100% !important;
+    }
+
+    .receipt-actions {
+      display: none !important;
+    }
+
+    .receipt-close {
+      display: none !important;
+    }
+  }
+
+  /* Enhanced Pagination Styles */
+  .pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: #FDFBFA;
+    border-top: 1px solid rgba(224, 236, 155, 0.3);
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: white;
+    padding: 6px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(224, 236, 155, 0.2);
+    width: 350px;
+    min-width: 350px;
+    max-width: 350px;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .page-btn {
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: #7C7C7C;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Fz Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #E0EC9B 0%, #CCC8B4 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+  }
+
+  .page-btn span, .page-btn i {
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-btn:hover:not(:disabled) {
+    color: #101917;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(224, 236, 155, 0.3);
+  }
+
+  .page-btn:hover:not(:disabled)::before {
+    opacity: 0.15;
+  }
+
+  .page-btn.active {
+    background: linear-gradient(135deg, #101917 0%, #2c3e50 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 25, 23, 0.4);
+  }
+
+  .page-btn.active::before {
+    display: none;
+  }
+
+  .page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .page-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .page-btn:disabled::before {
+    display: none;
+  }
+
+  /* Navigation buttons (prev/next) */
+  .page-btn.page-nav {
+    min-width: 36px;
+    width: 36px;
+    flex-shrink: 0;
+  }
+
+  /* Page number buttons */
+  .page-btn.page-number {
+    min-width: 36px;
+    width: 36px;
+    flex-shrink: 0;
+  }
+
+  .page-ellipsis {
+    padding: 8px 6px;
+    color: #7C7C7C;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    width: 36px;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .pagination-info {
+    color: #7C7C7C;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Fz Poppins', sans-serif;
+  }
+
+  .pagination-info strong {
+    color: #101917;
+    font-weight: 700;
+  }
+
+  /* Pagination animations */
+  @keyframes pageButtonPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  .page-btn:active {
+    animation: pageButtonPulse 0.2s ease;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .booking-management-container {
+      margin: 0 1rem 1rem 1rem;
+    }
+
+    .booking-controls {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .booking-table {
+      font-size: 11px;
+    }
+
+    .booking-table th,
+    .booking-table td {
+      padding: 12px 16px;
+    }
+
+    .tab-button {
+      padding: 12px 16px;
+      font-size: 12px;
+    }
+
+    .pagination-container {
+      flex-direction: column;
+      gap: 15px;
+      text-align: center;
+      padding: 15px;
+    }
+
     .pagination {
       justify-content: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      gap: 3px;
+      padding: 5px;
+      width: 300px;
+      min-width: 300px;
+      max-width: 300px;
     }
-    
-    .page-link {
-      padding: 0.375rem 0.5rem;
-      font-size: 0.875rem;
+
+    .page-btn {
+      min-width: 32px;
+      height: 32px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .pagination-info {
+      font-size: 12px;
     }
   }
 </style>
 
 <script>
-  // Initialize tooltips
-  document.addEventListener('DOMContentLoaded', function() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
+// Global variables for pagination
+let currentPage = 1;
+let currentTab = 'orders';
+
+// Tab switching functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const targetTab = this.dataset.tab;
+      
+      // Remove active class from all tabs
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+      
+      // Add active class to clicked tab
+      this.classList.add('active');
+      document.getElementById(targetTab).classList.add('active');
+      
+      // Reset pagination for new tab
+      currentTab = targetTab;
+      currentPage = 1;
+      
+      // Load data for the selected tab
+      loadTabData(targetTab, 1);
+    });
   });
+  
+  // Load initial data for the first tab
+  loadTabData('orders', 1);
+});
+
+function loadTabData(tabType, page = 1) {
+  const container = document.getElementById(tabType);
+  const tableBody = container.querySelector('.booking-table tbody');
+  const paginationContainer = container.querySelector('.pagination-container');
+  
+  // Update current page
+  currentPage = page;
+  
+  // Show loading state
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="6" class="loading-state">
+        <i class="fas fa-spinner"></i><br>
+        Đang tải...
+      </td>
+    </tr>
+  `;
+  
+  // Clear pagination during loading
+  paginationContainer.innerHTML = '';
+  
+  // Determine status filter based on tab type
+  let statusFilter = '';
+  switch(tabType) {
+    case 'orders':
+      statusFilter = 'pending,confirmed';
+      break;
+    case 'renting':
+      statusFilter = 'active';
+      break;
+    case 'history':
+      statusFilter = 'completed,rejected,cancelled';
+      break;
+  }
+  
+  // Fetch data from API
+  const searchTerm = document.getElementById('searchInput').value;
+  const url = new URL('/owner/api/bookings', window.location.origin);
+  url.searchParams.append('status', statusFilter);
+  url.searchParams.append('page', page);
+  url.searchParams.append('per_page', 20);
+  if (searchTerm) {
+    url.searchParams.append('search', searchTerm);
+  }
+  
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      renderBookings(data.bookings, tableBody, tabType);
+      renderPagination(data.pagination, paginationContainer, tabType);
+    })
+    .catch(error => {
+      console.error('Error loading bookings:', error);
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 40px; color: #dc3545;">
+            <i class="fas fa-exclamation-triangle"></i><br>
+            Có lỗi xảy ra khi tải dữ liệu: ${error.message}
+          </td>
+        </tr>
+      `;
+      paginationContainer.innerHTML = '';
+    });
+}
+
+function renderBookings(bookings, tableBody, tabType) {
+  if (!bookings || bookings.length === 0) {
+    const emptyMessages = {
+      'orders': 'Chưa có đơn đặt phòng nào',
+      'renting': 'Hiện tại không có phòng nào đang được thuê',
+      'history': 'Chưa có lịch sử đặt phòng'
+    };
+    
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">
+          <i class="fas fa-calendar-times"></i>
+          <h3>${emptyMessages[tabType]}</h3>
+          <p>Dữ liệu sẽ hiển thị ở đây khi có booking mới</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  let html = '';
+  
+  bookings.forEach(booking => {
+    const bookingDate = new Date(booking.created_at);
+    
+    // Format date
+    const formattedDate = bookingDate.toLocaleDateString('vi-VN', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
+    
+    // Get action buttons based on tab type
+    const actionButtons = getActionButtons(booking, tabType);
+    
+    html += `
+      <tr>
+        <td>${formattedDate}</td>
+        <td>${booking.room_title || 'N/A'}</td>
+        <td>${booking.renter_name || 'N/A'}</td>
+        <td>${booking.duration || 'N/A'}</td>
+        <td>${formatCurrency(booking.total_price)}</td>
+        <td>
+          <div class="action-buttons">
+            ${actionButtons}
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+  
+  tableBody.innerHTML = html;
+}
+
+function getActionButtons(booking, tabType) {
+  let buttons = `<button class="action-btn btn-view" onclick="showBookingReceipt(${booking.id})"><i class="fas fa-eye"></i> Xem</button>`;
+  
+  if (tabType === 'orders' && booking.status === 'pending') {
+    buttons += `
+      <a href="/owner/booking/confirm/${booking.id}" class="action-btn btn-confirm"><i class="fas fa-check"></i> Xác nhận</a>
+      <a href="/owner/reject-booking/${booking.id}" class="action-btn btn-reject"><i class="fas fa-times"></i> Từ chối</a>
+    `;
+  }
+  
+  return buttons;
+}
+
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+}
+
+function renderPagination(pagination, container, tabType) {
+  if (pagination.total_pages <= 1) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  let paginationHTML = '<div class="pagination">';
+  
+  // Previous button
+  if (pagination.has_prev) {
+    paginationHTML += `<button class="page-btn page-nav" onclick="loadTabData('${tabType}', ${pagination.prev_num})">
+      <i class="fas fa-chevron-left"></i>
+    </button>`;
+  } else {
+    paginationHTML += `<button class="page-btn page-nav" disabled>
+      <i class="fas fa-chevron-left"></i>
+    </button>`;
+  }
+  
+  // Smart page number logic - always show max 3 page numbers to fit fixed width
+  const current = pagination.page;
+  const total = pagination.total_pages;
+  let pages = [];
+  
+  if (total <= 3) {
+    // Show all pages if 3 or fewer
+    for (let i = 1; i <= total; i++) {
+      pages.push(i);
+    }
+  } else {
+    if (current <= 2) {
+      // Near beginning: 1, 2, 3, ..., last
+      pages.push(1, 2, 3);
+      if (total > 3) {
+        pages.push('ellipsis');
+        pages.push(total);
+      }
+    } else if (current >= total - 1) {
+      // Near end: 1, ..., last-2, last-1, last
+      pages.push(1);
+      pages.push('ellipsis');
+      pages.push(total - 2, total - 1, total);
+    } else {
+      // Middle: 1, ..., current, ..., last
+      pages.push(1);
+      pages.push('ellipsis');
+      pages.push(current);
+      pages.push('ellipsis');
+      pages.push(total);
+    }
+  }
+  
+  // Render page numbers
+  pages.forEach(page => {
+    if (page === 'ellipsis') {
+      paginationHTML += `<span class="page-ellipsis">...</span>`;
+    } else {
+      const isActive = page === current ? 'active' : '';
+      paginationHTML += `<button class="page-btn page-number ${isActive}" onclick="loadTabData('${tabType}', ${page})">${page}</button>`;
+    }
+  });
+  
+  // Next button
+  if (pagination.has_next) {
+    paginationHTML += `<button class="page-btn page-nav" onclick="loadTabData('${tabType}', ${pagination.next_num})">
+      <i class="fas fa-chevron-right"></i>
+    </button>`;
+  } else {
+    paginationHTML += `<button class="page-btn page-nav" disabled>
+      <i class="fas fa-chevron-right"></i>
+    </button>`;
+  }
+  
+  paginationHTML += '</div>';
+  
+  // Pagination info
+  const start = (pagination.page - 1) * pagination.per_page + 1;
+  const end = Math.min(pagination.page * pagination.per_page, pagination.total);
+  paginationHTML += `<div class="pagination-info">
+    Hiển thị <strong>${start}-${end}</strong> trong tổng số <strong>${pagination.total}</strong> kết quả
+  </div>`;
+  
+  container.innerHTML = paginationHTML;
+}
+
+// Search functionality
+function handleSearch() {
+  // Reset to first page when searching
+  currentPage = 1;
+  loadTabData(currentTab, 1);
+}
+
+// Receipt Modal Functions
+async function showBookingReceipt(bookingId) {
+  try {
+    // Fetch detailed booking information
+    const response = await fetch(`/owner/calendar/api/booking/${bookingId}`);
+    const data = await response.json();
+    
+    if (data.success) {
+      const booking = data.booking;
+      
+      // Populate receipt modal with booking data
+      document.getElementById('receiptBookingId').textContent = `#BK${String(booking.id).padStart(4, '0')}`;
+      document.getElementById('receiptCreatedDate').textContent = new Date(booking.created_at).toLocaleDateString('vi-VN');
+      
+      // Customer information
+      document.getElementById('receiptCustomerName').textContent = booking.renter?.full_name || booking.renter?.username || 'Khách hàng';
+      document.getElementById('receiptPhone').textContent = booking.renter?.phone || 'Chưa cung cấp';
+      document.getElementById('receiptEmail').textContent = booking.renter?.email || 'Chưa cung cấp';
+      document.getElementById('receiptUsername').textContent = booking.renter?.username || 'Chưa cung cấp';
+      
+      // Room information
+      document.getElementById('receiptRoomTitle').textContent = booking.room?.title || 'N/A';
+      document.getElementById('receiptBookingType').textContent = booking.booking_type === 'hourly' ? 'Theo giờ' : 'Qua đêm';
+      
+      // Booking details
+      const startTime = new Date(booking.start_time);
+      const endTime = new Date(booking.end_time);
+      
+      document.getElementById('receiptCheckin').textContent = startTime.toLocaleString('vi-VN');
+      document.getElementById('receiptCheckout').textContent = endTime.toLocaleString('vi-VN');
+      document.getElementById('receiptDuration').textContent = `${booking.total_hours} giờ`;
+      
+      // Payment information
+      document.getElementById('receiptTotal').textContent = formatCurrency(booking.total_price);
+      
+      // Status with proper styling
+      const statusElement = document.getElementById('receiptStatus');
+      const statusMap = {
+        'pending': { text: 'Chờ xác nhận', class: 'status-pending' },
+        'confirmed': { text: 'Đã xác nhận', class: 'status-confirmed' },
+        'active': { text: 'Đang sử dụng', class: 'status-active' },
+        'completed': { text: 'Hoàn thành', class: 'status-completed' },
+        'cancelled': { text: 'Đã hủy', class: 'status-cancelled' },
+        'rejected': { text: 'Từ chối', class: 'status-rejected' }
+      };
+      
+      const status = statusMap[booking.status] || { text: booking.status, class: '' };
+      statusElement.textContent = status.text;
+      statusElement.className = `receipt-value receipt-status ${status.class}`;
+      
+      // Show the modal
+      document.getElementById('bookingReceiptModal').style.display = 'block';
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      
+    } else {
+      console.error('Failed to load booking details:', data.error);
+      alert('Không thể tải thông tin đặt phòng');
+    }
+  } catch (error) {
+    console.error('Error loading booking details:', error);
+    alert('Có lỗi xảy ra khi tải thông tin đặt phòng');
+  }
+}
+
+function closeReceiptModal() {
+  document.getElementById('bookingReceiptModal').style.display = 'none';
+  document.body.style.overflow = 'auto'; // Restore background scrolling
+}
+
+function printReceipt() {
+  // Hide action buttons and print
+  const modal = document.getElementById('bookingReceiptModal');
+  const originalDisplay = modal.style.display;
+  
+  // Create a new window for printing
+  const printWindow = window.open('', '_blank');
+  const receiptContent = document.querySelector('.receipt-modal-content').innerHTML;
+  
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Hóa đơn đặt phòng</title>
+      <style>
+        body { 
+          font-family: 'Courier New', monospace; 
+          margin: 0; 
+          padding: 20px;
+          background: white;
+        }
+        .receipt-actions { display: none !important; }
+        .receipt-close { display: none !important; }
+        .receipt-modal-content {
+          box-shadow: none !important;
+          margin: 0 !important;
+          max-width: 100% !important;
+          width: 100% !important;
+          border-radius: 0 !important;
+        }
+        .receipt-header {
+          background: #101917 !important;
+          color: white !important;
+          padding: 20px 25px !important;
+          border-radius: 0 !important;
+        }
+        .receipt-logo { color: white !important; }
+        .receipt-logo i { color: #E0EC9B !important; }
+        ${document.querySelector('style').innerHTML}
+      </style>
+    </head>
+    <body>
+      <div class="receipt-modal-content">${receiptContent}</div>
+    </body>
+    </html>
+  `);
+  
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+}
+
+function downloadReceipt() {
+  // This would require a backend endpoint to generate PDF
+  // For now, show a message
+  alert('Tính năng tải về PDF sẽ được phát triển trong phiên bản tiếp theo');
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+  const modal = document.getElementById('bookingReceiptModal');
+  if (event.target === modal) {
+    closeReceiptModal();
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    closeReceiptModal();
+  }
+});
+
+// Filter and sort functionality
+function showFilterOptions() {
+  console.log('Show filter options');
+}
+
+function showSortOptions() {
+  console.log('Show sort options');
+}
 </script>
 {% endblock %}
+
+{% block page_content %}
+<div class="booking-management-container">
+  <!-- Tab Navigation -->
+  <div class="booking-tabs">
+    <button class="tab-button active" data-tab="orders">
+      <i class="fas fa-file-alt"></i>
+      Đơn đặt phòng
+    </button>
+    <button class="tab-button" data-tab="renting">
+      <i class="fas fa-home"></i>
+      Đang thuê
+    </button>
+    <button class="tab-button" data-tab="history">
+      <i class="fas fa-history"></i>
+      Lịch sử đặt phòng
+    </button>
+  </div>
+
+  <!-- Search and Filter Controls -->
+  <div class="booking-controls">
+    <div class="search-box">
+      <input 
+        type="text" 
+        id="searchInput" 
+        class="search-input" 
+        placeholder="Search" 
+        onkeyup="handleSearch()"
+      >
+    </div>
+    <button class="sort-button" onclick="showSortOptions()">
+      <i class="fas fa-sort"></i>
+      Sắp xếp
+    </button>
+    <button class="filter-button" onclick="showFilterOptions()">
+      <i class="fas fa-filter"></i>
+      Filter
+    </button>
+  </div>
+
+  <!-- Tab Contents -->
+  
+  <!-- Đơn đặt phòng Tab -->
+  <div id="orders" class="tab-content active">
+    <div class="booking-table-container">
+      <table class="booking-table">
+        <thead>
+          <tr>
+            <th>Ngày</th>
+            <th>Phòng</th>
+            <th>Người thuê</th>
+            <th>Thời gian</th>
+            <th>Thanh toán</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be loaded by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-container">
+      <!-- Pagination will be added by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Đang thuê Tab -->
+  <div id="renting" class="tab-content">
+    <div class="booking-table-container">
+      <table class="booking-table">
+        <thead>
+          <tr>
+            <th>Ngày</th>
+            <th>Phòng</th>
+            <th>Người thuê</th>
+            <th>Thời gian</th>
+            <th>Thanh toán</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be loaded by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-container">
+      <!-- Pagination will be added by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Lịch sử đặt phòng Tab -->
+  <div id="history" class="tab-content">
+    <div class="booking-table-container">
+      <table class="booking-table">
+        <thead>
+          <tr>
+            <th>Ngày</th>
+            <th>Phòng</th>
+            <th>Người thuê</th>
+            <th>Thời gian</th>
+            <th>Thanh toán</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be loaded by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-container">
+      <!-- Pagination will be added by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Enhanced Booking Receipt Modal -->
+  <div id="bookingReceiptModal" class="receipt-modal">
+    <div class="receipt-modal-content">
+      <div class="receipt-header">
+        <div class="receipt-logo">
+          <i class="fas fa-receipt"></i>
+          <span>HÓA ĐƠN ĐẶT PHÒNG</span>
+        </div>
+        <button class="receipt-close" onclick="closeReceiptModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="receipt-body">
+        <!-- Company Info -->
+        <div class="receipt-company">
+          <h3>STAYCATION</h3>
+          <p>Dịch vụ đặt phòng trực tuyến</p>
+          <div class="receipt-divider"></div>
+        </div>
+        
+        <!-- Booking ID & Date -->
+        <div class="receipt-info">
+          <div class="receipt-row">
+            <span class="receipt-label">Mã đặt phòng:</span>
+            <span class="receipt-value" id="receiptBookingId">#BK001</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Ngày tạo:</span>
+            <span class="receipt-value" id="receiptCreatedDate">25/06/2025</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Trạng thái:</span>
+            <span class="receipt-value receipt-status" id="receiptStatus">Đã xác nhận</span>
+          </div>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <!-- Customer Info -->
+        <div class="receipt-section">
+          <h4 class="receipt-section-title">
+            <i class="fas fa-user"></i>
+            THÔNG TIN KHÁCH HÀNG
+          </h4>
+          <div class="receipt-row">
+            <span class="receipt-label">Họ tên:</span>
+            <span class="receipt-value" id="receiptCustomerName">Nguyễn Văn A</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Số điện thoại:</span>
+            <span class="receipt-value" id="receiptPhone">0123456789</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Email:</span>
+            <span class="receipt-value" id="receiptEmail">customer@email.com</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Username:</span>
+            <span class="receipt-value" id="receiptUsername">customer123</span>
+          </div>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <!-- Room Info -->
+        <div class="receipt-section">
+          <h4 class="receipt-section-title">
+            <i class="fas fa-bed"></i>
+            THÔNG TIN PHÒNG
+          </h4>
+          <div class="receipt-row">
+            <span class="receipt-label">Tên phòng:</span>
+            <span class="receipt-value" id="receiptRoomTitle">Deluxe Room</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Loại hình:</span>
+            <span class="receipt-value" id="receiptBookingType">Theo giờ</span>
+          </div>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <!-- Booking Details -->
+        <div class="receipt-section">
+          <h4 class="receipt-section-title">
+            <i class="fas fa-calendar-alt"></i>
+            CHI TIẾT ĐẶT PHÒNG
+          </h4>
+          <div class="receipt-row">
+            <span class="receipt-label">Check-in:</span>
+            <span class="receipt-value" id="receiptCheckin">25/06/2025 14:00</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Check-out:</span>
+            <span class="receipt-value" id="receiptCheckout">25/06/2025 18:00</span>
+          </div>
+          <div class="receipt-row">
+            <span class="receipt-label">Thời gian sử dụng:</span>
+            <span class="receipt-value" id="receiptDuration">4 giờ</span>
+          </div>
+        </div>
+        
+        <div class="receipt-divider-thick"></div>
+        
+        <!-- Payment Summary -->
+        <div class="receipt-payment">
+          <div class="receipt-total-row">
+            <span class="receipt-total-label">TỔNG TIỀN:</span>
+            <span class="receipt-total-value" id="receiptTotal">800,000đ</span>
+          </div>
+          <div class="receipt-payment-method">
+            <span class="receipt-label">Phương thức thanh toán:</span>
+            <span class="receipt-value">Thanh toán trực tuyến</span>
+          </div>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <!-- Footer -->
+        <div class="receipt-footer">
+          <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+          <p class="receipt-note">
+            <i class="fas fa-info-circle"></i>
+            Vui lòng giữ lại hóa đơn này để đối chiếu khi cần thiết
+          </p>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="receipt-actions">
+        <button class="receipt-btn receipt-btn-print" onclick="printReceipt()">
+          <i class="fas fa-print"></i>
+          In hóa đơn
+        </button>
+        <button class="receipt-btn receipt-btn-download" onclick="downloadReceipt()">
+          <i class="fas fa-download"></i>
+          Tải về PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

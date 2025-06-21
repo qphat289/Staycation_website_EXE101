@@ -2191,3 +2191,137 @@ def get_custom_chart_data_query():
     except Exception as e:
         print(f"Error getting custom chart data: {e}")
         return jsonify({'hourly': [], 'nightly': []}), 500
+
+@owner_bp.route('/api/bookings')
+@owner_required
+def get_bookings_api():
+    """API endpoint to get bookings data for the new tab interface"""
+    try:
+        # Get filter parameters
+        status_filter = request.args.get('status', '')
+        search_term = request.args.get('search', '')
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 20))
+        
+        # Get all rooms owned by current user
+        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
+        room_ids = [room.id for room in owner_rooms]
+        
+        if not room_ids:
+            return jsonify({
+                'bookings': [],
+                'pagination': {
+                    'page': 1,
+                    'per_page': per_page,
+                    'total': 0,
+                    'total_pages': 0,
+                    'has_prev': False,
+                    'has_next': False
+                }
+            })
+        
+        # Build query
+        query = Booking.query.join(Room).join(Renter).filter(
+            Booking.room_id.in_(room_ids)
+        )
+        
+        # Apply status filter
+        if status_filter:
+            status_list = status_filter.split(',')
+            if 'active' in status_list:
+                # For "active" status, we need confirmed bookings that are currently ongoing
+                status_list = [s for s in status_list if s != 'active']
+                now = datetime.now()
+                if status_list:
+                    # Include other statuses plus active bookings
+                    query = query.filter(
+                        db.or_(
+                            Booking.status.in_(status_list),
+                            db.and_(
+                                Booking.status == 'confirmed',
+                                Booking.start_time <= now,
+                                Booking.end_time >= now
+                            )
+                        )
+                    )
+                else:
+                    # Only active bookings
+                    query = query.filter(
+                        db.and_(
+                            Booking.status == 'confirmed',
+                            Booking.start_time <= now,
+                            Booking.end_time >= now
+                        )
+                    )
+            else:
+                query = query.filter(Booking.status.in_(status_list))
+        
+        # Apply search filter
+        if search_term:
+            query = query.filter(
+                db.or_(
+                    Room.title.ilike(f'%{search_term}%'),
+                    Renter.full_name.ilike(f'%{search_term}%'),
+                    Renter.username.ilike(f'%{search_term}%')
+                )
+            )
+        
+        # Order by creation date (newest first)
+        query = query.order_by(Booking.created_at.desc())
+        
+        # Paginate
+        paginated_bookings = query.paginate(
+            page=page, 
+            per_page=per_page, 
+            error_out=False
+        )
+        
+        # Format booking data
+        bookings_data = []
+        for booking in paginated_bookings.items:
+            # Calculate duration
+            if booking.booking_type == 'hourly':
+                duration_hours = (booking.end_time - booking.start_time).total_seconds() / 3600
+                duration = f"{int(duration_hours)} giờ"
+            else:
+                duration_days = (booking.end_time.date() - booking.start_time.date()).days + 1
+                duration = f"{duration_days} ngày"
+            
+            # Determine actual status for display
+            display_status = booking.status
+            if booking.status == 'confirmed':
+                # Check if booking is currently active
+                now = datetime.now()
+                if booking.start_time <= now <= booking.end_time:
+                    display_status = 'active'
+            
+            bookings_data.append({
+                'id': booking.id,
+                'created_at': booking.created_at.isoformat(),
+                'room_title': booking.room.title,
+                'renter_name': booking.renter.full_name or booking.renter.username,
+                'duration': duration,
+                'total_price': booking.total_price,
+                'status': display_status,
+                'start_time': booking.start_time.isoformat(),
+                'end_time': booking.end_time.isoformat(),
+                'booking_type': booking.booking_type
+            })
+        
+        return jsonify({
+            'bookings': bookings_data,
+            'pagination': {
+                'page': paginated_bookings.page,
+                'per_page': paginated_bookings.per_page,
+                'total': paginated_bookings.total,
+                'total_pages': paginated_bookings.pages,
+                'has_prev': paginated_bookings.has_prev,
+                'has_next': paginated_bookings.has_next,
+                'prev_num': paginated_bookings.prev_num,
+                'next_num': paginated_bookings.next_num
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in get_bookings_api: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
