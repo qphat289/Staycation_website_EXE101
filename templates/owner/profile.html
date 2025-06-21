@@ -710,7 +710,7 @@
                             {% endif %}
                         </div>
                         <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
-                        <label for="avatar" class="upload-btn">Chọn Ảnh</label>
+                        <label for="avatar" class="upload-btn" id="avatarUploadBtn" style="display: none;">Chọn Ảnh</label>
                     </div>
                     
                     <div class="avatar-info">
@@ -855,24 +855,7 @@
             </form>
         </div>
 
-        
-        <!-- Delete Account Section -->
-        <div class="profile-section">
-            <h3 class="section-title">
-                <i class="fas fa-trash"></i>
-                Xóa tài khoản
-            </h3>
-            
-            <div class="delete-text">
-                Xóa tài khoản của tôi
-            </div>
-            
-            <div class="action-buttons">
-                <button type="button" class="btn-danger" onclick="confirmDeleteAccount()">
-                    Xóa tài khoản
-                </button>
-            </div>
-        </div>
+
     </div>
 </div>
 
@@ -936,6 +919,7 @@ function toggleEditMode() {
     const saveButtons = document.getElementById('saveButtons');
     const formInputs = document.querySelectorAll('.form-input, .date-select');
     const avatarInput = document.getElementById('avatar');
+    const avatarUploadBtn = document.getElementById('avatarUploadBtn');
     
     isEditMode = !isEditMode;
     
@@ -944,6 +928,7 @@ function toggleEditMode() {
         editBtn.innerHTML = '<i class="fas fa-times"></i> Hủy chỉnh sửa';
         editBtn.classList.add('editing');
         saveButtons.style.display = 'flex';
+        avatarUploadBtn.style.display = 'block';
         
         formInputs.forEach(input => {
             if (input.name !== 'email') { // Keep email readonly
@@ -962,6 +947,7 @@ function toggleEditMode() {
         editBtn.innerHTML = '<i class="fas fa-edit"></i> Chỉnh sửa';
         editBtn.classList.remove('editing');
         saveButtons.style.display = 'none';
+        avatarUploadBtn.style.display = 'none';
         
         formInputs.forEach(input => {
             input.disabled = true;
@@ -986,13 +972,7 @@ function cancelEdit() {
     showSuccess('Đã hủy chỉnh sửa');
 }
 
-function confirmDeleteAccount() {
-    if (confirm('Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.')) {
-        // Add delete account logic here
-        alert('Chức năng xóa tài khoản đang được phát triển');
-        // window.location.href = "/owner/delete-account";
-    }
-}
+
 
 // Form validation with animations
 document.getElementById('personalInfoForm').addEventListener('submit', function(e) {
