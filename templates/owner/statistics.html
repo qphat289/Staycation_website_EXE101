@@ -8,9 +8,7 @@
 {% block page_css %}
 <style>
     /* Statistics specific styles */
-    .content-wrapper {
-        margin: 0 2rem 2rem 2rem;
-    }
+
 
     .master-filter-bar {
         background: #FDFBFA;
@@ -125,7 +123,7 @@
         background: #FDFBFA;
         border: 0.3px solid rgba(124, 124, 124, 0.2);
         border-radius: 12px;
-        margin: 0 2rem 1.5rem 2rem;
+        margin: 0 1rem 1.5rem 1rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         opacity: 0;
         transform: translateY(-10px);
@@ -217,7 +215,7 @@
         display: grid;
         grid-template-columns: repeat(6, 1fr);
         gap: 0.75rem;
-        margin: 0 2rem 2rem 2rem;
+        margin: 0 1rem 2rem 1rem;
     }
 
     .stat-card {
@@ -258,7 +256,7 @@
     }
 
     .charts-section {
-        margin: 0 2rem 2rem 2rem;
+        margin: 0 1rem 2rem 1rem;
     }
 
     .chart-toggle-bar {
@@ -703,7 +701,8 @@
         flex: 1;
         text-align: center;
         font-weight: 500;
-        min-width: 20px;
+        min-width: 15px;
+        max-width: 30px;
         white-space: nowrap;
         overflow: visible;
         color: #7C7C7C;
@@ -927,9 +926,13 @@
                     </div>
                     <div class="chart-x-labels" id="chartXLabels">
                         {% for day in stats.chart_data %}
-                        <div class="chart-label">{{ day.date }}</div>
+                        <div class="chart-label" data-original-date="{{ day.date }}">{{ day.date }}</div>
                         {% endfor %}
                     </div>
+                    
+
+                    
+
                 </div>
                 
                 <!-- Dual Chart View -->
@@ -1018,10 +1021,14 @@ let currentChart = 'hourly';
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, starting initialization');
     setupMasterFilters();
     
-    // Initialize static chart bars if they exist
-    initializeStaticChart();
+    // Initialize static chart bars if they exist with a delay to ensure DOM is ready
+    setTimeout(() => {
+        console.log('Running delayed chart initialization');
+        initializeStaticChart();
+    }, 100);
     
     // Load initial data with default chart type
     loadAllDataWithChartType('total', currentChart);
@@ -1033,6 +1040,105 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('masterStartDate').value = lastWeek.toISOString().split('T')[0];
     document.getElementById('masterEndDate').value = today.toISOString().split('T')[0];
 });
+
+// Force refresh chart labels
+function refreshChartLabels() {
+    const chartLabels = document.querySelectorAll('#chartXLabels .chart-label');
+    console.log('Refreshing', chartLabels.length, 'chart labels');
+    
+    chartLabels.forEach((label, index) => {
+        const originalText = label.textContent.trim();
+        const formattedText = formatDateLabel(originalText);
+        
+        console.log(`Refreshing label ${index}: "${originalText}" -> "${formattedText}"`);
+        label.textContent = formattedText;
+        
+        // Force visibility
+        label.style.display = 'block';
+        label.style.visibility = 'visible';
+        label.style.color = '#7C7C7C';
+    });
+}
+
+// Format date based on current period
+function formatDateLabel(dateStr) {
+    if (!dateStr) return '';
+    
+    // Convert to string if it's not already
+    const str = String(dateStr).trim();
+    
+    // Check if we should show year based on current period
+    const showYear = currentPeriod === 'year' || currentPeriod === 'total' || currentPeriod.startsWith('custom');
+    
+    // If already in desired MM/YY format, don't modify it
+    if (str.match(/^\d{1,2}\/\d{2}$/) && showYear) {
+        return str;
+    }
+    
+    // If already in T + month format, don't modify it
+    if (str.match(/^T\d{1,2}$/) && !showYear) {
+        return str;
+    }
+    
+    // Handle MM/YYYY format (monthly data like "07/2024")
+    if (str.match(/^\d{1,2}\/\d{4}$/)) {
+        const parts = str.split('/');
+        const month = parts[0].padStart(2, '0');
+        const year = parts[1];
+        
+        if (showYear) {
+            // Convert "07/2024" to "07/24"
+            const shortYear = year.slice(-2);
+            return `${month}/${shortYear}`;
+        } else {
+            // For week/month views, just show month
+            return `T${month}`;
+        }
+    }
+    
+    // Handle DD/MM/YYYY format (daily data like "24/05/2025")
+    if (str.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const parts = str.split('/');
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        const year = parts[2];
+        
+        if (showYear) {
+            const shortYear = year.slice(-2);
+            return `${day}/${month}/${shortYear}`;
+        } else {
+            return `${day}/${month}`;
+        }
+    }
+    
+    // Handle YYYY-MM-DD format
+    if (str.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
+        const parts = str.split('-');
+        const year = parts[0];
+        const month = parts[1].padStart(2, '0');
+        const day = parts[2].padStart(2, '0');
+        
+        if (showYear) {
+            const shortYear = year.slice(-2);
+            return `${day}/${month}/${shortYear}`;
+        } else {
+            return `${day}/${month}`;
+        }
+    }
+    
+    // Handle DD/MM format without year (but only if it's NOT already MM/YY)
+    if (str.match(/^\d{1,2}\/\d{1,2}$/) && !str.match(/^\d{1,2}\/\d{2}$/)) {
+        if (showYear) {
+            const currentYear = new Date().getFullYear().toString().slice(-2);
+            return `${str}/${currentYear}`;
+        } else {
+            return str;
+        }
+    }
+    
+    // Return original if no pattern matches
+    return str;
+}
 
 // Initialize static chart bars with proper heights
 function initializeStaticChart() {
@@ -1060,23 +1166,32 @@ function initializeStaticChart() {
     
     console.log('Max revenue for scaling:', maxRevenue);
     
-    // Set heights for all bars
+    // Set heights for all bars and format labels
     chartBars.forEach((bar, index) => {
         const revenue = parseInt(bar.getAttribute('data-revenue')) || 0;
         const height = Math.max((revenue / maxRevenue * 315), 2); // Updated to match new chart height
         bar.style.height = height + 'px';
         
-        // Add tooltip
-        const date = bar.getAttribute('data-date') || '';
-        bar.title = `${date}: ${formatCurrency(revenue)}`;
+        // Add tooltip with formatted date
+        const originalDate = bar.getAttribute('data-date') || '';
+        const formattedDate = formatDateLabel(originalDate);
+        bar.title = `${formattedDate}: ${formatCurrency(revenue)}`;
         
-        console.log(`Bar ${index}: ${date}, Revenue: ${revenue}, Height: ${height}px`);
+        console.log(`Bar ${index}: ${originalDate} -> ${formattedDate}, Revenue: ${revenue}, Height: ${height}px`);
     });
     
-    // Ensure labels are visible
+    // Format labels to show 2-digit years
     chartLabels.forEach((label, index) => {
-        console.log(`Label ${index}: "${label.textContent}"`);
-        if (!label.textContent.trim()) {
+        const originalText = label.textContent.trim();
+        const formattedText = formatDateLabel(originalText);
+        
+        if (formattedText !== originalText) {
+            label.textContent = formattedText;
+        }
+        
+        console.log(`Label ${index}: "${originalText}" -> "${formattedText}"`);
+        
+        if (!formattedText) {
             console.warn(`Empty label at index ${index}`);
         }
     });
@@ -1380,10 +1495,10 @@ function updateSingleChart(type, chartData) {
         
         barsContainer.appendChild(bar);
         
-        // Create label
+        // Create label with formatted date
         const label = document.createElement('div');
         label.className = 'chart-label';
-        label.textContent = item.date;
+        label.textContent = formatDateLabel(item.date);
         labelsContainer.appendChild(label);
     });
     
@@ -1516,10 +1631,10 @@ function updateDualChart(data) {
         
         barsContainer.appendChild(barGroup);
         
-        // Create label
+        // Create label with formatted date
         const label = document.createElement('div');
         label.className = 'chart-label';
-        label.textContent = date;
+        label.textContent = formatDateLabel(date);
         labelsContainer.appendChild(label);
     }
     
