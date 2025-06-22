@@ -392,8 +392,10 @@
         background: #FDFBFA;
         border: 0.3px solid rgba(124, 124, 124, 0.2);
         border-radius: 0 0 12px 12px;
-        padding: 2rem 1.5rem;
+        padding: 2rem 0;
         border-top: none;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .chart-container.hidden {
@@ -496,8 +498,11 @@
     }
 
     .chart-wrapper {
-        height: 300px;
+        height: 320px;
         position: relative;
+        width: 100%;
+        overflow: visible;
+        padding-bottom: 15px;
     }
 
     .dual-chart-wrapper {
@@ -670,11 +675,18 @@
     .chart-x-labels {
         display: flex;
         justify-content: space-between;
-        margin-top: 10px;
-        font-size: 10px;
-        color: #101917;
+        margin-top: 15px;
+        margin-bottom: 40px;
+        font-size: 11px;
+        color: #7C7C7C;
         padding-left: 50px;
+        padding-right: 5px;
         gap: 4px;
+        width: 100%;
+        box-sizing: border-box;
+        font-weight: 500;
+        position: relative;
+        z-index: 10;
     }
 
     #dualChartXLabels {
@@ -688,26 +700,37 @@
     }
 
     .chart-label {
-        width: 20px;
+        flex: 1;
         text-align: center;
         font-weight: 500;
+        min-width: 20px;
+        white-space: nowrap;
+        overflow: visible;
+        color: #7C7C7C;
+        font-size: 11px;
+        line-height: 1.2;
     }
 
     .chart-bars {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        height: 220px;
-        margin: 20px 0;
+        height: 315px;
+        margin: 20px 0 0 0;
         padding-left: 50px;
+        padding-right: 5px;
         position: relative;
         gap: 4px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .chart-bar {
         background: linear-gradient(to top, #E0EC9B, #F0F8D4);
         border: 1px solid rgba(224, 236, 155, 0.8);
-        width: 20px;
+        flex: 1;
+        max-width: 30px;
+        min-width: 15px;
         border-radius: 3px 3px 0 0;
         min-height: 2px; /* Minimum 2px to show bar */
         transition: all 0.3s ease;
@@ -725,9 +748,10 @@
         position: absolute;
         top: 0;
         left: 50px;
-        right: 0;
-        height: 220px;
+        right: 5px;
+        height: 315px;
         pointer-events: none;
+        width: calc(100% - 55px);
     }
 
     .grid-line {
@@ -820,7 +844,6 @@
                     </div>
                 </div>
             </div>
-        </div>
 
         <div class="stats-grid">
             <div class="stat-card">
@@ -894,11 +917,12 @@
                         <div class="grid-line" style="top: 25%;"></div>
                         <div class="grid-line" style="top: 50%;"></div>
                         <div class="grid-line" style="top: 75%;"></div>
+                        <div class="grid-line" style="top: 100%;"></div>
                         <div class="grid-line" style="bottom: 0%;"></div>
                     </div>
                     <div class="chart-bars" id="chartBars">
                         {% for day in stats.chart_data %}
-                        <div class="chart-bar" style="height: {{ (day.revenue / 2000000 * 220) | int }}px;"></div>  
+                        <div class="chart-bar" data-revenue="{{ day.revenue }}" data-date="{{ day.date }}"></div>
                         {% endfor %}
                     </div>
                     <div class="chart-x-labels" id="chartXLabels">
@@ -996,6 +1020,9 @@ let currentChart = 'hourly';
 document.addEventListener('DOMContentLoaded', function() {
     setupMasterFilters();
     
+    // Initialize static chart bars if they exist
+    initializeStaticChart();
+    
     // Load initial data with default chart type
     loadAllDataWithChartType('total', currentChart);
     
@@ -1006,6 +1033,54 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('masterStartDate').value = lastWeek.toISOString().split('T')[0];
     document.getElementById('masterEndDate').value = today.toISOString().split('T')[0];
 });
+
+// Initialize static chart bars with proper heights
+function initializeStaticChart() {
+    const chartBars = document.querySelectorAll('#chartBars .chart-bar');
+    const chartLabels = document.querySelectorAll('#chartXLabels .chart-label');
+    
+    console.log('Initializing static chart:', {
+        bars: chartBars.length,
+        labels: chartLabels.length
+    });
+    
+    if (chartBars.length === 0) {
+        console.log('No chart bars found');
+        return;
+    }
+    
+    // Find max revenue for scaling
+    let maxRevenue = 0;
+    chartBars.forEach(bar => {
+        const revenue = parseInt(bar.getAttribute('data-revenue')) || 0;
+        maxRevenue = Math.max(maxRevenue, revenue);
+    });
+    
+    if (maxRevenue === 0) maxRevenue = 1; // Prevent division by zero
+    
+    console.log('Max revenue for scaling:', maxRevenue);
+    
+    // Set heights for all bars
+    chartBars.forEach((bar, index) => {
+        const revenue = parseInt(bar.getAttribute('data-revenue')) || 0;
+        const height = Math.max((revenue / maxRevenue * 315), 2); // Updated to match new chart height
+        bar.style.height = height + 'px';
+        
+        // Add tooltip
+        const date = bar.getAttribute('data-date') || '';
+        bar.title = `${date}: ${formatCurrency(revenue)}`;
+        
+        console.log(`Bar ${index}: ${date}, Revenue: ${revenue}, Height: ${height}px`);
+    });
+    
+    // Ensure labels are visible
+    chartLabels.forEach((label, index) => {
+        console.log(`Label ${index}: "${label.textContent}"`);
+        if (!label.textContent.trim()) {
+            console.warn(`Empty label at index ${index}`);
+        }
+    });
+}
 
 // Setup master filter functionality
 function setupMasterFilters() {
@@ -1282,7 +1357,7 @@ function updateSingleChart(type, chartData) {
     
     // Find max revenue for scaling (include all data, even zeros)
     const maxRevenue = Math.max(...chartData.map(d => d.revenue), 1); // Minimum 1 to avoid division by 0
-    const chartHeight = 220; // Height of chart area
+    const chartHeight = 315; // Height of chart area - updated to match CSS
     
     // Create bars and labels for all data (including zeros)
     chartData.forEach(item => {

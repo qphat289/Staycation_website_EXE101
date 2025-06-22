@@ -298,7 +298,7 @@
     .nationality-field::after {
         content: '▼';
         position: absolute;
-        right: 12px;
+        right: 16px;
         top: 50%;
         transform: translateY(-50%);
         color: #7C7C7C;
@@ -306,11 +306,14 @@
         pointer-events: none;
         z-index: 1;
         transition: all 0.3s ease;
+        line-height: 1;
+        vertical-align: middle;
     }
     
     .gender-field:hover::after,
     .nationality-field:hover::after {
         color: #C3D600;
+        transform: translateY(-50%) scale(1.1);
     }
     
     .form-input:focus {
@@ -332,29 +335,62 @@
         box-shadow: 0 4px 12px rgba(224, 236, 155, 0.3);
     }
     
-    .birth-date-container {
+    .birth-date-input {
+        padding: 15px 18px;
+        border: 1.5px solid #e8e8e8;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #101917;
+        background: #fafafa;
+        transition: all 0.3s ease;
+        position: relative;
+        height: 48px;
+        box-sizing: border-box;
+        width: 100%;
+        cursor: pointer;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+    }
+    
+    .birth-date-input:hover {
+        border-color: #C3D600;
+        background: white;
+    }
+    
+    .birth-date-input:focus {
+        outline: none;
+        border-color: #C3D600;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(195, 214, 0, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .birth-date-input-container {
+        position: relative;
         width: 100%;
-        height: 48px;
-        background: #fafafa;
-        border: 0.3px solid #7C7C7C;
-        border-radius: 10px;
-        padding: 0 12px;
-        gap: 8px;
+    }
+    
+    .birth-date-icon {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: #7C7C7C;
+        pointer-events: none;
         transition: all 0.3s ease;
+        z-index: 1;
     }
     
-    .birth-date-container:hover {
-        border-color: #C3D600;
-        background: white;
+    .birth-date-input:hover + .birth-date-icon {
+        color: #C3D600;
+        transform: translateY(-50%) scale(1.1);
     }
     
-    .birth-date-container:focus-within {
-        border-color: #C3D600;
-        background: white;
-        box-shadow: 0 0 0 2px rgba(195, 214, 0, 0.1);
+    .birth-date-input:focus + .birth-date-icon {
+        color: #C3D600;
+        transform: translateY(-50%) scale(1.1);
     }
     
     .birth-date-input-group {
@@ -408,20 +444,7 @@
         cursor: not-allowed;
     }
     
-    .birth-date-icon {
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #7C7C7C;
-        font-size: 12px;
-        pointer-events: none;
-        transition: all 0.3s ease;
-    }
-    
-    .birth-date-input-group:hover .birth-date-icon {
-        color: #C3D600;
-    }
+
     
     .birth-date-slash {
         color: #7C7C7C;
@@ -779,6 +802,186 @@
         }
     }
 </style>
+
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Custom Flatpickr styling */
+    .flatpickr-calendar {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+        border: 1px solid #e8e8e8 !important;
+    }
+    
+    .flatpickr-day.selected {
+        background: #C3D600 !important;
+        border-color: #C3D600 !important;
+    }
+    
+    .flatpickr-day:hover {
+        background: #E0EC9B !important;
+        border-color: #E0EC9B !important;
+    }
+    
+    .flatpickr-months .flatpickr-month {
+        background: #C3D600 !important;
+        color: white !important;
+    }
+    
+    .flatpickr-current-month {
+        color: white !important;
+    }
+    
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        background: #C3D600 !important;
+    }
+    
+    /* Enhanced year input styling */
+    .flatpickr-current-month input.cur-year {
+        background: rgba(255,255,255,0.2) !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 18px !important;
+        width: 80px !important;
+        text-align: center !important;
+        border: 2px solid rgba(255,255,255,0.4) !important;
+        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        cursor: text !important;
+        margin: 0 5px !important;
+    }
+    
+    .flatpickr-current-month input.cur-year:hover {
+        background: rgba(255,255,255,0.3) !important;
+        border-color: rgba(255,255,255,0.7) !important;
+        transform: scale(1.05) !important;
+    }
+    
+    .flatpickr-current-month input.cur-year:focus {
+        background: rgba(255,255,255,0.4) !important;
+        border-color: white !important;
+        outline: none !important;
+        transform: scale(1.05) !important;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.3) !important;
+    }
+    
+    /* Position adjustments */
+    .flatpickr-calendar {
+        margin-top: 5px !important;
+        z-index: 9999 !important;
+    }
+    
+    /* Make month dropdown more visible */
+    .flatpickr-monthDropdown-months {
+        color: white !important;
+        font-weight: bold !important;
+        background: rgba(255,255,255,0.1) !important;
+        border: 2px solid rgba(255,255,255,0.4) !important;
+        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        font-size: 16px !important;
+        cursor: pointer !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        height: 32px !important;
+        min-width: 80px !important;
+        box-sizing: border-box !important;
+    }
+    
+    .flatpickr-monthDropdown-months:hover {
+        color: white !important;
+        background: rgba(255,255,255,0.2) !important;
+        border-color: rgba(255,255,255,0.7) !important;
+        transform: scale(1.02) !important;
+    }
+    
+    .flatpickr-monthDropdown-months:focus {
+        color: white !important;
+        background: rgba(255,255,255,0.3) !important;
+        border-color: white !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.3) !important;
+    }
+    
+    /* Fix month dropdown options */
+    .flatpickr-monthDropdown-months option {
+        background: white !important;
+        color: #333 !important;
+        padding: 5px !important;
+    }
+    
+    /* Make the navigation arrows more visible */
+    .flatpickr-prev-month,
+    .flatpickr-next-month {
+        color: white !important;
+        font-size: 18px !important;
+        padding: 5px !important;
+    }
+    
+    .flatpickr-prev-month:hover,
+    .flatpickr-next-month:hover {
+        color: rgba(255,255,255,0.8) !important;
+        background: rgba(255,255,255,0.1) !important;
+        border-radius: 4px !important;
+    }
+    
+    /* Year dropdown styling */
+    .flatpickr-year-dropdown {
+        background: rgba(255,255,255,0.1) !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        width: 80px !important;
+        text-align: center !important;
+        border: 2px solid rgba(255,255,255,0.4) !important;
+        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        cursor: pointer !important;
+        margin: 0 5px !important;
+        height: 32px !important;
+        box-sizing: border-box !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+    }
+    
+    .flatpickr-year-dropdown:hover {
+        background: rgba(255,255,255,0.2) !important;
+        border-color: rgba(255,255,255,0.7) !important;
+        transform: scale(1.02) !important;
+    }
+    
+    .flatpickr-year-dropdown:focus {
+        background: rgba(255,255,255,0.3) !important;
+        border-color: white !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.3) !important;
+    }
+    
+    /* Style the dropdown options */
+    .flatpickr-year-dropdown option {
+        background: white !important;
+        color: #333 !important;
+        padding: 5px !important;
+    }
+    
+    .flatpickr-year-dropdown option:hover {
+        background: #f0f0f0 !important;
+    }
+    
+    /* Hide year navigation arrows when using dropdown */
+    .flatpickr-current-month .arrowUp,
+    .flatpickr-current-month .arrowDown {
+        display: none !important;
+    }
+    
+    /* Ensure year container doesn't show arrows */
+    .flatpickr-current-month .numInputWrapper .arrowUp,
+    .flatpickr-current-month .numInputWrapper .arrowDown {
+        display: none !important;
+    }
+</style>
 {% endblock %}
 
 {% block page_content %}
@@ -871,46 +1074,16 @@
                 <div class="form-grid three-col">
                     <div class="form-field">
                         <label class="form-label">Ngày sinh</label>
-                        <div class="birth-date-container">
-                            <div class="birth-date-input-group">
-                                <select name="birth_day" class="birth-date-select" disabled>
-                                    <option value="">Ngày</option>
-                                    {% for day in range(1, 32) %}
-                                        <option value="{{ day }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.day == day else 'selected' if day == 19 else '' }}>
-                                            {{ '%02d'|format(day) }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <i class="fas fa-calendar-day birth-date-icon"></i>
-                            </div>
-                            
-                            <span class="birth-date-slash">/</span>
-                            
-                            <div class="birth-date-input-group">
-                                <select name="birth_month" class="birth-date-select" disabled>
-                                    <option value="">Tháng</option>
-                                    {% for month in range(1, 13) %}
-                                        <option value="{{ month }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.month == month else 'selected' if month == 1 else '' }}>
-                                            {{ '%02d'|format(month) }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <i class="fas fa-calendar-alt birth-date-icon"></i>
-                            </div>
-                            
-                            <span class="birth-date-slash">/</span>
-                            
-                            <div class="birth-date-input-group">
-                                <select name="birth_year" class="birth-date-select" disabled>
-                                    <option value="">Năm</option>
-                                    {% for year in range(1950, 2010) %}
-                                        <option value="{{ year }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.year == year else 'selected' if year == 2000 else '' }}>
-                                            {{ year }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <i class="fas fa-calendar birth-date-icon"></i>
-                            </div>
+                        <div class="birth-date-input-container">
+                            <input type="text" 
+                                   id="birth_date" 
+                                   name="birth_date" 
+                                   class="birth-date-input" 
+                                   placeholder="Chọn ngày sinh"
+                                   value="{% if current_user.birth_date %}{{ current_user.birth_date.strftime('%d/%m/%Y') }}{% else %}19/01/2000{% endif %}"
+                                   readonly
+                                   disabled>
+                            <i class="fas fa-calendar-alt birth-date-icon"></i>
                         </div>
                     </div>
                     <div class="form-field">
@@ -1038,7 +1211,7 @@ let isEditMode = false;
 function toggleEditMode() {
     const editBtn = document.getElementById('editToggleBtn');
     const saveButtons = document.getElementById('saveButtons');
-    const formInputs = document.querySelectorAll('.form-input, .name-input, .gender-input, .birth-date-select');
+    const formInputs = document.querySelectorAll('.form-input, .name-input, .gender-input, .birth-date-input');
     const avatarInput = document.getElementById('avatar');
     const avatarUploadBtn = document.getElementById('avatarUploadBtn');
     
@@ -1149,4 +1322,135 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 </script>
+
+<!-- Flatpickr JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+
+<script>
+// Initialize Flatpickr for birth date
+let birthDatePicker;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const birthDateInput = document.getElementById('birth_date');
+    
+    if (birthDateInput) {
+        // Initialize Flatpickr with year dropdown
+        birthDatePicker = flatpickr(birthDateInput, {
+            dateFormat: "d/m/Y",
+            maxDate: "today",
+            minDate: "01/01/1940",
+            defaultDate: birthDateInput.value || "19/01/2000",
+            clickOpens: false, // Initially disabled
+            allowInput: true,
+            position: "below left",
+            static: false,
+            monthSelectorType: "dropdown",
+            plugins: [
+                function(fp) {
+                    return {
+                        onReady: function() {
+                            // Create year dropdown
+                            setTimeout(() => {
+                                const yearInput = fp.currentYearElement;
+                                if (yearInput) {
+                                    // Create a select element for years
+                                    const yearSelect = document.createElement('select');
+                                    yearSelect.className = 'flatpickr-year-dropdown';
+                                    yearSelect.style.cssText = `
+                                        background: rgba(255,255,255,0.1) !important;
+                                        color: white !important;
+                                        font-weight: bold !important;
+                                        font-size: 16px !important;
+                                        width: 80px !important;
+                                        text-align: center !important;
+                                        border: 2px solid rgba(255,255,255,0.4) !important;
+                                        border-radius: 6px !important;
+                                        padding: 4px 8px !important;
+                                        cursor: pointer !important;
+                                        margin: 0 5px !important;
+                                        height: 32px !important;
+                                        box-sizing: border-box !important;
+                                        appearance: none !important;
+                                        -webkit-appearance: none !important;
+                                        -moz-appearance: none !important;
+                                    `;
+                                    
+                                    // Add years from 1940 to current year
+                                    const currentYear = new Date().getFullYear();
+                                    for (let year = currentYear; year >= 1940; year--) {
+                                        const option = document.createElement('option');
+                                        option.value = year;
+                                        option.textContent = year;
+                                        option.style.color = 'black';
+                                        option.style.background = 'white';
+                                        if (year.toString() === yearInput.value) {
+                                            option.selected = true;
+                                        }
+                                        yearSelect.appendChild(option);
+                                    }
+                                    
+                                    // Add change event
+                                    yearSelect.addEventListener('change', function() {
+                                        fp.changeYear(parseInt(this.value));
+                                    });
+                                    
+                                    // Replace the year input with select
+                                    yearInput.parentNode.replaceChild(yearSelect, yearInput);
+                                    
+                                    // Hide year navigation arrows since we have dropdown
+                                    setTimeout(() => {
+                                        const calendar = fp.calendarContainer;
+                                        const yearArrows = calendar.querySelectorAll('.arrowUp, .arrowDown');
+                                        yearArrows.forEach(arrow => {
+                                            if (arrow.closest('.flatpickr-current-month')) {
+                                                arrow.style.display = 'none';
+                                            }
+                                        });
+                                        
+                                        // Also hide any year increment/decrement buttons
+                                        const yearBtns = calendar.querySelectorAll('[class*="year"] .arrowUp, [class*="year"] .arrowDown');
+                                        yearBtns.forEach(btn => btn.style.display = 'none');
+                                    }, 200);
+                                }
+                            }, 100);
+                        }
+                    };
+                }
+            ],
+            onChange: function(selectedDates, dateStr, instance) {
+                birthDateInput.value = dateStr;
+            }
+        });
+        
+        console.log('Flatpickr initialized:', birthDatePicker);
+    }
+});
+
+// Update the existing toggleEditMode function to handle date picker
+const originalToggleEditMode = toggleEditMode;
+toggleEditMode = function() {
+    const birthDateInput = document.getElementById('birth_date');
+    
+    // Call the original function
+    originalToggleEditMode();
+    
+    // Handle date picker enable/disable
+    if (birthDatePicker) {
+        if (isEditMode) {
+            // Enable date picker
+            birthDatePicker.set('clickOpens', true);
+            birthDateInput.style.cursor = 'pointer';
+            birthDateInput.removeAttribute('readonly');
+            console.log('Date picker enabled');
+        } else {
+            // Disable date picker
+            birthDatePicker.set('clickOpens', false);
+            birthDateInput.style.cursor = 'default';
+            birthDateInput.setAttribute('readonly', 'readonly');
+            console.log('Date picker disabled');
+        }
+    }
+};
+</script>
+
 {% endblock %} 
