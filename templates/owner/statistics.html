@@ -14,11 +14,11 @@
         background: #FDFBFA;
         border: 0.3px solid rgba(124, 124, 124, 0.2);
         border-radius: 12px;
-        padding: 1rem 1.5rem;
+        padding: 1rem 2rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin: 0 0 1.5rem 0;
+        margin: 0 2rem 1rem 2rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
@@ -503,6 +503,18 @@
         padding-bottom: 15px;
     }
 
+    /* Remove horizontal scroll and expand container instead */
+    .chart-scroll-container {
+        width: 100%;
+        overflow: visible;
+    }
+
+    /* Expand chart container when wide labels are needed */
+    .chart-container.wide-labels {
+        overflow-x: auto;
+        overflow-y: visible;
+    }
+
     .dual-chart-wrapper {
         margin-top: 1rem;
     }
@@ -549,6 +561,19 @@
         margin: 20px 0;
         padding-left: 50px;
         position: relative;
+    }
+
+    /* Wide labels mode for dual chart bars */
+    .dual-chart-bars.wide-labels {
+        justify-content: flex-start;
+        min-width: max-content;
+        gap: 8px;
+    }
+
+    .dual-chart-bars.wide-labels .dual-bar-group {
+        flex: 0 0 auto;
+        width: 42px;
+        min-width: 42px;
     }
 
     .dual-bar-group {
@@ -687,6 +712,13 @@
         z-index: 10;
     }
 
+    /* Wide labels mode for total and month views */
+    .chart-x-labels.wide-labels {
+        justify-content: flex-start;
+        min-width: max-content;
+        gap: 8px;
+    }
+
     #dualChartXLabels {
         display: flex;
         justify-content: space-between;
@@ -695,6 +727,21 @@
         color: #101917;
         padding-left: 50px;
         gap: 4px;
+    }
+
+    /* Wide labels mode for dual chart */
+    #dualChartXLabels.wide-labels {
+        justify-content: flex-start;
+        min-width: max-content;
+        gap: 8px;
+    }
+
+    #dualChartXLabels.wide-labels .chart-label {
+        flex: 0 0 auto;
+        width: 42px;
+        min-width: 42px;
+        max-width: 42px;
+        text-align: center;
     }
 
     .chart-label {
@@ -708,6 +755,15 @@
         color: #7C7C7C;
         font-size: 11px;
         line-height: 1.2;
+    }
+
+    /* Wide labels mode - ensure minimum space for readable labels and align with bars */
+    .chart-x-labels.wide-labels .chart-label {
+        flex: 0 0 auto;
+        width: 42px;
+        min-width: 42px;
+        max-width: 42px;
+        text-align: center;
     }
 
     .chart-bars {
@@ -724,6 +780,20 @@
         box-sizing: border-box;
     }
 
+    /* Wide labels mode - align bars with labels */
+    .chart-bars.wide-labels {
+        justify-content: flex-start;
+        min-width: max-content;
+        gap: 8px;
+    }
+
+    .chart-bars.wide-labels .chart-bar {
+        flex: 0 0 auto;
+        width: 42px;
+        min-width: 42px;
+        max-width: 42px;
+    }
+
     .chart-bar {
         background: linear-gradient(to top, #E0EC9B, #F0F8D4);
         border: 1px solid rgba(224, 236, 155, 0.8);
@@ -736,6 +806,16 @@
         cursor: pointer;
         position: relative;
         bottom: 0;
+    }
+
+    .chart-bar.hourly-style {
+        background: linear-gradient(to top, #E0EC9B, #F0F8D4);
+        border: 1px solid rgba(224, 236, 155, 0.8);
+    }
+
+    .chart-bar.nightly-style {
+        background: linear-gradient(to top, #A8D5BA, #C8E6C9);
+        border: 1px solid rgba(168, 213, 186, 0.8);
     }
 
     .chart-bar:hover {
@@ -751,6 +831,13 @@
         height: 315px;
         pointer-events: none;
         width: calc(100% - 55px);
+    }
+
+    /* Wide labels mode - make grid expand with chart content */
+    .chart-container.wide-labels .chart-grid {
+        width: auto;
+        right: 5px;
+        min-width: max-content;
     }
 
     .grid-line {
@@ -769,7 +856,7 @@
         font-size: 12px;
     }
     
-    /* Force refresh cache - v2.0 */
+    /* Force refresh cache - v3.2 - Period state fix for wide labels */
 </style>
 {% endblock %}
 
@@ -903,36 +990,34 @@
                 </div>
                 
                 <!-- Single Chart View -->
-                <div class="chart-wrapper" id="singleChartWrapper">
-                    <div class="chart-y-labels" id="chartYLabels">
-                        <div>2000k</div>
-                        <div>1500k</div>
-                        <div>1000k</div>
-                        <div>500k</div>
-                        <div>0k</div>
+                <div class="chart-scroll-container">
+                    <div class="chart-wrapper" id="singleChartWrapper">
+                        <div class="chart-y-labels" id="chartYLabels">
+                            <div>2000k</div>
+                            <div>1500k</div>
+                            <div>1000k</div>
+                            <div>500k</div>
+                            <div>0k</div>
+                        </div>
+                        <div class="chart-grid">
+                            <div class="grid-line" style="top: 0%;"></div>
+                            <div class="grid-line" style="top: 25%;"></div>
+                            <div class="grid-line" style="top: 50%;"></div>
+                            <div class="grid-line" style="top: 75%;"></div>
+                            <div class="grid-line" style="top: 100%;"></div>
+                            <div class="grid-line" style="bottom: 0%;"></div>
+                        </div>
+                        <div class="chart-bars" id="chartBars">
+                            {% for day in stats.chart_data %}
+                            <div class="chart-bar" data-revenue="{{ day.revenue }}" data-date="{{ day.date }}"></div>
+                            {% endfor %}
+                        </div>
+                        <div class="chart-x-labels" id="chartXLabels">
+                            {% for day in stats.chart_data %}
+                            <div class="chart-label" data-original-date="{{ day.date }}">{{ day.date }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
-                    <div class="chart-grid">
-                        <div class="grid-line" style="top: 0%;"></div>
-                        <div class="grid-line" style="top: 25%;"></div>
-                        <div class="grid-line" style="top: 50%;"></div>
-                        <div class="grid-line" style="top: 75%;"></div>
-                        <div class="grid-line" style="top: 100%;"></div>
-                        <div class="grid-line" style="bottom: 0%;"></div>
-                    </div>
-                    <div class="chart-bars" id="chartBars">
-                        {% for day in stats.chart_data %}
-                        <div class="chart-bar" data-revenue="{{ day.revenue }}" data-date="{{ day.date }}"></div>
-                        {% endfor %}
-                    </div>
-                    <div class="chart-x-labels" id="chartXLabels">
-                        {% for day in stats.chart_data %}
-                        <div class="chart-label" data-original-date="{{ day.date }}">{{ day.date }}</div>
-                        {% endfor %}
-                    </div>
-                    
-
-                    
-
                 </div>
                 
                 <!-- Dual Chart View -->
@@ -948,26 +1033,28 @@
                         </div>
                     </div>
                     
-                    <div class="chart-wrapper">
-                        <div class="chart-y-labels" id="dualChartYLabels">
-                            <div>2000k</div>
-                            <div>1500k</div>
-                            <div>1000k</div>
-                            <div>500k</div>
-                            <div>0k</div>
-                        </div>
-                        <div class="chart-grid">
-                            <div class="grid-line" style="top: 0%;"></div>
-                            <div class="grid-line" style="top: 25%;"></div>
-                            <div class="grid-line" style="top: 50%;"></div>
-                            <div class="grid-line" style="top: 75%;"></div>
-                            <div class="grid-line" style="bottom: 0%;"></div>
-                        </div>
-                        <div class="dual-chart-bars" id="dualChartBars" style="display: flex; align-items: flex-end; height: 220px; gap: 8px; padding-left: 50px; border-bottom: 1px solid #ccc;">
-                            <!-- Dynamic content will be loaded here by JavaScript -->
-                        </div>
-                        <div class="chart-x-labels" id="dualChartXLabels">
-                            <!-- Dynamic labels will be loaded here by JavaScript -->
+                    <div class="chart-scroll-container">
+                        <div class="chart-wrapper">
+                            <div class="chart-y-labels" id="dualChartYLabels">
+                                <div>2000k</div>
+                                <div>1500k</div>
+                                <div>1000k</div>
+                                <div>500k</div>
+                                <div>0k</div>
+                            </div>
+                            <div class="chart-grid">
+                                <div class="grid-line" style="top: 0%;"></div>
+                                <div class="grid-line" style="top: 25%;"></div>
+                                <div class="grid-line" style="top: 50%;"></div>
+                                <div class="grid-line" style="top: 75%;"></div>
+                                <div class="grid-line" style="bottom: 0%;"></div>
+                            </div>
+                            <div class="dual-chart-bars" id="dualChartBars" style="display: flex; align-items: flex-end; height: 220px; gap: 8px; padding-left: 50px; border-bottom: 1px solid #ccc;">
+                                <!-- Dynamic content will be loaded here by JavaScript -->
+                            </div>
+                            <div class="chart-x-labels" id="dualChartXLabels">
+                                <!-- Dynamic labels will be loaded here by JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1013,15 +1100,24 @@
 </div>
 
 <script>
-// Data cache and state
+// Data cache and state - v3.2 period state fix
 let chartDataCache = {};
 let statsDataCache = {};
 let currentPeriod = 'total';
 let currentChart = 'hourly';
 
+// Force clear any old cached data on load
+chartDataCache = {};
+statsDataCache = {};
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page loaded, starting initialization');
+    console.log('Page loaded, starting initialization - v3.2 period state fix');
+    
+    // Force clear any cached styles that might interfere
+    const existingWideLabels = document.querySelectorAll('.wide-labels');
+    existingWideLabels.forEach(el => el.classList.remove('wide-labels'));
+    
     setupMasterFilters();
     
     // Initialize static chart bars if they exist with a delay to ensure DOM is ready
@@ -1144,11 +1240,40 @@ function formatDateLabel(dateStr) {
 function initializeStaticChart() {
     const chartBars = document.querySelectorAll('#chartBars .chart-bar');
     const chartLabels = document.querySelectorAll('#chartXLabels .chart-label');
+    const barsContainer = document.getElementById('chartBars');
+    const labelsContainer = document.getElementById('chartXLabels');
+    const chartContainer = document.getElementById('unifiedChart');
     
     console.log('Initializing static chart:', {
         bars: chartBars.length,
         labels: chartLabels.length
     });
+    
+    // Apply wide labels mode if needed for initial load
+    const needsWideLabels = currentPeriod === 'total' || currentPeriod === 'month';
+    if (needsWideLabels && barsContainer && labelsContainer && chartContainer) {
+        barsContainer.classList.add('wide-labels');
+        labelsContainer.classList.add('wide-labels');
+        chartContainer.classList.add('wide-labels');
+        
+        // Adjust grid and labels width for initial load
+        setTimeout(() => {
+            const chartGrid = document.querySelector('#singleChartWrapper .chart-grid');
+            if (chartGrid && barsContainer) {
+                const barsWidth = barsContainer.scrollWidth;
+                const paddingRight = 5;
+                const totalWidth = barsWidth + paddingRight;
+                
+                chartGrid.style.width = `${totalWidth}px`;
+                chartGrid.style.right = '0px';
+                
+                // Also adjust labels container width to match
+                if (labelsContainer) {
+                    labelsContainer.style.width = `${totalWidth + 50}px`; // +50 for left padding
+                }
+            }
+        }, 100);
+    }
     
     if (chartBars.length === 0) {
         console.log('No chart bars found');
@@ -1171,6 +1296,9 @@ function initializeStaticChart() {
         const revenue = parseInt(bar.getAttribute('data-revenue')) || 0;
         const height = Math.max((revenue / maxRevenue * 315), 2); // Updated to match new chart height
         bar.style.height = height + 'px';
+        
+        // Apply correct color styling based on current chart type
+        bar.className = `chart-bar ${currentChart}-style`;
         
         // Add tooltip with formatted date
         const originalDate = bar.getAttribute('data-date') || '';
@@ -1234,6 +1362,9 @@ function setupMasterFilters() {
                 // Hide dropdown for other periods
                 dropdown.classList.remove('show');
                 setTimeout(() => dropdown.style.display = 'none', 300);
+                
+                // Update current period BEFORE loading data
+                currentPeriod = period;
                 loadAllData(period);
             }
             
@@ -1242,8 +1373,6 @@ function setupMasterFilters() {
                 sibling.classList.remove('active');
             });
             this.classList.add('active');
-            
-            currentPeriod = period;
         });
     });
     
@@ -1329,7 +1458,7 @@ function loadAllData(period) {
     
     // Check cache first
     if (statsDataCache[cacheKey] && chartDataCache[cacheKey]) {
-        updateAllUI(statsDataCache[cacheKey], chartDataCache[cacheKey]);
+        updateAllUI(statsDataCache[cacheKey], chartDataCache[cacheKey], period);
         return;
     }
     
@@ -1340,7 +1469,7 @@ function loadAllData(period) {
     ]).then(([statsData, chartData]) => {
         statsDataCache[cacheKey] = statsData;
         chartDataCache[cacheKey] = chartData;
-        updateAllUI(statsData, chartData);
+        updateAllUI(statsData, chartData, period);
     }).catch(error => {
         console.error('Error loading data:', error);
         showNotification('Có lỗi xảy ra khi tải dữ liệu', 'error');
@@ -1357,7 +1486,7 @@ function loadAllDataWithChartType(period, chartType) {
     
     // Check cache first
     if (statsDataCache[cacheKey] && chartDataCache[cacheKey]) {
-        updateAllUI(statsDataCache[cacheKey], chartDataCache[cacheKey]);
+        updateAllUI(statsDataCache[cacheKey], chartDataCache[cacheKey], period);
         return;
     }
     
@@ -1368,7 +1497,7 @@ function loadAllDataWithChartType(period, chartType) {
     ]).then(([statsData, chartData]) => {
         statsDataCache[cacheKey] = statsData;
         chartDataCache[cacheKey] = chartData;
-        updateAllUI(statsData, chartData);
+        updateAllUI(statsData, chartData, period);
     }).catch(error => {
         console.error('Error loading data:', error);
         showNotification('Có lỗi xảy ra khi tải dữ liệu', 'error');
@@ -1383,12 +1512,12 @@ function loadChartData(period) {
 }
 
 // Update all UI components
-function updateAllUI(statsData, chartData) {
+function updateAllUI(statsData, chartData, period = null) {
     // Update statistics cards
     updateStatsCards(statsData);
     
-    // Update chart
-    updateChart(chartData);
+    // Update chart with explicit period
+    updateChart(chartData, period);
     
     // Update table
     updateTable(statsData.top_rooms);
@@ -1397,11 +1526,14 @@ function updateAllUI(statsData, chartData) {
 }
 
 // Update chart
-function updateChart(data) {
+function updateChart(data, period = null) {
+    const activePeriod = period || currentPeriod;
+    console.log('updateChart called with period:', activePeriod, 'currentPeriod:', currentPeriod);
+    
     if (currentChart === 'both') {
-        updateDualChart(data);
+        updateDualChart(data, activePeriod);
     } else {
-        updateSingleChart(currentChart, data[currentChart]);
+        updateSingleChart(currentChart, data[currentChart], activePeriod);
     }
     document.getElementById('unifiedChart').style.opacity = '1';
 }
@@ -1457,13 +1589,33 @@ function updateTable(topRooms) {
     });
 }
 
-function updateSingleChart(type, chartData) {
+function updateSingleChart(type, chartData, period = null) {
     const barsContainer = document.getElementById('chartBars');
     const labelsContainer = document.getElementById('chartXLabels');
+    const chartContainer = document.getElementById('unifiedChart');
     
     // Clear existing bars and labels
     barsContainer.innerHTML = '';
     labelsContainer.innerHTML = '';
+    
+    // Use passed period or fall back to currentPeriod
+    const activePeriod = period || currentPeriod;
+    
+    // Determine if we need wide labels mode (for total and month periods)
+    const needsWideLabels = activePeriod === 'total' || activePeriod === 'month';
+    
+    // Apply wide labels classes
+    if (needsWideLabels) {
+        barsContainer.classList.add('wide-labels');
+        labelsContainer.classList.add('wide-labels');
+        chartContainer.classList.add('wide-labels');
+        console.log('Applied wide-labels mode for single chart, period:', activePeriod);
+    } else {
+        barsContainer.classList.remove('wide-labels');
+        labelsContainer.classList.remove('wide-labels');
+        chartContainer.classList.remove('wide-labels');
+        console.log('Removed wide-labels mode for single chart, period:', activePeriod);
+    }
     
     if (!chartData || chartData.length === 0) {
         barsContainer.innerHTML = '<div style="text-align: center; color: #7C7C7C; padding: 50px; font-size: 14px;">📊 Không có dữ liệu</div>';
@@ -1478,7 +1630,7 @@ function updateSingleChart(type, chartData) {
     chartData.forEach(item => {
         // Create bar
         const bar = document.createElement('div');
-        bar.className = 'chart-bar';
+        bar.className = `chart-bar ${type}-style`; // Add chart type specific styling
         const barHeight = maxRevenue > 0 ? (item.revenue / maxRevenue * chartHeight) : 0;
         bar.style.height = `${Math.max(barHeight, 2)}px`; // Minimum 2px height to show bar
         bar.title = `${item.date}: ${formatCurrency(item.revenue)}`;
@@ -1510,16 +1662,65 @@ function updateSingleChart(type, chartData) {
         const value = maxLabel * (1 - index / (yLabels.length - 1));
         label.textContent = formatYAxisLabel(value);
     });
+
+    // Adjust grid and labels width based on wide labels mode
+    setTimeout(() => {
+        const chartGrid = document.querySelector('#singleChartWrapper .chart-grid');
+        if (chartGrid) {
+            if (needsWideLabels && barsContainer) {
+                // Calculate full width including padding
+                const barsWidth = barsContainer.scrollWidth;
+                const paddingRight = 5; // padding-right of bars container
+                const totalWidth = barsWidth + paddingRight;
+                
+                chartGrid.style.width = `${totalWidth}px`;
+                chartGrid.style.right = '0px';
+                
+                // Also adjust labels container width to match
+                if (labelsContainer) {
+                    labelsContainer.style.width = `${totalWidth + 50}px`; // +50 for left padding
+                }
+            } else {
+                // Reset to default width
+                chartGrid.style.width = 'calc(100% - 55px)';
+                chartGrid.style.right = '5px';
+                
+                if (labelsContainer) {
+                    labelsContainer.style.width = '100%';
+                }
+            }
+        }
+    }, 50);
 }
 
 // Update dual chart (both hourly and nightly)
-function updateDualChart(data) {
+function updateDualChart(data, period = null) {
     const barsContainer = document.getElementById('dualChartBars');
     const labelsContainer = document.getElementById('dualChartXLabels');
+    const chartContainer = document.getElementById('unifiedChart');
     
     // Clear existing bars and labels
     barsContainer.innerHTML = '';
     labelsContainer.innerHTML = '';
+    
+    // Use passed period or fall back to currentPeriod
+    const activePeriod = period || currentPeriod;
+    
+    // Determine if we need wide labels mode (for total and month periods)
+    const needsWideLabels = activePeriod === 'total' || activePeriod === 'month';
+    
+    // Apply wide labels classes
+    if (needsWideLabels) {
+        barsContainer.classList.add('wide-labels');
+        labelsContainer.classList.add('wide-labels');
+        chartContainer.classList.add('wide-labels');
+        console.log('Applied wide-labels mode for dual chart, period:', activePeriod);
+    } else {
+        barsContainer.classList.remove('wide-labels');
+        labelsContainer.classList.remove('wide-labels');
+        chartContainer.classList.remove('wide-labels');
+        console.log('Removed wide-labels mode for dual chart, period:', activePeriod);
+    }
     
     const hourlyData = data.hourly || [];
     const nightlyData = data.nightly || [];
@@ -1561,12 +1762,15 @@ function updateDualChart(data) {
         // Create bar group
         const barGroup = document.createElement('div');
         barGroup.className = 'dual-bar-group';
+        
+        // Set width based on wide labels mode
+        const barWidth = needsWideLabels ? '42px' : '30px';
         barGroup.style.cssText = `
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             align-items: center;
-            width: 30px;
+            width: ${barWidth};
             height: 100%;
         `;
         
@@ -1646,6 +1850,35 @@ function updateDualChart(data) {
         const value = maxLabel * (1 - index / (yLabels.length - 1));
         label.textContent = formatYAxisLabel(value);
     });
+
+    // Adjust grid and labels width based on wide labels mode
+    setTimeout(() => {
+        const chartGrid = document.querySelector('#dualChartWrapper .chart-grid');
+        if (chartGrid) {
+            if (needsWideLabels && barsContainer) {
+                // Calculate full width including padding
+                const barsWidth = barsContainer.scrollWidth;
+                const paddingRight = 10; // padding for dual chart
+                const totalWidth = barsWidth + paddingRight;
+                
+                chartGrid.style.width = `${totalWidth}px`;
+                chartGrid.style.right = '0px';
+                
+                // Also adjust labels container width to match
+                if (labelsContainer) {
+                    labelsContainer.style.width = `${totalWidth + 50}px`; // +50 for left padding
+                }
+            } else {
+                // Reset to default width
+                chartGrid.style.width = 'calc(100% - 55px)';
+                chartGrid.style.right = '5px';
+                
+                if (labelsContainer) {
+                    labelsContainer.style.width = '100%';
+                }
+            }
+        }
+    }, 50);
 }
 
 function formatCurrency(amount) {

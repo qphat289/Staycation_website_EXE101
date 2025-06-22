@@ -3,7 +3,7 @@
    ========================= */
    :root {
     /* Bảng màu bổ túc bộ bốn */
-    --primary-color: #F1B55F;       /* Màu chủ đạo (vàng) */
+    --primary-color: #7ABC0E;       /* Màu chủ đạo (vàng) */
     --primary-light: #F7D9AF;       /* Màu nhạt hơn */
     --primary-dark: #EA9415;        /* Màu đậm hơn */
     --accent-color: #7ABC0E;        /* Màu tương phản (xanh olive) */
@@ -185,9 +185,9 @@ html body .navbar-dark.bg-primary {
     z-index: 1050;
 }
 
-/* Navbar khi scroll - hiện màu xanh - GLOBAL */
+/* Navbar khi scroll - hiện màu xanh nhạt như hover button - GLOBAL */
 html body .navbar-dark.bg-primary.scrolled {
-    background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
+    background: linear-gradient(135deg, rgba(224, 236, 155, 0.95), rgba(200, 220, 130, 0.95)) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15) !important; /* Bóng đậm hơn khi scroll */

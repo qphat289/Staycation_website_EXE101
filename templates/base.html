@@ -263,11 +263,6 @@
                 <ul class="navbar-nav mx-auto justify-content-center">
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_owner() %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('owner.view_bookings') }}" style="color: #333333;">
-                                    <i class="bi bi-calendar-check me-1"></i><span data-translate="booking-management">Quản lý đặt phòng</span>
-                                </a>
-                            </li>
                         {% endif %}
                     {% endif %}
                 </ul>
