@@ -147,9 +147,16 @@ def dashboard():
 @owner_bp.route('/add-room/<int:homestay_id>', methods=['GET', 'POST'])
 @login_required
 def add_room(homestay_id=None):
+    # Determine if this is a fresh request or coming back from preview
+    is_fresh_request = request.method == 'GET' and not request.args.get('from_preview')
+    
     # Clear session data if this is a fresh GET request (not coming from back-to-edit)
-    if request.method == 'GET' and not request.args.get('from_preview'):
+    if is_fresh_request:
         session.pop('room_preview_data', None)
+        # Also clear any other room-related session data
+        for key in list(session.keys()):
+            if key.startswith('room_'):
+                session.pop(key, None)
         print("DEBUG: Cleared session data for fresh add room request")
     
     if request.method == 'POST':
@@ -218,9 +225,13 @@ def add_room(homestay_id=None):
         except Exception as e:
             flash(f'Có lỗi xảy ra: {str(e)}', 'danger')
     
-    # Lấy dữ liệu từ session nếu có (khi quay lại từ preview)
-    room_data = session.get('room_preview_data', {})
-    print(f"DEBUG: Loading add_room with room_data keys: {list(room_data.keys()) if room_data else 'None'}")
+    # Lấy dữ liệu từ session nếu có (khi quay lại từ preview), otherwise use empty dict
+    if is_fresh_request:
+        room_data = {}
+        print("DEBUG: Using empty room_data for fresh request")
+    else:
+        room_data = session.get('room_preview_data', {})
+        print(f"DEBUG: Loading add_room with room_data keys: {list(room_data.keys()) if room_data else 'None'}")
     
     # Nếu có rules/amenities trong session, chuẩn bị data cho JavaScript
     if room_data.get('rules') or room_data.get('amenities'):
@@ -306,7 +317,11 @@ def clear_room_data():
 def clear_room_session():
     # API endpoint để xóa session data qua AJAX
     session.pop('room_preview_data', None)
-    print("DEBUG: Cleared room_preview_data from session")
+    # Also clear any other room-related session data
+    for key in list(session.keys()):
+        if key.startswith('room_'):
+            session.pop(key, None)
+    print("DEBUG: Cleared all room-related session data")
     return jsonify({'status': 'success'})
 
 @owner_bp.route('/confirm-room', methods=['POST'])
@@ -509,7 +524,7 @@ def edit_room(room_id):
     if request.method == 'POST':
         try:
             # Cập nhật thông tin cơ bản
-            room.title = request.form.get('room_title')
+            room.title = request.form.get('room_title') or room.title  # Keep existing if empty
             room.description = request.form.get('room_description')
             
             # Chuyển đổi property_type sang tiếng Việt trước khi lưu
@@ -520,8 +535,8 @@ def edit_room(room_id):
             }
             property_type_vn = property_type_map.get(request.form.get('property_type'), request.form.get('property_type'))
             room.room_type = property_type_vn
-            room.city = request.form.get('province')  # Sử dụng city thay vì province
-            room.district = request.form.get('district')
+            room.city = request.form.get('province') or room.city  # Keep existing if empty
+            room.district = request.form.get('district') or room.district  # Keep existing if empty
 
             # Cập nhật địa chỉ
             ward = request.form.get('ward')

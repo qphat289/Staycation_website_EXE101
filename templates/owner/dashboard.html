@@ -504,7 +504,13 @@ let roomToDeleteId = null;
 
 // Function to clear session data and navigate to add room
 function clearSessionAndAddRoom() {
-    // Clear any existing room preview data from session
+    // Clear browser sessionStorage first
+    if (typeof(Storage) !== "undefined") {
+        sessionStorage.removeItem('room_form_data');
+        console.log('✅ Cleared browser sessionStorage');
+    }
+    
+    // Clear any existing room preview data from server session
     fetch('/owner/clear-room-session', {
         method: 'POST',
         headers: {
@@ -514,13 +520,13 @@ function clearSessionAndAddRoom() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Session cleared successfully');
+        console.log('✅ Cleared server session successfully');
         // Navigate to add room page
         window.location.href = '{{ url_for("owner.add_room") }}';
     })
     .catch(error => {
-        console.error('Error clearing session:', error);
-        // Navigate anyway even if clearing session fails
+        console.error('❌ Error clearing server session:', error);
+        // Navigate anyway even if clearing server session fails
         window.location.href = '{{ url_for("owner.add_room") }}';
     });
 }
