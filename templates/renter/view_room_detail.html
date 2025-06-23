@@ -428,31 +428,155 @@
         background: linear-gradient(135deg, #7cb342, #689f38);
         border-color: #7cb342;
     }
+    
+    /* Header actions */
+    .header-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+    
+    /* Price display styling */
+    .price-display {
+        display: flex;
+        align-items: center;
+    }
+    
+    .price-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        background: rgba(0, 0, 0, 0.05);
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        cursor: default;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .price-text:hover {
+        background: rgba(139, 195, 74, 0.1);
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(139, 195, 74, 0.2);
+    }
+    
+    .price-text::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .price-text:hover::before {
+        left: 100%;
+    }
+    
+    /* Small action buttons */
+    .header-action-btn-small {
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+        min-width: auto;
+    }
+    
+    .header-action-btn-small i {
+        font-size: 12px;
+    }
+    
+    /* Book button */
+    .header-action-btn-book {
+        padding: 6px 12px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        transform: translateY(0);
+    }
+    
+    .header-action-btn-book:hover {
+        background-color: #8bc34a !important;
+        border-color: #8bc34a !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(139, 195, 74, 0.3);
+    }
+    
+    .header-action-btn-book i {
+        font-size: 14px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .price-text {
+            font-size: 12px;
+        }
+        
+        .h2 {
+            font-size: 1.3rem !important;
+        }
+        
+        .header-action-btn-book {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        
+        .header-action-btn-book i {
+            font-size: 12px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .header-actions {
+            align-items: stretch;
+            width: 100%;
+        }
+        
+        .d-flex.align-items-center.gap-2.justify-content-end {
+            justify-content: space-between !important;
+        }
+    }
 </style>
 <div class="container-fluid px-4 pt-4 pb-5 room-detail-container">
     <!-- Header -->
     <div class="section-card">
         <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <h1 class="h2 fw-bold mb-2">{{ room.homestay.business_name}}</h1>
+            <div class="flex-grow-1">
+                <h1 class="h2 fw-bold mb-1">{{ room.title or room.homestay.business_name or 'Chưa có tên' }}</h1>
                 <p class="address-text mb-0">
                     <i class="bi bi-geo-alt"></i>
                     {{ format_full_address(room.address, None, room.district, room.city) }}
                 </p>
             </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-secondary btn-sm header-action-btn" onclick="shareRoom()" title="Chia sẻ">
-                    <i class="bi bi-share"></i>
-                    <span class="d-none d-md-inline ms-1">Chia sẻ</span>
-                </button>
-                <button class="btn btn-outline-danger btn-sm header-action-btn" onclick="toggleSaveRoom()" title="Lưu" id="saveRoomBtn">
-                    <i class="bi bi-heart"></i>
-                    <span class="d-none d-md-inline ms-1">Lưu</span>
-                </button>
-                <a href="{{ url_for('renter.book_room', room_id=room.id) }}" class="btn btn-success btn-sm header-action-btn" title="Đặt ngay">
-                    <i class="bi bi-calendar-check"></i>
-                    <span class="d-none d-md-inline ms-1">Đặt ngay</span>
-                </a>
+            <div class="header-actions">
+                <div class="d-flex gap-1 mb-2">
+                    <button class="btn btn-outline-secondary btn-xs header-action-btn-small" onclick="shareRoom()" title="Chia sẻ">
+                        <i class="bi bi-share"></i>
+                        <span class="d-none d-lg-inline ms-1">Chia sẻ</span>
+                    </button>
+                    <button class="btn btn-outline-danger btn-xs header-action-btn-small" onclick="toggleSaveRoom()" title="Lưu" id="saveRoomBtn">
+                        <i class="bi bi-heart"></i>
+                        <span class="d-none d-lg-inline ms-1">Lưu</span>
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-2 justify-content-end">
+                    <div class="price-display">
+                        <span class="price-text">
+                            {% if room.display_price_per_night %}
+                                {{ "{:,}".format(room.display_price_per_night) }}đ / đêm
+                            {% else %}
+                                {{ "{:,}".format(room.display_price) }}đ / giờ
+                            {% endif %}
+                        </span>
+                    </div>
+                    <a href="{{ url_for('renter.book_room', room_id=room.id) }}" class="btn btn-outline-success btn-sm header-action-btn-book" title="Đặt ngay">
+                        <i class="bi bi-calendar-check"></i>
+                        <span class="ms-1">Đặt ngay</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
