@@ -7,7 +7,8 @@ import io
 import os
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
-from app.utils.utils import get_rank_info, get_location_name, save_user_image, delete_user_image
+from app.utils.utils import get_rank_info, get_location_name, save_user_image, delete_user_image, fix_image_orientation
+from app.utils.email_validator import process_email
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
@@ -320,7 +321,14 @@ def profile():
             current_user.first_name = request.form.get('first_name')
             current_user.last_name = request.form.get('last_name')
             current_user.gender = request.form.get('gender')
-            current_user.email = request.form.get('email')
+            # Xử lý email với validation và cleaning
+            email_input = request.form.get('email')
+            if email_input:
+                cleaned_email, is_valid = process_email(email_input)
+                if is_valid:
+                    current_user.email = cleaned_email
+                else:
+                    flash('Email không hợp lệ!', 'warning')
             current_user.phone = request.form.get('phone')
             current_user.address = request.form.get('address')
             
@@ -346,14 +354,31 @@ def profile():
                 avatar_path = save_user_image(avatar_file, 'renter', current_user.id, prefix='avatar')
                 
                 if avatar_path:
-                    # Resize image sau khi lưu
+                    # Xử lý xoay ảnh và resize
                     try:
                         full_path = os.path.join('static', avatar_path)
+                        
+                        # Sửa hướng xoay ảnh theo EXIF
+                        fix_image_orientation(full_path)
+                        
+                        # Resize image sau khi sửa hướng
                         with Image.open(full_path) as img:
+                            # Tạo ảnh vuông bằng cách crop từ giữa
+                            width, height = img.size
+                            if width != height:
+                                # Crop to square from center
+                                min_size = min(width, height)
+                                left = (width - min_size) // 2
+                                top = (height - min_size) // 2
+                                right = left + min_size
+                                bottom = top + min_size
+                                img = img.crop((left, top, right, bottom))
+                            
+                            # Resize to 200x200
                             img = img.resize((200, 200), Image.Resampling.LANCZOS)
                             img.save(full_path, optimize=True, quality=85)
                     except Exception as e:
-                        print(f"Error resizing avatar: {e}")
+                        print(f"Error processing avatar: {e}")
                     
                     current_user.avatar = avatar_path
             

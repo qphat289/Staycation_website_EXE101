@@ -150,7 +150,7 @@
                                                         <th class="align-middle">Room Type:</th>
                                                         <td class="align-middle">{{ booking.room.room_type }}</td>
                                                         <th class="align-middle">Address:</th>
-                                                        <td class="align-middle">{{ booking.room.address }}, {{ booking.room.city | location_name('city') }}</td>
+                                                        <td class="align-middle">{{ format_full_address(booking.room.address, None, booking.room.district, booking.room.city) }}</td>
                                                     </tr>
                                                 </table>
                                             </div>

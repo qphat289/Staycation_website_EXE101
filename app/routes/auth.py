@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 import secrets
 from urllib.parse import urlparse
 from sqlalchemy.exc import IntegrityError
+from app.utils.email_validator import process_email
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -51,8 +52,14 @@ def register():
             flash('Tên đăng nhập đã tồn tại', 'danger')
             return render_template('auth/register.html', form_data=form_data)
         
+        # Process and validate email
+        cleaned_email, is_valid_email = process_email(email)
+        if not is_valid_email:
+            flash('Email không hợp lệ', 'danger')
+            return render_template('auth/register.html', form_data=form_data)
+        
         # Check if email exists
-        if Renter.query.filter_by(email=email).first():
+        if Renter.query.filter_by(email=cleaned_email).first():
             flash('Email đã được sử dụng', 'danger')
             return render_template('auth/register.html', form_data=form_data)
         
@@ -64,7 +71,7 @@ def register():
         # Create new renter
         new_renter = Renter(
             username=username,
-            email=email,
+            email=cleaned_email,
             phone=phone,
             first_name=first_name,
             last_name=last_name,

@@ -692,7 +692,7 @@
                 <div class="homestay-details">
                     <div class="homestay-detail">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span>{{ room.address }}</span>
+                        <span>{{ format_full_address(room.address, None, room.district, room.city) }}</span>
                     </div>
                     <div class="homestay-detail">
                         <i class="fas fa-money-bill"></i>
@@ -1231,8 +1231,6 @@ function updateFilterButtonText() {
         resetBtn.style.display = 'none';
     }
 }
-
-
 
 function sortRooms(sortType) {
     const homestayList = document.querySelector('.homestay-list');

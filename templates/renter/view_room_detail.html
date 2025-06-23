@@ -4,16 +4,47 @@
 {% block content %}
 <style>
     .room-detail-container {
-        margin-top: -50px !important;
-        background: #f8f9fa;
+        margin-top: -40px !important;
+        background: transparent;
+        position: relative;
+        z-index: 1;
     }
     
+    /* Ngăn scroll tự động khi load trang */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Đảm bảo không có element nào tự động focus/scroll */
+    *:focus {
+        scroll-margin-top: 80px;
+    }
+    
+    /* Ngăn map container gây scroll */
+    #map {
+        scroll-margin: 0 !important;
+    }
+    
+
+    
     .section-card {
-        background: white;
+        background: transparent;
         border-radius: 12px;
         padding: 24px;
         margin-bottom: 24px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        border: 1px solid rgba(139, 195, 74, 0.15);
+        box-shadow: 0 2px 8px rgba(139, 195, 74, 0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .section-card:hover {
+        border-color: rgba(139, 195, 74, 0.25);
+        box-shadow: 0 4px 16px rgba(139, 195, 74, 0.12);
+        transform: translateY(-2px);
     }
 
     .section-title {
@@ -21,6 +52,8 @@
         font-weight: 600;
         color: #2d3748;
         margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(139, 195, 74, 0.2);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -35,6 +68,11 @@
         color: #4a5568;
         line-height: 1.6;
         font-size: 15px;
+        padding: 16px 0;
+        border-left: 3px solid rgba(139, 195, 74, 0.3);
+        padding-left: 16px;
+        background: rgba(139, 195, 74, 0.03);
+        border-radius: 0 8px 8px 0;
     }
 
     .address-text {
@@ -56,6 +94,12 @@
         color: #4a5568;
         font-size: 15px;
         margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(139, 195, 74, 0.1);
+    }
+    
+    .amenity-item:last-child {
+        border-bottom: none;
     }
 
     .amenity-item i {
@@ -70,6 +114,12 @@
         color: #4a5568;
         font-size: 15px;
         margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(139, 195, 74, 0.1);
+    }
+    
+    .rule-item:last-child {
+        border-bottom: none;
     }
 
     .rule-item i {
@@ -258,7 +308,7 @@
     }
 
     .modal-body .rounded:hover {
-        background: #f0f0f0 !important;
+        background: rgba(139, 195, 74, 0.1) !important;
     }
 
     /* Icon styles */
@@ -270,8 +320,8 @@
 
     /* Amenity badge styling */
     .amenity-badge {
-        background: #f8f9fa !important;
-        border: 1px solid #e9ecef;
+        background: rgba(139, 195, 74, 0.05) !important;
+        border: 1px solid rgba(139, 195, 74, 0.2);
         padding: 8px 12px !important;
         font-size: 13px;
         transition: all 0.2s ease;
@@ -280,7 +330,7 @@
     }
 
     .amenity-badge:hover {
-        background: #e9ecef !important;
+        background: rgba(139, 195, 74, 0.1) !important;
         border-color: #8bc34a;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(139, 195, 74, 0.2);
@@ -304,8 +354,8 @@
 
     /* Rule badge styling - giống amenity badge */
     .rule-badge {
-        background: #f8f9fa !important;
-        border: 1px solid #e9ecef;
+        background: rgba(139, 195, 74, 0.05) !important;
+        border: 1px solid rgba(139, 195, 74, 0.2);
         padding: 8px 12px !important;
         font-size: 13px;
         transition: all 0.2s ease;
@@ -314,7 +364,7 @@
     }
 
     .rule-badge:hover {
-        background: #e9ecef !important;
+        background: rgba(139, 195, 74, 0.1) !important;
         border-color: #8bc34a;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(139, 195, 74, 0.2);
@@ -378,45 +428,155 @@
         background: linear-gradient(135deg, #7cb342, #689f38);
         border-color: #7cb342;
     }
+    
+    /* Header actions */
+    .header-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+    
+    /* Price display styling */
+    .price-display {
+        display: flex;
+        align-items: center;
+    }
+    
+    .price-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        background: rgba(0, 0, 0, 0.05);
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        cursor: default;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .price-text:hover {
+        background: rgba(139, 195, 74, 0.1);
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(139, 195, 74, 0.2);
+    }
+    
+    .price-text::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .price-text:hover::before {
+        left: 100%;
+    }
+    
+    /* Small action buttons */
+    .header-action-btn-small {
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+        min-width: auto;
+    }
+    
+    .header-action-btn-small i {
+        font-size: 12px;
+    }
+    
+    /* Book button */
+    .header-action-btn-book {
+        padding: 6px 12px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        transform: translateY(0);
+    }
+    
+    .header-action-btn-book:hover {
+        background-color: #8bc34a !important;
+        border-color: #8bc34a !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(139, 195, 74, 0.3);
+    }
+    
+    .header-action-btn-book i {
+        font-size: 14px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .price-text {
+            font-size: 12px;
+        }
+        
+        .h2 {
+            font-size: 1.3rem !important;
+        }
+        
+        .header-action-btn-book {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        
+        .header-action-btn-book i {
+            font-size: 12px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .header-actions {
+            align-items: stretch;
+            width: 100%;
+        }
+        
+        .d-flex.align-items-center.gap-2.justify-content-end {
+            justify-content: space-between !important;
+        }
+    }
 </style>
 <div class="container-fluid px-4 pt-4 pb-5 room-detail-container">
     <!-- Header -->
     <div class="section-card">
         <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <h1 class="h2 fw-bold mb-2">{{ room.homestay.business_name}}</h1>
+            <div class="flex-grow-1">
+                <h1 class="h2 fw-bold mb-1">{{ room.title or room.homestay.business_name or 'Chưa có tên' }}</h1>
                 <p class="address-text mb-0">
                     <i class="bi bi-geo-alt"></i>
-                    {{ room.address }}, 
-                    {% if room.district.lower().startswith('quan') %}
-                        {{ room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') }}
-                    {% else %}
-                        {{ room.district }}
-                    {% endif %}, 
-                    {% if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' %}
-                        Thành phố Hồ Chí Minh
-                    {% elif room.city.lower() == 'hn' or room.city.lower() == 'hanoi' %}
-                        Thành phố Hà Nội
-                    {% elif room.city.lower() == 'dn' or room.city.lower() == 'da nang' %}
-                        Thành phố Đà Nẵng
-                    {% else %}
-                        {{ room.city }}
-                    {% endif %}
+                    {{ format_full_address(room.address, None, room.district, room.city) }}
                 </p>
             </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-secondary btn-sm header-action-btn" onclick="shareRoom()" title="Chia sẻ">
-                    <i class="bi bi-share"></i>
-                    <span class="d-none d-md-inline ms-1">Chia sẻ</span>
-                </button>
-                <button class="btn btn-outline-danger btn-sm header-action-btn" onclick="toggleSaveRoom()" title="Lưu" id="saveRoomBtn">
-                    <i class="bi bi-heart"></i>
-                    <span class="d-none d-md-inline ms-1">Lưu</span>
-                </button>
-                <a href="{{ url_for('renter.book_room', room_id=room.id) }}" class="btn btn-success btn-sm header-action-btn" title="Đặt ngay">
-                    <i class="bi bi-calendar-check"></i>
-                    <span class="d-none d-md-inline ms-1">Đặt ngay</span>
-                </a>
+            <div class="header-actions">
+                <div class="d-flex gap-1 mb-2">
+                    <button class="btn btn-outline-secondary btn-xs header-action-btn-small" onclick="shareRoom()" title="Chia sẻ">
+                        <i class="bi bi-share"></i>
+                        <span class="d-none d-lg-inline ms-1">Chia sẻ</span>
+                    </button>
+                    <button class="btn btn-outline-danger btn-xs header-action-btn-small" onclick="toggleSaveRoom()" title="Lưu" id="saveRoomBtn">
+                        <i class="bi bi-heart"></i>
+                        <span class="d-none d-lg-inline ms-1">Lưu</span>
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-2 justify-content-end">
+                    <div class="price-display">
+                        <span class="price-text">
+                            {% if room.display_price_per_night %}
+                                {{ "{:,}".format(room.display_price_per_night) }}đ / đêm
+                            {% else %}
+                                {{ "{:,}".format(room.display_price) }}đ / giờ
+                            {% endif %}
+                        </span>
+                    </div>
+                    <a href="{{ url_for('renter.book_room', room_id=room.id) }}" class="btn btn-outline-success btn-sm header-action-btn-book" title="Đặt ngay">
+                        <i class="bi bi-calendar-check"></i>
+                        <span class="ms-1">Đặt ngay</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -501,31 +661,42 @@
     <div class="section-card">
     <div class="row">
             <!-- Tiện nghi -->
-            <div class="col-md-6 border-end">
+            <div class="col-md-6" style="border-right: 1px solid rgba(139, 195, 74, 0.2); padding-right: 20px;">
                 <h2 class="section-title">
                     <i class="bi bi-house-check"></i>
                     Tiện nghi
                 </h2>
-                <div class="amenity-item">
-                    <i class="bi bi-wifi"></i>
-                    WiFi miễn phí
-                </div>
-                <div class="amenity-item">
-                    <i class="bi bi-brush"></i>
-                    Dọn phòng hàng ngày
-                </div>
-                <div class="amenity-item">
-                    <i class="bi bi-droplet"></i>
-                    Đồ vệ sinh cá nhân
-                </div>
-                <div class="amenity-item">
-                    <i class="bi bi-p-square"></i>
-                    Bãi đỗ xe
-                </div>
-                <div class="amenity-item mb-3">
-                    <i class="bi bi-clock"></i>
-                    Lễ tân 24/7
-                </div>
+                {% if room.amenities %}
+                    <div class="row">
+                        <div class="col-6">
+                            {% for amenity in room.amenities[:3] %}
+                                <div class="amenity-item">
+                                    <i class="{{ amenity.icon or 'bi bi-check-circle' }}"></i>
+                                    {{ amenity.name }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-6">
+                            {% for amenity in room.amenities[3:6] %}
+                                <div class="amenity-item">
+                                    <i class="{{ amenity.icon or 'bi bi-check-circle' }}"></i>
+                                    {{ amenity.name }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if room.amenities|length > 6 %}
+                        <div class="amenity-item mb-3" style="color: #8bc34a; font-style: italic;">
+                            <i class="bi bi-plus-circle"></i>
+                            +{{ room.amenities|length - 6 }} tiện nghi khác
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="amenity-item mb-3" style="color: #999; font-style: italic;">
+                        <i class="bi bi-info-circle"></i>
+                        Chưa có thông tin tiện nghi
+                    </div>
+                {% endif %}
                 <button class="btn btn-outline-success btn-sm amenities-btn" onclick="showAmenitiesModal()">
                     <i class="bi bi-list-ul me-1"></i>
                     Xem tất cả tiện nghi
@@ -533,23 +704,42 @@
             </div>
 
             <!-- Nội quy -->
-            <div class="col-md-6">
+            <div class="col-md-6" style="padding-left: 20px;">
                 <h2 class="section-title">
                     <i class="bi bi-shield-check"></i>
                     Nội quy
                 </h2>
-                <div class="rule-item">
-                    <i class="bi bi-x-circle"></i>
-                    Không hút thuốc
-                </div>
-                <div class="rule-item">
-                    <i class="bi bi-check-circle"></i>
-                    Được phép hút thuốc
-                </div>
-                <div class="rule-item mb-3">
-                    <i class="bi bi-x-circle"></i>
-                    Hút thuốc ngoài ban công
-                </div>
+                {% if room.rules %}
+                    <div class="row">
+                        <div class="col-6">
+                            {% for rule in room.rules[:3] %}
+                                <div class="rule-item">
+                                    <i class="bi bi-check-circle"></i>
+                                    {{ rule.name }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-6">
+                            {% for rule in room.rules[3:6] %}
+                                <div class="rule-item">
+                                    <i class="bi bi-check-circle"></i>
+                                    {{ rule.name }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if room.rules|length > 6 %}
+                        <div class="rule-item mb-3" style="color: #8bc34a; font-style: italic;">
+                            <i class="bi bi-plus-circle"></i>
+                            +{{ room.rules|length - 6 }} nội quy khác
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="rule-item mb-3" style="color: #999; font-style: italic;">
+                        <i class="bi bi-info-circle"></i>
+                        Chưa có thông tin nội quy
+                    </div>
+                {% endif %}
                 <button class="btn btn-outline-success btn-sm rules-btn" onclick="showRulesModal()">
                     <i class="bi bi-list-ul me-1"></i>
                     Xem tất cả nội quy
@@ -564,14 +754,20 @@
             <i class="bi bi-geo-alt"></i>
             Địa điểm
         </h2>
-                <div class="bg-light rounded-3 overflow-hidden position-relative" style="height: 400px;">
-                    {% set district_full = room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') if room.district.lower().startswith('quan') else room.district %}
-                    {% set city_full = 'Thành phố Hồ Chí Minh' if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' else ('Thành phố Hà Nội' if room.city.lower() == 'hn' or room.city.lower() == 'hanoi' else ('Thành phố Đà Nẵng' if room.city.lower() == 'dn' or room.city.lower() == 'da nang' else room.city)) %}
+                <div class="rounded-3 overflow-hidden position-relative" style="height: 400px; background: rgba(139, 195, 74, 0.05); border: 1px solid rgba(139, 195, 74, 0.2);">
+                    {% set district_full = room.district|format_district %}
+                    {% set city_full = room.city|format_city %}
+                    {% set formatted_address = format_full_address(room.address, None, room.district, room.city) %}
                     {% set map_address = room.address + ', ' + district_full + ', ' + city_full + ', Vietnam' %}
                     {% set encoded_map_address = map_address|urlencode %}
                     
                     <!-- Mapbox GL JS -->
-                    <div id="map" style="width: 100%; height: 100%; border-radius: 12px;"></div>
+                    <div id="map" style="width: 100%; height: 100%; border-radius: 12px; background: rgba(139, 195, 74, 0.1); display: flex; align-items: center; justify-content: center;">
+                        <div id="map-loading" style="text-align: center; color: #8bc34a;">
+                            <i class="bi bi-geo-alt fs-1 mb-2"></i>
+                            <div style="font-size: 14px; font-weight: 500;">Đang tải bản đồ...</div>
+                        </div>
+                    </div>
                     
                     <!-- Nút mở trên Google Maps -->
                     <div class="position-absolute top-0 end-0 m-2" style="z-index: 1000;">
@@ -587,9 +783,62 @@
                 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
                 
                 <script>
-                // Mapbox access token của bạn
-                mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
-        
+                // UX tối ưu: Scroll mượt mà về đầu trang khi load
+                function smoothScrollToTop() {
+                    // Kiểm tra nếu không ở đầu trang thì scroll mượt mà về đầu
+                    if (window.pageYOffset > 0) {
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+                
+                // Scroll về đầu trang ngay khi DOM load
+                document.addEventListener('DOMContentLoaded', function() {
+                    smoothScrollToTop();
+                });
+                
+                // Backup: scroll về đầu khi window load xong
+                window.addEventListener('load', function() {
+                    smoothScrollToTop();
+                });
+                
+                // Lazy loading map để tối ưu hiệu năng
+                let mapInitialized = false;
+                
+                function checkMapVisibility() {
+                    const mapContainer = document.getElementById('map');
+                    if (!mapContainer || mapInitialized) return;
+                    
+                    const rect = mapContainer.getBoundingClientRect();
+                    const windowHeight = window.innerHeight;
+                    
+                    // Khởi tạo map khi user scroll gần đến (còn cách 200px)
+                    if (rect.top < windowHeight + 200) {
+                        mapInitialized = true;
+                        initializeMap();
+                        // Xóa listener sau khi đã khởi tạo
+                        window.removeEventListener('scroll', checkMapVisibility);
+                    }
+                }
+                
+                // Kiểm tra ngay khi load (nếu map đã visible)
+                setTimeout(checkMapVisibility, 100);
+                
+                // Kiểm tra khi user scroll
+                window.addEventListener('scroll', checkMapVisibility, { passive: true });
+                
+                function initializeMap() {
+                    // Ẩn loading placeholder
+                    const loadingElement = document.getElementById('map-loading');
+                    if (loadingElement) {
+                        loadingElement.style.display = 'none';
+                    }
+                    
+                    // Mapbox access token của bạn
+                    mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
+
         // Custom style cho popup
         const customPopupStyle = `
             .mapboxgl-popup {
@@ -625,7 +874,8 @@
             }
             .custom-popup-content {
                 padding: 15px;
-                background: white;
+                background: rgba(248, 249, 250, 0.95);
+                backdrop-filter: blur(10px);
             }
             .custom-popup-address {
                 color: #666;
@@ -657,9 +907,9 @@
                 background: #7cb342;
             }
             .custom-popup-btn.secondary {
-                background: #f8f9fa;
+                background: rgba(139, 195, 74, 0.1);
                 color: #333;
-                border: 1px solid #dee2e6;
+                border: 1px solid rgba(139, 195, 74, 0.3);
             }
             .custom-popup-btn.secondary:hover {
                 background: #e9ecef;
@@ -711,12 +961,12 @@
                             var coordinates = data.features[0].center; // [lng, lat]
                             var placeName = data.features[0].place_name;
                             
-                            // Fly to location với animation mượt mà
+                            // Fly to location nhanh hơn để giảm lag
                             map.flyTo({
                                 center: coordinates,
                                 zoom: 15,
-                                duration: 2500,
-                                essential: true
+                                duration: 800,
+                                essential: false
                             });
                             
                             // Tạo custom marker element
@@ -747,7 +997,7 @@
                                 <div class="custom-popup-content">
                                     <div class="custom-popup-address">
                                         <i class="bi bi-geo-alt me-1"></i>
-                                        {{ room.address }}, {{ district_full }}, {{ city_full }}
+                                        {{ formatted_address }}
                                     </div>
                                     <div class="custom-popup-actions">
                                         <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
@@ -771,10 +1021,7 @@
                             // Mở popup ngay lập tức
                             marker.getPopup().addTo(map);
                             
-                            // Add some animation to marker
-                            setTimeout(() => {
-                                markerEl.style.animation = 'bounce 1s ease-in-out';
-                            }, 2500);
+                            // Loại bỏ animation để tránh lag
                         }
                     })
                     .catch(error => {
@@ -791,7 +1038,7 @@
                             fallbackCoords = [106.6297, 10.8231];
                         {% endif %}
                         
-                        map.flyTo({ center: fallbackCoords, zoom: 13 });
+                        map.flyTo({ center: fallbackCoords, zoom: 13, duration: 600 });
                         
                         var markerEl = document.createElement('div');
                         markerEl.innerHTML = `
@@ -816,7 +1063,7 @@
                                 <div class="custom-popup-content">
                                     <div class="custom-popup-address">
                                         <i class="bi bi-geo-alt me-1"></i>
-                                        {{ room.address }}, {{ district_full }}, {{ city_full }}
+                                        {{ formatted_address }}
                                     </div>
                                     <div class="custom-popup-actions">
                                         <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
@@ -838,16 +1085,8 @@
                             .addTo(map);
                     });
                 
-                // Thêm CSS cho animation
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes bounce {
-                        0%, 20%, 60%, 100% { transform: translateY(0) rotate(-45deg); }
-                        40% { transform: translateY(-20px) rotate(-45deg); }
-                        80% { transform: translateY(-10px) rotate(-45deg); }
-                    }
-                `;
-                document.head.appendChild(style);
+                // Loại bỏ CSS animation để tối ưu hiệu năng
+                } // Đóng function initializeMap()
                 </script>
     </div>
 </div>
@@ -1034,46 +1273,24 @@
             <div class="modal-body">
                     {% if room.rules %}
                     <div class="row g-4">
-                        <!-- Nội quy chung -->
-                            <div class="col-12">
-                            <h5 class="mb-3 fw-bold">
-                                <i class="bi bi-clock me-2" style="color: #8bc34a;"></i>
-                                Nội quy chung
-                            </h5>
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <div class="d-flex align-items-center p-2 rounded rule-badge">
-                                        <i class="bi bi-clock me-2"></i>
-                                        <span class="rule-text">Giờ nhận phòng: 14:00 - Giờ trả phòng: 12:00</span>
-                                </div>
-                            </div>
-                                <div class="col-md-6">
-                                    <div class="d-flex align-items-center p-2 rounded rule-badge">
-                                        <i class="bi bi-volume-mute me-2"></i>
-                                        <span class="rule-text">Giữ yên lặng sau 22:00</span>
-                            </div>
-                        </div>
-                            </div>
-                        </div>
-
-                        <!-- Nội quy khác -->
+                        <!-- Tất cả nội quy -->
                         <div class="col-12">
                             <h5 class="mb-3 fw-bold">
-                                <i class="bi bi-info-circle me-2" style="color: #8bc34a;"></i>
-                                Nội quy khác
+                                <i class="bi bi-list-check me-2" style="color: #8bc34a;"></i>
+                                Tất cả nội quy
                             </h5>
                             <div class="row g-2">
                                 {% for rule in room.rules %}
                                     <div class="col-md-6">
                                         <div class="d-flex align-items-center p-2 rounded rule-badge">
-                                            <i class="{{ rule.icon or 'bi bi-info-circle' }} me-2"></i>
+                                            <i class="bi bi-check-circle me-2"></i>
                                             <span class="rule-text">{{ rule.name }}</span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
-                                {% endfor %}
-                </div>
-            </div>
-        </div>
+                    </div>
                 {% else %}
                     <div class="text-center py-5">
                         <i class="bi bi-shield-check text-muted fs-1 mb-3"></i>

@@ -109,7 +109,7 @@
                             <p class="card-text">{{ room.description|truncate(100) }}</p>
                             <p class="card-text">
                                 <small class="text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ room.city | location_name('city') }}, {{ room.district | location_name('district') }}
+                                    <i class="bi bi-geo-alt"></i> {{ room.city | format_city }}, {{ room.district | format_district }}
                                 </small>
                             </p>
                             <p class="card-text fw-bold">
