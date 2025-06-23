@@ -392,7 +392,7 @@ def profile():
             current_user.full_name = new_full_name
             current_user.email = new_email
 
-            # Handle avatar upload using new organized storage system
+            # Handle avatar upload
             if 'avatar' in request.files:
                 avatar = request.files['avatar']
                 print(f"Received file: {avatar.filename}")
@@ -407,55 +407,49 @@ def profile():
                         return redirect(url_for('admin.profile'))
                     
                     try:
-                        from app.utils.utils import save_user_image, delete_user_image, fix_image_orientation
-                        from PIL import Image
+                        # Ensure upload folder exists
+                        upload_folder = current_app.config['UPLOAD_FOLDER']
+                        print(f"Upload folder path: {upload_folder}")
+                        abs_upload_folder = os.path.abspath(upload_folder)
+                        print(f"Absolute upload folder path: {abs_upload_folder}")
+                        
+                        if not os.path.exists(abs_upload_folder):
+                            print(f"Creating upload folder: {abs_upload_folder}")
+                            os.makedirs(abs_upload_folder, exist_ok=True)
+                        
+                        # Generate secure filename and save file
+                        filename = secure_filename(avatar.filename)
+                        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                        filename = f"{timestamp}_{filename}"
+                        filepath = os.path.join(abs_upload_folder, filename)
+                        print(f"Saving file to: {filepath}")
+                        
+                        # Save file
+                        avatar.save(filepath)
+                        
+                        if not os.path.exists(filepath):
+                            raise Exception(f"File was not saved successfully to {filepath}")
+                        
+                        print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
                         
                         # Delete old avatar if exists
                         if current_user.avatar:
-                            delete_user_image(current_user.avatar)
+                            old_avatar_path = os.path.join(abs_upload_folder, current_user.avatar)
+                            if os.path.exists(old_avatar_path):
+                                os.remove(old_avatar_path)
+                                print(f"Deleted old avatar: {old_avatar_path}")
                         
-                        # Save avatar using new organized system: static/data/admin/{admin_id}/
-                        avatar_path = save_user_image(avatar, 'admin', current_user.id, prefix='avatar')
+                        # Update the avatar field in the user's profile
+                        current_user.avatar = filename
+                        print(f"Updated user avatar in database: {filename}")
                         
-                        if avatar_path:
-                            # Process image for optimal display
-                            try:
-                                full_path = os.path.join('static', avatar_path)
-                                
-                                # Fix image orientation based on EXIF data
-                                fix_image_orientation(full_path)
-                                
-                                # Resize and optimize image
-                                with Image.open(full_path) as img:
-                                    # Create square crop from center
-                                    width, height = img.size
-                                    if width != height:
-                                        min_size = min(width, height)
-                                        left = (width - min_size) // 2
-                                        top = (height - min_size) // 2
-                                        right = left + min_size
-                                        bottom = top + min_size
-                                        img = img.crop((left, top, right, bottom))
-                                    
-                                    # Resize to 200x200 for consistent display
-                                    img = img.resize((200, 200), Image.Resampling.LANCZOS)
-                                    img.save(full_path, optimize=True, quality=85)
-                            except Exception as e:
-                                print(f"Error processing avatar: {e}")
-                            
-                            # Update avatar path in database
-                            current_user.avatar = avatar_path
-                            print(f"Updated admin avatar in database: {avatar_path}")
-                            
-                            # Commit changes to database
-                            db.session.commit()
-                            flash("Avatar updated successfully!", "success")
-                        else:
-                            flash("Error saving avatar file", "danger")
-                            return redirect(url_for('admin.profile'))
+                        # Commit changes to database
+                        db.session.commit()
+                        flash("Avatar updated successfully!", "success")
                         
                     except Exception as e:
-                        print(f"Error during avatar upload: {str(e)}")
+                        print(f"Error during file operations: {str(e)}")
+                        print(f"Current working directory: {os.getcwd()}")
                         flash(f"Error saving avatar: {str(e)}", "danger")
                         return redirect(url_for('admin.profile'))
 
@@ -1026,6 +1020,378 @@ def weekly_statistics():
         return jsonify({'success': True, 'data': response_data}), 200
         
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# --- API THỐNG KÊ TĂNG TRƯỞNG NGƯỜI DÙNG ---
+@admin_bp.route('/api/user-growth-data/<period>')
+@login_required
+def get_user_growth_data(period):
+    """API endpoint to get user growth data for line chart"""
+    if not isinstance(current_user, Admin):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        from datetime import timedelta
+        
+        today = datetime.now().date()
+        
+        # Determine date range based on period
+        if period == 'week':
+            days = 7
+            date_format = 'weekday'
+        elif period == 'month':
+            days = 30
+            date_format = 'day'
+        elif period == 'year':
+            days = 365
+            date_format = 'month'
+        else:
+            return jsonify({'error': 'Invalid period'}), 400
+        
+        # Generate data for the specified period
+        owners_data = []
+        renters_data = []
+        labels = []
+        
+        for i in range(days - 1, -1, -1):
+            current_date = today - timedelta(days=i)
+            
+            if period == 'week':
+                # Count users created on this specific day
+                start_datetime = datetime.combine(current_date, datetime.min.time())
+                end_datetime = datetime.combine(current_date, datetime.max.time())
+                
+                owners_count = Owner.query.filter(
+                    Owner.created_at >= start_datetime,
+                    Owner.created_at <= end_datetime
+                ).count()
+                
+                renters_count = Renter.query.filter(
+                    Renter.created_at >= start_datetime,
+                    Renter.created_at <= end_datetime
+                ).count()
+                
+                # Format label for week view
+                label = current_date.strftime('%a %d')  # Mon 01
+                
+            elif period == 'month':
+                # Count users created on this specific day
+                start_datetime = datetime.combine(current_date, datetime.min.time())
+                end_datetime = datetime.combine(current_date, datetime.max.time())
+                
+                owners_count = Owner.query.filter(
+                    Owner.created_at >= start_datetime,
+                    Owner.created_at <= end_datetime
+                ).count()
+                
+                renters_count = Renter.query.filter(
+                    Renter.created_at >= start_datetime,
+                    Renter.created_at <= end_datetime
+                ).count()
+                
+                # Format label for month view (show every 3rd day to avoid crowding)
+                if i % 3 == 0 or i == 0:
+                    label = current_date.strftime('%d')
+                else:
+                    label = ''
+                    
+            else:  # year
+                # For year view, group by week and show weekly totals
+                week_start = current_date - timedelta(days=current_date.weekday())
+                week_end = week_start + timedelta(days=6)
+                
+                start_datetime = datetime.combine(week_start, datetime.min.time())
+                end_datetime = datetime.combine(week_end, datetime.max.time())
+                
+                owners_count = Owner.query.filter(
+                    Owner.created_at >= start_datetime,
+                    Owner.created_at <= end_datetime
+                ).count()
+                
+                renters_count = Renter.query.filter(
+                    Renter.created_at >= start_datetime,
+                    Renter.created_at <= end_datetime
+                ).count()
+                
+                # Format label for year view (show every 30th day)
+                if i % 30 == 0 or i == 0:
+                    label = current_date.strftime('%b')
+                else:
+                    label = ''
+            
+            owners_data.append(owners_count)
+            renters_data.append(renters_count)
+            labels.append(label)
+        
+        # For year view, we need to aggregate data by weeks to reduce data points
+        if period == 'year':
+            # Group data by weeks (every 7 days)
+            weekly_owners = []
+            weekly_renters = []
+            weekly_labels = []
+            
+            for i in range(0, len(owners_data), 7):
+                week_owners = sum(owners_data[i:i+7])
+                week_renters = sum(renters_data[i:i+7])
+                week_label = labels[i] if labels[i] else f'W{i//7 + 1}'
+                
+                weekly_owners.append(week_owners)
+                weekly_renters.append(week_renters)
+                weekly_labels.append(week_label)
+            
+            owners_data = weekly_owners
+            renters_data = weekly_renters
+            labels = weekly_labels
+        
+        response_data = {
+            'owners': owners_data,
+            'renters': renters_data,
+            'labels': labels,
+            'period': period
+        }
+        
+        return jsonify({'success': True, 'data': response_data}), 200
+        
+    except Exception as e:
+        print(f"Error getting user growth data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# --- API THỐNG KÊ LƯỢT ĐẶT PHÒNG THEO LOẠI ---
+@admin_bp.route('/api/booking-stats-data/<period>')
+@login_required
+def get_booking_stats_data(period):
+    """API endpoint to get booking statistics data by type (hourly/nightly)"""
+    if not isinstance(current_user, Admin):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        from datetime import timedelta
+        
+        today = datetime.now().date()
+        
+        # Determine date range based on period
+        if period == 'week':
+            days = 7
+            date_format = 'weekday'
+        elif period == 'month':
+            days = 30
+            date_format = 'day'
+        elif period == 'year':
+            days = 365
+            date_format = 'month'
+        else:
+            return jsonify({'error': 'Invalid period'}), 400
+        
+        # Generate data for the specified period
+        hourly_data = []
+        nightly_data = []
+        labels = []
+        
+        for i in range(days - 1, -1, -1):
+            current_date = today - timedelta(days=i)
+            
+            if period == 'week':
+                # Count bookings created on this specific day
+                start_datetime = datetime.combine(current_date, datetime.min.time())
+                end_datetime = datetime.combine(current_date, datetime.max.time())
+                
+                # Count hourly bookings (rooms with hourly pricing)
+                hourly_bookings = db.session.query(Booking).join(Room).filter(
+                    Booking.created_at >= start_datetime,
+                    Booking.created_at <= end_datetime,
+                    Room.price_per_hour.isnot(None),
+                    Room.price_per_hour > 0,
+                    Booking.status == 'completed'
+                ).count()
+                
+                # Count nightly bookings (rooms with nightly pricing)
+                nightly_bookings = db.session.query(Booking).join(Room).filter(
+                    Booking.created_at >= start_datetime,
+                    Booking.created_at <= end_datetime,
+                    Room.price_per_night.isnot(None),
+                    Room.price_per_night > 0,
+                    Booking.status == 'completed'
+                ).count()
+                
+                # Format label for week view
+                label = current_date.strftime('%a %d')  # Mon 01
+                
+            elif period == 'month':
+                # Count bookings created on this specific day
+                start_datetime = datetime.combine(current_date, datetime.min.time())
+                end_datetime = datetime.combine(current_date, datetime.max.time())
+                
+                # Count hourly bookings
+                hourly_bookings = db.session.query(Booking).join(Room).filter(
+                    Booking.created_at >= start_datetime,
+                    Booking.created_at <= end_datetime,
+                    Room.price_per_hour.isnot(None),
+                    Room.price_per_hour > 0,
+                    Booking.status == 'completed'
+                ).count()
+                
+                # Count nightly bookings
+                nightly_bookings = db.session.query(Booking).join(Room).filter(
+                    Booking.created_at >= start_datetime,
+                    Booking.created_at <= end_datetime,
+                    Room.price_per_night.isnot(None),
+                    Room.price_per_night > 0,
+                    Booking.status == 'completed'
+                ).count()
+                
+                # Format label for month view (show every 3rd day to avoid crowding)
+                if i % 3 == 0 or i == 0:
+                    label = current_date.strftime('%d')
+                else:
+                    label = ''
+                    
+            else:  # year
+                # For year view, group by week and show weekly totals
+                week_start = current_date - timedelta(days=current_date.weekday())
+                week_end = week_start + timedelta(days=6)
+                
+                start_datetime = datetime.combine(week_start, datetime.min.time())
+                end_datetime = datetime.combine(week_end, datetime.max.time())
+                
+                # Count hourly bookings for the week
+                hourly_bookings = db.session.query(Booking).join(Room).filter(
+                    Booking.created_at >= start_datetime,
+                    Booking.created_at <= end_datetime,
+                    Room.price_per_hour.isnot(None),
+                    Room.price_per_hour > 0,
+                    Booking.status == 'completed'
+                ).count()
+                
+                # Count nightly bookings for the week
+                nightly_bookings = db.session.query(Booking).join(Room).filter(
+                    Booking.created_at >= start_datetime,
+                    Booking.created_at <= end_datetime,
+                    Room.price_per_night.isnot(None),
+                    Room.price_per_night > 0,
+                    Booking.status == 'completed'
+                ).count()
+                
+                # Format label for year view (show every 30th day)
+                if i % 30 == 0 or i == 0:
+                    label = current_date.strftime('%b')
+                else:
+                    label = ''
+            
+            hourly_data.append(hourly_bookings)
+            nightly_data.append(nightly_bookings)
+            labels.append(label)
+        
+        # For year view, we need to aggregate data by weeks to reduce data points
+        if period == 'year':
+            # Group data by weeks (every 7 days)
+            weekly_hourly = []
+            weekly_nightly = []
+            weekly_labels = []
+            
+            for i in range(0, len(hourly_data), 7):
+                week_hourly = sum(hourly_data[i:i+7])
+                week_nightly = sum(nightly_data[i:i+7])
+                week_label = labels[i] if labels[i] else f'W{i//7 + 1}'
+                
+                weekly_hourly.append(week_hourly)
+                weekly_nightly.append(week_nightly)
+                weekly_labels.append(week_label)
+            
+            hourly_data = weekly_hourly
+            nightly_data = weekly_nightly
+            labels = weekly_labels
+        
+        response_data = {
+            'hourly': hourly_data,
+            'nightly': nightly_data,
+            'labels': labels,
+            'period': period
+        }
+        
+        return jsonify({'success': True, 'data': response_data}), 200
+        
+    except Exception as e:
+        print(f"Error getting booking stats data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# --- API THỐNG KÊ DOANH THU THEO THÁNG ---
+@admin_bp.route('/api/revenue-stats-data/<int:year>')
+@login_required
+def get_revenue_stats_data(year):
+    """API endpoint to get monthly revenue statistics data"""
+    if not isinstance(current_user, Admin):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        from datetime import date
+        from sqlalchemy import extract, func
+        
+        # Validate year - only allow 2025
+        if year != 2025:
+            return jsonify({'error': 'Only year 2025 is supported'}), 400
+        
+        # Get current date to determine which months to show
+        current_date = date.today()
+        current_year = current_date.year
+        current_month = current_date.month if current_year == 2025 else 12
+        
+        # Generate data for all 12 months
+        monthly_data = {
+            'hourly_revenue': [],
+            'nightly_revenue': [],
+            'total_revenue': [],
+            'labels': [],
+            'year': year
+        }
+        
+        # Always process all 12 months
+        for month in range(1, 13):
+            # Calculate revenue for hourly bookings in this month
+            hourly_revenue = db.session.query(
+                func.sum(Booking.total_price * 0.1)  # 10% commission
+            ).join(Room).filter(
+                extract('year', Booking.created_at) == year,
+                extract('month', Booking.created_at) == month,
+                Room.price_per_hour.isnot(None),
+                Room.price_per_hour > 0,
+                Booking.status == 'completed'
+            ).scalar() or 0
+            
+            # Calculate revenue for nightly bookings in this month
+            nightly_revenue = db.session.query(
+                func.sum(Booking.total_price * 0.1)  # 10% commission
+            ).join(Room).filter(
+                extract('year', Booking.created_at) == year,
+                extract('month', Booking.created_at) == month,
+                Room.price_per_night.isnot(None),
+                Room.price_per_night > 0,
+                Booking.status == 'completed'
+            ).scalar() or 0
+            
+            # Convert to float and ensure non-negative
+            hourly_revenue = max(float(hourly_revenue), 0)
+            nightly_revenue = max(float(nightly_revenue), 0)
+            total_revenue = hourly_revenue + nightly_revenue
+            
+            monthly_data['hourly_revenue'].append(hourly_revenue)
+            monthly_data['nightly_revenue'].append(nightly_revenue)
+            monthly_data['total_revenue'].append(total_revenue)
+            
+            # Add month label
+            month_names = [
+                'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+            ]
+            monthly_data['labels'].append(month_names[month - 1])
+        
+        # Add metadata about which months are shown
+        monthly_data['months_shown'] = current_month if current_year == 2025 else 12
+        monthly_data['current_month'] = current_month if current_year == 2025 else 12
+        
+        return jsonify({'success': True, 'data': monthly_data}), 200
+        
+    except Exception as e:
+        print(f"Error getting revenue stats data: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @admin_bp.route('/renter/<int:renter_id>/toggle-status', methods=['POST'])
