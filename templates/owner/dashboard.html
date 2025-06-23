@@ -261,6 +261,85 @@
         font-size: 1.25rem;
         color: #333;
     }
+
+    /* Delete Modal Styles */
+    .delete-modal .modal-content {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .delete-modal .modal-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .delete-modal .modal-title {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .delete-modal .form-label {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .delete-modal .form-control {
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        padding: 10px 12px;
+    }
+
+    .delete-modal .form-control:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .delete-modal .btn-danger {
+        background: #dc3545;
+        border-color: #dc3545;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-weight: 500;
+    }
+
+    .delete-modal .btn-secondary {
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-weight: 500;
+    }
+
+    /* Loading state */
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+    }
+
+    .btn-loading::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        margin: auto;
+        border: 2px solid transparent;
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: button-loading-spinner 1s ease infinite;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+
+    @keyframes button-loading-spinner {
+        from {
+            transform: rotate(0turn);
+        }
+        to {
+            transform: rotate(1turn);
+        }
+    }
 </style>
 {% endblock %}
 
@@ -291,7 +370,7 @@
             Lọc
         </button>
     </div>
-    <button class="add-room-btn" onclick="window.location.href='{{ url_for('owner.add_room') }}'">
+    <button class="add-room-btn" onclick="clearSessionAndAddRoom()">
         <i class="fas fa-plus"></i>
         Thêm phòng
     </button>
@@ -301,7 +380,7 @@
 {% if rooms %}
 <div class="homestay-list">
     {% for room in rooms %}
-    <div class="homestay-item">
+    <div class="homestay-item" data-room-id="{{ room.id }}">
         <div class="homestay-status">
             <span class="status-badge {{ 'status-active' if room.is_active else 'status-inactive' }}">
                 {{ 'Hoạt động' if room.is_active else 'Đã khóa' }}
@@ -323,7 +402,7 @@
                 {% endif %}
             </div>
             <div class="homestay-info">
-                <h3 onclick="window.location.href='{{ url_for('owner.room_detail', room_id=room.id) if url_for('owner.room_detail', room_id=room.id) else '#' }}'">{{ room.title }}</h3>
+                <h3 data-room-url="{{ url_for('owner.room_detail', room_id=room.id) }}" onclick="window.location.href=this.dataset.roomUrl">{{ room.title }}</h3>
                 <div class="homestay-details">
                     <div class="homestay-detail">
                         <i class="fas fa-map-marker-alt"></i>
@@ -332,10 +411,10 @@
                     <div class="homestay-detail">
                         <i class="fas fa-money-bill"></i>
                         <span>
-                            {% if room.price_per_hour %}
-                                {{ "{:,.0f}".format(room.price_per_hour) }}đ /giờ
-                            {% elif room.price_per_night %}
-                                {{ "{:,.0f}".format(room.price_per_night) }}đ /đêm
+                            {% if room.price_per_hour and room.price_per_hour > 0 %}
+                                {{ "{:,.0f}".format(room.price_per_hour * 1000) }}đ /giờ
+                            {% elif room.price_per_night and room.price_per_night > 0 %}
+                                {{ "{:,.0f}".format(room.price_per_night * 1000) }}đ /đêm
                             {% else %}
                                 Chưa có giá
                             {% endif %}
@@ -354,15 +433,18 @@
                 </div>
                 
                 <div class="homestay-actions">
-                    <a href="{{ url_for('owner.toggle_room_status', room_id=room.id) if url_for('owner.toggle_room_status', room_id=room.id) else '#' }}" 
+                    <a href="{{ url_for('owner.toggle_room_status', room_id=room.id) }}" 
                        class="btn-action btn-lock" 
-                       onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái phòng?')">
+                       data-action="{{ 'mở khóa' if not room.is_active else 'khóa' }}">
                         {{ 'Mở khóa' if not room.is_active else 'Khóa phòng' }}
                     </a>
-                    <a href="{{ url_for('owner.edit_room', room_id=room.id) if url_for('owner.edit_room', room_id=room.id) else '#' }}" class="btn-action btn-edit">
+                    <a href="{{ url_for('owner.edit_room', room_id=room.id) }}" class="btn-action btn-edit">
                         Sửa
                     </a>
-                    <button type="button" class="btn-action btn-delete" onclick="deleteRoom({{ room.id }}, '{{ room.title }}')">
+                    <button type="button" class="btn-action btn-delete" 
+                            data-room-id="{{ room.id }}" 
+                            data-room-title="{{ room.title|e }}"
+                            onclick="openDeleteModal(this.dataset.roomId, this.dataset.roomTitle)">
                         Xóa
                     </button>
                 </div>
@@ -379,13 +461,124 @@
 </div>
 {% endif %}
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade delete-modal" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteRoomModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Xác nhận xóa phòng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Bạn có chắc chắn muốn xóa phòng "<strong id="roomToDelete"></strong>" không?</p>
+                <p class="text-muted mb-3">Hành động này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan đến phòng này.</p>
+                
+                <form id="deleteRoomForm">
+                    <div class="mb-3">
+                        <label for="deleteReason" class="form-label">
+                            Lý do xóa phòng <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="deleteReason" name="delete_reason" rows="3" 
+                                  placeholder="Vui lòng nhập lý do xóa phòng (tối thiểu 10 ký tự)" 
+                                  required minlength="10"></textarea>
+                        <div class="form-text">Lý do này sẽ được lưu lại để theo dõi.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDeleteRoom()">
+                    <i class="fas fa-trash"></i>
+                    Xóa phòng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-function deleteRoom(roomId, roomTitle) {
-    if (confirm(`Bạn có chắc muốn xóa phòng "${roomTitle}"?`)) {
-        // Add delete logic here
-        console.log('Delete room:', roomId);
-        // You can add AJAX call here to delete the room
+let roomToDeleteId = null;
+
+// Function to clear session data and navigate to add room
+function clearSessionAndAddRoom() {
+    // Clear any existing room preview data from session
+    fetch('/owner/clear-room-session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Session cleared successfully');
+        // Navigate to add room page
+        window.location.href = '{{ url_for("owner.add_room") }}';
+    })
+    .catch(error => {
+        console.error('Error clearing session:', error);
+        // Navigate anyway even if clearing session fails
+        window.location.href = '{{ url_for("owner.add_room") }}';
+    });
+}
+
+function openDeleteModal(roomId, roomTitle) {
+    roomToDeleteId = roomId;
+    document.getElementById('roomToDelete').textContent = roomTitle;
+    document.getElementById('deleteReason').value = '';
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteRoomModal'));
+    modal.show();
+}
+
+function confirmDeleteRoom() {
+    const deleteReason = document.getElementById('deleteReason').value.trim();
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    // Validate reason
+    if (!deleteReason || deleteReason.length < 10) {
+        alert('Vui lòng nhập lý do xóa phòng (tối thiểu 10 ký tự)');
+        return;
     }
+    
+    // Show loading state
+    confirmBtn.classList.add('btn-loading');
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span style="opacity: 0;">Đang xóa...</span>';
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('delete_reason', deleteReason);
+    
+    // Send delete request
+    fetch(`/owner/delete-room/${roomToDeleteId}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Success - reload page to show updated list
+            window.location.reload();
+        } else {
+            throw new Error('Có lỗi xảy ra khi xóa phòng');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi xóa phòng. Vui lòng thử lại!');
+        
+        // Reset button state
+        confirmBtn.classList.remove('btn-loading');
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fas fa-trash"></i> Xóa phòng';
+    });
 }
 
 // Search functionality
@@ -401,6 +594,25 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
             item.style.display = 'flex';
         } else {
             item.style.display = 'none';
+        }
+    });
+});
+
+// Enhanced room status toggle with better feedback
+document.querySelectorAll('.btn-lock').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const action = this.dataset.action || 'thay đổi trạng thái';
+        
+        if (confirm('Bạn có chắc muốn ' + action + ' phòng này?')) {
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            this.style.pointerEvents = 'none';
+            
+            // Navigate to the toggle URL
+            window.location.href = this.href;
         }
     });
 });

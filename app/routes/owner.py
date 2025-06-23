@@ -8,11 +8,12 @@ import os
 import shutil
 from datetime import datetime, timedelta
 from PIL import Image
-import io
-import os
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
+from app.utils.utils import get_rank_info, get_location_name, get_user_upload_path, save_user_image, delete_user_image, generate_unique_filename
+import json
+from urllib.parse import quote
 
 
 owner_bp = Blueprint('owner', __name__, url_prefix='/owner')
@@ -66,17 +67,31 @@ def get_rules_and_amenities(room_data):
         
         # Lấy rules nếu có
         if room_data.get('rules'):
-            rule_ids = [int(id) for id in room_data['rules'] if id.isdigit()]
-            if rule_ids:
-                rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
-                result['rules'] = [rule.to_dict() for rule in rules]
+            # Check if rules are already dict objects or string IDs
+            if isinstance(room_data['rules'], list) and room_data['rules']:
+                if isinstance(room_data['rules'][0], dict):
+                    # Already processed as dict objects
+                    result['rules'] = room_data['rules']
+                else:
+                    # String IDs, need to lookup from database
+                    rule_ids = [int(id) for id in room_data['rules'] if str(id).isdigit()]
+                    if rule_ids:
+                        rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
+                        result['rules'] = [rule.to_dict() for rule in rules]
         
         # Lấy amenities nếu có
         if room_data.get('amenities'):
-            amenity_ids = [int(id) for id in room_data['amenities'] if id.isdigit()]
-            if amenity_ids:
-                amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
-                result['amenities'] = [amenity.to_dict() for amenity in amenities]
+            # Check if amenities are already dict objects or string IDs
+            if isinstance(room_data['amenities'], list) and room_data['amenities']:
+                if isinstance(room_data['amenities'][0], dict):
+                    # Already processed as dict objects
+                    result['amenities'] = room_data['amenities']
+                else:
+                    # String IDs, need to lookup from database
+                    amenity_ids = [int(id) for id in room_data['amenities'] if str(id).isdigit()]
+                    if amenity_ids:
+                        amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
+                        result['amenities'] = [amenity.to_dict() for amenity in amenities]
         
         print(f"✅ Rules & Amenities lookup: {len(result['rules'])} rules, {len(result['amenities'])} amenities")
         return result
@@ -125,18 +140,18 @@ def dashboard():
     return render_template('owner/dashboard.html', rooms=rooms)
 
 
-@owner_bp.route('/manage-rooms')
-@owner_bp.route('/manage-rooms/<int:homestay_id>')
-@owner_required
-def manage_rooms(homestay_id=None):
-    # Redirect to dashboard instead of showing manage_rooms page
-    return redirect(url_for('owner.dashboard'))
+
 
 
 @owner_bp.route('/add-room', methods=['GET', 'POST'])
 @owner_bp.route('/add-room/<int:homestay_id>', methods=['GET', 'POST'])
 @login_required
 def add_room(homestay_id=None):
+    # Clear session data if this is a fresh GET request (not coming from back-to-edit)
+    if request.method == 'GET' and not request.args.get('from_preview'):
+        session.pop('room_preview_data', None)
+        print("DEBUG: Cleared session data for fresh add room request")
+    
     if request.method == 'POST':
         try:
             # Lưu dữ liệu vào session để preview
@@ -240,14 +255,43 @@ def room_preview():
     # Merge rules và amenities vào room_data
     room_data.update(rules_amenities)
     
-    return render_template('owner/room_preview.html', room_data=room_data, location_names=location_names)
+    # Tạo map_address và encoded_map_address cho template
+    street = room_data.get('street', '')
+    ward_name = location_names.get('ward_name', '')
+    district_name = location_names.get('district_name', '')
+    province_name = location_names.get('province_name', '')
+    
+    map_address = f"{street}, {ward_name}, {district_name}, {province_name}, Vietnam" if street else f"{ward_name}, {district_name}, {province_name}, Vietnam"
+    encoded_map_address = quote(map_address)
+    
+    # Tạo danh sách ảnh để hiển thị
+    all_images = []
+    if room_data.get('main_image'):
+        all_images.append({
+            'image_path': room_data['main_image'],
+            'is_main': True
+        })
+    
+    if room_data.get('images'):
+        for img_path in room_data['images']:
+            all_images.append({
+                'image_path': img_path,
+                'is_main': False
+            })
+    
+    return render_template('owner/room_preview.html', 
+                         room_data=room_data, 
+                         location_names=location_names,
+                         map_address=map_address,
+                         encoded_map_address=encoded_map_address,
+                         all_images=all_images)
 
 @owner_bp.route('/back-to-edit')
 @login_required
 def back_to_edit():
     # Dữ liệu đã được lưu trong session từ lúc tạo preview
-    # Chỉ cần redirect về add_room, dữ liệu sẽ được load tự động
-    return redirect(url_for('owner.add_room'))
+    # Chỉ cần redirect về add_room với parameter để không xóa session
+    return redirect(url_for('owner.add_room', from_preview=1))
 
 @owner_bp.route('/clear-room-data')
 @login_required
@@ -268,21 +312,35 @@ def clear_room_session():
 @owner_bp.route('/confirm-room', methods=['POST'])
 @login_required
 def confirm_room():
+    print("=== CONFIRM ROOM FUNCTION CALLED ===")
+    print(f"Request method: {request.method}")
+    print(f"Current user: {current_user.id}")
+    
     # Lấy dữ liệu từ session
     room_data = session.get('room_preview_data')
+    print(f"Room data found in session: {room_data is not None}")
+    if room_data:
+        print(f"Room data keys: {list(room_data.keys())}")
+    
     if not room_data:
+        print("ERROR: No room data found in session")
         flash('Không tìm thấy dữ liệu phòng để tạo.', 'warning')
         return redirect(url_for('owner.add_room'))
     
     try:
         # Xử lý giá dựa theo rental type được chọn
-        price_per_hour = None
-        price_per_night = None
+        # Đặt giá trị mặc định để tránh NOT NULL constraint
+        price_per_hour = 0.0
+        price_per_night = 0.0
         
-        if room_data['selected_rental_type'] == 'hourly':
-            price_per_hour = float(room_data['hourly_price']) / 1000 if room_data['hourly_price'] else 0.0
-        elif room_data['selected_rental_type'] == 'nightly':
-            price_per_night = float(room_data['nightly_price']) / 1000 if room_data['nightly_price'] else 0.0
+        if room_data['selected_rental_type'] == 'hourly' and room_data.get('hourly_price'):
+            price_per_hour = float(room_data['hourly_price']) / 1000
+        elif room_data['selected_rental_type'] == 'nightly' and room_data.get('nightly_price'):
+            price_per_night = float(room_data['nightly_price']) / 1000
+            
+        print(f"DEBUG: Price per hour: {price_per_hour}")
+        print(f"DEBUG: Price per night: {price_per_night}")
+        print(f"DEBUG: Selected rental type: {room_data['selected_rental_type']}")
         
         # Map property_type từ English sang Vietnamese
         property_type_map = {
@@ -293,6 +351,7 @@ def confirm_room():
         property_type_vn = property_type_map.get(room_data.get('property_type'), 'Mô hình chuẩn')
         
         # Tạo room mới
+        print("DEBUG: Creating new room object...")
         new_room = Room(
             title=room_data['room_title'],
             room_type=property_type_vn,  # Lưu giá trị tiếng Việt
@@ -310,8 +369,11 @@ def confirm_room():
             owner_id=current_user.id
         )
         
+        print("DEBUG: Adding room to database...")
         db.session.add(new_room)
+        print("DEBUG: Committing room to database...")
         db.session.commit()
+        print(f"DEBUG: Room created successfully with ID: {new_room.id}")
         
         # Xử lý amenities và rules
         try:
@@ -337,91 +399,81 @@ def confirm_room():
             # Không làm fail việc tạo phòng nếu có lỗi
             pass
         
-        # Xử lý ảnh từ temp sang uploads
+        # Xử lý ảnh với cấu trúc mới: data/owner/{owner_id}/{room_id}/
         try:
-            # Tạo folder riêng cho phòng này
-            room_folder = os.path.join('static', 'uploads', f'room_{new_room.id}')
-            os.makedirs(room_folder, exist_ok=True)
-            print(f"DEBUG: Created room folder: {room_folder}")
-            print(f"DEBUG: Room data images: {room_data.get('images', [])}")
-            print(f"DEBUG: Room data main_image: {room_data.get('main_image')}")
+            print(f"DEBUG: Processing images for room {new_room.id}, owner {current_user.id}")
             
             # Xử lý ảnh chính (main_image)
             if room_data.get('main_image'):
                 main_image_path = room_data['main_image']
                 if main_image_path.startswith('/static/temp/'):
-                    # Đường dẫn đầy đủ đến file temp (bao gồm 'static/')
                     temp_file = main_image_path[1:]  # Bỏ '/' đầu để có đường dẫn tương đối
-                    print(f"DEBUG: Processing main image - original path: {main_image_path}")
                     print(f"DEBUG: Processing main image - temp_file: {temp_file}")
-                    print(f"DEBUG: Main image file exists: {os.path.exists(temp_file)}")
                     
                     if os.path.exists(temp_file):
-                        # Tạo tên file mới (đơn giản hơn vì đã có folder riêng)
+                        # Tạo đường dẫn mới với cấu trúc data/owner/{owner_id}/{room_id}/
+                        relative_path, absolute_path = get_user_upload_path('owner', current_user.id, new_room.id)
+                        
+                        # Tạo tên file mới
                         original_name = os.path.basename(temp_file).replace('temp_main_', '', 1)
-                        # Loại bỏ timestamp cũ từ tên file nếu có
                         if '_' in original_name:
                             parts = original_name.split('_', 1)
                             if len(parts) > 1:
                                 original_name = parts[1]
-                        new_filename = f"main_{original_name}"
+                        new_filename = generate_unique_filename(original_name, 'main')
                         
-                        # Copy từ temp sang room folder
-                        new_path = os.path.join(room_folder, new_filename)
+                        # Copy từ temp sang thư mục mới
+                        new_path = os.path.join(absolute_path, new_filename)
                         print(f"DEBUG: Copying main image from {temp_file} to {new_path}")
                         shutil.copy2(temp_file, new_path)
-                        print(f"DEBUG: Main image copied successfully")
                         
-                        # Tạo record trong database
+                        # Tạo record trong database với đường dẫn mới
                         main_img = RoomImage(
-                            image_path=f"uploads/room_{new_room.id}/{new_filename}",
+                            image_path=f"{relative_path}/{new_filename}",
                             room_id=new_room.id,
                             is_featured=True
                         )
                         db.session.add(main_img)
-                        print(f"DEBUG: Created main image record in DB: {main_img.image_path}")
+                        print(f"DEBUG: Created main image record: {main_img.image_path}")
                         
                         # Xóa file temp
                         os.remove(temp_file)
-                        print(f"DEBUG: Removed temp file: {temp_file}")
             
             # Xử lý các ảnh khác
             if room_data.get('images'):
                 for i, image_path in enumerate(room_data['images']):
                     if image_path.startswith('/static/temp/'):
-                        # Đường dẫn đầy đủ đến file temp (bao gồm 'static/')
-                        temp_file = image_path[1:]  # Bỏ '/' đầu để có đường dẫn tương đối
-                        print(f"DEBUG: Processing image {i+1} - original path: {image_path}")
+                        temp_file = image_path[1:]  # Bỏ '/' đầu
                         print(f"DEBUG: Processing image {i+1} - temp_file: {temp_file}")
-                        print(f"DEBUG: Image {i+1} file exists: {os.path.exists(temp_file)}")
                         
                         if os.path.exists(temp_file):
-                            # Tạo tên file mới (đơn giản hơn)
+                            # Tạo đường dẫn mới
+                            relative_path, absolute_path = get_user_upload_path('owner', current_user.id, new_room.id)
+                            
+                            # Tạo tên file mới
                             original_name = os.path.basename(temp_file).replace('temp_', '', 1)
-                            # Loại bỏ timestamp cũ từ tên file nếu có
                             if '_' in original_name:
                                 parts = original_name.split('_', 1)
                                 if len(parts) > 1:
                                     original_name = parts[1]
-                            new_filename = f"image_{i+1}_{original_name}"
+                            new_filename = generate_unique_filename(original_name, f'room_{i+1}')
                             
-                            # Copy từ temp sang room folder
-                            new_path = os.path.join(room_folder, new_filename)
+                            # Copy từ temp sang thư mục mới
+                            new_path = os.path.join(absolute_path, new_filename)
                             print(f"DEBUG: Copying image {i+1} from {temp_file} to {new_path}")
                             shutil.copy2(temp_file, new_path)
                             
                             # Tạo record trong database
                             img = RoomImage(
-                                image_path=f"uploads/room_{new_room.id}/{new_filename}",
+                                image_path=f"{relative_path}/{new_filename}",
                                 room_id=new_room.id,
                                 is_featured=False
                             )
                             db.session.add(img)
-                            print(f"DEBUG: Created image {i+1} record in DB: {img.image_path}")
+                            print(f"DEBUG: Created image {i+1} record: {img.image_path}")
                             
                             # Xóa file temp
                             os.remove(temp_file)
-                            print(f"DEBUG: Removed temp file: {temp_file}")
             
             db.session.commit()
             
@@ -433,10 +485,15 @@ def confirm_room():
         # Xóa dữ liệu preview khỏi session
         session.pop('room_preview_data', None)
         
+        print("DEBUG: Room creation completed successfully!")
         flash('Đã tạo phòng thành công!', 'success')
         return redirect(url_for('owner.dashboard', created='success'))
         
     except Exception as e:
+        print(f"ERROR: Exception in confirm_room: {str(e)}")
+        print(f"ERROR: Exception type: {type(e).__name__}")
+        import traceback
+        print(f"ERROR: Full traceback: {traceback.format_exc()}")
         db.session.rollback()
         flash(f'Có lỗi xảy ra khi tạo phòng: {str(e)}', 'danger')
         return redirect(url_for('owner.room_preview'))
@@ -465,110 +522,65 @@ def edit_room(room_id):
             room.room_type = property_type_vn
             room.city = request.form.get('province')  # Sử dụng city thay vì province
             room.district = request.form.get('district')
+
+            # Cập nhật địa chỉ
+            ward = request.form.get('ward')
+            street = request.form.get('street')
+            room.address = f"{street}, {ward}" if street and ward else street or ward or "Chưa cập nhật"
             
-            # Gộp ward và street thành address đầy đủ
-            street = request.form.get('street', '').strip()
-            ward = request.form.get('ward', '').strip()
-            
-            if street and ward:
-                room.address = f"{street}, {ward}"
-            elif street:
-                room.address = street
-            elif ward:
-                room.address = ward
-            else:
-                room.address = "Chưa cập nhật"
-            
-            # Cập nhật sức chứa
-            room.bathroom_count = int(request.form.get('bathroom_count', 1))
+            # Cập nhật thông tin phòng
             room.bed_count = int(request.form.get('bed_count', 1))
-            room.max_guests = int(request.form.get('guest_count', 1))  # Sử dụng max_guests thay vì guest_count
+            room.bathroom_count = int(request.form.get('bathroom_count', 1))
+            room.max_guests = int(request.form.get('guest_count', 1))
             
-            # Cập nhật hình thức cho thuê và giá
-            rental_type = request.form.get('rental_type')
-            # Bỏ rental_type vì Room model không có rental_type
+            # Cập nhật giá dựa theo rental type
+            rental_type = request.form.get('selected_rental_type')
+            room.price_per_hour = 0.0  # Set default values instead of None
+            room.price_per_night = 0.0
             
-            # Cập nhật giá theo hình thức cho thuê
             if rental_type == 'hourly':
                 hourly_price = request.form.get('hourly_price')
                 if hourly_price:
-                    # Loại bỏ định dạng, chuyển thành số và chia cho 1000 để cân bằng với display_price logic
-                    price_value = int(hourly_price.replace(',', '').replace('.', ''))
-                    room.price_per_hour = price_value / 1000
-                room.price_per_night = None
+                    room.price_per_hour = float(hourly_price) / 1000
             elif rental_type == 'nightly':
                 nightly_price = request.form.get('nightly_price')
                 if nightly_price:
-                    # Loại bỏ định dạng, chuyển thành số và chia cho 1000 để cân bằng với display_price logic
-                    price_value = int(nightly_price.replace(',', '').replace('.', ''))
-                    room.price_per_night = price_value / 1000
-                # Giữ price_per_hour để tương thích với logic hiện tại
-                if not room.price_per_hour:
-                    room.price_per_hour = 0
-            
-            # Cập nhật rules
-            room.rules.clear()
-            rule_ids = request.form.getlist('rules[]')
-            if rule_ids:
-                rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
-                room.rules.extend(rules)
+                    room.price_per_night = float(nightly_price) / 1000
             
             # Cập nhật amenities
-            room.amenities.clear()
-            amenity_ids = request.form.getlist('amenities[]')
-            if amenity_ids:
-                amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
-                room.amenities.extend(amenities)
+            try:
+                # Xóa amenities cũ
+                room.amenities.clear()
+                
+                # Thêm amenities mới
+                amenity_ids = request.form.getlist('amenities[]')
+                if amenity_ids:
+                    amenity_ids = [int(aid) for aid in amenity_ids if aid.isdigit()]
+                    if amenity_ids:
+                        amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
+                        room.amenities.extend(amenities)
+                        
+            except Exception as e:
+                print(f"Lỗi khi cập nhật amenities: {str(e)}")
             
-            # Xử lý ảnh mới nếu có
-            # Tạo thư mục upload cho room nếu chưa có
-            room_folder = os.path.join('static', 'uploads', f'room_{room_id}')
-            os.makedirs(room_folder, exist_ok=True)
+            # Cập nhật rules
+            try:
+                # Xóa rules cũ
+                room.rules.clear()
+                
+                # Thêm rules mới
+                rule_ids = request.form.getlist('rules[]')
+                if rule_ids:
+                    rule_ids = [int(rid) for rid in rule_ids if rid.isdigit()]
+                    if rule_ids:
+                        rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
+                        room.rules.extend(rules)
+                        
+            except Exception as e:
+                print(f"Lỗi khi cập nhật rules: {str(e)}")
             
-            # Xử lý ảnh bìa mới
-            if 'main_image' in request.files:
-                main_image = request.files['main_image']
-                if main_image and main_image.filename and allowed_file(main_image.filename):
-                    # Xóa ảnh bìa cũ
-                    old_main_image = RoomImage.query.filter_by(room_id=room_id, is_featured=True).first()
-                    if old_main_image:
-                        old_path = os.path.join('static', old_main_image.image_path)
-                        if os.path.exists(old_path):
-                            os.remove(old_path)
-                        db.session.delete(old_main_image)
-                    
-                    # Lưu ảnh bìa mới
-                    filename = secure_filename(main_image.filename)
-                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-                    filename = f"main_{timestamp}_{filename}"
-                    save_path = os.path.join(room_folder, filename)
-                    main_image.save(save_path)
-                    
-                    new_main_image = RoomImage(
-                        image_path=f"uploads/room_{room_id}/{filename}",
-                        room_id=room_id,
-                        is_featured=True
-                    )
-                    db.session.add(new_main_image)
-            
-            # Xử lý ảnh phụ mới
-            for key in request.files:
-                if key.startswith('images'):
-                    files = request.files.getlist(key)
-                    for file in files:
-                        if file and file.filename and allowed_file(file.filename):
-                            filename = secure_filename(file.filename)
-                            timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
-                            filename = f"{timestamp}_{filename}"
-                            save_path = os.path.join(room_folder, filename)
-                            file.save(save_path)
-                            
-                            new_image = RoomImage(
-                                image_path=f"uploads/room_{room_id}/{filename}",
-                                room_id=room_id,
-                                is_featured=False
-                            )
-                            db.session.add(new_image)
+            # Cập nhật thời gian sửa đổi
+            room.updated_at = datetime.utcnow()
             
             db.session.commit()
             flash('Đã cập nhật thông tin phòng thành công!', 'success')
@@ -576,7 +588,28 @@ def edit_room(room_id):
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Có lỗi xảy ra khi cập nhật: {str(e)}', 'danger')
+            flash(f'Có lỗi xảy ra khi cập nhật phòng: {str(e)}', 'danger')
+            # Prepare room_data for template on error
+            room_data = {
+                'id': room.id,
+                'title': room.title,
+                'description': room.description,
+                'property_type': get_property_type_en(room.room_type),
+                'province': room.city,
+                'district': room.district,
+                'ward': '',
+                'street': room.address,
+                'bathroom_count': room.bathroom_count,
+                'bed_count': room.bed_count,
+                'guest_count': room.max_guests,
+                'rental_type': 'nightly' if room.price_per_night and room.price_per_night > 0 else 'hourly',
+                'hourly_price': int(room.price_per_hour * 1000) if room.price_per_hour else 0,
+                'nightly_price': int(room.price_per_night * 1000) if room.price_per_night else None,
+                'rules': [{'id': rule.id, 'name': rule.name} for rule in room.rules],
+                'amenities': [{'id': amenity.id, 'name': amenity.name, 'icon': amenity.icon} for amenity in room.amenities],
+                'images': [{'id': img.id, 'path': img.image_path, 'is_featured': img.is_featured} for img in room.images]
+            }
+            return render_template('owner/edit_room.html', room=room_data)
     
     # Chuẩn bị dữ liệu cho template
     # Tách địa chỉ để hiển thị đúng phường và số nhà
@@ -975,15 +1008,12 @@ def add_room_images(room_id):
                     max_size = (800, 600)
                     img.thumbnail(max_size, Image.LANCZOS)
                     
-                    # Create a filename
-                    filename = secure_filename(img_file.filename)
-                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-                    filename = f"{timestamp}_{filename}"
+                    # Use new image storage structure
+                    relative_path, absolute_path = get_user_upload_path('owner', current_user.id, room.id)
                     
-                    # Save path
-                    upload_folder = os.path.join('static', 'uploads')
-                    os.makedirs(upload_folder, exist_ok=True)
-                    save_path = os.path.join(upload_folder, filename)
+                    # Generate unique filename
+                    filename = generate_unique_filename(img_file.filename, 'room')
+                    save_path = os.path.join(absolute_path, filename)
                     
                     # Save the processed image
                     img.save(save_path, quality=85, optimize=True)
@@ -992,7 +1022,7 @@ def add_room_images(room_id):
                     is_featured = not RoomImage.query.filter_by(room_id=room.id, is_featured=True).first()
                     
                     new_img = RoomImage(
-                        image_path=f"uploads/{filename}",
+                        image_path=f"{relative_path}/{filename}",
                         room_id=room.id,
                         is_featured=is_featured
                     )
@@ -1048,11 +1078,9 @@ def delete_room_image(image_id):
         flash('Bạn không có quyền xóa ảnh của phòng này.', 'danger')
         return redirect(url_for('owner.dashboard'))
     
-    # Delete the image file
+    # Delete the image file using new utility function
     if image.image_path:
-        file_path = os.path.join('static', image.image_path)
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        delete_user_image(image.image_path)
     
     # Check if this was the featured image
     was_featured = image.is_featured
@@ -1151,7 +1179,7 @@ def reject_booking(id):
 
 # @owner_bp.route('/mark-completed/<int:id>')
 # @owner_required
-# def mark_completed(id):
+
 #     booking = Booking.query.get_or_404(id)
     
 #     # Ensure this booking belongs to one of the current owner's homestays
@@ -1264,46 +1292,27 @@ def profile():
                 except ValueError:
                     pass  # Ignore invalid date
             
-            # Xử lý upload avatar
+            # Xử lý upload avatar với cấu trúc mới
             avatar_file = request.files.get('avatar')
             if avatar_file and avatar_file.filename and allowed_file(avatar_file.filename):
-                # Tạo tên file unique
-                filename = secure_filename(avatar_file.filename)
-                timestamp = str(int(datetime.now().timestamp()))
-                filename = f"avatar_{current_user.id}_{timestamp}_{filename}"
-                
-                # Đảm bảo upload folder tồn tại
-                upload_folder = current_app.config.get('UPLOAD_FOLDER')
-                if not upload_folder:
-                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-                    current_app.config['UPLOAD_FOLDER'] = upload_folder
-                
-                if not os.path.exists(upload_folder):
-                    os.makedirs(upload_folder)
-                
-                # Lưu file
-                upload_path = os.path.join(upload_folder, filename)
-                avatar_file.save(upload_path)
-                
-                # Resize image  
-                try:
-                    from PIL import Image
-                    with Image.open(upload_path) as img:
-                        img = img.resize((200, 200), Image.Resampling.LANCZOS)
-                        img.save(upload_path, optimize=True, quality=85)
-                except Exception as e:
-                    print(f"Error resizing image: {e}")
-                
                 # Xóa avatar cũ nếu có
                 if current_user.avatar:
-                    old_avatar_path = os.path.join(upload_folder, current_user.avatar)
-                    if os.path.exists(old_avatar_path):
-                        try:
-                            os.remove(old_avatar_path)
-                        except Exception as e:
-                            print(f"Error removing old avatar: {e}")
+                    delete_user_image(current_user.avatar)
                 
-                current_user.avatar = filename
+                # Lưu avatar mới với cấu trúc data/owner/{owner_id}/
+                avatar_path = save_user_image(avatar_file, 'owner', current_user.id, prefix='avatar')
+                
+                if avatar_path:
+                    # Resize image sau khi lưu
+                    try:
+                        full_path = os.path.join('static', avatar_path)
+                        with Image.open(full_path) as img:
+                            img = img.resize((200, 200), Image.Resampling.LANCZOS)
+                            img.save(full_path, optimize=True, quality=85)
+                    except Exception as e:
+                        print(f"Error resizing avatar: {e}")
+                    
+                    current_user.avatar = avatar_path
             
             db.session.commit()
             flash('Cập nhật thông tin thành công!', 'success')
@@ -1866,98 +1875,7 @@ def get_stats_data(period, chart_type='both'):
         print(f"Error getting stats data: {e}")
         return jsonify({'error': 'Internal server error'}), 500
 
-@owner_bp.route('/api/chart-data/custom/<start_date>/<end_date>')
-@owner_required
-def get_custom_chart_data(start_date, end_date):
-    """API endpoint to get chart data for custom date range"""
-    try:
-        # Parse dates
-        start = datetime.strptime(start_date, '%Y-%m-%d').date()
-        end = datetime.strptime(end_date, '%Y-%m-%d').date()
-        
-        # Get all rooms owned by current user
-        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
-        room_ids = [room.id for room in owner_rooms]
-        
-        if not room_ids:
-            return jsonify({'hourly': [], 'nightly': []})
-        
-        # Get completed bookings in date range
-        completed_bookings = Booking.query.filter(
-            Booking.room_id.in_(room_ids),
-            Booking.status == 'completed',
-            Booking.created_at >= start,
-            Booking.created_at <= end + timedelta(days=1)
-        ).all()
-        
-        # Calculate date range
-        date_diff = (end - start).days + 1
-        chart_data_hourly = []
-        chart_data_nightly = []
-        
-        if date_diff <= 7:
-            # Show daily data for short ranges
-            current_date = start
-            while current_date <= end:
-                day_bookings = [b for b in completed_bookings if b.created_at.date() == current_date]
-                
-                # Separate hourly and nightly bookings
-                hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
-                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
-                
-                hourly_revenue = sum(b.total_price for b in hourly_bookings)
-                nightly_revenue = sum(b.total_price for b in nightly_bookings)
-                
-                chart_data_hourly.append({
-                    'date': current_date.strftime('%d/%m'),
-                    'revenue': int(hourly_revenue)
-                })
-                
-                chart_data_nightly.append({
-                    'date': current_date.strftime('%d/%m'),
-                    'revenue': int(nightly_revenue)
-                })
-                
-                current_date += timedelta(days=1)
-        
-        else:
-            # Show weekly data for longer ranges
-            current_date = start
-            while current_date <= end:
-                week_end = min(current_date + timedelta(days=6), end)
-                
-                week_bookings = [b for b in completed_bookings 
-                               if current_date <= b.created_at.date() <= week_end]
-                
-                # Separate hourly and nightly bookings
-                hourly_bookings = [b for b in week_bookings if b.booking_type == 'hourly']
-                nightly_bookings = [b for b in week_bookings if b.booking_type == 'nightly']
-                
-                hourly_revenue = sum(b.total_price for b in hourly_bookings)
-                nightly_revenue = sum(b.total_price for b in nightly_bookings)
-                
-                week_label = f"{current_date.strftime('%d/%m')}-{week_end.strftime('%d/%m')}"
-                
-                chart_data_hourly.append({
-                    'date': week_label,
-                    'revenue': int(hourly_revenue)
-                })
-                
-                chart_data_nightly.append({
-                    'date': week_label,
-                    'revenue': int(nightly_revenue)
-                })
-                
-                current_date += timedelta(days=7)
-        
-        return jsonify({
-            'hourly': chart_data_hourly,
-            'nightly': chart_data_nightly
-        })
-        
-    except Exception as e:
-        print(f"Error getting custom chart data: {e}")
-        return jsonify({'hourly': [], 'nightly': []}), 500
+
 
 @owner_bp.route('/api/stats-data/custom')
 @owner_bp.route('/api/stats-data/custom/<chart_type>')

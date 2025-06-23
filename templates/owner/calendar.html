@@ -109,11 +109,15 @@
         flex: 1;
         overflow-x: hidden;
         display: flex;
+        position: relative;
     }
 
     .rooms-header {
         display: flex;
         min-width: max-content;
+        width: max-content;
+        position: relative;
+        left: 0;
     }
 
     .room-header {
@@ -126,6 +130,7 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        box-sizing: border-box;
     }
 
     .room-title {
@@ -197,6 +202,7 @@
         overflow-y: auto;
         background-color: white;
         height: 100%;
+        position: relative;
     }
 
     .rooms-timeline {
@@ -205,6 +211,7 @@
         width: max-content;
         height: 1440px; /* 24 hours × 60px - content height */
         position: relative;
+        left: 0;
     }
 
     .room-timeline {
@@ -214,6 +221,7 @@
         border-right: 1px solid #e0e0e0;
         background-color: white;
         height: 100%;
+        box-sizing: border-box;
     }
 
     .timeline-row {
@@ -540,6 +548,42 @@
         background-color: #f0f0f0;
     }
 
+    /* Scrollbar styling for better visual consistency */
+    .rooms-timeline-container::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .rooms-timeline-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .rooms-timeline-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    
+    .rooms-timeline-container::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    .rooms-header-container::-webkit-scrollbar {
+        height: 0px; /* Hide horizontal scrollbar on header */
+        background: transparent;
+    }
+    
+    /* Ensure consistent sub-pixel rendering */
+    .rooms-header, .rooms-timeline {
+        transform: translateZ(0); /* Force GPU acceleration for consistent rendering */
+        backface-visibility: hidden;
+    }
+    
+    .rooms-header-container, .rooms-timeline-container {
+        transform: translateZ(0);
+        will-change: scroll-position;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .admin-sidebar {
@@ -750,6 +794,20 @@
         // Sync scroll between headers and timeline
         syncScrolling();
         
+        // Ensure perfect alignment after everything is rendered
+        setTimeout(() => {
+            ensureAlignment();
+        }, 100);
+        
+        // Additional alignment checks to ensure pixel-perfect positioning
+        setTimeout(() => {
+            ensureAlignment();
+        }, 200);
+        
+        setTimeout(() => {
+            ensureAlignment();
+        }, 500);
+        
         // Debug: Check if all 24 hours are generated
         console.log('Hours array length:', hours.length);
         console.log('Time labels count:', document.querySelectorAll('.time-label').length);
@@ -771,27 +829,131 @@
         // Update current time indicator every minute
         setInterval(updateCurrentTimeIndicator, 60000);
     }
+    
+    function ensureAlignment() {
+        const roomsHeader = document.querySelector('.rooms-header');
+        const roomsTimeline = document.querySelector('.rooms-timeline');
+        const roomsHeaderContainer = document.querySelector('.rooms-header-container');
+        const roomsTimelineContainer = document.querySelector('.rooms-timeline-container');
+        
+        if (roomsHeader && roomsTimeline) {
+            // Get the exact computed widths including borders and padding
+            const timelineRect = roomsTimeline.getBoundingClientRect();
+            const timelineWidth = roomsTimeline.scrollWidth;
+            const timelineOffsetWidth = roomsTimeline.offsetWidth;
+            
+            // Force exact width matching with pixel precision
+            roomsHeader.style.width = `${timelineWidth}px`;
+            roomsHeader.style.minWidth = `${timelineWidth}px`;
+            roomsHeader.style.maxWidth = `${timelineWidth}px`;
+            
+            // Also ensure the container has proper overflow handling
+            roomsHeaderContainer.style.overflowX = 'hidden';
+            
+            // Force a reflow to ensure changes are applied
+            roomsHeader.offsetHeight;
+            
+            // Calculate and store safe scroll limits
+            if (roomsHeaderContainer && roomsTimelineContainer) {
+                const timelineMaxScroll = Math.max(0, roomsTimelineContainer.scrollWidth - roomsTimelineContainer.clientWidth);
+                const headerMaxScroll = Math.max(0, roomsHeaderContainer.scrollWidth - roomsHeaderContainer.clientWidth);
+                
+                // Store the safe scroll limit (use the smaller of the two to prevent overshoot)
+                const safeMaxScroll = Math.min(timelineMaxScroll, headerMaxScroll) - 3; // 3px buffer
+                roomsTimelineContainer.setAttribute('data-max-scroll', safeMaxScroll);
+                roomsHeaderContainer.setAttribute('data-max-scroll', safeMaxScroll);
+                
+                // Ensure scroll positions are synced with sub-pixel precision
+                const targetScrollLeft = Math.min(roomsTimelineContainer.scrollLeft, safeMaxScroll);
+                roomsHeaderContainer.scrollLeft = targetScrollLeft;
+                
+                // Double-check the sync worked
+                if (Math.abs(roomsHeaderContainer.scrollLeft - targetScrollLeft) > 1) {
+                    setTimeout(() => {
+                        roomsHeaderContainer.scrollLeft = targetScrollLeft;
+                    }, 10);
+                }
+            }
+            
+            console.log('Alignment ensured - Timeline width:', timelineWidth, 'Timeline offset:', timelineOffsetWidth, 'Header width:', roomsHeader.style.width);
+        }
+    }
 
     function syncScrolling() {
         const roomsHeaderContainer = document.querySelector('.rooms-header-container');
         const roomsTimelineContainer = document.querySelector('.rooms-timeline-container');
         const timeLabels = document.querySelector('.time-labels');
         const roomsHeader = document.querySelector('.rooms-header');
+        const roomsTimeline = document.querySelector('.rooms-timeline');
         const timeLabelsContent = document.querySelector('#timeLabels');
         
         if (roomsTimelineContainer) {
+            // Ensure both containers have the same width
+            if (roomsHeader && roomsTimeline) {
+                const updateWidths = () => {
+                    const timelineWidth = roomsTimeline.scrollWidth;
+                    roomsHeader.style.width = `${timelineWidth}px`;
+                    roomsHeader.style.minWidth = `${timelineWidth}px`;
+                };
+                
+                // Update widths initially and on resize
+                updateWidths();
+                window.addEventListener('resize', updateWidths);
+                
+                // Update widths when rooms are added/removed
+                const observer = new MutationObserver(() => {
+                    updateWidths();
+                    setTimeout(ensureAlignment, 50);
+                });
+                observer.observe(roomsTimeline, { childList: true, subtree: true });
+            }
+            
             // Only the main timeline container handles scrolling
             roomsTimelineContainer.addEventListener('scroll', function() {
-                // Sync horizontal scrolling with header
+                // Get the safe scroll limit from stored attribute, fallback to calculated
+                const safeMaxScroll = parseInt(this.getAttribute('data-max-scroll')) || 
+                                     Math.max(0, this.scrollWidth - this.clientWidth - 3);
+                let scrollLeft = this.scrollLeft;
+                
+                // Limit scroll to prevent overshoot at the end
+                if (scrollLeft > safeMaxScroll) {
+                    scrollLeft = safeMaxScroll;
+                    this.scrollLeft = scrollLeft;
+                }
+                
+                // Sync horizontal scrolling with header with exact positioning
                 if (roomsHeaderContainer) {
-                    roomsHeaderContainer.scrollLeft = this.scrollLeft;
+                    if (Math.abs(roomsHeaderContainer.scrollLeft - scrollLeft) > 0.5) {
+                        roomsHeaderContainer.scrollLeft = scrollLeft;
+                    }
                 }
                 
                 // Sync vertical scrolling with time labels by transforming them
                 if (timeLabelsContent) {
-                    timeLabelsContent.style.transform = `translateY(-${this.scrollTop}px)`;
+                    const scrollTop = this.scrollTop;
+                    timeLabelsContent.style.transform = `translateY(-${scrollTop}px)`;
                 }
             });
+            
+            // Also handle header scrolling to sync back to timeline (for touch devices)
+            if (roomsHeaderContainer) {
+                roomsHeaderContainer.addEventListener('scroll', function() {
+                    // Get the safe scroll limit from stored attribute, fallback to calculated
+                    const safeMaxScroll = parseInt(this.getAttribute('data-max-scroll')) || 
+                                         Math.max(0, roomsHeader.scrollWidth - this.clientWidth - 3);
+                    let scrollLeft = this.scrollLeft;
+                    
+                    // Limit scroll to prevent overshoot at the end
+                    if (scrollLeft > safeMaxScroll) {
+                        scrollLeft = safeMaxScroll;
+                        this.scrollLeft = scrollLeft;
+                    }
+                    
+                    if (Math.abs(roomsTimelineContainer.scrollLeft - scrollLeft) > 0.5) {
+                        roomsTimelineContainer.scrollLeft = scrollLeft;
+                    }
+                });
+            }
         }
     }
 
@@ -1117,6 +1279,9 @@
         
         updateCurrentTimeIndicator();
         generateCalendar(); // Update calendar selection
+        
+        // Ensure alignment after date change
+        setTimeout(ensureAlignment, 50);
     }
 
     async function goToNextDay() {
@@ -1130,6 +1295,9 @@
         
         updateCurrentTimeIndicator();
         generateCalendar(); // Update calendar selection
+        
+        // Ensure alignment after date change
+        setTimeout(ensureAlignment, 50);
     }
     
     function generateCalendar() {
@@ -1237,5 +1405,10 @@
     
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', initializeCalendar);
+    
+    // Handle window resize to maintain alignment
+    window.addEventListener('resize', function() {
+        setTimeout(ensureAlignment, 100);
+    });
 </script>
 {% endblock %}

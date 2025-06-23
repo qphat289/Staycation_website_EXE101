@@ -1093,9 +1093,9 @@
 </div>
 
 <script>
-// Include JavaScript from add_room.html for functionality
-let selectedAmenities = {{ room.amenities|tojson if room.amenities else '[]' }};
-let selectedRules = {{ room.rules|tojson if room.rules else '[]' }};
+// Include JavaScript from add_room.html for functionality  
+        let selectedAmenities = {{ (room.amenities if room else [])|tojson|safe }};
+        let selectedRules = {{ (room.rules if room else [])|tojson|safe }};
 let locationData = null;
 let amenitiesData = null;
 let rulesData = null;
@@ -1266,7 +1266,7 @@ function loadExistingRulesAndAmenities() {
     selectedAmenities = [];
     
     // Load amenities from room data
-    const roomAmenities = {{ room.amenities|tojson if room.amenities else '[]' }};
+            const roomAmenities = {{ (room.amenities if room else [])|tojson|safe }};
     if (roomAmenities && Array.isArray(roomAmenities)) {
         roomAmenities.forEach(amenity => {
             if (amenity.id && amenity.name) {
@@ -1277,11 +1277,10 @@ function loadExistingRulesAndAmenities() {
                 });
             }
         });
-        );
     }
     
     // Load rules from room data
-    const roomRules = {{ room.rules|tojson if room.rules else '[]' }};
+            const roomRules = {{ (room.rules if room else [])|tojson|safe }};
     if (roomRules && Array.isArray(roomRules)) {
         roomRules.forEach(rule => {
             if (rule.id && rule.name) {

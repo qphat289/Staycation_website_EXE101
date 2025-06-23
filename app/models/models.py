@@ -317,7 +317,7 @@ class Room(db.Model):
     max_guests = db.Column(db.Integer, nullable=False)
     
     # Giá và mô tả
-    price_per_hour = db.Column(db.Float, nullable=False)
+    price_per_hour = db.Column(db.Float, nullable=True)  # Allow NULL for rooms that only have nightly pricing
     price_per_night = db.Column(db.Float, nullable=True)  # Thêm giá theo đêm
     description = db.Column(db.Text, nullable=True)
     
@@ -363,6 +363,27 @@ class Room(db.Model):
 
     def __repr__(self):
         return f'<Room {self.title}>'
+    
+    def to_dict(self):
+        """Convert Room object to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'title': self.title,
+            'room_type': self.room_type,
+            'address': self.address,
+            'city': self.city,
+            'district': self.district,
+            'bed_count': self.bed_count,
+            'bathroom_count': self.bathroom_count,
+            'max_guests': self.max_guests,
+            'price_per_hour': self.price_per_hour,
+            'price_per_night': self.price_per_night,
+            'description': self.description,
+            'is_active': self.is_active,
+            'amenities': [amenity.to_dict() for amenity in self.amenities],
+            'rules': [rule.to_dict() for rule in self.rules],
+            'images': [{'id': img.id, 'image_path': img.image_path, 'is_featured': img.is_featured} for img in self.images]
+        }
 
 class RoomImage(db.Model):
     __tablename__ = 'room_image'

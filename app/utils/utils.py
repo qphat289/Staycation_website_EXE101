@@ -1,3 +1,8 @@
+import os
+import uuid
+from datetime import datetime
+from werkzeug.utils import secure_filename
+
 def get_rank_info(xp_current):
     # Define rank thresholds and names
     rank_thresholds = {
@@ -87,3 +92,211 @@ def get_location_name(location_code, location_type='city'):
         return district_mapping.get(location_code, location_code)
     
     return location_code
+
+def get_user_upload_path(user_type, user_id, room_id=None):
+    """
+    Generate upload path for user files
+    Structure: static/data/{user_type}/{user_id}/ or static/data/owner/{user_id}/{room_id}/
+    
+    Args:
+        user_type: 'owner' or 'renter'
+        user_id: ID of the user
+        room_id: ID of the room (only for owner room images)
+    
+    Returns:
+        tuple: (relative_path, absolute_path)
+    """
+    if user_type == 'owner' and room_id:
+        # For owner room images: data/owner/{owner_id}/{room_id}/
+        relative_path = f"data/owner/{user_id}/{room_id}"
+    elif user_type == 'owner':
+        # For owner profile images: data/owner/{owner_id}/
+        relative_path = f"data/owner/{user_id}"
+    else:
+        # For renter images: data/renter/{renter_id}/
+        relative_path = f"data/renter/{user_id}"
+    
+    # Create absolute path
+    absolute_path = os.path.join('static', relative_path)
+    
+    # Create directory if it doesn't exist
+    os.makedirs(absolute_path, exist_ok=True)
+    
+    return relative_path, absolute_path
+
+def generate_unique_filename(original_filename, prefix=""):
+    """
+    Generate a unique filename with timestamp and UUID
+    
+    Args:
+        original_filename: Original filename
+        prefix: Optional prefix for the filename
+    
+    Returns:
+        str: Unique filename
+    """
+    # Get file extension
+    _, ext = os.path.splitext(original_filename)
+    
+    # Generate timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Generate short UUID
+    unique_id = str(uuid.uuid4())[:8]
+    
+    # Create filename
+    if prefix:
+        filename = f"{prefix}_{timestamp}_{unique_id}{ext}"
+    else:
+        filename = f"{timestamp}_{unique_id}{ext}"
+    
+    return secure_filename(filename)
+
+def save_user_image(file, user_type, user_id, room_id=None, prefix=""):
+    """
+    Save user uploaded image to the organized folder structure
+    
+    Args:
+        file: Uploaded file object
+        user_type: 'owner' or 'renter'
+        user_id: ID of the user
+        room_id: ID of the room (only for owner room images)
+        prefix: Optional prefix for filename (e.g., 'avatar', 'main', 'room')
+    
+    Returns:
+        str: Relative path to saved image
+    """
+    if not file or not file.filename:
+        return None
+    
+    # Get upload path
+    relative_path, absolute_path = get_user_upload_path(user_type, user_id, room_id)
+    
+    # Generate unique filename
+    filename = generate_unique_filename(file.filename, prefix)
+    
+    # Full file path
+    file_path = os.path.join(absolute_path, filename)
+    
+    # Save file
+    file.save(file_path)
+    
+    # Return relative path for database storage
+    return f"{relative_path}/{filename}"
+
+def delete_user_image(image_path):
+    """
+    Delete user image file
+    
+    Args:
+        image_path: Relative path to the image
+    
+    Returns:
+        bool: True if deleted successfully, False otherwise
+    """
+    try:
+        if image_path:
+            full_path = os.path.join('static', image_path)
+            if os.path.exists(full_path):
+                os.remove(full_path)
+                return True
+    except Exception as e:
+        print(f"Error deleting image {image_path}: {e}")
+    return False
+
+def cleanup_old_temp_files():
+    """
+    Clean up old temporary files (older than 1 day)
+    """
+    try:
+        temp_dir = 'static/temp'
+        if os.path.exists(temp_dir):
+            current_time = datetime.now()
+            for filename in os.listdir(temp_dir):
+                file_path = os.path.join(temp_dir, filename)
+                if os.path.isfile(file_path):
+                    # Get file creation time
+                    file_time = datetime.fromtimestamp(os.path.getctime(file_path))
+                    # Delete if older than 1 day
+                    if (current_time - file_time).days > 1:
+                        os.remove(file_path)
+                        print(f"Deleted old temp file: {filename}")
+    except Exception as e:
+        print(f"Error cleaning up temp files: {e}")
+
+def migrate_old_images():
+    """
+    Migrate images from old structure to new structure
+    This should be run once to move existing images
+    """
+    try:
+        # Import here to avoid circular imports
+        from app.models.models import Owner, Renter, Room, RoomImage
+        from app import db
+        
+        print("Starting image migration...")
+        
+        # Migrate owner avatars
+        owners = Owner.query.all()
+        for owner in owners:
+            if owner.avatar and owner.avatar.startswith('uploads/'):
+                old_path = f"static/{owner.avatar}"
+                if os.path.exists(old_path):
+                    # Create new path
+                    new_relative_path, new_absolute_path = get_user_upload_path('owner', owner.id)
+                    new_filename = generate_unique_filename(os.path.basename(owner.avatar), 'avatar')
+                    new_full_path = os.path.join(new_absolute_path, new_filename)
+                    
+                    # Move file
+                    os.rename(old_path, new_full_path)
+                    
+                    # Update database
+                    owner.avatar = f"{new_relative_path}/{new_filename}"
+                    print(f"Migrated owner {owner.id} avatar: {owner.avatar}")
+        
+        # Migrate renter avatars
+        renters = Renter.query.all()
+        for renter in renters:
+            if renter.avatar and renter.avatar.startswith('uploads/'):
+                old_path = f"static/{renter.avatar}"
+                if os.path.exists(old_path):
+                    # Create new path
+                    new_relative_path, new_absolute_path = get_user_upload_path('renter', renter.id)
+                    new_filename = generate_unique_filename(os.path.basename(renter.avatar), 'avatar')
+                    new_full_path = os.path.join(new_absolute_path, new_filename)
+                    
+                    # Move file
+                    os.rename(old_path, new_full_path)
+                    
+                    # Update database
+                    renter.avatar = f"{new_relative_path}/{new_filename}"
+                    print(f"Migrated renter {renter.id} avatar: {renter.avatar}")
+        
+        # Migrate room images
+        room_images = RoomImage.query.all()
+        for room_image in room_images:
+            if room_image.image_path and room_image.image_path.startswith('uploads/'):
+                old_path = f"static/{room_image.image_path}"
+                if os.path.exists(old_path):
+                    room = room_image.room
+                    if room:
+                        # Create new path
+                        new_relative_path, new_absolute_path = get_user_upload_path('owner', room.owner_id, room.id)
+                        prefix = 'main' if room_image.is_featured else 'room'
+                        new_filename = generate_unique_filename(os.path.basename(room_image.image_path), prefix)
+                        new_full_path = os.path.join(new_absolute_path, new_filename)
+                        
+                        # Move file
+                        os.rename(old_path, new_full_path)
+                        
+                        # Update database
+                        room_image.image_path = f"{new_relative_path}/{new_filename}"
+                        print(f"Migrated room {room.id} image: {room_image.image_path}")
+        
+        # Commit all changes
+        db.session.commit()
+        print("Image migration completed successfully!")
+        
+    except Exception as e:
+        print(f"Error during image migration: {e}")
+        db.session.rollback()

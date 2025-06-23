@@ -179,10 +179,15 @@ def home():
     ).filter_by(is_active=True).limit(6).all()
     return render_template('home.html', homestays=homestays)
 
-# Route to handle image uploads
+# Route to handle image uploads (legacy)
 @app.route('/static/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER']), filename)
+    return send_from_directory(os.path.join(app.config.get('UPLOAD_FOLDER', 'static/uploads')), filename)
+
+# Route to handle new data directory structure
+@app.route('/static/data/<path:filepath>')
+def data_file(filepath):
+    return send_from_directory(os.path.join('static', 'data'), filepath)
 
 if __name__ == '__main__':
     app.run(debug=True)

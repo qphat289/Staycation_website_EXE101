@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user, logout_user
-from app.models.models import Booking, Review, db, Room, RoomImage, Admin, Owner, Renter, Amenity
+from app.models.models import Booking, Review, db, Room, RoomImage, Admin, Owner, Renter, Amenity, AmenityCategory
 from datetime import datetime, timedelta
 from PIL import Image
 import io
 import os
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
+from app.utils.utils import get_rank_info, get_location_name, save_user_image, delete_user_image
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
@@ -334,45 +335,27 @@ def profile():
                 except ValueError:
                     pass  # Ignore invalid date
             
-            # Xử lý upload avatar
+            # Xử lý upload avatar với cấu trúc mới
             avatar_file = request.files.get('avatar')
             if avatar_file and avatar_file.filename and allowed_file(avatar_file.filename):
-                # Tạo tên file unique
-                filename = secure_filename(avatar_file.filename)
-                timestamp = str(int(datetime.now().timestamp()))
-                filename = f"avatar_{current_user.id}_{timestamp}_{filename}"
-                
-                # Đảm bảo upload folder tồn tại
-                upload_folder = current_app.config.get('UPLOAD_FOLDER')
-                if not upload_folder:
-                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-                    current_app.config['UPLOAD_FOLDER'] = upload_folder
-                
-                if not os.path.exists(upload_folder):
-                    os.makedirs(upload_folder)
-                
-                # Lưu file
-                upload_path = os.path.join(upload_folder, filename)
-                avatar_file.save(upload_path)
-                
-                # Resize image
-                try:
-                    with Image.open(upload_path) as img:
-                        img = img.resize((200, 200), Image.Resampling.LANCZOS)
-                        img.save(upload_path, optimize=True, quality=85)
-                except Exception as e:
-                    print(f"Error resizing image: {e}")
-                
                 # Xóa avatar cũ nếu có
                 if current_user.avatar:
-                    old_avatar_path = os.path.join(upload_folder, current_user.avatar)
-                    if os.path.exists(old_avatar_path):
-                        try:
-                            os.remove(old_avatar_path)
-                        except Exception as e:
-                            print(f"Error removing old avatar: {e}")
+                    delete_user_image(current_user.avatar)
                 
-                current_user.avatar = filename
+                # Lưu avatar mới với cấu trúc data/renter/{renter_id}/
+                avatar_path = save_user_image(avatar_file, 'renter', current_user.id, prefix='avatar')
+                
+                if avatar_path:
+                    # Resize image sau khi lưu
+                    try:
+                        full_path = os.path.join('static', avatar_path)
+                        with Image.open(full_path) as img:
+                            img = img.resize((200, 200), Image.Resampling.LANCZOS)
+                            img.save(full_path, optimize=True, quality=85)
+                    except Exception as e:
+                        print(f"Error resizing avatar: {e}")
+                    
+                    current_user.avatar = avatar_path
             
             db.session.commit()
             flash('Cập nhật thông tin thành công!', 'success')

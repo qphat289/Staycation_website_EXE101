@@ -1020,7 +1020,7 @@ document.addEventListener('DOMContentLoaded', function() {
     mapbox.addControl(new mapboxgl.FullscreenControl(), 'top-right');
     
     // Geocoding với Mapbox Geocoding API (chính xác hơn)
-    const address = "{{ map_address }}";
+    const address = {{ map_address|tojson|safe }};
     const geocodeUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(address) + '.json?access_token=' + mapboxgl.accessToken + '&country=vn&limit=1&types=address,poi';
     
     fetch(geocodeUrl)
@@ -1058,19 +1058,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         offset: 30,
                         closeButton: true,
                         closeOnClick: false
-                    }).setHTML(`
-                        <div style="text-align: center; padding: 15px; min-width: 200px;">
-                            <h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">
-                                {{ room_data.title or room_data.street }}
-                            </h6>
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
-                   target="_blank" 
-                               style="color: #007bff; text-decoration: none; font-size: 14px;">
-                                <i class="fas fa-external-link-alt" style="margin-right: 5px;"></i>
-                                Xem trên Google Maps
-                </a>
-            </div>
-                    `))
+                    }).setHTML(
+                        '<div style="text-align: center; padding: 15px; min-width: 200px;">' +
+                            '<h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">' +
+                                {{ (room_data.room_title or room_data.street)|tojson|safe }} +
+                            '</h6>' +
+                            '<a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" ' +
+                               'target="_blank" ' +
+                               'style="color: #007bff; text-decoration: none; font-size: 14px;">' +
+                                '<i class="fas fa-external-link-alt" style="margin-right: 5px;"></i>' +
+                                'Xem trên Google Maps' +
+                            '</a>' +
+                        '</div>'
+                    ))
                     .addTo(mapbox);
                 
                 // Mở popup ngay lập tức
@@ -1104,19 +1104,19 @@ document.addEventListener('DOMContentLoaded', function() {
             new mapboxgl.Marker(markerEl)
                 .setLngLat(fallbackCoords)
                 .setPopup(new mapboxgl.Popup({ offset: 30 })
-                    .setHTML(`
-                        <div style="text-align: center; padding: 15px; min-width: 200px;">
-                            <h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">
-                                {{ room_data.title or room_data.street }}
-                            </h6>
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
-                               target="_blank" 
-                               style="color: #007bff; text-decoration: none; font-size: 14px;">
-                                <i class="fas fa-external-link-alt" style="margin-right: 5px;"></i>
-                                Xem trên Google Maps
-                            </a>
-                        </div>
-                    `))
+                    .setHTML(
+                        '<div style="text-align: center; padding: 15px; min-width: 200px;">' +
+                            '<h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">' +
+                                {{ (room_data.room_title or room_data.street)|tojson|safe }} +
+                            '</h6>' +
+                            '<a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" ' +
+                               'target="_blank" ' +
+                               'style="color: #007bff; text-decoration: none; font-size: 14px;">' +
+                                '<i class="fas fa-external-link-alt" style="margin-right: 5px;"></i>' +
+                                'Xem trên Google Maps' +
+                            '</a>' +
+                        '</div>'
+                    ))
                 .addTo(mapbox);
         });
     
@@ -1127,10 +1127,77 @@ document.addEventListener('DOMContentLoaded', function() {
             0%, 20%, 60%, 100% { transform: translateY(0) rotate(-45deg); }
             40% { transform: translateY(-20px) rotate(-45deg); }
             80% { transform: translateY(-10px) rotate(-45deg); }
-}
+        }
     `;
     document.head.appendChild(style);
 });
+
+// Image gallery functions
+let currentImageIndex = 0;
+const allImages = {{ all_images|tojson|safe if all_images else '[]' }};
+
+function prevImage() {
+    if (allImages.length > 1) {
+        currentImageIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
+        updateImage();
+    }
+}
+
+function nextImage() {
+    if (allImages.length > 1) {
+        currentImageIndex = (currentImageIndex + 1) % allImages.length;
+        updateImage();
+    }
+}
+
+function currentSlide(index) {
+    currentImageIndex = index;
+    updateImage();
+}
+
+function updateImage() {
+    const imageElement = document.querySelector('.preview-image img');
+    const dots = document.querySelectorAll('.dot');
+    
+    if (imageElement && allImages[currentImageIndex]) {
+        imageElement.src = allImages[currentImageIndex].image_path;
+    }
+    
+    // Update dots
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentImageIndex);
+    });
+}
+
+// Modal functions
+function showAllRulesModal() {
+    document.getElementById('allRulesModal').style.display = 'block';
+}
+
+function closeAllRulesModal() {
+    document.getElementById('allRulesModal').style.display = 'none';
+}
+
+function showAllAmenitiesModal() {
+    document.getElementById('allAmenitiesModal').style.display = 'block';
+}
+
+function closeAllAmenitiesModal() {
+    document.getElementById('allAmenitiesModal').style.display = 'none';
+}
+
+function closeImageModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    document.getElementById('imageModal').style.display = 'none';
+}
+
+function prevImageInModal() {
+    // Modal image navigation
+}
+
+function nextImageInModal() {
+    // Modal image navigation
+}
 </script>
 {% endblock %}
 
