@@ -827,7 +827,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                         <!-- Location -->
                         <div class="location-info mb-3">
                             <i class="bi bi-geo-alt me-1 text-muted"></i>
-                            <span class="text-muted">{{ homestay.district | location_name('district') }}, {{ homestay.city | location_name('city') }}</span>
+                            <span class="text-muted">{{ homestay.district | format_district }}, {{ homestay.city | format_city }}</span>
                         </div>
                         
                         <!-- Price -->

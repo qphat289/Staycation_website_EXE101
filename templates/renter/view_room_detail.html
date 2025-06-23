@@ -4,8 +4,36 @@
 {% block content %}
 <style>
     .room-detail-container {
-        margin-top: -50px !important;
+        margin-top: -40px !important;
         background: #f8f9fa;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Ngăn scroll tự động khi load trang */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Đảm bảo không có element nào tự động focus/scroll */
+    *:focus {
+        scroll-margin-top: 80px;
+    }
+    
+    /* Ngăn map container gây scroll */
+    #map {
+        scroll-margin: 0 !important;
+    }
+    
+    /* Ngăn scroll tạm thời khi load trang */
+    .prevent-scroll {
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
     }
     
     .section-card {
@@ -387,21 +415,7 @@
                 <h1 class="h2 fw-bold mb-2">{{ room.homestay.business_name}}</h1>
                 <p class="address-text mb-0">
                     <i class="bi bi-geo-alt"></i>
-                    {{ room.address }}, 
-                    {% if room.district.lower().startswith('quan') %}
-                        {{ room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') }}
-                    {% else %}
-                        {{ room.district }}
-                    {% endif %}, 
-                    {% if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' %}
-                        Thành phố Hồ Chí Minh
-                    {% elif room.city.lower() == 'hn' or room.city.lower() == 'hanoi' %}
-                        Thành phố Hà Nội
-                    {% elif room.city.lower() == 'dn' or room.city.lower() == 'da nang' %}
-                        Thành phố Đà Nẵng
-                    {% else %}
-                        {{ room.city }}
-                    {% endif %}
+                    {{ format_full_address(room.address, None, room.district, room.city) }}
                 </p>
             </div>
             <div class="d-flex gap-2">
@@ -565,8 +579,9 @@
             Địa điểm
         </h2>
                 <div class="bg-light rounded-3 overflow-hidden position-relative" style="height: 400px;">
-                    {% set district_full = room.district|title|replace('Quan', 'Quận ')|replace('Quận quan', 'Quận ') if room.district.lower().startswith('quan') else room.district %}
-                    {% set city_full = 'Thành phố Hồ Chí Minh' if room.city.lower() == 'hcm' or room.city.lower() == 'ho chi minh' else ('Thành phố Hà Nội' if room.city.lower() == 'hn' or room.city.lower() == 'hanoi' else ('Thành phố Đà Nẵng' if room.city.lower() == 'dn' or room.city.lower() == 'da nang' else room.city)) %}
+                    {% set district_full = room.district|format_district %}
+                    {% set city_full = room.city|format_city %}
+                    {% set formatted_address = format_full_address(room.address, None, room.district, room.city) %}
                     {% set map_address = room.address + ', ' + district_full + ', ' + city_full + ', Vietnam' %}
                     {% set encoded_map_address = map_address|urlencode %}
                     
@@ -587,9 +602,69 @@
                 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
                 
                 <script>
-                // Mapbox access token của bạn
-                mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
-        
+                // Đảm bảo trang ở đầu khi load - FORCE SCROLL TO TOP
+                function forceScrollToTop() {
+                    window.scrollTo(0, 0);
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                    if (window.pageYOffset !== 0) {
+                        setTimeout(forceScrollToTop, 10);
+                    }
+                }
+                
+                // Ngăn scroll ngay lập tức
+                document.body.classList.add('prevent-scroll');
+                document.documentElement.classList.add('prevent-scroll');
+                
+                // Ngay lập tức
+                forceScrollToTop();
+                
+                // Khi DOM ready
+                document.addEventListener('DOMContentLoaded', function() {
+                    forceScrollToTop();
+                    // Cho phép scroll lại sau khi đã reset
+                    setTimeout(function() {
+                        document.body.classList.remove('prevent-scroll');
+                        document.documentElement.classList.remove('prevent-scroll');
+                    }, 100);
+                });
+                
+                // Khi window load xong
+                window.addEventListener('load', function() {
+                    forceScrollToTop();
+                });
+                
+                                // Ngăn scroll events trong 1 giây đầu
+                var preventScrollTimeout = setTimeout(function() {
+                    // Cho phép scroll events trở lại
+                }, 1000);
+                
+                function preventScrollEvent(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    forceScrollToTop();
+                    return false;
+                }
+                
+                // Thêm event listeners để ngăn scroll
+                window.addEventListener('scroll', preventScrollEvent, { passive: false });
+                document.addEventListener('scroll', preventScrollEvent, { passive: false });
+                
+                // Xóa event listeners sau 1 giây
+                setTimeout(function() {
+                    window.removeEventListener('scroll', preventScrollEvent);
+                    document.removeEventListener('scroll', preventScrollEvent);
+                }, 1000);
+                
+                // Delay khởi tạo map để đảm bảo scroll reset hoàn thành
+                setTimeout(function() {
+                    initializeMap();
+                }, 800);
+                
+                function initializeMap() {
+                    // Mapbox access token của bạn
+                    mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
+
         // Custom style cho popup
         const customPopupStyle = `
             .mapboxgl-popup {
@@ -711,12 +786,12 @@
                             var coordinates = data.features[0].center; // [lng, lat]
                             var placeName = data.features[0].place_name;
                             
-                            // Fly to location với animation mượt mà
+                            // Fly to location với animation mượt mà (không scroll trang)
                             map.flyTo({
                                 center: coordinates,
                                 zoom: 15,
-                                duration: 2500,
-                                essential: true
+                                duration: 1500,
+                                essential: false
                             });
                             
                             // Tạo custom marker element
@@ -747,7 +822,7 @@
                                 <div class="custom-popup-content">
                                     <div class="custom-popup-address">
                                         <i class="bi bi-geo-alt me-1"></i>
-                                        {{ room.address }}, {{ district_full }}, {{ city_full }}
+                                        {{ formatted_address }}
                                     </div>
                                     <div class="custom-popup-actions">
                                         <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
@@ -771,10 +846,10 @@
                             // Mở popup ngay lập tức
                             marker.getPopup().addTo(map);
                             
-                            // Add some animation to marker
+                            // Add some animation to marker (sau khi map load xong)
                             setTimeout(() => {
                                 markerEl.style.animation = 'bounce 1s ease-in-out';
-                            }, 2500);
+                            }, 1500);
                         }
                     })
                     .catch(error => {
@@ -816,7 +891,7 @@
                                 <div class="custom-popup-content">
                                     <div class="custom-popup-address">
                                         <i class="bi bi-geo-alt me-1"></i>
-                                        {{ room.address }}, {{ district_full }}, {{ city_full }}
+                                        {{ formatted_address }}
                                     </div>
                                     <div class="custom-popup-actions">
                                         <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
@@ -848,6 +923,7 @@
                     }
                 `;
                 document.head.appendChild(style);
+                } // Đóng function initializeMap()
                 </script>
     </div>
 </div>

@@ -595,7 +595,7 @@ nav.navbar {
                             {% for room in owner.rooms %}
                             <tr>
                                 <td>{{ room.name }}</td>
-                                <td>{{ room.address }}</td>
+                                <td>{{ format_full_address(room.address, None, room.district, room.city) }}</td>
                                 <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VNĐ</td>
                                 <td>
                                     <span class="badge {% if room.is_available %}badge-success{% else %}badge-inactive{% endif %}">

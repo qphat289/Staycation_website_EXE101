@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from config.config import Config
 from app.models.models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity, RoomImage
 from app.utils.utils import get_rank_info, get_location_name
+from app.utils.address_formatter import format_district, format_city, format_full_address
 from dotenv import load_dotenv
 import json
 from datetime import datetime, timedelta
@@ -28,6 +29,21 @@ login_manager.login_view = 'login'
 
 app.jinja_env.filters['rank_info'] = get_rank_info
 app.jinja_env.filters['location_name'] = get_location_name
+
+# Add address formatting filters
+@app.template_filter('format_district')
+def format_district_filter(district):
+    return format_district(district)
+
+@app.template_filter('format_city') 
+def format_city_filter(city):
+    return format_city(city)
+
+# Add functions to template global context
+@app.template_global()
+def format_full_address(street=None, ward=None, district=None, city=None):
+    from app.utils.address_formatter import format_full_address as formatter
+    return formatter(street, ward, district, city)
 
 # Add custom filter
 @app.template_filter('from_json')
@@ -60,33 +76,33 @@ def load_user(user_id):
     
     # Try to load based on session role first
     if user_role == 'admin':
-        admin = Admin.query.get(int(user_id))
+        admin = db.session.get(Admin, int(user_id))
         if admin:
             print(f"Loaded admin: {admin.username}")
             return admin
     elif user_role == 'owner':
-        owner = Owner.query.get(int(user_id))
+        owner = db.session.get(Owner, int(user_id))
         if owner:
             print(f"Loaded owner: {owner.username}")
             return owner
     elif user_role == 'renter':
-        renter = Renter.query.get(int(user_id))
+        renter = db.session.get(Renter, int(user_id))
         if renter:
             print(f"Loaded renter: {renter.username}")
             return renter
     
     # Fallback: try to load from each user model if session role not available
-    admin = Admin.query.get(int(user_id))
+    admin = db.session.get(Admin, int(user_id))
     if admin:
         print(f"Fallback loaded admin: {admin.username}")
         return admin
     
-    owner = Owner.query.get(int(user_id))
+    owner = db.session.get(Owner, int(user_id))
     if owner:
         print(f"Fallback loaded owner: {owner.username}")
         return owner
     
-    renter = Renter.query.get(int(user_id))
+    renter = db.session.get(Renter, int(user_id))
     if renter:
         print(f"Fallback loaded renter: {renter.username}")
         return renter
