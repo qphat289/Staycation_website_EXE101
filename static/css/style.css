@@ -1,14 +1,14 @@
 :root {
-    --primary-color: #C3D500; /* Màu chủ đạo */
-    --primary-light: #D0E508; /* Màu nhạt hơn */
+    --primary-color: #9ed649; /* Màu chủ đạo */
+    --primary-light: #b2e254; /* Màu nhạt hơn */
     --primary-dark: #18282C;  /* Màu đậm hơn */
     --primary-bg: #F2F49F;    /* Nền sáng */
     --primary-bg-light: #f8fdf4; /* Nền sáng hơn */
     --primary-black: #181D1D; /* Đen chủ đạo */
-    --accent-1: #D1E518;
-    --accent-2: #C2D500;
-    --accent-3: #B4C500;
-    --accent-4: #A5B500;
+    --accent-1: #b2e254;
+    --accent-2: #9ed649;
+    --accent-3: #8bc441;
+    --accent-4: #7cb342;
     --gray-1: #E5E9FA;
     --gray-2: #D9E3C7;
     --gray-3: #CCDBA4;

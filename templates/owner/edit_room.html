@@ -873,13 +873,13 @@
                     <h3 class="section-title">Thông tin cơ bản</h3>
                     
                     <div class="form-group">
-                        <label class="form-label">Tiêu đề phòng</label>
+                        <label class="form-label">Tên Homestay</label>
                         <input type="text" name="room_title" class="form-input" 
                                value="{{ room.title or '' }}" required>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Mô tả phòng</label>
+                        <label class="form-label">Mô tả Homestay</label>
                         <textarea name="room_description" class="textarea" required>{{ room.description or '' }}</textarea>
                     </div>
                     
@@ -1167,7 +1167,7 @@ function decreaseCount(type) {
     }
 }
 
-// Price formatting
+// Price formatting with validation
 function formatPriceInput(input) {
     let value = input.value.replace(/[^\d]/g, '');
     if (value) {
@@ -1175,7 +1175,66 @@ function formatPriceInput(input) {
         const formatted = numValue.toLocaleString('vi-VN');
         input.value = formatted;
         input.setAttribute('data-value', value);
+        
+        // Real-time validation
+        validateEditPriceInput(input, numValue);
+    } else {
+        // Clear validation styling when input is empty
+        clearEditPriceValidation(input);
     }
+}
+
+// Real-time price validation for edit room
+function validateEditPriceInput(input, numValue) {
+    const minPrice = 10000;
+    const priceContainer = input.closest('.form-group') || input.parentElement;
+    
+    // Remove existing error message
+    const existingError = priceContainer.querySelector('.price-error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    // Clear previous styling
+    input.style.border = '';
+    input.style.boxShadow = '';
+    
+    if (numValue < minPrice) {
+        // Add error styling
+        input.style.border = '2px solid #ef4444';
+        input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+        
+        // Add error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'price-error-message';
+        errorDiv.style.cssText = `
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        `;
+        errorDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle"></i>
+            Giá tối thiểu là ${minPrice.toLocaleString('vi-VN')}đ
+        `;
+        
+        priceContainer.appendChild(errorDiv);
+    }
+}
+
+// Clear price validation styling
+function clearEditPriceValidation(input) {
+    const priceContainer = input.closest('.form-group') || input.parentElement;
+    const existingError = priceContainer.querySelector('.price-error-message');
+    
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    input.style.border = '';
+    input.style.boxShadow = '';
 }
 
 // Rental type change
@@ -1694,6 +1753,17 @@ function setupMainImageUpload() {
 
 // Image handling functions
 function removeExistingImage(imageId) {
+    // Count current images
+    const currentImageCount = document.querySelectorAll('.existing-image').length;
+    const minRequiredImages = 5;
+    
+    // Show warning if trying to delete when at minimum required images
+    if (currentImageCount <= minRequiredImages) {
+        showImageDeletionWarning(currentImageCount, minRequiredImages);
+        return;
+    }
+    
+    // Standard confirmation for deletion when above minimum
     if (confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
         // Create form to submit deletion
         const form = document.createElement('form');
@@ -1714,6 +1784,105 @@ function removeExistingImage(imageId) {
         form.submit();
     }
 }
+
+function showImageDeletionWarning(currentCount, minRequired) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modal.innerHTML = `
+        <div style="color: #ef4444; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Không thể xóa ảnh</h3>
+        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
+            Phòng cần có ít nhất <strong>${minRequired} ảnh</strong> để có thể hiển thị.<br>
+            Hiện tại bạn có <strong>${currentCount} ảnh</strong>.
+        </p>
+        <p style="color: #9ed649; margin-bottom: 24px; font-size: 14px;">
+            <i class="fas fa-lightbulb" style="margin-right: 8px;"></i>
+            Hãy thêm ảnh mới trước khi xóa ảnh hiện tại.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closeImageDeletionWarning()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Add animation CSS if not already added
+    if (!document.getElementById('modal-animations')) {
+        const style = document.createElement('style');
+        style.id = 'modal-animations';
+        style.textContent = `
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Store reference for closing
+    window.currentImageDeletionWarning = backdrop;
+}
+
+function closeImageDeletionWarning() {
+    if (window.currentImageDeletionWarning) {
+        document.body.removeChild(window.currentImageDeletionWarning);
+        window.currentImageDeletionWarning = null;
+    }
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(event) {
+    if (window.currentImageDeletionWarning && event.target === window.currentImageDeletionWarning) {
+        closeImageDeletionWarning();
+    }
+});
 
 function updateSelectedAmenitiesDisplay() {
     const container = document.getElementById('selectedAmenities');
@@ -1959,6 +2128,12 @@ function deleteRoom() {
 
 // Form submission handling
 document.getElementById('edit-room-form').addEventListener('submit', function(e) {
+    // Validate price requirement before submission
+    if (!validateEditRoomPricing()) {
+        e.preventDefault(); // Prevent form submission
+        return false;
+    }
+    
     // Convert formatted prices back to numbers for backend
     const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
     const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
@@ -1981,6 +2156,185 @@ document.getElementById('edit-room-form').addEventListener('submit', function(e)
     rentalTypeInput.name = 'selected_rental_type';
     rentalTypeInput.value = document.querySelector('input[name="rental_type"]:checked')?.value || 'nightly';
     this.appendChild(rentalTypeInput);
+});
+
+// Validate pricing requirement for edit room with minimum 10,000 VND
+function validateEditRoomPricing() {
+    const minPrice = 10000; // Minimum 10,000 VND
+    const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
+    const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
+    
+    let priceToCheck = null;
+    let priceType = '';
+    let currentPrice = 0;
+    
+    // Check which rental type is selected and get corresponding price
+    const hourlyRadio = document.getElementById('hourly');
+    const nightlyRadio = document.getElementById('nightly');
+    
+    if (hourlyRadio && hourlyRadio.checked) {
+        priceToCheck = hourlyPriceInput;
+        priceType = 'theo giờ';
+        currentPrice = parseInt(getNumericPriceValue(hourlyPriceInput)) || 0;
+    } else if (nightlyRadio && nightlyRadio.checked) {
+        priceToCheck = nightlyPriceInput;
+        priceType = 'theo đêm';
+        currentPrice = parseInt(getNumericPriceValue(nightlyPriceInput)) || 0;
+    }
+    
+    // If no rental type selected
+    if (!priceToCheck) {
+        showEditPriceValidationAlert('Vui lòng chọn hình thức cho thuê và nhập giá.');
+        return false;
+    }
+    
+    // Check if price is entered and meets minimum requirement
+    if (currentPrice < minPrice) {
+        const formattedMinPrice = minPrice.toLocaleString('vi-VN');
+        const formattedCurrentPrice = currentPrice > 0 ? currentPrice.toLocaleString('vi-VN') : '0';
+        
+        showEditPriceValidationAlert(
+            `Giá ${priceType} phải ít nhất ${formattedMinPrice}đ.<br>` +
+            `Hiện tại: ${formattedCurrentPrice}đ`
+        );
+        
+        // Highlight the price field
+        highlightEditPriceField(priceToCheck);
+        
+        return false;
+    }
+    
+    return true;
+}
+
+// Get numeric price value from formatted input
+function getNumericPriceValue(input) {
+    if (!input) return '';
+    
+    // Check data-value attribute first
+    const dataValue = input.getAttribute('data-value');
+    if (dataValue) {
+        return dataValue;
+    }
+    
+    // Fallback: remove formatting from value
+    return input.value.replace(/[^\d]/g, '');
+}
+
+// Show price validation alert for edit room
+function showEditPriceValidationAlert(message) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modal.innerHTML = `
+        <div style="color: #f59e0b; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Giá chưa hợp lệ</h3>
+        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
+            ${message}
+        </p>
+        <p style="color: #9ed649; margin-bottom: 24px; font-size: 14px;">
+            <i class="fas fa-lightbulb" style="margin-right: 8px;"></i>
+            Vui lòng nhập giá hợp lệ để cập nhật homestay.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closeEditPriceAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Add animation CSS if not already added
+    if (!document.getElementById('edit-modal-animations')) {
+        const style = document.createElement('style');
+        style.id = 'edit-modal-animations';
+        style.textContent = `
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Store reference for closing
+    window.currentEditPriceAlert = backdrop;
+}
+
+// Highlight price field with error styling for edit room
+function highlightEditPriceField(priceInput) {
+    if (!priceInput) return;
+    
+    priceInput.style.border = '2px solid #ef4444';
+    priceInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+    
+    // Remove highlight when user starts typing
+    const removeHighlight = function() {
+        priceInput.style.border = '';
+        priceInput.style.boxShadow = '';
+        priceInput.removeEventListener('input', removeHighlight);
+    };
+    
+    priceInput.addEventListener('input', removeHighlight);
+}
+
+function closeEditPriceAlert() {
+    if (window.currentEditPriceAlert) {
+        document.body.removeChild(window.currentEditPriceAlert);
+        window.currentEditPriceAlert = null;
+    }
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(event) {
+    if (window.currentEditPriceAlert && event.target === window.currentEditPriceAlert) {
+        closeEditPriceAlert();
+    }
 });
 
 // Add image to upload grid

@@ -34,14 +34,14 @@
             <!-- Step 1: Basic Information -->
             <div class="step-content active" id="step-1">
                 <div class="form-section">
-                    <h3>Tiêu đề phòng</h3>
+                    <h3>Tên Homestay</h3>
                     <div class="form-content">
                         <input type="text" name="room_title" id="room_title" placeholder="Thêm tiêu đề" class="form-input" value="{{ room_data.room_title or '' }}" required>
                     </div>
                 </div>
                 
                 <div class="form-section">
-                    <h3>Mô tả phòng</h3>
+                    <h3>Mô tả Homestay</h3>
                     <div class="form-content">
                         <div class="textarea-container">
                             <textarea name="room_description" id="room_description" placeholder="Thêm miêu tả homestay" class="form-textarea" required>{{ room_data.room_description or '' }}</textarea>
@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="form-section">
-                    <h3>Mô hình Phòng</h3>
+                    <h3>Mô hình Homestay</h3>
                     <div class="form-content">
                         <div class="property-type-selection">
                             <div class="property-option">
@@ -86,7 +86,7 @@
                 </div>
 
                 <div class="form-section">
-                    <h3>Địa chỉ phòng</h3>
+                    <h3>Địa chỉ Homestay</h3>
                     <div class="form-content">
                         <div class="location-inputs">
                             <select name="province" id="province" class="form-select" onchange="updateDistricts()">
@@ -1768,13 +1768,18 @@ window.addEventListener('beforeunload', function() {
 function nextStep() {
     if (currentStep < totalSteps) {
         // Validate current step before proceeding
-        if (currentStep === 2) {
+        if (currentStep === 1) {
+            // Validate Step 1: Basic Information
+            if (!validateStep1()) {
+                return; // Stop if validation fails
+            }
+        } else if (currentStep === 2) {
             // Check if rental type is selected
             const hourlyRadio = document.getElementById('hourly');
             const nightlyRadio = document.getElementById('nightly');
             
             if (!hourlyRadio.checked && !nightlyRadio.checked) {
-                alert('Vui lòng chọn hình thức cho thuê (theo giờ hoặc qua đêm)');
+                showValidationAlert('Vui lòng chọn hình thức cho thuê (theo giờ hoặc qua đêm)');
                 return;
             }
         }
@@ -1795,6 +1800,338 @@ function nextStep() {
         }
     }
 }
+
+// Validate Step 1: Basic Information
+function validateStep1() {
+    const errors = [];
+    
+    // 1. Check room title
+    const roomTitle = document.getElementById('room_title').value.trim();
+    if (!roomTitle) {
+        errors.push('Vui lòng nhập Tên Homestay');
+    } else if (roomTitle.length < 5) {
+        errors.push('Tên Homestay phải có ít nhất 5 ký tự');
+    }
+    
+    // 2. Check room description
+    const roomDescription = document.getElementById('room_description').value.trim();
+    if (!roomDescription) {
+        errors.push('Vui lòng nhập Mô tả Homestay');
+    } else if (roomDescription.length < 20) {
+        errors.push('Mô tả Homestay phải có ít nhất 20 ký tự');
+    }
+    
+    // 3. Check property type
+    const propertyType = document.querySelector('input[name="property_type"]:checked');
+    if (!propertyType) {
+        errors.push('Vui lòng chọn Mô hình Homestay (Nhà, Căn hộ, hoặc Khách sạn)');
+    }
+    
+    // 4. Check location fields
+    const province = document.getElementById('province').value;
+    const district = document.getElementById('district').value;
+    const ward = document.getElementById('ward').value;
+    const street = document.getElementById('street').value.trim();
+    
+    if (!province) {
+        errors.push('Vui lòng chọn Tỉnh/Thành phố');
+    }
+    if (!district) {
+        errors.push('Vui lòng chọn Quận/Huyện');
+    }
+    if (!ward) {
+        errors.push('Vui lòng chọn Phường/Xã');
+    }
+    if (!street) {
+        errors.push('Vui lòng nhập tên đường và số nhà');
+    } else if (street.length < 5) {
+        errors.push('Địa chỉ đường phải có ít nhất 5 ký tự');
+    }
+    
+    // Show errors if any
+    if (errors.length > 0) {
+        highlightInvalidFields();
+        showStep1ValidationAlert(errors);
+        return false;
+    }
+    
+    // Clear any previous highlights
+    clearFieldHighlights();
+    
+    // Auto-save form data when validation passes
+    saveFormDataToSession();
+    
+    return true;
+}
+
+// Show Step 1 validation alert with all errors
+function showStep1ValidationAlert(errors) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    // Create error list HTML
+    const errorListHTML = errors.map(error => 
+        `<div style="display: flex; align-items: center; margin-bottom: 8px; text-align: left;">
+            <i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 8px; font-size: 14px;"></i>
+            <span style="color: #666; font-size: 14px;">${error}</span>
+        </div>`
+    ).join('');
+    
+    modal.innerHTML = `
+        <div style="color: #ef4444; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Vui lòng hoàn thiện thông tin</h3>
+        <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+            Bạn cần điền đầy đủ thông tin sau để tiếp tục:
+        </p>
+        <div style="margin-bottom: 24px;">
+            ${errorListHTML}
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closeValidationAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Add animation CSS if not already added
+    if (!document.getElementById('modal-animations')) {
+        const style = document.createElement('style');
+        style.id = 'modal-animations';
+        style.textContent = `
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Store reference for closing
+    window.currentValidationAlert = backdrop;
+}
+
+// Show simple validation alert for single messages
+function showValidationAlert(message) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modal.innerHTML = `
+        <div style="color: #f59e0b; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Thông tin chưa đầy đủ</h3>
+        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
+            ${message}
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closeValidationAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Store reference for closing
+    window.currentValidationAlert = backdrop;
+}
+
+function closeValidationAlert() {
+    if (window.currentValidationAlert) {
+        document.body.removeChild(window.currentValidationAlert);
+        window.currentValidationAlert = null;
+    }
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(event) {
+    if (window.currentValidationAlert && event.target === window.currentValidationAlert) {
+        closeValidationAlert();
+    }
+});
+
+// Highlight invalid fields with red border
+function highlightInvalidFields() {
+    // Remove existing highlights first
+    clearFieldHighlights();
+    
+    // Check and highlight each field
+    const roomTitle = document.getElementById('room_title');
+    if (!roomTitle.value.trim() || roomTitle.value.trim().length < 10) {
+        addFieldHighlight(roomTitle);
+    }
+    
+    const roomDescription = document.getElementById('room_description');
+    if (!roomDescription.value.trim() || roomDescription.value.trim().length < 20) {
+        addFieldHighlight(roomDescription);
+    }
+    
+    const propertyType = document.querySelector('input[name="property_type"]:checked');
+    if (!propertyType) {
+        // Highlight property type section
+        const propertySection = document.querySelector('.property-type-selection');
+        if (propertySection) {
+            propertySection.style.border = '2px solid #ef4444';
+            propertySection.style.borderRadius = '8px';
+            propertySection.style.padding = '8px';
+        }
+    }
+    
+    const province = document.getElementById('province');
+    const district = document.getElementById('district');
+    const ward = document.getElementById('ward');
+    const street = document.getElementById('street');
+    
+    if (!province.value) addFieldHighlight(province);
+    if (!district.value) addFieldHighlight(district);
+    if (!ward.value) addFieldHighlight(ward);
+    if (!street.value.trim() || street.value.trim().length < 5) addFieldHighlight(street);
+}
+
+// Add red border highlight to a field
+function addFieldHighlight(field) {
+    field.style.border = '2px solid #ef4444';
+    field.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+    
+    // Add event listener to remove highlight when user starts typing
+    const removeHighlight = function() {
+        field.style.border = '';
+        field.style.boxShadow = '';
+        field.removeEventListener('input', removeHighlight);
+        field.removeEventListener('change', removeHighlight);
+    };
+    
+    field.addEventListener('input', removeHighlight);
+    field.addEventListener('change', removeHighlight);
+}
+
+// Clear all field highlights
+function clearFieldHighlights() {
+    // Clear input/select/textarea highlights
+    const fields = document.querySelectorAll('#step-1 input, #step-1 select, #step-1 textarea');
+    fields.forEach(field => {
+        field.style.border = '';
+        field.style.boxShadow = '';
+    });
+    
+    // Clear property type section highlight
+    const propertySection = document.querySelector('.property-type-selection');
+    if (propertySection) {
+        propertySection.style.border = '';
+        propertySection.style.borderRadius = '';
+        propertySection.style.padding = '';
+    }
+}
+
+// Add real-time character count for description
+document.addEventListener('DOMContentLoaded', function() {
+    const roomDescription = document.getElementById('room_description');
+    const charCount = document.querySelector('.char-count');
+    
+    if (roomDescription && charCount) {
+        function updateCharCount() {
+            const currentLength = roomDescription.value.length;
+            charCount.textContent = `${currentLength}/500`;
+            
+            // Change color based on length
+            if (currentLength < 20) {
+                charCount.style.color = '#ef4444'; // Red if too short
+            } else if (currentLength > 450) {
+                charCount.style.color = '#f59e0b'; // Orange if near limit
+            } else {
+                charCount.style.color = '#9ed649'; // Green if good
+            }
+        }
+        
+        // Update on input
+        roomDescription.addEventListener('input', updateCharCount);
+        
+        // Initial update
+        updateCharCount();
+    }
+});
 
 function prevStep() {
     if (currentStep > 1) {
@@ -1838,6 +2175,20 @@ function decreaseCount(type) {
 }
 
 function prepareFormData() {
+    // Validate minimum image requirement first
+    const imageCount = countUploadedImages();
+    const minRequiredImages = 5;
+    
+    if (imageCount < minRequiredImages) {
+        showImageRequirementAlert(imageCount, minRequiredImages);
+        return false; // Prevent form submission
+    }
+    
+    // Validate pricing requirement
+    if (!validatePricingRequirement()) {
+        return false; // Prevent form submission
+    }
+    
     // Make sure all counter values are updated in hidden inputs
     const bathroomCount = document.getElementById('bathroom-count').textContent;
     const bedCount = document.getElementById('bed-count').textContent;
@@ -1881,6 +2232,295 @@ function prepareFormData() {
     
     return true;
 }
+
+// Validate pricing requirement with minimum 10,000 VND
+function validatePricingRequirement() {
+    const minPrice = 10000; // Minimum 10,000 VND
+    const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
+    const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
+    
+    let priceToCheck = null;
+    let priceType = '';
+    let currentPrice = 0;
+    
+    // Check which rental type is selected and get corresponding price
+    const hourlyRadio = document.getElementById('hourly');
+    const nightlyRadio = document.getElementById('nightly');
+    
+    if (hourlyRadio && hourlyRadio.checked) {
+        priceToCheck = hourlyPriceInput;
+        priceType = 'theo giờ';
+        currentPrice = parseInt(getNumericPrice(hourlyPriceInput)) || 0;
+    } else if (nightlyRadio && nightlyRadio.checked) {
+        priceToCheck = nightlyPriceInput;
+        priceType = 'theo đêm';
+        currentPrice = parseInt(getNumericPrice(nightlyPriceInput)) || 0;
+    }
+    
+    // If no rental type selected (shouldn't happen due to step 2 validation)
+    if (!priceToCheck) {
+        showPriceValidationAlert('Vui lòng chọn hình thức cho thuê và nhập giá.');
+        return false;
+    }
+    
+    // Check if price is entered and meets minimum requirement
+    if (currentPrice < minPrice) {
+        const formattedMinPrice = minPrice.toLocaleString('vi-VN');
+        const formattedCurrentPrice = currentPrice > 0 ? currentPrice.toLocaleString('vi-VN') : '0';
+        
+        showPriceValidationAlert(
+            `Giá ${priceType} phải ít nhất ${formattedMinPrice}đ.<br>` +
+            `Hiện tại: ${formattedCurrentPrice}đ`
+        );
+        
+        // Highlight the price field
+        highlightPriceField(priceToCheck);
+        
+        return false;
+    }
+    
+    return true;
+}
+
+// Show price validation alert
+function showPriceValidationAlert(message) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modal.innerHTML = `
+        <div style="color: #f59e0b; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Giá chưa hợp lệ</h3>
+        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
+            ${message}
+        </p>
+        <p style="color: #9ed649; margin-bottom: 24px; font-size: 14px;">
+            <i class="fas fa-lightbulb" style="margin-right: 8px;"></i>
+            Vui lòng nhập giá hợp lệ để tiếp tục đăng homestay.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closePriceAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Add animation CSS if not already added
+    if (!document.getElementById('modal-animations')) {
+        const style = document.createElement('style');
+        style.id = 'modal-animations';
+        style.textContent = `
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Store reference for closing
+    window.currentPriceAlert = backdrop;
+}
+
+// Highlight price field with error styling
+function highlightPriceField(priceInput) {
+    if (!priceInput) return;
+    
+    const priceInputContainer = priceInput.closest('.price-input');
+    if (priceInputContainer) {
+        priceInputContainer.style.border = '2px solid #ef4444';
+        priceInputContainer.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+        
+        // Remove highlight when user starts typing
+        const removeHighlight = function() {
+            priceInputContainer.style.border = '';
+            priceInputContainer.style.boxShadow = '';
+            priceInput.removeEventListener('input', removeHighlight);
+        };
+        
+        priceInput.addEventListener('input', removeHighlight);
+    }
+}
+
+function closePriceAlert() {
+    if (window.currentPriceAlert) {
+        document.body.removeChild(window.currentPriceAlert);
+        window.currentPriceAlert = null;
+    }
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(event) {
+    if (window.currentPriceAlert && event.target === window.currentPriceAlert) {
+        closePriceAlert();
+    }
+});
+
+// Count uploaded images (both file inputs and session storage)
+function countUploadedImages() {
+    let count = 0;
+    
+    // Count images in file inputs
+    const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+    uploadItems.forEach(item => {
+        const fileInput = item.querySelector('input[type="file"]');
+        const hasImage = item.querySelector('img'); // Visual indicator
+        
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            count++;
+        } else if (hasImage) {
+            // Count images that are displayed but might be in sessionStorage
+            count++;
+        }
+    });
+    
+    console.log('📸 Total uploaded images:', count);
+    return count;
+}
+
+function showImageRequirementAlert(currentCount, requiredCount) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modal.innerHTML = `
+        <div style="color: #f59e0b; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Cần thêm ảnh</h3>
+        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
+            Phòng cần có ít nhất <strong>${requiredCount} ảnh</strong> để có thể đăng.<br>
+            Hiện tại bạn có <strong>${currentCount} ảnh</strong>.
+        </p>
+        <p style="color: #9ed649; margin-bottom: 24px; font-size: 14px;">
+            <i class="fas fa-lightbulb" style="margin-right: 8px;"></i>
+            Hãy thêm ${requiredCount - currentCount} ảnh nữa để tiếp tục.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closeImageAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Add animation CSS if not already added
+    if (!document.getElementById('modal-animations')) {
+        const style = document.createElement('style');
+        style.id = 'modal-animations';
+        style.textContent = `
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Store reference for closing
+    window.currentImageAlert = backdrop;
+}
+
+function closeImageAlert() {
+    if (window.currentImageAlert) {
+        document.body.removeChild(window.currentImageAlert);
+        window.currentImageAlert = null;
+    }
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(event) {
+    if (window.currentImageAlert && event.target === window.currentImageAlert) {
+        closeImageAlert();
+    }
+});
 
 // Convert ảnh từ sessionStorage thành file inputs để gửi lên server
 function convertSessionStorageImagesToFiles() {
@@ -3312,19 +3952,16 @@ function validatePrice(input, type) {
     if (!value || numValue <= 0) {
         isValid = false;
         errorMessage = 'Vui lòng nhập giá tiền hợp lệ';
+    } else if (numValue < 10000) {
+        isValid = false;
+        errorMessage = 'Giá tối thiểu là 10.000đ';
     } else if (type === 'hourly') {
-        if (numValue < 50000) {
-            isValid = false;
-            errorMessage = 'Giá theo giờ tối thiểu là 50.000đ';
-        } else if (numValue > 500000) {
+        if (numValue > 500000) {
             isValid = false;
             errorMessage = 'Giá theo giờ tối đa là 500.000đ';
         }
     } else if (type === 'nightly') {
-        if (numValue < 400000) {
-            isValid = false;
-            errorMessage = 'Giá qua đêm tối thiểu là 400.000đ';
-        } else if (numValue > 2000000) {
+        if (numValue > 2000000) {
             isValid = false;
             errorMessage = 'Giá qua đêm tối đa là 2.000.000đ';
         }

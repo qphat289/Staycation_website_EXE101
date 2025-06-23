@@ -3,11 +3,11 @@
    ========================= */
    :root {
     /* Bảng màu bổ túc bộ bốn */
-    --primary-color: #7ABC0E;       /* Màu chủ đạo (vàng) */
-    --primary-light: #F7D9AF;       /* Màu nhạt hơn */
-    --primary-dark: #EA9415;        /* Màu đậm hơn */
-    --accent-color: #7ABC0E;        /* Màu tương phản (xanh olive) */
-    --accent-dark: #407010;         /* Màu tương phản đậm */
+    --primary-color: #9ed649;       /* Màu chủ đạo (xanh lá nhạt) */
+    --primary-light: #b2e254;       /* Màu nhạt hơn */
+    --primary-dark: #8bc441;        /* Màu đậm hơn */
+    --accent-color: #9ed649;        /* Màu tương phản (xanh lá nhạt) */
+    --accent-dark: #7cb342;         /* Màu tương phản đậm */
     --warning-color: #A86400;       /* Màu cảnh báo (cam nâu) */
     --warning-dark: #9A610E;        /* Màu cảnh báo đậm */
     --muted-color: #9A970E;         /* Màu thứ cấp */
@@ -21,7 +21,7 @@
     
     /* Dynamic navbar text colors - sẽ được thay đổi bởi JavaScript */
     --navbar-text-color: #ffffff;   /* Màu chữ navbar (mặc định trắng) */
-    --navbar-hover-color: #F1B55F;  /* Màu hover navbar (mặc định vàng) */
+    --navbar-hover-color: #b2e254;  /* Màu hover navbar (xanh lá nhạt) */
 }
 
 /* =======================================================================
@@ -187,7 +187,7 @@ html body .navbar-dark.bg-primary {
 
 /* Navbar khi scroll - hiện màu chủ đạo - GLOBAL */
 html body .navbar-dark.bg-primary.scrolled {
-    background: linear-gradient(135deg, rgba(122, 188, 14, 0.95), rgba(101, 156, 12, 0.95)) !important;
+    background: linear-gradient(135deg, rgba(158, 214, 73, 0.95), rgba(139, 184, 65, 0.95)) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15) !important; /* Bóng đậm hơn khi scroll */
@@ -1339,5 +1339,5 @@ html body .navbar .nav-link.user-dropdown-container:hover span {
 
 body.homepage html body .navbar .nav-link.user-dropdown-container:hover,
 body.homepage html body .navbar .nav-link.user-dropdown-container:hover span {
-    color: #f1b55f !important; /* Yellow hover for homepage */
+    color: #b2e254 !important; /* Light green hover for homepage */
 }

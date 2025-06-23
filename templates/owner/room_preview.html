@@ -1209,8 +1209,8 @@ function nextImageInModal() {
             <i class="fas fa-chevron-left"></i>
             Chỉnh sửa phòng
         </a>
-        <form method="POST" action="{{ url_for('owner.confirm_room') }}" style="display: inline;">
-            <button type="submit" class="confirm-btn">
+        <form method="POST" action="{{ url_for('owner.confirm_room') }}" style="display: inline;" onsubmit="return validateImageCount()">
+            <button type="submit" class="confirm-btn" id="confirmBtn">
                 <i class="fas fa-check"></i>
                 Xác nhận tạo phòng
             </button>
@@ -1631,4 +1631,142 @@ function nextImageInModal() {
 </div>
 
 </div>
+
+<script>
+// Image count validation for room creation
+function validateImageCount() {
+    const imageCount = {{ all_images|length if all_images else 0 }};
+    const minRequiredImages = 5;
+    
+    if (imageCount < minRequiredImages) {
+        // Show custom styled alert
+        showImageRequirementAlert(imageCount, minRequiredImages);
+        return false; // Prevent form submission
+    }
+    
+    return true; // Allow form submission
+}
+
+function showImageRequirementAlert(currentCount, requiredCount) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modal.innerHTML = `
+        <div style="color: #f59e0b; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Cần thêm ảnh</h3>
+        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
+            Phòng cần có ít nhất <strong>${requiredCount} ảnh</strong> để có thể đăng.<br>
+            Hiện tại bạn có <strong>${currentCount} ảnh</strong>.
+        </p>
+        <p style="color: #9ed649; margin-bottom: 24px; font-size: 14px;">
+            <i class="fas fa-lightbulb" style="margin-right: 8px;"></i>
+            Hãy quay lại trang chỉnh sửa để thêm ${requiredCount - currentCount} ảnh nữa.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closeImageAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>
+                Quay lại chỉnh sửa
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Add animation CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Store reference for closing
+    window.currentImageAlert = backdrop;
+}
+
+function closeImageAlert() {
+    if (window.currentImageAlert) {
+        document.body.removeChild(window.currentImageAlert);
+        window.currentImageAlert = null;
+    }
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(event) {
+    if (window.currentImageAlert && event.target === window.currentImageAlert) {
+        closeImageAlert();
+    }
+});
+
+// Update button state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const imageCount = {{ all_images|length if all_images else 0 }};
+    const confirmBtn = document.getElementById('confirmBtn');
+    const minRequiredImages = 5;
+    
+    if (imageCount < minRequiredImages) {
+        // Disable button visually and add tooltip
+        confirmBtn.style.opacity = '0.6';
+        confirmBtn.style.cursor = 'not-allowed';
+        confirmBtn.title = `Cần thêm ${minRequiredImages - imageCount} ảnh nữa để có thể đăng phòng`;
+        
+        // Add warning text
+        const warningText = document.createElement('div');
+        warningText.style.cssText = `
+            color: #f59e0b;
+            font-size: 12px;
+            margin-top: 4px;
+            font-weight: 500;
+        `;
+        warningText.innerHTML = `<i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i>Cần ${minRequiredImages - imageCount} ảnh nữa`;
+        confirmBtn.parentNode.appendChild(warningText);
+    }
+});
+</script>
+
 {% endblock %}

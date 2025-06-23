@@ -61,7 +61,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
 
 /* Navbar khi scroll - Home page */
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled {
-    background: linear-gradient(135deg, rgba(139, 195, 74, 0.95), rgba(104, 159, 56, 0.95)) !important;
+    background: linear-gradient(135deg, rgba(158, 214, 73, 0.95), rgba(139, 184, 65, 0.95)) !important;
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15) !important; /* Bóng đậm hơn khi scroll */
     padding: 0.5rem 0;
@@ -1146,7 +1146,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.use
 }
 
 .auth-link:hover {
-    color: #8bc34a !important;
+    color: #b2e254 !important;
     transform: translateY(-1px);
 }
 
@@ -1168,7 +1168,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.auth-link {
 }
 
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.auth-link:hover {
-    color: #8bc34a !important;
+    color: #b2e254 !important;
 }
 
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.auth-link.register {
@@ -1189,6 +1189,6 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .auth-link:ho
 }
 
 html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .auth-link.register {
-    background: #8bc34a;
+    background: #9ed649;
     color: white !important;
 } 
