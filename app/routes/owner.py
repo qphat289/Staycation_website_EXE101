@@ -134,8 +134,8 @@ def owner_required(f):
 @owner_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Lấy tất cả phòng của owner hiện tại với relationship images
-    rooms = Room.query.options(joinedload(Room.images)).filter_by(owner_id=current_user.id).all()
+    # Lấy tất cả phòng của owner hiện tại với relationship images, sắp xếp theo ngày tạo mới nhất
+    rooms = Room.query.options(joinedload(Room.images)).filter_by(owner_id=current_user.id).order_by(Room.created_at.desc()).all()
     
     return render_template('owner/dashboard.html', rooms=rooms)
 
@@ -593,6 +593,84 @@ def edit_room(room_id):
                         
             except Exception as e:
                 print(f"Lỗi khi cập nhật rules: {str(e)}")
+            
+            # Xử lý upload ảnh mới
+            try:
+                from werkzeug.utils import secure_filename
+                import os
+                import shutil
+                from app.utils.utils import generate_unique_filename
+                
+                # Tạo thư mục lưu ảnh cho phòng
+                owner_id = current_user.id
+                room_folder = f"static/data/owner/{owner_id}/{room_id}"
+                os.makedirs(room_folder, exist_ok=True)
+                
+                # Xử lý ảnh chính (main_image)
+                if 'main_image' in request.files:
+                    main_image = request.files['main_image']
+                    if main_image and main_image.filename:
+                        print(f"DEBUG: Processing main image: {main_image.filename}")
+                        
+                        # Tạo tên file unique
+                        filename = secure_filename(main_image.filename)
+                        unique_filename = generate_unique_filename(filename, 'main')
+                        
+                        # Lưu file
+                        file_path = os.path.join(room_folder, unique_filename)
+                        main_image.save(file_path)
+                        
+                        # Tạo record trong database
+                        relative_path = f"data/owner/{owner_id}/{room_id}/{unique_filename}"
+                        
+                        # Xóa ảnh bìa cũ nếu có
+                        old_featured = RoomImage.query.filter_by(room_id=room_id, is_featured=True).first()
+                        if old_featured:
+                            # Xóa file cũ
+                            old_file_path = os.path.join('static', old_featured.image_path)
+                            if os.path.exists(old_file_path):
+                                os.remove(old_file_path)
+                            # Xóa record cũ
+                            db.session.delete(old_featured)
+                        
+                        # Tạo record mới
+                        new_main_image = RoomImage(
+                            image_path=relative_path,
+                            room_id=room_id,
+                            is_featured=True
+                        )
+                        db.session.add(new_main_image)
+                        print(f"DEBUG: Added new main image: {relative_path}")
+                
+                # Xử lý ảnh phụ (images[])
+                if 'images[]' in request.files:
+                    additional_images = request.files.getlist('images[]')
+                    for i, image in enumerate(additional_images):
+                        if image and image.filename:
+                            print(f"DEBUG: Processing additional image {i+1}: {image.filename}")
+                            
+                            # Tạo tên file unique
+                            filename = secure_filename(image.filename)
+                            unique_filename = generate_unique_filename(filename, f'room_{i+1}')
+                            
+                            # Lưu file
+                            file_path = os.path.join(room_folder, unique_filename)
+                            image.save(file_path)
+                            
+                            # Tạo record trong database
+                            relative_path = f"data/owner/{owner_id}/{room_id}/{unique_filename}"
+                            new_image = RoomImage(
+                                image_path=relative_path,
+                                room_id=room_id,
+                                is_featured=False
+                            )
+                            db.session.add(new_image)
+                            print(f"DEBUG: Added additional image: {relative_path}")
+                
+            except Exception as e:
+                print(f"Lỗi khi xử lý ảnh: {str(e)}")
+                # Không làm fail việc cập nhật phòng nếu ảnh có lỗi
+                pass
             
             # Cập nhật thời gian sửa đổi
             room.updated_at = datetime.utcnow()

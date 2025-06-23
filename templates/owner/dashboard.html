@@ -63,6 +63,193 @@
         border-color: #ccc;
     }
 
+    .sort-btn {
+        padding: 10px 16px;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .sort-btn:hover {
+        background: #f5f5f5;
+        border-color: #ccc;
+    }
+
+    .sort-btn i:first-child {
+        color: #9ed649;
+    }
+
+    .sort-btn .fas.fa-chevron-down {
+        font-size: 0.7rem;
+        margin-left: auto;
+    }
+
+    .sort-dropdown {
+        min-width: 160px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 8px 0;
+    }
+
+    .sort-dropdown .dropdown-item {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .sort-dropdown .dropdown-item:hover {
+        background: #f8f9fa;
+        color: #9ed649;
+    }
+
+    .sort-dropdown .dropdown-item.active {
+        background: #e8f5e8;
+        color: #2e7d32;
+        font-weight: 500;
+    }
+
+    .sort-dropdown .dropdown-item i {
+        width: 16px;
+        text-align: center;
+        font-size: 0.85rem;
+    }
+
+    /* Dropdown Filter Styles */
+    .filter-dropdown {
+        min-width: 380px;
+        max-width: 420px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .filter-section-container {
+        padding: 16px;
+    }
+
+    .filter-group-inline {
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .filter-group-inline:last-child {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #333;
+        min-width: 80px;
+        flex-shrink: 0;
+    }
+
+    .filter-label i {
+        color: #9ed649;
+        font-size: 0.9rem;
+    }
+
+    .filter-toggle-buttons {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .toggle-btn {
+        padding: 6px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 20px;
+        background: white;
+        color: #666;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+
+    .toggle-btn:hover {
+        background: #f8f9fa;
+        border-color: #9ed649;
+        color: #333;
+    }
+
+    .toggle-btn.active {
+        background: #9ed649;
+        border-color: #9ed649;
+        color: white;
+    }
+
+    .toggle-btn i {
+        font-size: 0.75rem;
+    }
+
+    .filter-actions {
+        padding: 12px 16px;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .btn-reset, .btn-apply {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-reset {
+        background: #f8f9fa;
+        color: #666;
+        border: 1px solid #ddd;
+    }
+
+    .btn-reset:hover {
+        background: #e9ecef;
+        color: #333;
+    }
+
+    .btn-apply {
+        background: #9ed649;
+        color: white;
+    }
+
+    .btn-apply:hover {
+        background: #8bc34a;
+        transform: translateY(-1px);
+    }
+
     .add-room-btn {
         padding: 10px 20px;
         background: #9ed649;
@@ -81,6 +268,32 @@
     .add-room-btn:hover {
         background: #8bc34a;
         transform: translateY(-1px);
+    }
+
+    .reset-btn {
+        padding: 10px 16px;
+        background: #f8f9fa;
+        color: #666;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin-left: 8px;
+    }
+
+    .reset-btn:hover {
+        background: #e9ecef;
+        color: #333;
+        transform: translateY(-1px);
+    }
+
+    .reset-btn i {
+        font-size: 0.85rem;
     }
 
     .homestay-list {
@@ -349,7 +562,7 @@
     {% if messages %}
         <div style="margin: 0 2rem 1rem 2rem;">
             {% for category, message in messages %}
-                <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'warning' if category == 'warning' else 'danger' }} alert-dismissible fade show" role="alert">
+                <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'warning' if category == 'warning' else 'danger' }} alert-dismissible fade show auto-hide-alert" role="alert">
                     <i class="fas fa-{{ 'check-circle' if category == 'success' else 'info-circle' if category == 'info' else 'exclamation-triangle' if category == 'warning' else 'exclamation-circle' }}"></i>
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -365,9 +578,82 @@
         <div class="search-box">
             <input type="text" placeholder="Tìm kiếm phòng..." id="searchInput">
         </div>
-        <button class="filter-btn" data-bs-toggle="modal" data-bs-target="#filterModal">
-            <i class="fas fa-filter"></i>
-            Lọc
+        <div class="dropdown">
+            <button class="sort-btn dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-sort"></i>
+                <span>Sắp xếp</span>
+            </button>
+            <ul class="dropdown-menu sort-dropdown" aria-labelledby="sortDropdown">
+                <li><a class="dropdown-item active" href="#" data-sort="date-newest" onclick="selectSort(this, event)">
+                    <i class="fas fa-arrow-down"></i> Mới nhất
+                </a></li>
+                <li><a class="dropdown-item" href="#" data-sort="date-oldest" onclick="selectSort(this, event)">
+                    <i class="fas fa-arrow-up"></i> Cũ nhất
+                </a></li>
+            </ul>
+        </div>
+        <div class="dropdown">
+            <button class="filter-btn dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-filter"></i>
+                Lọc
+            </button>
+            <div class="dropdown-menu filter-dropdown" aria-labelledby="filterDropdown">
+                <div class="filter-section-container">
+                    <!-- Property Type Section -->
+                    <div class="filter-group-inline">
+                        <div class="filter-label">
+                            <i class="fas fa-home"></i>
+                            <span>Loại hình:</span>
+                        </div>
+                        <div class="filter-toggle-buttons">
+                            <button type="button" class="toggle-btn active" data-filter="propertyType" data-value="all">
+                                Tất cả
+                            </button>
+                            <button type="button" class="toggle-btn" data-filter="propertyType" data-value="Nhà">
+                                <i class="fas fa-home"></i> Nhà
+                            </button>
+                            <button type="button" class="toggle-btn" data-filter="propertyType" data-value="Căn hộ">
+                                <i class="fas fa-building"></i> Căn hộ
+                            </button>
+                            <button type="button" class="toggle-btn" data-filter="propertyType" data-value="Khách sạn">
+                                <i class="fas fa-hotel"></i> Khách sạn
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status Section -->
+                    <div class="filter-group-inline">
+                        <div class="filter-label">
+                            <i class="fas fa-toggle-on"></i>
+                            <span>Trạng thái:</span>
+                        </div>
+                        <div class="filter-toggle-buttons">
+                            <button type="button" class="toggle-btn active" data-filter="status" data-value="all">
+                                Tất cả
+                            </button>
+                            <button type="button" class="toggle-btn" data-filter="status" data-value="active">
+                                <i class="fas fa-check-circle"></i> Hoạt động
+                            </button>
+                            <button type="button" class="toggle-btn" data-filter="status" data-value="inactive">
+                                <i class="fas fa-lock"></i> Đã khóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Apply Button -->
+                <div class="filter-actions">
+                    <button type="button" class="btn-apply" onclick="applyFilters(event)">
+                        <i class="fas fa-check"></i> Áp dụng
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reset button (appears when filters are active) -->
+        <button type="button" class="reset-btn" id="resetButton" onclick="resetFilters()" style="display: none;">
+            <i class="fas fa-undo"></i>
+            Đặt lại
         </button>
     </div>
     <button class="add-room-btn" onclick="clearSessionAndAddRoom()">
@@ -386,7 +672,7 @@
                 {{ 'Hoạt động' if room.is_active else 'Đã khóa' }}
             </span>
             <span class="status-badge" style="color: #2e7d32; border-color: #2e7d32; background: #e8f5e8;">
-                {{ room.room_type | title }}
+                {{ room.room_type }}
             </span>
         </div>
         
@@ -402,7 +688,7 @@
                 {% endif %}
             </div>
             <div class="homestay-info">
-                <h3 data-room-url="{{ url_for('owner.room_detail', room_id=room.id) }}" onclick="window.location.href=this.dataset.roomUrl">{{ room.title }}</h3>
+                <h3 data-room-url="{{ url_for('owner.room_detail', room_id=room.id) }}" onclick="saveFilterStateAndNavigate(this.dataset.roomUrl)">{{ room.title }}</h3>
                 <div class="homestay-details">
                     <div class="homestay-detail">
                         <i class="fas fa-map-marker-alt"></i>
@@ -438,7 +724,7 @@
                        data-action="{{ 'mở khóa' if not room.is_active else 'khóa' }}">
                         {{ 'Mở khóa' if not room.is_active else 'Khóa phòng' }}
                     </a>
-                    <a href="{{ url_for('owner.edit_room', room_id=room.id) }}" class="btn-action btn-edit">
+                    <a href="{{ url_for('owner.edit_room', room_id=room.id) }}" class="btn-action btn-edit" onclick="saveFilterState()">
                         Sửa
                     </a>
                     <button type="button" class="btn-action btn-delete" 
@@ -622,5 +908,399 @@ document.querySelectorAll('.btn-lock').forEach(btn => {
         }
     });
 });
+
+// Auto-hide alerts after 3 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.auto-hide-alert');
+    
+    alerts.forEach(function(alert) {
+        // Auto-hide after 3 seconds
+        setTimeout(function() {
+            // Use Bootstrap's alert dismiss functionality
+            const alertInstance = bootstrap.Alert.getOrCreateInstance(alert);
+            alertInstance.close();
+        }, 3000);
+    });
+});
+
+// Filter and Sort functionality
+let currentSort = 'date-newest'; // Default sort
+let currentTypeFilter = []; // Array for multiple property type selection
+let currentStatusFilter = 'all';
+
+// Temporary selections (before applying)
+let tempSort = 'date-newest';
+let tempTypeFilter = []; // Array for multiple property type selection
+let tempStatusFilter = 'all';
+
+// LocalStorage keys for persisting filter state
+const FILTER_STORAGE_KEY = 'dashboard_filter_state';
+
+// Save current filter state to localStorage
+function saveFilterState() {
+    const filterState = {
+        sort: currentSort,
+        typeFilter: currentTypeFilter,
+        statusFilter: currentStatusFilter
+    };
+    localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filterState));
+    console.log('Filter state saved:', filterState);
+}
+
+// Restore filter state from localStorage
+function restoreFilterState() {
+    try {
+        const savedState = localStorage.getItem(FILTER_STORAGE_KEY);
+        if (savedState) {
+            const filterState = JSON.parse(savedState);
+            console.log('Restoring filter state:', filterState);
+            
+            // Restore sort
+            if (filterState.sort) {
+                currentSort = filterState.sort;
+                // Update sort dropdown UI
+                document.querySelectorAll('.sort-dropdown .dropdown-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-sort') === currentSort) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+            
+            // Restore type filter
+            if (filterState.typeFilter && Array.isArray(filterState.typeFilter)) {
+                currentTypeFilter = [...filterState.typeFilter];
+                tempTypeFilter = [...filterState.typeFilter];
+                
+                // Update type filter UI
+                document.querySelectorAll('.toggle-btn[data-filter="propertyType"]').forEach(btn => {
+                    const value = btn.getAttribute('data-value');
+                    if (value === 'all') {
+                        btn.classList.toggle('active', currentTypeFilter.length === 0);
+                    } else {
+                        btn.classList.toggle('active', currentTypeFilter.includes(value));
+                    }
+                });
+            }
+            
+            // Restore status filter
+            if (filterState.statusFilter) {
+                currentStatusFilter = filterState.statusFilter;
+                tempStatusFilter = filterState.statusFilter;
+                
+                // Update status filter UI
+                document.querySelectorAll('.toggle-btn[data-filter="status"]').forEach(btn => {
+                    const value = btn.getAttribute('data-value');
+                    btn.classList.toggle('active', value === currentStatusFilter);
+                });
+            }
+            
+            // Apply the restored filters
+            sortRooms(currentSort);
+            filterRooms();
+            updateFilterButtonText();
+            
+            return true;
+        }
+    } catch (error) {
+        console.error('Error restoring filter state:', error);
+    }
+    return false;
+}
+
+// Clear saved filter state
+function clearFilterState() {
+    localStorage.removeItem(FILTER_STORAGE_KEY);
+    console.log('Filter state cleared');
+}
+
+// Save filter state and navigate to URL
+function saveFilterStateAndNavigate(url) {
+    saveFilterState();
+    window.location.href = url;
+}
+
+// Sort selection function
+function selectSort(element, event) {
+    event.preventDefault();
+    
+    const sortValue = element.getAttribute('data-sort');
+    
+    // Update active state
+    document.querySelectorAll('.sort-dropdown .dropdown-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    element.classList.add('active');
+    
+    // Apply sort immediately
+    currentSort = sortValue;
+    saveFilterState(); // Save state when sort changes
+    sortRooms(currentSort);
+    
+    // Close dropdown
+    const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('sortDropdown'));
+    if (dropdown) {
+        dropdown.hide();
+    }
+}
+
+// Apply filters function
+function applyFilters(event) {
+    // Prevent event bubbling to avoid closing the dropdown prematurely
+    if (event) {
+        event.stopPropagation();
+    }
+    // Get selected property types (multiple selection)
+    const activeTypeButtons = document.querySelectorAll('.toggle-btn[data-filter="propertyType"].active');
+    tempTypeFilter = [];
+    activeTypeButtons.forEach(btn => {
+        const value = btn.getAttribute('data-value');
+        if (value !== 'all') {
+            tempTypeFilter.push(value);
+        }
+    });
+    
+    // Get selected status (single selection)
+    const statusBtn = document.querySelector('.toggle-btn[data-filter="status"].active');
+    if (statusBtn) tempStatusFilter = statusBtn.getAttribute('data-value');
+    
+    // Apply the filters
+    currentTypeFilter = [...tempTypeFilter]; // Copy array
+    currentStatusFilter = tempStatusFilter;
+    
+    // Save filter state to localStorage
+    saveFilterState();
+    
+    // Execute filtering (sorting is handled separately now)
+    filterRooms();
+    
+    // Close dropdown
+    const filterDropdownElement = document.getElementById('filterDropdown');
+    const dropdown = bootstrap.Dropdown.getInstance(filterDropdownElement);
+    if (dropdown) {
+        dropdown.hide();
+    } else {
+        // If no instance exists, create one and then hide it
+        const newDropdown = new bootstrap.Dropdown(filterDropdownElement);
+        newDropdown.hide();
+    }
+    
+    // Remove any open dropdown classes as backup
+    filterDropdownElement.setAttribute('aria-expanded', 'false');
+    const dropdownMenu = filterDropdownElement.nextElementSibling;
+    if (dropdownMenu) {
+        dropdownMenu.classList.remove('show');
+    }
+    
+    // Update filter button text to show active filters
+    updateFilterButtonText();
+}
+
+// Reset filters function
+function resetFilters() {
+    // Reset toggle buttons to default
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Set default active buttons (no sort buttons in filter anymore)
+    document.querySelector('.toggle-btn[data-filter="propertyType"][data-value="all"]').classList.add('active');
+    document.querySelector('.toggle-btn[data-filter="status"][data-value="all"]').classList.add('active');
+    
+    // Reset sort dropdown to default
+    document.querySelectorAll('.sort-dropdown .dropdown-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector('.sort-dropdown .dropdown-item[data-sort="date-newest"]').classList.add('active');
+    
+    // Reset temp variables
+    tempSort = 'date-newest';
+    tempTypeFilter = [];
+    tempStatusFilter = 'all';
+    
+    // Reset current variables
+    currentSort = 'date-newest';
+    currentTypeFilter = [];
+    currentStatusFilter = 'all';
+    
+    // Clear saved filter state
+    clearFilterState();
+    
+    // Apply reset
+    sortRooms(currentSort);
+    filterRooms();
+    updateFilterButtonText();
+}
+
+// Handle toggle button clicks
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore filter state from previous session
+    const restored = restoreFilterState();
+    if (!restored) {
+        console.log('No saved filter state found, using defaults');
+        // Make sure reset button is hidden when no filters are active
+        updateFilterButtonText();
+    }
+    
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function(event) {
+            // Prevent event bubbling to avoid closing the dropdown
+            event.stopPropagation();
+            
+            const filterType = this.getAttribute('data-filter');
+            const value = this.getAttribute('data-value');
+            
+            if (filterType === 'propertyType') {
+                // Handle multiple selection for property types
+                if (value === 'all') {
+                    // If "Tất cả" is clicked, deactivate all others and activate only "Tất cả"
+                    document.querySelectorAll('.toggle-btn[data-filter="propertyType"]').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                } else {
+                    // If a specific type is clicked
+                    const allBtn = document.querySelector('.toggle-btn[data-filter="propertyType"][data-value="all"]');
+                    
+                    if (this.classList.contains('active')) {
+                        // If already active, deactivate it (toggle off)
+                        this.classList.remove('active');
+                        
+                        // If no specific types are selected, activate "Tất cả"
+                        const activeTypes = document.querySelectorAll('.toggle-btn[data-filter="propertyType"].active:not([data-value="all"])');
+                        if (activeTypes.length === 0) {
+                            allBtn.classList.add('active');
+                        }
+                    } else {
+                        // If not active, activate it (toggle on)
+                        this.classList.add('active');
+                        // Deactivate "Tất cả" when specific types are selected
+                        allBtn.classList.remove('active');
+                    }
+                }
+            } else if (filterType === 'status') {
+                // Handle single selection for status (existing behavior)
+                document.querySelectorAll(`.toggle-btn[data-filter="${filterType}"]`).forEach(b => {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+            }
+        });
+    });
+});
+
+// Update filter button text based on active filters
+function updateFilterButtonText() {
+    const filterBtn = document.querySelector('#filterDropdown');
+    const resetBtn = document.querySelector('#resetButton');
+    let activeFilterCount = 0;
+    
+    // Count property type filters
+    if (currentTypeFilter.length > 0) {
+        activeFilterCount += currentTypeFilter.length;
+    }
+    
+    // Count status filter
+    if (currentStatusFilter !== 'all') {
+        activeFilterCount += 1;
+    }
+    
+    // Check if sort is not default
+    const isSortActive = currentSort !== 'date-newest';
+    if (isSortActive) {
+        activeFilterCount += 1;
+    }
+    
+    if (activeFilterCount > 0) {
+        // Show active filter state
+        filterBtn.innerHTML = `<i class="fas fa-filter"></i> Lọc (${activeFilterCount})`;
+        filterBtn.style.background = '#e8f5e8';
+        filterBtn.style.borderColor = '#9ed649';
+        filterBtn.style.color = '#2e7d32';
+        
+        // Show reset button
+        resetBtn.style.display = 'flex';
+    } else {
+        // Show default filter state
+        filterBtn.innerHTML = `<i class="fas fa-filter"></i> Lọc`;
+        filterBtn.style.background = 'white';
+        filterBtn.style.borderColor = '#e0e0e0';
+        filterBtn.style.color = '#666';
+        
+        // Hide reset button
+        resetBtn.style.display = 'none';
+    }
+}
+
+
+
+function sortRooms(sortType) {
+    const homestayList = document.querySelector('.homestay-list');
+    if (!homestayList) return;
+    
+    const items = Array.from(homestayList.querySelectorAll('.homestay-item'));
+    
+    items.sort((a, b) => {
+        // Get date from the "Thêm vào" text
+        const dateA = getDateFromItem(a);
+        const dateB = getDateFromItem(b);
+        
+        if (sortType === 'date-newest') {
+            return dateB - dateA; // Newest first
+        } else if (sortType === 'date-oldest') {
+            return dateA - dateB; // Oldest first
+        }
+        return 0;
+    });
+    
+    // Re-append items in sorted order
+    items.forEach(item => homestayList.appendChild(item));
+}
+
+function getDateFromItem(item) {
+    // Extract date from "Thêm vào DD-MM-YYYY" text
+    const dateText = item.querySelector('.homestay-detail:last-child span').textContent;
+    const match = dateText.match(/(\d{2})-(\d{2})-(\d{4})/);
+    
+    if (match) {
+        const day = parseInt(match[1]);
+        const month = parseInt(match[2]) - 1; // Month is 0-indexed
+        const year = parseInt(match[3]);
+        return new Date(year, month, day);
+    }
+    
+    return new Date(0); // Default to epoch if no date found
+}
+
+function filterRooms() {
+    const homestayItems = document.querySelectorAll('.homestay-item');
+    
+    homestayItems.forEach(item => {
+        let showItem = true;
+        
+        // Filter by type (multiple selection support)
+        if (currentTypeFilter.length > 0) {
+            const roomType = item.querySelector('.status-badge:nth-child(2)').textContent.trim();
+            if (!currentTypeFilter.includes(roomType)) {
+                showItem = false;
+            }
+        }
+        
+        // Filter by status
+        if (currentStatusFilter !== 'all') {
+            const statusBadge = item.querySelector('.status-badge:first-child');
+            const isActive = statusBadge.classList.contains('status-active');
+            
+            if (currentStatusFilter === 'active' && !isActive) {
+                showItem = false;
+            } else if (currentStatusFilter === 'inactive' && isActive) {
+                showItem = false;
+            }
+        }
+        
+        // Show/hide item
+        item.style.display = showItem ? 'flex' : 'none';
+    });
+}
 </script>
 {% endblock %} 

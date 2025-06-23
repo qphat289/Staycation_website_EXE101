@@ -804,6 +804,50 @@
         color: #333;
         font-weight: 500;
     }
+
+    /* Change main image button styling */
+    .change-main-image-btn {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: rgba(40, 167, 69, 0.8);
+        color: white;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        z-index: 15;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .change-main-image-btn:hover {
+        background: rgba(40, 167, 69, 1);
+        transform: scale(1.1);
+    }
+
+    .existing-image {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .existing-image:hover .change-main-image-btn {
+        opacity: 1;
+    }
+
+    /* Changed image indicator */
+    .changed-indicator {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 {% endblock %}
 
@@ -994,39 +1038,43 @@
                 <div class="form-section">
                     <h3>Hình ảnh phòng</h3>
                     <div class="form-content">
-                        <div class="upload-grid">
-                            <!-- Display existing images first -->
-                            {% if room.images %}
-                                {% for image in room.images %}
-                                <div class="upload-item existing-image">
-                                    {% if image.is_featured %}
-                                    <span class="upload-label">Ảnh bìa</span>
-                                    {% endif %}
-                                    <img src="/static/{{ image.path }}" alt="Room image" class="existing-img">
-                                    <div class="image-overlay">
-                                        <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ image.id }})">
-                                            <i class="bi bi-x-circle-fill"></i>
-                                        </button>
-                                    </div>
+                        <div class="upload-grid" style="display: flex; flex-wrap: wrap; gap: 10px; max-width: 500px;">
+                            <!-- Main image upload box -->
+                            {% set main_image = room.images|selectattr('is_featured', 'equalto', True)|list|first if room.images else None %}
+                            <div class="upload-item main-image-upload" id="main-image-box" style="position: relative; width: calc(33.333% - 7px); height: 120px; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;">
+                                <span class="upload-label" style="position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; z-index: 25;">Ảnh bìa</span>
+                                <input type="file" name="main_image" accept="image/*" id="main-image-input" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;" onchange="if(this.files[0]) { simplePreview(this); }">
+                                
+                                {% if main_image %}
+                                <img src="/static/{{ main_image.path }}" alt="Main image" class="existing-main-img" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div class="image-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center; pointer-events: none;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+                                    <span style="color: white; font-size: 11px; text-align: center;">Thay ảnh bìa</span>
                                 </div>
-                                {% endfor %}
-                            {% endif %}
-                            
-                            <!-- Upload slot for new main image - always show for testing -->
-                            {% set has_main_image = room.images and room.images|selectattr('is_featured', 'equalto', True)|list|length > 0 %}
-                            <!-- Temporarily always show for testing -->
-                            <div class="upload-item main-image-upload">
-                                <span class="upload-label">{% if has_main_image %}Thay ảnh bìa{% else %}Ảnh bìa{% endif %}</span>
-                                <input type="file" name="main_image" accept="image/*" id="main-image-input" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 20;" onchange="if(this.files[0]) { testPreview(this); }">
-                                <div class="upload-placeholder" style="pointer-events: none;">
-                                    <i class="bi bi-camera"></i>
-                                    <span>{% if has_main_image %}Thay đổi{% else %}Chọn ảnh{% endif %}</span>
+                                {% else %}
+                                <div class="upload-placeholder" style="pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; font-size: 12px;">
+                                    <i class="bi bi-camera" style="font-size: 20px; margin-bottom: 6px;"></i>
+                                    <span>Thay ảnh bìa</span>
                                 </div>
+                                {% endif %}
                             </div>
                             
-                            <div class="upload-item add-more">
-                                <div class="upload-placeholder">
-                                    <i class="bi bi-plus-circle"></i>
+                            <!-- Display all existing additional images -->
+                            {% set other_images = room.images|rejectattr('is_featured', 'equalto', True)|list if room.images else [] %}
+                            {% for image in other_images %}
+                            <div class="upload-item existing-image" style="position: relative; width: calc(33.333% - 7px); height: 120px; border-radius: 8px; overflow: hidden;">
+                                <img src="/static/{{ image.path }}" alt="Room image" class="existing-img" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div class="image-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+                                    <button type="button" class="remove-image-btn" onclick="removeExistingImage({{ image.id }})" style="background: rgba(220, 53, 69, 0.9); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px;">
+                                        <i class="bi bi-x-circle-fill"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <!-- Add more images button -->
+                            <div class="upload-item add-more" id="add-more-box" style="position: relative; width: calc(33.333% - 7px); height: 120px; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                <div class="upload-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; font-size: 12px;" onclick="addMoreImages()">
+                                    <i class="bi bi-plus-circle" style="font-size: 20px; margin-bottom: 6px;"></i>
                                     <span>Thêm ảnh</span>
                                 </div>
                             </div>
@@ -1170,9 +1218,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Setup main image upload
     setupMainImageUpload();
-    
-    // Setup add more images functionality
-    setupAddMoreImages();
 });
 
 function updatePricingDisplay() {
@@ -1419,40 +1464,169 @@ window.onclick = function(event) {
     }
 }
 
-// Image handling functions
+// Simple image preview function for main image upload
+function simplePreview(input) {
+    console.log('🔧 simplePreview called for main image');
+    
+    if (!input.files || !input.files[0]) {
+        return;
+    }
+    
+    const file = input.files[0];
+    const mainImageBox = document.getElementById('main-image-box');
+    
+    if (!mainImageBox) {
+        console.error('❌ Main image box not found');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // Remove existing content except the label and input
+        const existingImg = mainImageBox.querySelector('.existing-main-img');
+        const placeholder = mainImageBox.querySelector('.upload-placeholder');
+        const existingPreview = mainImageBox.querySelector('.preview-img');
+        const existingRemoveBtn = mainImageBox.querySelector('.remove-btn');
+        
+        if (existingImg) existingImg.remove();
+        if (placeholder) placeholder.remove();
+        if (existingPreview) existingPreview.remove();
+        if (existingRemoveBtn) existingRemoveBtn.remove();
+        
+        // Create new preview image
+        const img = document.createElement('img');
+        img.className = 'preview-img';
+        img.style.cssText = `
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        `;
+        img.src = e.target.result;
+        
+        // Create remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '×';
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-btn';
+        removeBtn.style.cssText = `
+            position: absolute;
+            top: 30px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        removeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Clear the input
+            input.value = '';
+            // Remove preview elements
+            img.remove();
+            removeBtn.remove();
+            
+            // Restore placeholder
+            const newPlaceholder = document.createElement('div');
+            newPlaceholder.className = 'upload-placeholder';
+            newPlaceholder.style.cssText = `
+                pointer-events: none;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: #999;
+                font-size: 14px;
+            `;
+            newPlaceholder.innerHTML = `
+                <i class="bi bi-camera" style="font-size: 24px; margin-bottom: 8px;"></i>
+                <span>Chọn ảnh bìa</span>
+            `;
+            mainImageBox.appendChild(newPlaceholder);
+        });
+        
+        // Add elements to the main image box
+        mainImageBox.appendChild(img);
+        mainImageBox.appendChild(removeBtn);
+        
+        console.log('✅ Main image preview updated');
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+// Function to add more images
+function addMoreImages() {
+    console.log('📸 Add more images clicked');
+    
+    // Create temporary file input
+    const tempInput = document.createElement('input');
+    tempInput.type = 'file';
+    tempInput.accept = 'image/*';
+    tempInput.multiple = true;
+    tempInput.style.display = 'none';
+    
+    tempInput.addEventListener('change', function() {
+        console.log('📸 Files selected:', this.files.length);
+        if (this.files && this.files.length > 0) {
+            Array.from(this.files).forEach((file, index) => {
+                console.log(`📸 Processing file ${index + 1}:`, file.name);
+                addImageToUploadGrid(file);
+            });
+        }
+        tempInput.remove();
+    });
+    
+    document.body.appendChild(tempInput);
+    tempInput.click();
+}
+
+// Regular image preview function for additional images
 function previewImage(input) {
+    const uploadItem = input.closest('.upload-item');
+    const placeholder = uploadItem.querySelector('.upload-placeholder');
+    
     if (input.files && input.files[0]) {
+        const file = input.files[0];
         const reader = new FileReader();
+        
         reader.onload = function(e) {
-            const uploadItem = input.closest('.upload-item');
-            const placeholder = uploadItem.querySelector('.upload-placeholder');
-            
-            if (!uploadItem) {
-                console.error('🔧 Upload item not found');
-                return;
-            }
-            
-            // Remove existing preview if any
-            const existingPreview = uploadItem.querySelector('.preview-img');
-            if (existingPreview) {
-                existingPreview.remove();
-            }
-            
-            // Remove existing remove button if any
-            const existingRemoveBtn = uploadItem.querySelector('.remove-preview-btn');
-            if (existingRemoveBtn) {
-                existingRemoveBtn.remove();
-            }
+            // Remove any existing preview
+            const existingImg = uploadItem.querySelector('img:not(.existing-img)');
+            const existingBtn = uploadItem.querySelector('.remove-btn');
+            if (existingImg) existingImg.remove();
+            if (existingBtn) existingBtn.remove();
             
             // Create preview image
-            const preview = document.createElement('img');
-            preview.className = 'preview-img';
-            preview.style.cssText = 'width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 8px; z-index: 5;';
-            // Create remove button for preview
+            const img = document.createElement('img');
+            img.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 5;
+                border-radius: 8px;
+            `;
+            img.src = e.target.result;
+            
+            // Create remove button
             const removeBtn = document.createElement('button');
-            removeBtn.className = 'remove-preview-btn';
-            removeBtn.type = 'button';
             removeBtn.innerHTML = '×';
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-btn';
             removeBtn.style.cssText = `
                 position: absolute;
                 top: 5px;
@@ -1465,7 +1639,7 @@ function previewImage(input) {
                 border-radius: 50%;
                 cursor: pointer;
                 font-size: 12px;
-                z-index: 25;
+                z-index: 15;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -1474,39 +1648,51 @@ function previewImage(input) {
             removeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                // Reset the file input
+                // Clear the input
                 input.value = '';
-                // Remove preview and show placeholder
-                preview.remove();
+                // Remove preview elements
+                img.remove();
                 removeBtn.remove();
+                // Show placeholder again
                 if (placeholder) {
                     placeholder.style.display = 'flex';
                 }
             });
             
-            // Set the image source
-            try {
-                preview.src = e.target.result;
-                } catch (error) {
-                console.error('🔧 Error setting preview src:', error);
-                console.error('🔧 Preview element:', preview);
-                console.error('🔧 e.target.result:', e.target.result);
-                return;
-            }
-            
-            // Hide placeholder and add preview elements
+            // Hide placeholder and add preview
             if (placeholder) {
                 placeholder.style.display = 'none';
             }
-            
-            uploadItem.appendChild(preview);
+            uploadItem.appendChild(img);
             uploadItem.appendChild(removeBtn);
             
-            };
-        reader.readAsDataURL(input.files[0]);
+            console.log('✅ Image preview created successfully');
+        };
+        
+        reader.onerror = function(error) {
+            console.error('🔧 FileReader error:', error);
+        };
+        
+        reader.readAsDataURL(file);
     }
 }
 
+// Simplified main image upload setup
+function setupMainImageUpload() {
+    const mainInput = document.getElementById('main-image-input');
+    
+    if (mainInput) {
+        console.log('✅ Main image upload setup - using HTML onchange event');
+    } else {
+        console.error('❌ Main image input not found');
+    }
+}
+
+
+
+
+
+// Image handling functions
 function removeExistingImage(imageId) {
     if (confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
         // Create form to submit deletion
@@ -1797,172 +1983,34 @@ document.getElementById('edit-room-form').addEventListener('submit', function(e)
     this.appendChild(rentalTypeInput);
 });
 
-// Simple main image upload handler
-function setupMainImageUpload() {
-    const mainInput = document.getElementById('main-image-input');
-    if (mainInput) {
-        // Remove any existing event listeners first
-        mainInput.removeEventListener('change', handleMainImageChange);
-        
-        // Add the change event listener
-        mainInput.addEventListener('change', handleMainImageChange);
-        
-        } else {
-        console.error('🔧 Main image input not found!');
-    }
-}
-
-function handleMainImageChange(event) {
-    if (event.target.files && event.target.files[0]) {
-        previewImage(event.target);
-    }
-}
-
-// Simple test preview function
-function testPreview(input) {
-    const uploadItem = input.closest('.upload-item');
-    const placeholder = uploadItem.querySelector('.upload-placeholder');
-    
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            // Simple approach - just create and insert image
-            const img = document.createElement('img');
-            img.style.cssText = `
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                position: absolute;
-                top: 0;
-                left: 0;
-                z-index: 5;
-                border-radius: 8px;
-            `;
-            
-            img.src = e.target.result;
-            // Hide placeholder
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
-            
-            // Add image to upload item
-            uploadItem.appendChild(img);
-            
-            };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-// Setup add more images functionality
-function setupAddMoreImages() {
-    const addMoreItem = document.querySelector('.upload-item.add-more');
-    if (addMoreItem) {
-        const placeholder = addMoreItem.querySelector('.upload-placeholder');
-        if (placeholder) {
-            placeholder.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Create temporary file input
-                const tempInput = document.createElement('input');
-                tempInput.type = 'file';
-                tempInput.accept = 'image/*';
-                tempInput.multiple = true;
-                tempInput.style.display = 'none';
-                
-                tempInput.addEventListener('change', function() {
-                    if (this.files && this.files.length > 0) {
-                        Array.from(this.files).forEach((file) => {
-                            addImageToUploadGrid(file);
-                        });
-                    }
-                    tempInput.remove();
-                });
-                
-                document.body.appendChild(tempInput);
-                tempInput.click();
-            });
-            }
-    } else {
-        console.error('🔧 Add more images button not found!');
-    }
-}
-
-// Setup upload functionality for images
-function setupUploadFunctionality() {
-    const uploadItems = document.querySelectorAll('.upload-item');
-    uploadItems.forEach((item, index) => {
-        const placeholder = item.querySelector('.upload-placeholder');
-        const fileInput = item.querySelector('input[type="file"]');
-        const isAddMore = item.classList.contains('add-more');
-        
-        if (isAddMore) {
-            // Handle "Thêm ảnh" button - create new file input
-            placeholder.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Create temporary file input
-                const tempInput = document.createElement('input');
-                tempInput.type = 'file';
-                tempInput.accept = 'image/*';
-                tempInput.multiple = true;
-                tempInput.style.display = 'none';
-                
-                tempInput.addEventListener('change', function() {
-                    if (this.files && this.files.length > 0) {
-                        // Add files to upload grid
-                        Array.from(this.files).forEach((file, index) => {
-                            addImageToUploadGrid(file);
-                        });
-                    }
-                    // Remove temporary input
-                    tempInput.remove();
-                });
-                
-                document.body.appendChild(tempInput);
-                tempInput.click();
-            });
-        } else if (fileInput && placeholder) {
-            // Handle regular upload items (like main image)
-            // Add click event to placeholder
-            placeholder.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fileInput.click();
-            });
-            
-            // Add click event to the whole upload item as backup
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fileInput.click();
-            });
-            
-            // Handle file selection for regular upload items
-            fileInput.addEventListener('change', function() {
-                if (this.files && this.files[0]) {
-                    previewImage(this);
-                }
-            });
-        } else {
-            }
-    });
-}
-
 // Add image to upload grid
 function addImageToUploadGrid(file) {
     const uploadGrid = document.querySelector('.upload-grid');
     const addMoreButton = uploadGrid.querySelector('.add-more');
     
     if (!uploadGrid || !addMoreButton) {
-        console.error('🔧 Upload grid or add more button not found');
+        console.error('❌ Upload grid or add more button not found');
         return;
     }
+    
+    console.log('📸 Adding image to grid:', file.name);
     
     // Create new upload item
     const newUploadItem = document.createElement('div');
     newUploadItem.className = 'upload-item';
+    newUploadItem.style.cssText = `
+        position: relative;
+        width: calc(33.333% - 7px);
+        height: 120px;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    `;
     
     // Create file input
     const fileInput = document.createElement('input');
@@ -1975,7 +2023,14 @@ function addImageToUploadGrid(file) {
     const placeholder = document.createElement('div');
     placeholder.className = 'upload-placeholder';
     placeholder.innerHTML = '<i class="bi bi-camera"></i>';
-    placeholder.style.display = 'none';
+    placeholder.style.cssText = `
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 14px;
+    `;
     
     // Add elements to upload item
     newUploadItem.appendChild(fileInput);
@@ -1989,12 +2044,15 @@ function addImageToUploadGrid(file) {
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         fileInput.files = dataTransfer.files;
-        } catch (error) {
-        console.error('🔧 Error setting file to input:', error);
+        console.log('✅ File set to input successfully');
+    } catch (error) {
+        console.error('❌ Error setting file to input:', error);
     }
     
     // Show preview directly
     showFilePreview(file, newUploadItem);
+    
+    console.log('✅ Image added to grid successfully');
 }
 
 // Show file preview for new images
@@ -2002,6 +2060,8 @@ function showFilePreview(file, uploadItem) {
     if (file && file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = function(e) {
+            console.log('📸 Creating preview for:', file.name);
+            
             // Create preview image
             const img = document.createElement('img');
             img.style.cssText = `
@@ -2014,6 +2074,7 @@ function showFilePreview(file, uploadItem) {
                 z-index: 5;
                 border-radius: 8px;
             `;
+            img.src = e.target.result;
             
             // Create remove button
             const removeBtn = document.createElement('button');
@@ -2040,25 +2101,28 @@ function showFilePreview(file, uploadItem) {
             removeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('🗑️ Removing image preview');
                 // Remove the entire upload item
                 uploadItem.remove();
             });
             
-            // Set image source and add to DOM
-            img.src = e.target.result;
+            // Add image and remove button to upload item
             uploadItem.appendChild(img);
             uploadItem.appendChild(removeBtn);
             
-            };
+            console.log('✅ Preview created successfully');
+        };
         
         reader.onerror = function(error) {
-            console.error('🔧 FileReader error:', error);
+            console.error('❌ FileReader error:', error);
         };
         
         reader.readAsDataURL(file);
+    } else {
+        console.error('❌ Invalid file type:', file.type);
     }
 }
 
-// Function to remove existing image - removed duplicate
+
 </script>
 {% endblock %}
