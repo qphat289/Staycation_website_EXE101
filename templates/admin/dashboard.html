@@ -57,16 +57,8 @@ body {
     margin-bottom: 0.5rem;
 }
 
-/* FORCE SIDEBAR MENU STYLES - HIGHEST PRIORITY */
-.admin-sidebar ul.sidebar-menu li.sidebar-menu-item a.sidebar-menu-link,
-.admin-sidebar .sidebar-menu .sidebar-menu-item .sidebar-menu-link,
-.admin-sidebar a[href="javascript:void(0)"],
-#menu-stats,
-#menu-owner,
-#menu-manage-admin,
-a#menu-stats,
-a#menu-owner,
-a#menu-manage-admin {
+/* Sidebar Menu Styles - Simplified */
+.sidebar-menu-link {
     display: flex !important;
     align-items: center !important;
     gap: 0.75rem !important;
@@ -76,45 +68,18 @@ a#menu-manage-admin {
     border-radius: 8px !important;
     transition: color 0.3s ease !important;
     font-weight: 500 !important;
-    transform: none !important;
     background: transparent !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
     border: none !important;
 }
 
-.admin-sidebar ul.sidebar-menu li.sidebar-menu-item a.sidebar-menu-link:hover,
-.admin-sidebar .sidebar-menu .sidebar-menu-item .sidebar-menu-link:hover,
-.admin-sidebar a[href="javascript:void(0)"]:hover,
-#menu-stats:hover,
-#menu-owner:hover,
-#menu-manage-admin:hover,
-a#menu-stats:hover,
-a#menu-owner:hover,
-a#menu-manage-admin:hover {
+.sidebar-menu-link:hover {
     color: #9ed649 !important;
     text-decoration: none !important;
-    transform: none !important;
-    background: transparent !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
 }
 
-.admin-sidebar ul.sidebar-menu li.sidebar-menu-item a.sidebar-menu-link.active,
-.admin-sidebar .sidebar-menu .sidebar-menu-item .sidebar-menu-link.active,
-.admin-sidebar a[href="javascript:void(0)"].active,
-#menu-stats.active,
-#menu-owner.active,
-#menu-manage-admin.active,
-a#menu-stats.active,
-a#menu-owner.active,
-a#menu-manage-admin.active {
+.sidebar-menu-link.active {
     color: #9ed649 !important;
     font-weight: 600 !important;
-    transform: none !important;
-    background: transparent !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
 }
 
 .sidebar-menu-link i {
@@ -147,7 +112,7 @@ a#menu-manage-admin.active {
     border-bottom: 1px solid #f1f1f1;
 }
 
-/* Navbar và dropdown styling - FIX DROPDOWN ISSUES */
+/* Navbar Styles - Consolidated */
 .navbar {
     z-index: 1060 !important;
     position: fixed !important;
@@ -155,10 +120,11 @@ a#menu-manage-admin.active {
     width: 100% !important;
 }
 
-/* All navbar text to black */
 .navbar .navbar-brand,
 .navbar .navbar-nav .nav-link,
-.navbar .navbar-text {
+.navbar .navbar-text,
+.navbar .brand-text,
+.navbar .dropdown-toggle {
     color: #333333 !important;
 }
 
@@ -173,24 +139,10 @@ a#menu-manage-admin.active {
     will-change: transform !important;
 }
 
-.navbar .dropdown-toggle {
-    z-index: 1062 !important;
-    pointer-events: auto !important;
-    cursor: pointer !important;
-}
-
-.navbar .dropdown {
-    position: relative !important;
-    z-index: 1062 !important;
-}
-
-/* Đảm bảo dropdown menu hiển thị đúng */
 .navbar-nav .dropdown-menu {
     position: absolute !important;
     top: 100% !important;
-    left: auto !important;
     right: 0 !important;
-    transform: none !important;
     z-index: 1070 !important;
     display: none !important;
 }
@@ -202,65 +154,6 @@ a#menu-manage-admin.active {
     z-index: 1060 !important;
 }
 
-/* Đảm bảo không có element nào che khuất dropdown */
-.admin-sidebar {
-    pointer-events: auto;
-    z-index: 1040 !important;
-}
-
-.admin-main {
-    pointer-events: auto;
-    z-index: 1030 !important;
-}
-
-/* Modal không che dropdown và centering fix */
-.modal {
-    z-index: 1051 !important;
-}
-
-.modal-backdrop {
-    z-index: 1050 !important;
-    background-color: rgba(108, 117, 125, 0.8) !important;
-    backdrop-filter: blur(5px) !important;
-    -webkit-backdrop-filter: blur(5px) !important;
-}
-
-.modal-backdrop.show {
-    opacity: 1 !important;
-}
-
-.modal-dialog-centered {
-    display: flex !important;
-    align-items: center !important;
-    min-height: calc(100vh - 3rem) !important;
-}
-
-#addAdminModal .modal-content {
-    margin: auto !important;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-    border: none !important;
-    border-radius: 0.5rem !important;
-}
-
-#addAdminModal .modal-header {
-    border-bottom: 1px solid #dee2e6 !important;
-    padding: 1rem 1.5rem !important;
-}
-
-#addAdminModal .modal-body {
-    padding: 1.5rem !important;
-}
-
-#addAdminModal .modal-footer {
-    border-top: 1px solid #dee2e6 !important;
-    padding: 1rem 1.5rem !important;
-}
-
-.navbar .brand-text {
-    color: #333333 !important;
-    text-shadow: none;
-}
-
 #languageToggle {
     background: rgba(255, 255, 255, 0.8) !important;
     border: 1px solid rgba(51, 51, 51, 0.3) !important;
@@ -268,10 +161,6 @@ a#menu-manage-admin.active {
 }
 
 #languageToggle span {
-    color: #333333 !important;
-}
-
-.navbar .dropdown-toggle {
     color: #333333 !important;
 }
 
@@ -409,27 +298,53 @@ a#menu-manage-admin.active {
     font-size: 0.875rem;
 }
 
-/* Add Button - MATCH OWNER STYLE */
-.add-room-btn {
-    padding: 10px 20px;
-    background: #9ed649;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: 0 2px 4px rgba(158, 214, 73, 0.3);
-    transition: all 0.2s;
+/* Statistics Cards - Consolidated */
+.stats-overview .stat-card,
+.owner-stats-overview .stat-card {
+    padding: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+    height: 100%;
+    background: #ffffff;
+    min-height: 100px;
 }
 
-.add-room-btn:hover {
-    background: #8ab82f;
-    box-shadow: 0 2px 6px rgba(158, 214, 73, 0.4);
+.stats-overview .stat-card:hover,
+.owner-stats-overview .stat-card:hover {
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #9ed649;
+}
+
+.stats-overview .stat-card h6,
+.owner-stats-overview .stat-card h6 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+.stats-overview .stat-card h4,
+.owner-stats-overview .stat-card h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+    line-height: 1.1;
+}
+
+.stats-overview .stat-card small,
+.owner-stats-overview .stat-card small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: block;
+    margin-top: 0.25rem;
+    line-height: 1.2;
 }
 
 /* Table Header */
@@ -596,21 +511,26 @@ a#menu-manage-admin.active {
     font-size: 14px;
 }
 
-/* Dropdown Menu Styles */
+/* Dropdown Menu Styles - Consolidated */
 .dropdown-menu {
     min-width: 140px !important;
     padding: 0.25rem 0.25rem !important;
     z-index: 2000 !important;
     position: absolute !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
 }
 
 .dropdown-item {
-    padding: 0.22rem 0.5rem !important;
-    font-size: 0.95rem !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+    color: #64748b;
+    transition: all 0.2s;
 }
 
 .dropdown-item:hover {
-    background: #f1f5f9;
+    background: #f8fafc;
     color: #2c3e50;
 }
 
@@ -635,6 +555,18 @@ a#menu-manage-admin.active {
     color: #16a34a;
 }
 
+.action-dropdown .btn-link {
+    color: #64748b;
+    padding: 0.5rem;
+    transition: all 0.2s;
+}
+
+.action-dropdown .btn-link:hover {
+    color: #2c3e50;
+    background: #f1f5f9;
+    border-radius: 6px;
+}
+
 /* Checkbox */
 .checkbox-input {
     width: 18px;
@@ -650,7 +582,7 @@ a#menu-manage-admin.active {
     border-color: #9ed649;
 }
 
-/* Modal Styles */
+/* Modal Styles - Consolidated */
 .modal {
     z-index: 1051 !important;
 }
@@ -671,13 +603,10 @@ a#menu-manage-admin.active {
     margin: 1.5rem auto !important;
 }
 
-.modal.fade .modal-dialog {
-    transform: translate(0, -50px);
-    transition: transform .3s ease-out;
-}
-
-.modal.show .modal-dialog {
-    transform: none;
+.modal-dialog-centered {
+    display: flex !important;
+    align-items: center !important;
+    min-height: calc(100vh - 3rem) !important;
 }
 
 .modal-content {
@@ -689,8 +618,8 @@ a#menu-manage-admin.active {
 
 .modal-header {
     background-color: #fff !important;
-    border-bottom: none !important;
-    padding: 1rem 1rem 0.5rem !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    padding: 1rem 1.5rem !important;
 }
 
 .modal-title {
@@ -699,22 +628,28 @@ a#menu-manage-admin.active {
     color: #2c3e50 !important;
 }
 
-.btn-close {
-    padding: 0.5rem !important;
-    margin: -0.5rem -0.5rem -0.5rem auto !important;
-}
-
 .modal-body {
-    padding: 0.75rem 1rem !important;
+    padding: 1.5rem !important;
 }
 
 .modal-footer {
     background-color: #fff !important;
-    border-top: none !important;
-    padding: 0.5rem 1rem 1rem !important;
+    border-top: 1px solid #dee2e6 !important;
+    padding: 1rem 1.5rem !important;
 }
 
-/* Form Styles */
+.btn-close {
+    padding: 0.5rem !important;
+    margin: -0.5rem -0.5rem -0.5rem auto !important;
+    opacity: 0.6;
+    transition: all 0.2s;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+/* Form Styles - Consolidated */
 .form-label {
     font-size: 0.875rem !important;
     font-weight: 500 !important;
@@ -736,45 +671,83 @@ a#menu-manage-admin.active {
     font-size: 0.875rem !important;
 }
 
+.form-control:focus {
+    border-color: #9ed649;
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+}
+
 .mb-3 {
     margin-bottom: 1rem !important;
 }
 
-/* Button Styles */
-.modal .btn {
-    padding: 0.375rem 1rem !important;
+/* Button Styles - Consolidated */
+.btn {
+    padding: 0.5rem 1rem !important;
     font-size: 0.875rem !important;
     border-radius: 8px !important;
-    height: 38px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.modal .btn-primary {
+.btn-primary {
     background-color: #9ed649 !important;
     border-color: #9ed649 !important;
     color: white !important;
-    min-width: 100px !important;
-    transition: all 0.3s ease !important;
 }
 
-.modal .btn-primary:hover {
+.btn-primary:hover {
     background-color: #8ab82f !important;
     border-color: #8ab82f !important;
-    transform: translateY(-1px) !important;
+    transform: translateY(-1px);
 }
 
-.modal .btn-secondary {
+.btn-secondary {
     background-color: #64748b !important;
     border-color: #64748b !important;
     color: white !important;
-    min-width: 80px !important;
 }
 
-.modal .btn-secondary:hover {
+.btn-secondary:hover {
     background-color: #475569 !important;
     border-color: #475569 !important;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #bb2d3b;
+    border-color: #bb2d3b;
+    transform: translateY(-1px);
+}
+
+.add-room-btn,
+.stats-button {
+    padding: 10px 20px;
+    background: #9ed649;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(158, 214, 73, 0.3);
+    transition: all 0.2s;
+}
+
+.add-room-btn:hover,
+.stats-button:hover {
+    background: #8ab82f;
+    box-shadow: 0 2px 6px rgba(158, 214, 73, 0.4);
+    transform: translateY(-1px);
 }
 
 /* Responsive Adjustments */
@@ -785,6 +758,7 @@ a#menu-manage-admin.active {
     }
 }
 
+/* Pagination Styles - Consolidated */
 .pagination {
     gap: 0.25rem;
 }
@@ -797,13 +771,20 @@ a#menu-manage-admin.active {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    font-weight: 500;
 }
 
 .page-link:hover {
     color: #9ed649;
-    background-color: #e9ecef;
-    border-color: #dee2e6;
+    background-color: #f8f9fa;
+    border-color: #9ed649;
     transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.2);
 }
 
 .page-item.active .page-link {
@@ -811,49 +792,23 @@ a#menu-manage-admin.active {
     border-color: #9ed649;
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(158, 214, 73, 0.3);
-}
-
-.page-item.active .page-link:hover {
-    background-color: #8ab82f;
-    border-color: #8ab82f;
-    color: white;
+    box-shadow: 0 4px 12px rgba(158, 214, 73, 0.3);
 }
 
 .page-item:not(.active) .page-link:focus {
-    box-shadow: 0 0 0 0.25rem rgba(158, 214, 73, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
 }
 
-/* Thêm hiệu ứng ripple khi click */
-.page-link::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background: radial-gradient(circle, rgba(255,255,255,.7) 0%, rgba(255,255,255,.3) 40%, transparent 70%);
-    transform: scale(0);
-    transition: transform .3s ease-in-out, opacity .3s ease-in-out;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.page-link:active::after {
-    transform: scale(2);
-    opacity: 1;
-    transition: 0s;
-}
-
-/* Thêm animation cho loading state */
-@keyframes fadeInOut {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
+/* Loading Animation */
+@keyframes pulseScale {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
 }
 
 .page-item.loading .page-link {
-    animation: fadeInOut 1s infinite;
+    animation: pulseScale 0.5s infinite;
+    background-color: #f8f9fa;
 }
 
 .badge {
@@ -874,65 +829,55 @@ a#menu-manage-admin.active {
     color: white !important;
 }
 
-/* Pagination Custom Styles */
-.pagination-custom {
-    display: flex;
-    gap: 8px;
-}
-
-.pagination-custom .page-item {
-    margin: 0;
-}
-
-.pagination-custom .page-link {
+/* Navigation Tabs */
+.nav-tabs .nav-link {
+    color: #64748b;
+    border: none;
+    padding: 10px 20px;
     border-radius: 8px;
-    padding: 8px 16px;
-    color: #495057;
-    border: 1px solid #dee2e6;
-    background-color: white;
-    transition: all 0.3s ease;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 40px;
-    height: 40px;
+    margin-right: 10px;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #2c3e50;
+    background: #f1f5f9;
+}
+
+.nav-tabs .nav-link.active {
+    color: #9ed649;
+    background: #f0f9e6;
     font-weight: 500;
 }
 
-.pagination-custom .page-link:hover {
-    transform: translateY(-2px);
-    background-color: #f8f9fa;
-    color: #9ed649;
-    border-color: #9ed649;
-    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.2);
+/* Responsive design */
+@media (max-width: 768px) {
+    .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-container {
+        max-width: none;
+        width: 100%;
+    }
+    
+    .status-tabs {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .tab-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .modal-dialog {
+        margin: 1rem !important;
+        max-width: calc(100% - 2rem) !important;
+    }
 }
 
-.pagination-custom .page-item.active .page-link {
-    background-color: #9ed649;
-    border-color: #9ed649;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(158, 214, 73, 0.3);
-}
-
-.pagination-custom .page-item:not(.active) .page-link:focus {
-    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
-}
-
-/* Loading Animation */
-@keyframes pulseScale {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.95); }
-    100% { transform: scale(1); }
-}
-
-.pagination-custom .page-item.loading .page-link {
-    animation: pulseScale 0.5s infinite;
-    background-color: #f8f9fa;
-}
-
-/* Bootstrap Toast Override */
+/* Toast Styles - Consolidated */
 .toast-container {
     position: fixed;
     top: 20px;
@@ -950,6 +895,7 @@ a#menu-manage-admin.active {
 
 .toast.showing {
     transform: translateX(0);
+    animation: slideInRight 0.3s ease-in-out forwards;
 }
 
 .toast.show {
@@ -958,6 +904,7 @@ a#menu-manage-admin.active {
 
 .toast.hide {
     transform: translateX(100%);
+    animation: slideOutRight 0.3s ease-in-out forwards;
 }
 
 .toast.success {
@@ -994,15 +941,6 @@ a#menu-manage-admin.active {
     color: #dc3545;
 }
 
-.btn-close {
-    opacity: 0.5;
-    transition: opacity 0.2s;
-}
-
-.btn-close:hover {
-    opacity: 1;
-}
-
 /* Custom Animation */
 @keyframes slideInRight {
     from {
@@ -1026,250 +964,72 @@ a#menu-manage-admin.active {
     }
 }
 
-.toast.showing {
-    animation: slideInRight 0.3s ease-in-out forwards;
+/* Utility Classes - Cleanup */
+.text-muted { color: #6c757d !important; }
+.fw-medium { font-weight: 500; }
+
+/* Table Container */
+.table-responsive {
+    overflow: visible !important;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: auto;
 }
 
-.toast.hiding {
-    animation: slideOutRight 0.3s ease-in-out forwards;
+.table-responsive::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
 }
 
-/* Thêm style cho text placeholder */
-td {
-    color: #2c3e50;
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
 }
 
-td:empty::before,
-td:contains('Chưa cập nhật'),
-td:contains('Chưa cập nhật') {
-    color: #94a3b8;
-    font-style: italic;
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
 }
 
-/* Dropdown Menu Styles */
-.action-dropdown .btn-link {
-    color: #64748b;
-    padding: 0.5rem;
-    transition: all 0.2s;
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
-.action-dropdown .btn-link:hover {
-    color: #2c3e50;
-    background: #f1f5f9;
-    border-radius: 6px;
-}
-
-.action-dropdown .dropdown-menu {
-    min-width: 160px;
-    padding: 0.5rem 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-}
-
-.action-dropdown .dropdown-item {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    color: #64748b;
-    transition: all 0.2s;
-}
-
-.action-dropdown .dropdown-item:hover {
-    background-color: #f8fafc;
-    color: #2c3e50;
-}
-
-.action-dropdown .dropdown-item.text-danger:hover {
-    background-color: #fee2e2;
-    color: #dc2626;
-}
-
-.action-dropdown .dropdown-item.text-success:hover {
-    background-color: #dcfce7;
-    color: #16a34a;
-}
-
-.action-dropdown .dropdown-divider {
-    margin: 0.5rem 0;
-    border-color: #e2e8f0;
-}
-
-/* Timeline Styles */
-.timeline {
-    position: relative;
-    padding: 20px 0;
-}
-
-.timeline-item {
-    position: relative;
-    padding-left: 50px;
-    margin-bottom: 30px;
-}
-
-.timeline-icon {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-}
-
-.timeline-content {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    position: relative;
-}
-
-.timeline-content::before {
-    content: '';
-    position: absolute;
-    left: -8px;
-    top: 12px;
-    width: 0;
-    height: 0;
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid transparent;
-    border-right: 8px solid #f8f9fa;
-}
-
-/* Tab Styles */
-.nav-tabs .nav-link {
-    color: #64748b;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    margin-right: 10px;
-}
-
-.nav-tabs .nav-link:hover {
-    color: #2c3e50;
-    background: #f1f5f9;
-}
-
-.nav-tabs .nav-link.active {
-    color: #9ed649;
-    background: #f0f9e6;
-    font-weight: 500;
-}
-
-/* Table Styles in Modal */
-.modal .table {
-    margin-bottom: 0;
-}
-
-.modal .table td {
-    padding: 0.75rem 0;
-    vertical-align: middle;
-}
-
-.modal .table-borderless td {
-    border: none;
-}
-
-/* Badge Styles */
-.badge {
-    padding: 0.35rem 0.75rem;
-    font-weight: 500;
-    font-size: 0.75rem;
-}
-
-/* Style cho modal xác nhận */
-#deleteConfirmModal .modal-content {
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-#deleteConfirmModal .modal-body {
-    padding: 2rem;
-}
-
-#deleteConfirmModal .fa-exclamation-circle {
-    color: #ffc107;
-    font-size: 4rem;
-    margin-bottom: 1.5rem;
-}
-
-#deleteConfirmModal .btn {
-    padding: 0.5rem 2rem;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-#deleteConfirmModal .btn-secondary {
-    background-color: #f1f5f9;
-    border-color: #f1f5f9;
-    color: #64748b;
-}
-
-#deleteConfirmModal .btn-secondary:hover {
-    background-color: #e2e8f0;
-    border-color: #e2e8f0;
-    color: #475569;
-}
-
-#deleteConfirmModal .btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-#deleteConfirmModal .btn-danger:hover {
-    background-color: #bb2d3b;
-    border-color: #bb2d3b;
-    transform: translateY(-1px);
-}
-
-/* Style cho modal toggle status */
+/* Specific Modal Styles - Consolidated */
+#deleteConfirmModal .modal-content,
 #toggleStatusModal .modal-content {
     border: none;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
+#deleteConfirmModal .modal-header,
+#toggleStatusModal .modal-header {
+    padding: 1rem 1.5rem 0.5rem;
+}
+
+#deleteConfirmModal .modal-body,
 #toggleStatusModal .modal-body {
-    padding: 2rem;
+    padding: 1.5rem;
 }
 
-#toggleStatusModal .form-control {
+#deleteConfirmModal .user-info,
+#toggleStatusModal .user-info {
+    background-color: #f8f9fa;
+    padding: 1rem;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    padding: 0.75rem;
-    font-size: 0.875rem;
 }
 
-#toggleStatusModal .form-control:focus {
-    border-color: #9ed649;
-    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+.alert-warning {
+    background-color: #fff8e1;
+    border-color: #ffd54f;
+    color: #856404;
 }
 
-#toggleStatusModal .btn {
-    padding: 0.5rem 2rem;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-#toggleStatusModal .btn-primary {
-    background-color: #9ed649;
-    border-color: #9ed649;
-}
-
-#toggleStatusModal .btn-primary:hover {
-    background-color: #8ab82f;
-    border-color: #8ab82f;
-    transform: translateY(-1px);
-}
-
-#toggleStatusModal .alert {
-    border-radius: 8px;
-    font-size: 0.875rem;
+.alert-info {
+    background-color: #e6f3ff;
+    border-color: #b8daff;
+    color: #0c5460;
 }
 
 /* Table Container */
@@ -1292,27 +1052,6 @@ nav[aria-label="Page navigation"] {
 /* Action Column */
 .table td:last-child {
     position: relative;
-}
-
-/* Stats Button */
-.stats-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.6rem 1.2rem;
-    background: #64748b;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.stats-button:hover {
-    background: #475569;
-    transform: translateY(-1px);
 }
 
 /* Thống kê (Statistics) Section Styles */
@@ -1390,47 +1129,60 @@ nav[aria-label="Page navigation"] {
     margin-top: 1rem;
 }
 
-.bg-light-success {
-    background-color: rgba(138, 184, 47, 0.1);
+/* Misc Styles - Consolidated */
+.bg-light-success { background-color: rgba(138, 184, 47, 0.1); }
+.bg-light-primary { background-color: rgba(13, 110, 253, 0.1); }
+.bg-light-warning { background-color: rgba(255, 193, 7, 0.1); }
+.bg-light-info { background-color: rgba(13, 202, 240, 0.1); }
+.bg-light-danger { background-color: rgba(220, 53, 69, 0.1); }
+
+.text-success { color: #8ab82f !important; }
+
+.badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
-.bg-light-primary {
-    background-color: rgba(13, 110, 253, 0.1);
+.badge-inactive {
+    background-color: #dc3545 !important;
+    color: white !important;
 }
 
-.bg-light-warning {
-    background-color: rgba(255, 193, 7, 0.1);
+.bg-success {
+    background-color: #9ed649 !important;
+    color: white !important;
 }
 
-.bg-light-info {
-    background-color: rgba(13, 202, 240, 0.1);
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
 }
 
-.bg-light-danger {
-    background-color: rgba(220, 53, 69, 0.1);
+.status-active {
+    background: rgba(158, 214, 73, 0.1);
+    color: #8ab82f;
 }
 
-.text-success {
-    color: #8ab82f !important;
+.status-inactive {
+    background: rgba(100, 116, 139, 0.1);
+    color: #64748b;
 }
 
-/* Chart section styles */
-.chart-card {
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.chart-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-}
-
-.chart-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 1rem;
+.rating .fa-star {
+    color: #ffc107;
 }
 
 /* Homestay table styles */
@@ -1645,30 +1397,29 @@ nav[aria-label="Page navigation"] {
 
 {% block content %}
     <aside class="admin-sidebar">
-        <ul class="sidebar-menu">
-            <li class="sidebar-menu-item">
+        <ul class="sidebar-menu">            <li class="sidebar-menu-item">
                 <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-stats">
                     <i class="fas fa-chart-line"></i>
                     <span>Thống kê</span>
                 </a>
             </li>            {% if current_user.is_super_admin %}
             <li class="sidebar-menu-item">
-                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-manage-admin">
-                    <i class="fas fa-users-cog"></i>
-                    <span>Quản lý Admin</span>
+                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-owner">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Quản lý khách hàng</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-owner">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Quản lý Owner</span>
+                <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-manage-admin">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Quản lý Admin</span>
                 </a>
             </li>
             {% else %}
             <li class="sidebar-menu-item">
                 <a href="javascript:void(0)" class="sidebar-menu-link" id="menu-owner">
                     <i class="fas fa-user-plus"></i>
-                    <span>Thêm tài khoản &<br>Quản lý Owner</span>
+                    <span>Quản lý khách hàng</span>
                 </a>
             </li>
             {% endif %}
@@ -1686,7 +1437,7 @@ nav[aria-label="Page navigation"] {
             </div>
             
             <!-- Block: Quản lý Owner -->
-            <div id="owner-section" style="display: block; padding: 1.5rem;">                <!-- Filter Section - Simple Layout (Image 2 Style) -->                <div class="compact-filter-section mb-3">
+            <div id="owner-section" style="display: block; padding: 0.5rem;">                <!-- Filter Section - Simple Layout (Image 2 Style) -->                <div class="compact-filter-section mb-3">
                     <div class="d-flex align-items-center justify-content-between">
                         <!-- Left: Status Tabs -->
                         <div class="status-tabs-compact">
@@ -1696,11 +1447,11 @@ nav[aria-label="Page navigation"] {
                             </a>
                             <a href="{{ url_for('admin.dashboard', role=current_role_filter, status='active', search=search_query) }}" 
                                class="tab-btn {% if current_filter == 'active' %}active{% endif %}">
-                                Active <span class="count">{{ active_count }}</span>
+                                Hoạt động <span class="count">{{ active_count }}</span>
                             </a>
                             <a href="{{ url_for('admin.dashboard', role=current_role_filter, status='inactive', search=search_query) }}" 
                                class="tab-btn {% if current_filter == 'inactive' %}active{% endif %}">
-                                Inactive <span class="count">{{ inactive_count }}</span>
+                                Ngừng hoạt động <span class="count">{{ inactive_count }}</span>
                             </a>
                         </div>
                         
@@ -1790,10 +1541,9 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tài khoản thêm trong tuần</h6>
-                                <h5 class="mb-1">{{ (weekly_stats.new_owners + weekly_stats.new_renters) if weekly_stats else 0 }}</h5>
-                                <small class="text-success">
+                                <h5 class="mb-1">{{ (weekly_stats.new_owners + weekly_stats.new_renters) if weekly_stats else 0 }}</h5>                                <small class="text-success">
                                     {% if stats and (stats.total_owners + stats.total_renters) > 0 %}
-                                        +{{ (((weekly_stats.new_owners + weekly_stats.new_renters) / (stats.total_owners + stats.total_renters)) * 100)|round(1) if weekly_stats else 0 }}% so với tuần trước ↗
+                                        +{{ (((weekly_stats.new_owners + weekly_stats.new_renters) / (stats.total_owners + stats.total_renters)) * 100)|round(1) if weekly_stats else 0 }}% so với tuần trước
                                     {% else %}
                                         +0% so với tuần trước
                                     {% endif %}
@@ -1805,10 +1555,9 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Renter thêm trong tháng</h6>
-                                <h5 class="mb-1">{{ weekly_stats.new_renters_month if weekly_stats else 0 }}</h5>
-                                <small class="text-success">
+                                <h5 class="mb-1">{{ weekly_stats.new_renters_month if weekly_stats else 0 }}</h5>                                <small class="text-success">
                                     {% if stats and stats.total_renters > 0 %}
-                                        +{{ ((weekly_stats.new_renters_month / stats.total_renters) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước ↗
+                                        +{{ ((weekly_stats.new_renters_month / stats.total_renters) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
                                     {% else %}
                                         +0% so với tháng trước
                                     {% endif %}
@@ -1820,10 +1569,9 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Owner thêm trong tháng</h6>
-                                <h5 class="mb-1">{{ weekly_stats.new_owners_month if weekly_stats else 0 }}</h5>
-                                <small class="text-success">
+                                <h5 class="mb-1">{{ weekly_stats.new_owners_month if weekly_stats else 0 }}</h5>                                <small class="text-success">
                                     {% if stats and stats.total_owners > 0 %}
-                                        +{{ ((weekly_stats.new_owners_month / stats.total_owners) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước ↗
+                                        +{{ ((weekly_stats.new_owners_month / stats.total_owners) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
                                     {% else %}
                                         +0% so với tháng trước
                                     {% endif %}
@@ -1838,7 +1586,7 @@ nav[aria-label="Page navigation"] {
                     <h2 class="table-title">Danh sách tài khoản</h2>
                     <button class="add-room-btn" data-bs-toggle="modal" data-bs-target="#addOwnerModal">
                         <i class="fas fa-plus"></i>
-                        Thêm tài khoản
+                        Thêm owner
                     </button>
                 </div>                <!-- Table -->
                 <div class="table-responsive">
@@ -1889,12 +1637,14 @@ nav[aria-label="Page navigation"] {
                                                 </a>
                                             </li>
                                             {% if user.role_type != 'admin' %}
-                                            <li><hr class="dropdown-divider"></li>                                            <li>
-                                                <button type="button" class="dropdown-item text-{{ 'danger' if user.is_active else 'success' }}" 
+                                            <li><hr class="dropdown-divider"></li>                                            <li>                                                <button type="button" class="dropdown-item text-{{ 'danger' if user.is_active else 'success' }}" 
                                                         data-action="toggle-status"
                                                         data-user-id="{{ user.id }}" 
                                                         data-role-type="{{ user.role_type }}" 
-                                                        data-is-active="{{ user.is_active|lower }}">
+                                                        data-is-active="{{ user.is_active|lower }}"
+                                                        data-username="{{ user.full_name if user.full_name else user.username }}"
+                                                        data-email="{{ user.email }}"
+                                                        data-phone="{{ user.phone_number if user.phone_number else 'Không có' }}">
                                                     <i class="fas fa-{{ 'ban' if user.is_active else 'check-circle' }} me-2"></i>
                                                     <span>{{ 'Vô hiệu hóa' if user.is_active else 'Kích hoạt' }}</span>
                                                 </button>
@@ -2027,72 +1777,51 @@ nav[aria-label="Page navigation"] {
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="mb-0">Admin Dashboard</h4>
                     <p class="mb-0 text-muted">Quản lý tài khoản và thống kê hệ thống</p>
-                </div>                <!-- Stats Overview Cards - Clean design without icons -->
-                <div class="stats-overview mb-4">
-                    <div class="row g-3">
+                </div>                <!-- Stats Overview Cards - Clean design without icons -->                <div class="stats-overview mb-3">
+                    <div class="row g-2">
                         <div class="col-md-2">
-                            <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <h6 class="mb-2 text-muted">Tổng số chủ nhà</h6>
-                                <h4 class="mb-1">{{ stats.total_owners }}</h4>
+                            <div class="stat-card bg-white p-2 rounded shadow-sm">
+                                <h6 class="mb-1 text-muted small">Tổng số chủ nhà</h6>
+                                <h5 class="mb-1">{{ stats.total_owners }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_owners if weekly_stats.new_owners else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <h6 class="mb-2 text-muted">Tổng người thuê</h6>
-                                <h4 class="mb-1">{{ stats.total_renters }}</h4>
+                            <div class="stat-card bg-white p-2 rounded shadow-sm">
+                                <h6 class="mb-1 text-muted small">Tổng người thuê</h6>
+                                <h5 class="mb-1">{{ stats.total_renters }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_renters if weekly_stats.new_renters else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <h6 class="mb-2 text-muted">Tổng số phòng</h6>
-                                <h4 class="mb-1">{{ stats.total_rooms }}</h4>
+                            <div class="stat-card bg-white p-2 rounded shadow-sm">
+                                <h6 class="mb-1 text-muted small">Tổng số phòng</h6>
+                                <h5 class="mb-1">{{ stats.total_rooms }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_rooms if weekly_stats.new_rooms else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <h6 class="mb-2 text-muted">Phí dịch vụ</h6>
-                                <h4 class="mb-1">{{ '{:,.0f}'.format(admin_commission) if admin_commission else 0 }} <span class="fs-6 text-muted">đ</span></h4>
+                            <div class="stat-card bg-white p-2 rounded shadow-sm">
+                                <h6 class="mb-1 text-muted small">Phí dịch vụ</h6>
+                                <h5 class="mb-1">{{ '{:,.0f}'.format(admin_commission) if admin_commission else 0 }} <span class="small text-muted">đ</span></h5>
                                 <small class="text-success">+{{ weekly_stats.booking_growth_rate if weekly_stats.booking_growth_rate else 0 }}% so với tuần trước</small>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <h6 class="mb-2 text-muted">Tổng lượt đặt phòng</h6>
-                                <h4 class="mb-1">{{ stats.total_bookings }} <span class="fs-6 text-muted">lần</span></h4>
+                            <div class="stat-card bg-white p-2 rounded shadow-sm">
+                                <h6 class="mb-1 text-muted small">Tổng lượt đặt phòng</h6>
+                                <h5 class="mb-1">{{ stats.total_bookings }} <span class="small text-muted">lần</span></h5>
                                 <small class="text-muted">+{{ weekly_stats.new_bookings if weekly_stats.new_bookings else 0 }} trong tuần</small>
                             </div>
-                        </div>                        <div class="col-md-2">
-                            <div class="stat-card bg-white p-3 rounded shadow-sm">
-                                <h6 class="mb-2 text-muted">Lượt đặt phòng</h6>
-                                <h4 class="mb-1">+{{ weekly_stats.booking_growth_rate if weekly_stats.booking_growth_rate else 0 }}%</h4>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="stat-card bg-white p-2 rounded shadow-sm">
+                                <h6 class="mb-1 text-muted small">Lượt đặt phòng</h6>
+                                <h5 class="mb-1">+{{ weekly_stats.booking_growth_rate if weekly_stats.booking_growth_rate else 0 }}%</h5>
                                 <small class="text-muted">So với tuần trước</small>
                             </div>
                         </div>
-                    </div>
-                </div><!-- Chart Sections -->
-                <!-- <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="chart-card bg-white p-3 rounded shadow-sm">
-                            <h5 class="chart-title">Tổng thuê theo giờ</h5>
-                            <div style="height: 300px;">
-                                <canvas id="hourlyTaxChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="chart-card bg-white p-3 rounded shadow-sm">
-                            <h5 class="chart-title">Tổng thuê qua đêm</h5>
-                            <div style="height: 300px;">
-                                <canvas id="overnightTaxChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-
-                <!-- Homestay Table -->
+                    </div>                <!-- Homestay Table -->
                 <div class="homestay-stats bg-white p-4 rounded shadow-sm">
                     <h5 class="mb-3">Chủ phòng có doanh thu cao nhất</h5>
                     <div class="table-responsive">
@@ -2385,7 +2114,7 @@ nav[aria-label="Page navigation"] {
                                     {% for room in owner.rooms %}
                                     <tr>
                                         <td>{{ room.name }}</td>
-                                        <td>{{ format_full_address(room.address, None, room.district, room.city) }}</td>
+                                        <td>{{ room.address }}</td>
                                         <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VNĐ</td>
                                         <td>
                                             <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
@@ -2474,14 +2203,38 @@ nav[aria-label="Page navigation"] {
 <!-- Modal Xác nhận xóa -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body text-center p-4">
-                <i class="fas fa-exclamation-circle text-warning mb-3" style="font-size: 3rem;"></i>
-                <h5 class="modal-title mb-3" id="deleteConfirmModalLabel">Xác nhận xóa</h5>
-                <p class="mb-4">Bạn có chắc chắn muốn xóa tài khoản này không?</p>
-                <div class="d-flex justify-content-center gap-2">
-                    <button type="button" class="btn btn-danger px-4" id="confirmDeleteBtn">Xóa</button>
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy</button>
+        <div class="modal-content border-0 rounded-3">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <h5 class="modal-title fw-bold mb-4" id="deleteConfirmModalLabel">Xóa tài khoản</h5>
+                
+                <!-- Thông tin người dùng -->
+                <div class="user-info mb-3">
+                    <div class="row mb-2">
+                        <div class="col-4 text-muted">Tên</div>
+                        <div class="col-8 fw-medium" id="delete-username-display"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 text-muted">Email</div>
+                        <div class="col-8" id="delete-email-display"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 text-muted">Số điện thoại</div>
+                        <div class="col-8" id="delete-phone-display"></div>
+                    </div>
+                </div>
+                
+                <!-- Cảnh báo -->
+                <div class="alert alert-warning mb-4">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Lưu ý: Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến tài khoản này sẽ bị xóa vĩnh viễn.
+                </div>
+                
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger px-4" id="confirmDeleteBtn">Xóa tài khoản</button>
                 </div>
             </div>
         </div>
@@ -2491,25 +2244,67 @@ nav[aria-label="Page navigation"] {
 <!-- Modal Vô hiệu hóa/Kích hoạt tài khoản -->
 <div class="modal fade" id="toggleStatusModal" tabindex="-1" aria-labelledby="toggleStatusModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body text-center p-4">
+        <div class="modal-content border-0 rounded-3">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
                 <div id="deactivateContent">
-                    <i class="fas fa-ban text-danger mb-3" style="font-size: 3rem;"></i>
-                    <h5 class="modal-title mb-3">Vô hiệu hóa tài khoản</h5>
-                    <p class="mb-4">Vui lòng nhập lý do vô hiệu hóa tài khoản này:</p>
-                    <div class="form-group mb-4">
-                        <textarea class="form-control" name="reason" rows="3" placeholder="Ví dụ: Vi phạm điều khoản sử dụng..." required></textarea>
+                    <h5 class="modal-title fw-bold mb-4">Vô hiệu hóa tài khoản</h5>
+                    
+                    <!-- Thông tin người dùng -->
+                    <div class="user-info mb-3">
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Tên</div>
+                            <div class="col-8 fw-medium" id="toggle-username-display"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Email</div>
+                            <div class="col-8" id="toggle-email-display"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Số điện thoại</div>
+                            <div class="col-8" id="toggle-phone-display"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="reasonTextarea" class="form-label">Lý do vô hiệu hóa tài khoản:</label>
+                        <textarea class="form-control" id="reasonTextarea" name="reason" rows="3" placeholder="Ví dụ: Vi phạm điều khoản sử dụng..." required maxlength="200"></textarea>
+                        <div class="d-flex justify-content-end mt-1">
+                            <small class="text-muted character-count">0/200 ký tự</small>
+                        </div>
                     </div>
                 </div>
+                
                 <div id="activateContent" style="display: none;">
-                    <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
-                    <h5 class="modal-title mb-3">Kích hoạt tài khoản</h5>
-                    <p class="mb-4">Lý do tài khoản bị vô hiệu hóa trước đó:</p>
-                    <div class="alert alert-info mb-4" id="previousReason"></div>
+                    <h5 class="modal-title fw-bold mb-4">Kích hoạt tài khoản</h5>
+                    
+                    <!-- Thông tin người dùng -->
+                    <div class="user-info mb-3">
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Tên</div>
+                            <div class="col-8 fw-medium" id="toggle-username-display-active"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Email</div>
+                            <div class="col-8" id="toggle-email-display-active"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Số điện thoại</div>
+                            <div class="col-8" id="toggle-phone-display-active"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Lý do tài khoản bị vô hiệu hóa trước đó:</label>
+                        <div class="alert alert-info" id="previousReason"></div>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-center gap-2">
+                
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Hủy</button>
                     <button type="button" class="btn btn-primary px-4" id="confirmToggleBtn">Xác nhận</button>
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy</button>
                 </div>
             </div>
         </div>
@@ -2823,8 +2618,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Chart.js for Statistics -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Đóng modal development trước để không che dropdown
@@ -3143,7 +2936,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentStatus = currentFilter ? currentFilter.getAttribute('data-status') : null;
             
             // Tạo URL mới với các tham số
-            const url = new URL(window.location.origin + '/admin/dashboard');
+            const url = new URL(window.origin + '/admin/dashboard');
             
             // Thêm tham số search nếu có
             if (searchTerm) {
@@ -3185,40 +2978,94 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteConfirmModal.show();
         });
     });
-    
-    // Khi click nút xác nhận xóa trong modal
+      // Khi click nút xác nhận xóa trong modal
     document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-        if (deleteForm) {
-            deleteForm.submit();
+        if (userToDelete) {
+            // Make API call to delete user
+            fetch(`/admin/users/${userToDelete.userId}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_type: userToDelete.userType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', data.message);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast('error', data.error || 'Có lỗi xảy ra');
+                }
+                bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Có lỗi xảy ra khi xử lý yêu cầu');
+                bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+            });
         }
-        deleteConfirmModal.hide();
-    });
-
-    // Xử lý toggle status
+    });    // Xử lý toggle status
     const toggleStatusModal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
     const deactivateContent = document.getElementById('deactivateContent');
     const activateContent = document.getElementById('activateContent');
     const previousReason = document.getElementById('previousReason');
-    const reasonTextarea = document.querySelector('textarea[name="reason"]');
-    let currentForm = null;    // Khi click vào nút toggle status trong dropdown
+    const reasonTextarea = document.getElementById('reasonTextarea');
+    const characterCount = document.querySelector('#toggleStatusModal .character-count');
+    let currentForm = null;
+    
+    // Xử lý đếm ký tự
+    if (reasonTextarea) {
+        reasonTextarea.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            const maxLength = this.getAttribute('maxlength');
+            if (characterCount) {
+                characterCount.textContent = `${currentLength}/${maxLength} ký tự`;
+            }
+        });
+    }
+    
+    // Khi click vào nút toggle status trong dropdown
     document.querySelectorAll('button[data-action="toggle-status"]').forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
             const userId = this.getAttribute('data-user-id');
             const userType = this.getAttribute('data-role-type');
             const isActive = this.getAttribute('data-is-active') === 'true';
+            const username = this.getAttribute('data-username') || 'Không có thông tin';
+            const email = this.getAttribute('data-email') || 'Không có thông tin';
+            const phone = this.getAttribute('data-phone') || 'Không có thông tin';
             
             // Store current button data for later use
             currentForm = {
                 userId: userId,
                 userType: userType,
-                isActive: isActive
+                isActive: isActive,
+                username: username,
+                email: email,
+                phone: phone
             };
 
-            // Reset form
+            // Reset form and update character count
             if (reasonTextarea) {
                 reasonTextarea.value = '';
+                if (characterCount) {
+                    characterCount.textContent = `0/${reasonTextarea.getAttribute('maxlength')} ký tự`;
+                }
             }
+            
+            // Cập nhật thông tin người dùng trong modal
+            document.getElementById('toggle-username-display').textContent = username;
+            document.getElementById('toggle-email-display').textContent = email;
+            document.getElementById('toggle-phone-display').textContent = phone;
+            
+            document.getElementById('toggle-username-display-active').textContent = username;
+            document.getElementById('toggle-email-display-active').textContent = email;
+            document.getElementById('toggle-phone-display-active').textContent = phone;
             
             if (isActive) {
                 // Hiển thị form vô hiệu hóa
@@ -3249,14 +3096,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             previousReason.textContent = 'Không thể lấy lý do';
                         }
                     });
-            }            toggleStatusModal.show();
+            }
+            toggleStatusModal.show();
         });
-    });
-
-    // Khi click nút xác nhận trong modal
+    });    // Khi click nút xác nhận trong modal
     document.getElementById('confirmToggleBtn').addEventListener('click', function() {
         if (currentForm) {
             const reason = reasonTextarea ? reasonTextarea.value : '';
+            
+            // Validation for deactivation (require reason)
+            if (currentForm.isActive && (!reason || reason.trim() === '')) {
+                alert('Vui lòng nhập lý do vô hiệu hóa tài khoản');
+                return;
+            }
             
             // Make API call to toggle status with reason
             fetch(`/admin/users/${currentForm.userId}/toggle-status`, {
@@ -3267,7 +3119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     user_type: currentForm.userType,
                     action: currentForm.isActive ? 'deactivate' : 'activate',
-                    reason: reason                })
+                    reason: reason})
             })
             .then(response => response.json())
             .then(data => {
@@ -3286,121 +3138,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast('error', 'Có lỗi xảy ra khi xử lý yêu cầu');
                 toggleStatusModal.hide();
             });
-        }
-    });
-
-    // Khởi tạo dữ liệu biểu đồ từ server
-    let hourlyStats, overnightStats;
-    try {
-        hourlyStats = JSON.parse('{{ stats.hourly_stats|tojson|safe }}');
-    } catch (e) {
-        console.error('Error parsing hourly stats:', e);
-        hourlyStats = {
-            labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-            data: [0, 0, 0, 0, 0, 0, 0]
-        };
-    }
-    
-    try {
-        overnightStats = JSON.parse('{{ stats.overnight_stats|tojson|safe }}');
-    } catch (e) {
-        console.error('Error parsing overnight stats:', e);
-        overnightStats = {
-            labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-            data: [0, 0, 0, 0, 0, 0, 0]
-        };
-    }
-
-    // Cấu hình biểu đồ thuê theo giờ
-    const hourlyTaxData = {
-        labels: hourlyStats.labels,
-        datasets: [{
-            label: 'Thuê theo giờ',
-            data: hourlyStats.data,
-            backgroundColor: 'rgba(139, 195, 74, 0.2)',
-            borderColor: '#8bc34a',
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true
-        }]
-    };
-
-    // Cấu hình biểu đồ thuê qua đêm
-    const overnightTaxData = {
-        labels: overnightStats.labels,
-        datasets: [{
-            label: 'Thuê qua đêm',
-            data: overnightStats.data,
-            backgroundColor: 'rgba(100, 116, 139, 0.2)',
-            borderColor: '#64748b',
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true
-        }]
-    };
-
-    // Cấu hình chung cho biểu đồ
-    const chartConfig = {
-        type: 'line',
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        drawBorder: false,
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return value + ' lần';
-                        }
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            }
-        }
-    };
-
-    // Khởi tạo biểu đồ
-    const hourlyChartEl = document.getElementById('hourlyTaxChart');
-    const overnightChartEl = document.getElementById('overnightTaxChart');
-    
-    if (hourlyChartEl && overnightChartEl) {
-        const hourlyCtx = hourlyChartEl.getContext('2d');
-        const overnightCtx = overnightChartEl.getContext('2d');
-        
-        new Chart(hourlyCtx, {
-            ...chartConfig,
-            data: hourlyTaxData
-        });
-        
-        new Chart(overnightCtx, {
-            ...chartConfig,
-            data: overnightTaxData
-        });
-    } else {
-        console.error('Chart canvas elements not found');
-    }
+        }    });
 
     // DEBUG AND FIX DROPDOWN FUNCTIONALITY
     // Check if Bootstrap is loaded
@@ -3455,6 +3193,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // TODO: Show user details modal or redirect to user detail page
         alert(`Xem chi tiết người dùng ID: ${userId}, Loại: ${userType}\n(Chức năng này đang được phát triển)`);
     });
+      // Biến để lưu thông tin người dùng cần xóa
+    let userToDelete = null;
     
     window.deleteUser = function(element) {
         const userId = element.getAttribute('data-user-id');
@@ -3462,33 +3202,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Delete user:', userId, userType);
         
-        if (confirm('Bạn có chắc muốn xóa người dùng này? Hành động này không thể hoàn tác!')) {
-            // Make API call to delete user
-            fetch(`/admin/users/${userId}/delete`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    user_type: userType
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('success', data.message);
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                } else {
-                    showToast('error', data.error || 'Có lỗi xảy ra');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('error', 'Có lỗi xảy ra khi xử lý yêu cầu');
-            });
-        }
+        // Lấy thông tin người dùng từ row
+        const userRow = element.closest('tr');
+        const username = userRow.querySelector('td:nth-child(3)').textContent.trim();
+        const email = userRow.querySelector('td:nth-child(4)').textContent.trim();
+        const phone = userRow.querySelector('td:nth-child(5)').textContent.trim();
+        
+        // Lưu thông tin cho nút xác nhận xóa
+        userToDelete = {
+            userId: userId,
+            userType: userType
+        };
+        
+        // Hiển thị thông tin trong modal
+        document.getElementById('delete-username-display').textContent = username;
+        document.getElementById('delete-email-display').textContent = email;
+        document.getElementById('delete-phone-display').textContent = phone;
+        
+        // Hiển thị modal xác nhận
+        const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        deleteConfirmModal.show();
     };
 
     // Handle Add Admin Form
