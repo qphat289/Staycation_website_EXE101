@@ -942,7 +942,7 @@
                                 <span class="currency-label">VND</span>
                                 <input type="text" name="hourly_price" class="price-input" 
                                        placeholder="Nhập giá theo giờ" 
-                                       value="{{ room.hourly_price or '' }}"
+                                       value="{% if room.hourly_price and room.hourly_price > 0 %}{{ '{:,}'.format(room.hourly_price).replace(',', '.') }}{% endif %}"
                                        oninput="formatPriceInput(this)">
                             </div>
                         </div>
@@ -951,7 +951,7 @@
                                 <span class="currency-label">VND</span>
                                 <input type="text" name="nightly_price" class="price-input" 
                                        placeholder="Nhập giá qua đêm" 
-                                       value="{{ room.nightly_price or '' }}"
+                                       value="{% if room.nightly_price and room.nightly_price > 0 %}{{ '{:,}'.format(room.nightly_price).replace(',', '.') }}{% endif %}"
                                        oninput="formatPriceInput(this)">
                             </div>
                         </div>
@@ -1044,10 +1044,10 @@
                             <option value="hanoi" {% if room.province == 'hanoi' %}selected{% endif %}>Hà Nội</option>
                         </select>
                         <select name="district" id="district" class="form-select" onchange="updateWards()">
-                            <option value="" disabled selected>Quận/Huyện</option>
+                            <option value="" disabled {% if not room.district %}selected{% endif %}>Quận/Huyện</option>
                         </select>
                         <select name="ward" id="ward" class="form-select">
-                            <option value="" disabled selected>Phường/Xã</option>
+                            <option value="" disabled {% if not room.ward %}selected{% endif %}>Phường/Xã</option>
                         </select>
                         <input type="text" name="street" class="form-input" 
                                placeholder="Số nhà, tên đường" 
@@ -1094,14 +1094,11 @@
 
 <script>
 // Include JavaScript from add_room.html for functionality  
-        let selectedAmenities = {{ (room.amenities if room else [])|tojson|safe }};
-        let selectedRules = {{ (room.rules if room else [])|tojson|safe }};
+let selectedAmenities = {{ (room.amenities if room else [])|tojson|safe }};
+let selectedRules = {{ (room.rules if room else [])|tojson|safe }};
 let locationData = null;
 let amenitiesData = null;
 let rulesData = null;
-
-);
-);
 
 // Counter functions
 function increaseCount(type) {
@@ -1266,7 +1263,7 @@ function loadExistingRulesAndAmenities() {
     selectedAmenities = [];
     
     // Load amenities from room data
-            const roomAmenities = {{ (room.amenities if room else [])|tojson|safe }};
+    const roomAmenities = {{ (room.amenities if room else [])|tojson|safe }};
     if (roomAmenities && Array.isArray(roomAmenities)) {
         roomAmenities.forEach(amenity => {
             if (amenity.id && amenity.name) {
@@ -1280,7 +1277,7 @@ function loadExistingRulesAndAmenities() {
     }
     
     // Load rules from room data
-            const roomRules = {{ (room.rules if room else [])|tojson|safe }};
+    const roomRules = {{ (room.rules if room else [])|tojson|safe }};
     if (roomRules && Array.isArray(roomRules)) {
         roomRules.forEach(rule => {
             if (rule.id && rule.name) {
@@ -1290,7 +1287,6 @@ function loadExistingRulesAndAmenities() {
                 });
             }
         });
-        );
     }
     
     // Update displays after loading
@@ -1775,19 +1771,30 @@ function deleteRoom() {
     }
 }
 
-// Form preparation before submit
+// Form submission handling
 document.getElementById('edit-room-form').addEventListener('submit', function(e) {
-    // Prepare price values (remove formatting)
+    // Convert formatted prices back to numbers for backend
     const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
     const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
     
-    if (hourlyPriceInput && hourlyPriceInput.getAttribute('data-value')) {
-        hourlyPriceInput.value = hourlyPriceInput.getAttribute('data-value');
+    if (hourlyPriceInput && hourlyPriceInput.value) {
+        // Remove formatting and convert to number
+        const rawValue = hourlyPriceInput.value.replace(/[.,]/g, '');
+        hourlyPriceInput.value = rawValue;
     }
     
-    if (nightlyPriceInput && nightlyPriceInput.getAttribute('data-value')) {
-        nightlyPriceInput.value = nightlyPriceInput.getAttribute('data-value');
+    if (nightlyPriceInput && nightlyPriceInput.value) {
+        // Remove formatting and convert to number
+        const rawValue = nightlyPriceInput.value.replace(/[.,]/g, '');
+        nightlyPriceInput.value = rawValue;
     }
+    
+    // Add selected rental type to form
+    const rentalTypeInput = document.createElement('input');
+    rentalTypeInput.type = 'hidden';
+    rentalTypeInput.name = 'selected_rental_type';
+    rentalTypeInput.value = document.querySelector('input[name="rental_type"]:checked')?.value || 'nightly';
+    this.appendChild(rentalTypeInput);
 });
 
 // Simple main image upload handler

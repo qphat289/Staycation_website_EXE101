@@ -2369,8 +2369,13 @@ function setupUploadHandlers() {
 
 // Handle file preview
 function handleFilePreview(input, uploadItem) {
-    const file = input.files[0];
-    if (file && file.type.startsWith('image/')) {
+    const files = Array.from(input.files);
+    
+    if (files.length === 0) return;
+    
+    // Handle the first file for the current upload item
+    const firstFile = files[0];
+    if (firstFile && firstFile.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = function(e) {
             // Create preview image
@@ -2430,7 +2435,17 @@ function handleFilePreview(input, uploadItem) {
             // Auto-save after adding image
             saveFormDataToSession();
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(firstFile);
+    }
+    
+    // Handle additional files by creating new upload items
+    if (files.length > 1) {
+        for (let i = 1; i < files.length; i++) {
+            const additionalFile = files[i];
+            if (additionalFile.type.startsWith('image/')) {
+                addImageToUploadGrid(additionalFile);
+            }
+        }
     }
 }
 
