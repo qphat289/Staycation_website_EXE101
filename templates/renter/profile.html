@@ -207,7 +207,7 @@ if (window.MutationObserver) {
                     <!-- Avatar -->
                     <div class="avatar-container-renter">
                         {% if current_user.avatar %}
-                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}"
+                            <img src="{{ url_for('static', filename=current_user.avatar) }}"
                                 alt="Avatar"
                                 class="avatar-circle-renter">
                         {% else %}
@@ -473,7 +473,9 @@ if (window.MutationObserver) {
 }
 
 .container.py-4 {
-    margin-top: -85px;
+    margin-top: 20px;
+    position: relative;
+    z-index: 1;
 }
 
 .title-underline {

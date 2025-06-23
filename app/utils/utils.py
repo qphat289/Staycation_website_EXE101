@@ -2,6 +2,7 @@ import os
 import uuid
 from datetime import datetime
 from werkzeug.utils import secure_filename
+from PIL import Image, ExifTags
 
 def get_rank_info(xp_current):
     # Define rank thresholds and names
@@ -151,6 +152,42 @@ def generate_unique_filename(original_filename, prefix=""):
         filename = f"{timestamp}_{unique_id}{ext}"
     
     return secure_filename(filename)
+
+def fix_image_orientation(image_path):
+    """
+    Fix image orientation based on EXIF data
+    
+    Args:
+        image_path: Path to the image file
+    
+    Returns:
+        bool: True if fixed successfully, False otherwise
+    """
+    try:
+        with Image.open(image_path) as img:
+            # Check if image has EXIF data
+            if hasattr(img, '_getexif'):
+                exif = img._getexif()
+                if exif is not None:
+                    # Find orientation tag
+                    for tag, value in exif.items():
+                        if tag in ExifTags.TAGS and ExifTags.TAGS[tag] == 'Orientation':
+                            # Rotate image based on orientation value
+                            if value == 3:
+                                img = img.rotate(180, expand=True)
+                            elif value == 6:
+                                img = img.rotate(270, expand=True)
+                            elif value == 8:
+                                img = img.rotate(90, expand=True)
+                            
+                            # Save the corrected image
+                            # Remove EXIF data to prevent future rotation issues
+                            img.save(image_path, optimize=True, quality=85)
+                            return True
+        return False
+    except Exception as e:
+        print(f"Error fixing image orientation: {e}")
+        return False
 
 def save_user_image(file, user_type, user_id, room_id=None, prefix=""):
     """

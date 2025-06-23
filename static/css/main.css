@@ -185,9 +185,9 @@ html body .navbar-dark.bg-primary {
     z-index: 1050;
 }
 
-/* Navbar khi scroll - hiện màu xanh nhạt như hover button - GLOBAL */
+/* Navbar khi scroll - hiện màu chủ đạo - GLOBAL */
 html body .navbar-dark.bg-primary.scrolled {
-    background: linear-gradient(135deg, rgba(224, 236, 155, 0.95), rgba(200, 220, 130, 0.95)) !important;
+    background: linear-gradient(135deg, rgba(122, 188, 14, 0.95), rgba(101, 156, 12, 0.95)) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15) !important; /* Bóng đậm hơn khi scroll */

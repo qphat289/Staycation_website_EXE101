@@ -1020,7 +1020,7 @@
                     <div class="avatar-container">
                         <div class="avatar-circle">
                             {% if current_user.avatar %}
-                                <img src="{{ url_for('static', filename='uploads/' ~ current_user.avatar) }}" alt="Avatar">
+                                <img src="{{ url_for('static', filename=current_user.avatar) }}" alt="Avatar">
                             {% else %}
                                 <i class="fas fa-user avatar-icon"></i>
                             {% endif %}
