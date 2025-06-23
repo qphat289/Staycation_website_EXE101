@@ -1270,9 +1270,8 @@ function cancelEdit() {
 
 // Form validation with animations
 document.getElementById('personalInfoForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
     if (!isEditMode) {
+        e.preventDefault();
         return; // Don't submit if not in edit mode
     }
     
@@ -1292,23 +1291,16 @@ document.getElementById('personalInfoForm').addEventListener('submit', function(
         }
     });
     
-    if (isValid) {
-        showLoading();
-        
-        // Simulate API call
-        setTimeout(() => {
-            hideLoading();
-            showSuccess('Thông tin cá nhân đã được cập nhật thành công!');
-            
-            // Update user name display
-            const firstName = this.querySelector('input[name="first_name"]').value;
-            const lastName = this.querySelector('input[name="last_name"]').value;
-            document.querySelector('.user-name').textContent = `${firstName} ${lastName}`;
-            
-            // Exit edit mode after successful save
-            toggleEditMode();
-        }, 1500);
+    if (!isValid) {
+        e.preventDefault();
+        return;
     }
+    
+    // If validation passes, show loading and allow form to submit normally
+    showLoading();
+    
+    // Form will submit normally to the server
+    // The server will handle the response and redirect
 });
 
 // Add shake animation

@@ -100,7 +100,7 @@ def get_user_upload_path(user_type, user_id, room_id=None):
     Structure: static/data/{user_type}/{user_id}/ or static/data/owner/{user_id}/{room_id}/
     
     Args:
-        user_type: 'owner' or 'renter'
+        user_type: 'owner', 'renter', or 'admin'
         user_id: ID of the user
         room_id: ID of the room (only for owner room images)
     
@@ -113,6 +113,9 @@ def get_user_upload_path(user_type, user_id, room_id=None):
     elif user_type == 'owner':
         # For owner profile images: data/owner/{owner_id}/
         relative_path = f"data/owner/{user_id}"
+    elif user_type == 'admin':
+        # For admin profile images: data/admin/{admin_id}/
+        relative_path = f"data/admin/{user_id}"
     else:
         # For renter images: data/renter/{renter_id}/
         relative_path = f"data/renter/{user_id}"
@@ -195,7 +198,7 @@ def save_user_image(file, user_type, user_id, room_id=None, prefix=""):
     
     Args:
         file: Uploaded file object
-        user_type: 'owner' or 'renter'
+        user_type: 'owner', 'renter', or 'admin'
         user_id: ID of the user
         room_id: ID of the room (only for owner room images)
         prefix: Optional prefix for filename (e.g., 'avatar', 'main', 'room')
@@ -268,10 +271,28 @@ def migrate_old_images():
     """
     try:
         # Import here to avoid circular imports
-        from app.models.models import Owner, Renter, Room, RoomImage
+        from app.models.models import Admin, Owner, Renter, Room, RoomImage
         from app import db
         
         print("Starting image migration...")
+        
+        # Migrate admin avatars
+        admins = Admin.query.all()
+        for admin in admins:
+            if admin.avatar and (admin.avatar.startswith('uploads/') or not admin.avatar.startswith('data/')):
+                old_path = f"static/uploads/{admin.avatar}" if not admin.avatar.startswith('uploads/') else f"static/{admin.avatar}"
+                if os.path.exists(old_path):
+                    # Create new path
+                    new_relative_path, new_absolute_path = get_user_upload_path('admin', admin.id)
+                    new_filename = generate_unique_filename(os.path.basename(admin.avatar), 'avatar')
+                    new_full_path = os.path.join(new_absolute_path, new_filename)
+                    
+                    # Move file
+                    os.rename(old_path, new_full_path)
+                    
+                    # Update database
+                    admin.avatar = f"{new_relative_path}/{new_filename}"
+                    print(f"Migrated admin {admin.id} avatar: {admin.avatar}")
         
         # Migrate owner avatars
         owners = Owner.query.all()

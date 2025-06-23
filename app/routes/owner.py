@@ -1372,12 +1372,15 @@ def update_profile():
 @owner_required
 def profile():
     if request.method == 'POST':
+        print(f"🔍 DEBUG: Owner profile POST request received")
+        print(f"🔍 DEBUG: Form data keys: {list(request.form.keys())}")
+        print(f"🔍 DEBUG: Files in request: {list(request.files.keys())}")
         try:
-            # Cập nhật thông tin cơ bản
-            current_user.username = request.form.get('username')
+            # Cập nhật thông tin cơ bản (không cập nhật username vì form không có field này)
             current_user.first_name = request.form.get('first_name')
             current_user.last_name = request.form.get('last_name')
             current_user.gender = request.form.get('gender')
+            current_user.nationality = request.form.get('nationality')
             # Xử lý email với validation và cleaning
             email_input = request.form.get('email')
             if email_input:
@@ -1389,31 +1392,40 @@ def profile():
             current_user.phone = request.form.get('phone')
             current_user.address = request.form.get('address')
             
-            # Xử lý ngày sinh
-            birth_day = request.form.get('birth_day')
-            birth_month = request.form.get('birth_month')
-            birth_year = request.form.get('birth_year')
-            
-            if birth_day and birth_month and birth_year:
+            # Xử lý ngày sinh (định dạng DD/MM/YYYY từ flatpickr)
+            birth_date_str = request.form.get('birth_date')
+            if birth_date_str:
                 try:
-                    current_user.birth_date = datetime(int(birth_year), int(birth_month), int(birth_day)).date()
+                    # Parse DD/MM/YYYY format
+                    current_user.birth_date = datetime.strptime(birth_date_str, '%d/%m/%Y').date()
                 except ValueError:
                     pass  # Ignore invalid date
             
             # Xử lý upload avatar với cấu trúc mới
             avatar_file = request.files.get('avatar')
+            print(f"🔍 DEBUG: Avatar file received: {avatar_file}")
+            print(f"🔍 DEBUG: Avatar filename: {avatar_file.filename if avatar_file else 'None'}")
+            
             if avatar_file and avatar_file.filename and allowed_file(avatar_file.filename):
+                print(f"🔍 DEBUG: Avatar file passed validation")
+                print(f"🔍 DEBUG: Current user ID: {current_user.id}")
+                print(f"🔍 DEBUG: Current avatar: {current_user.avatar}")
+                
                 # Xóa avatar cũ nếu có
                 if current_user.avatar:
+                    print(f"🔍 DEBUG: Deleting old avatar: {current_user.avatar}")
                     delete_user_image(current_user.avatar)
                 
                 # Lưu avatar mới với cấu trúc data/owner/{owner_id}/
+                print(f"🔍 DEBUG: Saving new avatar...")
                 avatar_path = save_user_image(avatar_file, 'owner', current_user.id, prefix='avatar')
+                print(f"🔍 DEBUG: Avatar saved to: {avatar_path}")
                 
                 if avatar_path:
                     # Xử lý xoay ảnh và resize
                     try:
                         full_path = os.path.join('static', avatar_path)
+                        print(f"🔍 DEBUG: Processing image at: {full_path}")
                         
                         # Sửa hướng xoay ảnh theo EXIF
                         fix_image_orientation(full_path)
@@ -1434,10 +1446,21 @@ def profile():
                             # Resize to 200x200
                             img = img.resize((200, 200), Image.Resampling.LANCZOS)
                             img.save(full_path, optimize=True, quality=85)
+                            print(f"🔍 DEBUG: Image processing completed")
                     except Exception as e:
-                        print(f"Error processing avatar: {e}")
+                        print(f"❌ Error processing avatar: {e}")
                     
                     current_user.avatar = avatar_path
+                    print(f"🔍 DEBUG: Updated current_user.avatar to: {avatar_path}")
+                else:
+                    print(f"❌ DEBUG: Avatar path is None - save failed")
+            else:
+                if avatar_file:
+                    print(f"❌ DEBUG: Avatar file validation failed")
+                    print(f"   - Has filename: {bool(avatar_file.filename)}")
+                    print(f"   - Allowed file: {allowed_file(avatar_file.filename) if avatar_file.filename else 'N/A'}")
+                else:
+                    print(f"🔍 DEBUG: No avatar file in request")
             
             db.session.commit()
             flash('Cập nhật thông tin thành công!', 'success')
@@ -2368,3 +2391,4 @@ def get_bookings_api():
     except Exception as e:
         print(f"Error in get_bookings_api: {e}")
         return jsonify({'error': 'Internal server error'}), 500
+

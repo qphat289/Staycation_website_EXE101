@@ -263,6 +263,12 @@
                 <ul class="navbar-nav mx-auto justify-content-center">
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_owner() %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('owner.dashboard') }}" style="border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 6px 16px !important; margin: 0 4px; transition: all 0.3s ease;">
+                                    <i class="fas fa-home me-2"></i>
+                                    <span data-translate="home">Trang chủ</span>
+                                </a>
+                            </li>
                         {% endif %}
                     {% endif %}
                 </ul>

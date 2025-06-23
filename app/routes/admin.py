@@ -392,7 +392,7 @@ def profile():
             current_user.full_name = new_full_name
             current_user.email = new_email
 
-            # Handle avatar upload
+            # Handle avatar upload using new organized storage system
             if 'avatar' in request.files:
                 avatar = request.files['avatar']
                 print(f"Received file: {avatar.filename}")
@@ -407,49 +407,55 @@ def profile():
                         return redirect(url_for('admin.profile'))
                     
                     try:
-                        # Ensure upload folder exists
-                        upload_folder = current_app.config['UPLOAD_FOLDER']
-                        print(f"Upload folder path: {upload_folder}")
-                        abs_upload_folder = os.path.abspath(upload_folder)
-                        print(f"Absolute upload folder path: {abs_upload_folder}")
-                        
-                        if not os.path.exists(abs_upload_folder):
-                            print(f"Creating upload folder: {abs_upload_folder}")
-                            os.makedirs(abs_upload_folder, exist_ok=True)
-                        
-                        # Generate secure filename and save file
-                        filename = secure_filename(avatar.filename)
-                        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-                        filename = f"{timestamp}_{filename}"
-                        filepath = os.path.join(abs_upload_folder, filename)
-                        print(f"Saving file to: {filepath}")
-                        
-                        # Save file
-                        avatar.save(filepath)
-                        
-                        if not os.path.exists(filepath):
-                            raise Exception(f"File was not saved successfully to {filepath}")
-                        
-                        print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
+                        from app.utils.utils import save_user_image, delete_user_image, fix_image_orientation
+                        from PIL import Image
                         
                         # Delete old avatar if exists
                         if current_user.avatar:
-                            old_avatar_path = os.path.join(abs_upload_folder, current_user.avatar)
-                            if os.path.exists(old_avatar_path):
-                                os.remove(old_avatar_path)
-                                print(f"Deleted old avatar: {old_avatar_path}")
+                            delete_user_image(current_user.avatar)
                         
-                        # Update the avatar field in the user's profile
-                        current_user.avatar = filename
-                        print(f"Updated user avatar in database: {filename}")
+                        # Save avatar using new organized system: static/data/admin/{admin_id}/
+                        avatar_path = save_user_image(avatar, 'admin', current_user.id, prefix='avatar')
                         
-                        # Commit changes to database
-                        db.session.commit()
-                        flash("Avatar updated successfully!", "success")
+                        if avatar_path:
+                            # Process image for optimal display
+                            try:
+                                full_path = os.path.join('static', avatar_path)
+                                
+                                # Fix image orientation based on EXIF data
+                                fix_image_orientation(full_path)
+                                
+                                # Resize and optimize image
+                                with Image.open(full_path) as img:
+                                    # Create square crop from center
+                                    width, height = img.size
+                                    if width != height:
+                                        min_size = min(width, height)
+                                        left = (width - min_size) // 2
+                                        top = (height - min_size) // 2
+                                        right = left + min_size
+                                        bottom = top + min_size
+                                        img = img.crop((left, top, right, bottom))
+                                    
+                                    # Resize to 200x200 for consistent display
+                                    img = img.resize((200, 200), Image.Resampling.LANCZOS)
+                                    img.save(full_path, optimize=True, quality=85)
+                            except Exception as e:
+                                print(f"Error processing avatar: {e}")
+                            
+                            # Update avatar path in database
+                            current_user.avatar = avatar_path
+                            print(f"Updated admin avatar in database: {avatar_path}")
+                            
+                            # Commit changes to database
+                            db.session.commit()
+                            flash("Avatar updated successfully!", "success")
+                        else:
+                            flash("Error saving avatar file", "danger")
+                            return redirect(url_for('admin.profile'))
                         
                     except Exception as e:
-                        print(f"Error during file operations: {str(e)}")
-                        print(f"Current working directory: {os.getcwd()}")
+                        print(f"Error during avatar upload: {str(e)}")
                         flash(f"Error saving avatar: {str(e)}", "danger")
                         return redirect(url_for('admin.profile'))
 
