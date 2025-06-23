@@ -12,6 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from app.utils.utils import get_rank_info, get_location_name, get_user_upload_path, save_user_image, delete_user_image, generate_unique_filename, fix_image_orientation
+from app.utils.email_validator import process_email
 import json
 from urllib.parse import quote
 
@@ -1265,7 +1266,14 @@ def update_profile():
         # Update account settings
         if 'username' in request.form:
             current_user.username = request.form.get('username')
-            current_user.email = request.form.get('email')
+            # Xử lý email với validation và cleaning
+            email_input = request.form.get('email')
+            if email_input:
+                cleaned_email, is_valid = process_email(email_input)
+                if is_valid:
+                    current_user.email = cleaned_email
+                else:
+                    flash('Email không hợp lệ!', 'warning')
         
         # Update business information
         if 'business_name' in request.form:
@@ -1292,7 +1300,14 @@ def profile():
             current_user.first_name = request.form.get('first_name')
             current_user.last_name = request.form.get('last_name')
             current_user.gender = request.form.get('gender')
-            current_user.email = request.form.get('email')
+            # Xử lý email với validation và cleaning
+            email_input = request.form.get('email')
+            if email_input:
+                cleaned_email, is_valid = process_email(email_input)
+                if is_valid:
+                    current_user.email = cleaned_email
+                else:
+                    flash('Email không hợp lệ!', 'warning')
             current_user.phone = request.form.get('phone')
             current_user.address = request.form.get('address')
             
