@@ -6,9 +6,11 @@
 {% block page_subtitle %}Xem thống kê doanh thu và hiệu suất{% endblock %}
 
 {% block page_css %}
+<!-- D3.js CDN -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
 <style>
     /* Statistics specific styles */
-
 
     .master-filter-bar {
         background: #FDFBFA;
@@ -211,164 +213,6 @@
         color: #101917;
     }
 
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 0.75rem;
-        margin: 0 1rem 2rem 1rem;
-    }
-
-    .stat-card {
-        background: #FDFBFA;
-        border: 0.3px solid rgba(124, 124, 124, 0.2);
-        border-radius: 8px;
-        padding: 1rem;
-        position: relative;
-    }
-
-    .stat-icon {
-        width: 47px;
-        height: 47px;
-        background: #E0EC9B;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 0.75rem;
-    }
-
-    .stat-icon i {
-        color: #101917;
-        font-size: 20px;
-    }
-
-    .stat-label {
-        font-size: 10px;
-        font-weight: 400;
-        color: #7C7C7C;
-        margin-bottom: 0.25rem;
-    }
-
-    .stat-value {
-        font-size: 12px;
-        font-weight: 500;
-        color: #101917;
-    }
-
-    .charts-section {
-        margin: 0 1rem 2rem 1rem;
-    }
-
-    .chart-toggle-bar {
-        background: #FDFBFA;
-        border: 0.3px solid rgba(124, 124, 124, 0.2);
-        border-radius: 12px 12px 0 0;
-        padding: 1rem 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: none;
-    }
-
-    .chart-toggle-buttons {
-        display: flex;
-        background: #F8F8F8;
-        border-radius: 8px;
-        padding: 4px;
-        border: 1px solid rgba(124, 124, 124, 0.1);
-    }
-
-    .chart-toggle-btn {
-        font-size: 12px;
-        font-weight: 500;
-        color: #7C7C7C;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        padding: 8px 16px;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-        min-width: 120px;
-        position: relative;
-    }
-
-    .chart-toggle-btn:hover {
-        background: rgba(224, 236, 155, 0.3);
-        color: #101917;
-    }
-
-    .chart-toggle-btn.active {
-        color: #101917;
-        font-weight: 600;
-        background: #E0EC9B;
-        box-shadow: 0 2px 8px rgba(224, 236, 155, 0.4);
-        transform: translateY(-1px);
-    }
-
-    .chart-filters {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .chart-filter {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: #F8F8F8;
-        border-radius: 8px;
-        padding: 4px;
-        border: 1px solid rgba(124, 124, 124, 0.1);
-    }
-
-    .filter-btn {
-        font-size: 11px;
-        font-weight: 500;
-        color: #7C7C7C;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        padding: 6px 12px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        min-width: 50px;
-    }
-
-    .filter-btn:hover {
-        background: rgba(224, 236, 155, 0.3);
-        color: #101917;
-    }
-
-    .filter-btn.active {
-        color: #101917;
-        font-weight: 600;
-        background: #E0EC9B;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .date-picker-container {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: white;
-        border: 1px solid rgba(124, 124, 124, 0.2);
-        border-radius: 8px;
-        padding: 4px 8px;
-    }
-
-    .date-input {
-        font-size: 11px;
-        padding: 4px 6px;
-        border: none;
-        background: transparent;
-        color: #101917;
-        width: 90px;
-    }
-
-    .date-input:focus {
-        outline: none;
-    }
-
     .apply-btn {
         font-size: 10px;
         font-weight: 600;
@@ -386,272 +230,224 @@
         transform: translateY(-1px);
     }
 
+    /* D3.js Chart Container Styles */
     .chart-container {
         background: #FDFBFA;
         border: 0.3px solid rgba(124, 124, 124, 0.2);
-        border-radius: 0 0 12px 12px;
-        padding: 2rem 0;
-        border-top: none;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .chart-container.hidden {
-        display: none;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin: 0 1rem 1.5rem 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .chart-title {
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 600;
         color: #101917;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .d3-chart {
+        width: 100%;
+        height: 320px;
+        border-radius: 6px;
+    }
+
+    /* D3 Chart Specific Styles */
+    .d3-chart .bar {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .d3-chart .bar:hover {
+        filter: brightness(1.1);
+        stroke: rgba(16, 25, 23, 0.3);
+        stroke-width: 2px;
+    }
+
+    .d3-chart .axis {
+        font-size: 11px;
+        color: #7C7C7C;
+    }
+
+    .d3-chart .axis path,
+    .d3-chart .axis line {
+        stroke: rgba(124, 124, 124, 0.2);
+        stroke-width: 1;
+    }
+
+    .d3-chart .grid line {
+        stroke: rgba(124, 124, 124, 0.2);
+        stroke-width: 0.5;
+        stroke-dasharray: 2,2;
+    }
+
+    .d3-chart .grid path {
+        stroke-width: 0;
+    }
+
+    .d3-chart .tooltip {
+        position: absolute;
+        background: rgba(16, 25, 23, 0.9);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .d3-chart .legend {
+        font-size: 12px;
+        font-weight: 500;
+        color: #101917;
+    }
+
+    .d3-chart .legend-item {
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+    }
+
+    .d3-chart .legend-item:hover {
+        opacity: 0.7;
+    }
+
+    .d3-chart .legend-item.hidden {
+        opacity: 0.3;
+    }
+
+    /* Rest of the existing styles for stats cards and table */
+    .content-wrapper {
+        padding: 0;
+    }
+
+    .stats-section {
+        margin: 0 1rem 1.5rem 1rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.5rem;
+        max-width: 900px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .stat-card {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.4rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        aspect-ratio: 1;
+        min-height: 120px;
+        justify-content: center;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: white;
+        background: linear-gradient(135deg, #E0EC9B, #A8D5BA);
+        margin-bottom: 0.2rem;
+    }
+
+    .stat-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: #7C7C7C;
+        margin: 0;
+        line-height: 1.2;
         text-align: center;
     }
 
-    .custom-date-dropdown {
-        background: #FDFBFA;
-        border: 0.3px solid rgba(124, 124, 124, 0.2);
-        border-radius: 12px;
-        margin-bottom: 1rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
-    }
-
-    .date-dropdown-content {
-        padding: 1.5rem;
-    }
-
-    .date-dropdown-header {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-        color: #101917;
-        font-weight: 600;
+    .stat-value {
         font-size: 14px;
-    }
-
-    .date-dropdown-header i {
-        color: #E0EC9B;
-        font-size: 16px;
-    }
-
-    .date-inputs-row {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .date-input-group {
-        flex: 1;
-    }
-
-    .date-input-group label {
-        display: block;
-        font-size: 11px;
-        font-weight: 500;
-        color: #7C7C7C;
-        margin-bottom: 0.5rem;
-    }
-
-    .date-input-group .date-input {
-        width: 100%;
-        font-size: 12px;
-        padding: 8px 12px;
-        border: 1px solid rgba(124, 124, 124, 0.2);
-        border-radius: 8px;
-        background: white;
+        font-weight: 700;
         color: #101917;
+        margin: 0;
+        line-height: 1.1;
+        text-align: center;
     }
 
-    .date-input-group .date-input:focus {
-        outline: none;
-        border-color: #E0EC9B;
-        box-shadow: 0 0 0 3px rgba(224, 236, 155, 0.2);
-    }
-
-    .date-dropdown-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-    }
-
-    .cancel-btn {
-        font-size: 11px;
-        font-weight: 500;
-        color: #7C7C7C;
-        background: transparent;
-        border: 1px solid rgba(124, 124, 124, 0.2);
-        cursor: pointer;
-        padding: 6px 16px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-    }
-
-    .cancel-btn:hover {
-        background: #f5f5f5;
-        color: #101917;
-    }
-
-    .chart-wrapper {
-        height: 320px;
-        position: relative;
-        width: 100%;
-        overflow: visible;
-        padding-bottom: 15px;
-    }
-
-    /* Remove horizontal scroll and expand container instead */
-    .chart-scroll-container {
-        width: 100%;
-        overflow: visible;
-    }
-
-    /* Expand chart container when wide labels are needed */
-    .chart-container.wide-labels {
-        overflow-x: auto;
-        overflow-y: visible;
-    }
-
-    .dual-chart-wrapper {
-        margin-top: 1rem;
-    }
-
-    .dual-chart-legend {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        margin-bottom: 1rem;
-        padding: 0.75rem;
-        background: rgba(248, 248, 248, 0.5);
-        border-radius: 8px;
-    }
-
-    .legend-item {
-        display: flex;
+    .stat-change {
+        font-size: 9px;
+        font-weight: 600;
+        margin-top: 0.2rem;
+        padding: 2px 6px;
+        border-radius: 12px;
+        display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 12px;
-        font-weight: 500;
-        color: #101917;
-    }
-
-    .legend-color {
-        width: 12px;
-        height: 12px;
-        border-radius: 3px;
-    }
-
-    .hourly-color {
-        background: #E0EC9B;
-    }
-
-    .nightly-color {
-        background: #A8D5BA;
-    }
-
-    .dual-chart-bars {
-        display: flex;
-        align-items: flex-end;
-        height: 220px;
-        gap: 8px;
-        padding: 0 10px;
-        margin: 20px 0;
-        padding-left: 50px;
-        position: relative;
-    }
-
-    /* Wide labels mode for dual chart bars */
-    .dual-chart-bars.wide-labels {
-        justify-content: flex-start;
-        min-width: max-content;
-        gap: 8px;
-    }
-
-    .dual-chart-bars.wide-labels .dual-bar-group {
-        flex: 0 0 auto;
-        width: 42px;
-        min-width: 42px;
-    }
-
-    .dual-bar-group {
-        flex: 1;
-        height: 220px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        align-items: center;
-    }
-
-    .stacked-bar {
-        width: 100%;
-        max-width: 30px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        align-items: center;
-        min-height: 2px;
-    }
-
-    .hourly-bar {
-        background: linear-gradient(to top, #E0EC9B, #F0F8D4);
-        border: 1px solid rgba(224, 236, 155, 0.8);
-        width: 100%;
+        gap: 2px;
+        opacity: 1;
+        transform: translateY(0);
         transition: all 0.3s ease;
-        min-height: 1px;
-        border-bottom: none;
     }
 
-    .nightly-bar {
-        background: linear-gradient(to top, #A8D5BA, #C8E6C9);
-        border: 1px solid rgba(168, 213, 186, 0.8);
-        width: 100%;
-        transition: all 0.3s ease;
-        min-height: 1px;
+    .stat-change.increase {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.2);
     }
 
-    /* Stacked bar styling */
-    .stacked-bar .nightly-bar:first-child {
-        border-radius: 0 0 3px 3px;
+    .stat-change.decrease {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
-    .stacked-bar .hourly-bar:last-child {
-        border-radius: 3px 3px 0 0;
+    .stat-change.neutral {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+        border: 1px solid rgba(107, 114, 128, 0.2);
     }
 
-    .stacked-bar .nightly-bar:only-child {
-        border-radius: 3px;
-    }
-
-    .stacked-bar .hourly-bar:only-child {
-        border-radius: 3px;
-    }
-
-    /* When both bars are present */
-    .stacked-bar .nightly-bar + .hourly-bar {
-        border-bottom: none;
-    }
-
-    .stacked-bar:hover .hourly-bar,
-    .stacked-bar:hover .nightly-bar {
-        filter: brightness(1.1);
-        transform: scaleX(1.05);
+    .stat-change i {
+        font-size: 8px;
     }
 
     .table-section {
         background: #FDFBFA;
         border: 0.3px solid rgba(124, 124, 124, 0.2);
         border-radius: 8px;
-        padding: 1.5rem;
+        padding: 1.25rem;
+        margin: 0 1rem 1.5rem 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .table-title {
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 600;
         color: #101917;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .stats-table {
@@ -660,192 +456,24 @@
     }
 
     .stats-table th {
-        font-size: 10px;
-        font-weight: 400;
+        font-size: 11px;
+        font-weight: 500;
         color: #7C7C7C;
         text-align: left;
-        padding: 0.75rem 1rem;
-        border-bottom: 0.5px solid #DFDBCF;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid rgba(124, 124, 124, 0.2);
     }
 
     .stats-table td {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 500;
         color: #101917;
-        padding: 0.75rem 1rem;
-        border-bottom: 0.2px solid rgba(124, 124, 124, 0.2);
+        padding: 0.5rem 0.75rem;
+        border-bottom: 0.5px solid rgba(124, 124, 124, 0.1);
     }
 
     .stats-table tr:last-child td {
         border-bottom: none;
-    }
-
-    .chart-y-labels {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 40px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        font-size: 10px;
-        color: #7C7C7C;
-        text-align: right;
-        padding-right: 10px;
-    }
-
-    .chart-x-labels {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 15px;
-        margin-bottom: 40px;
-        font-size: 11px;
-        color: #7C7C7C;
-        padding-left: 50px;
-        padding-right: 5px;
-        gap: 4px;
-        width: 100%;
-        box-sizing: border-box;
-        font-weight: 500;
-        position: relative;
-        z-index: 10;
-    }
-
-    /* Wide labels mode for total and month views */
-    .chart-x-labels.wide-labels {
-        justify-content: flex-start;
-        min-width: max-content;
-        gap: 8px;
-    }
-
-    #dualChartXLabels {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 10px;
-        font-size: 10px;
-        color: #101917;
-        padding-left: 50px;
-        gap: 4px;
-    }
-
-    /* Wide labels mode for dual chart */
-    #dualChartXLabels.wide-labels {
-        justify-content: flex-start;
-        min-width: max-content;
-        gap: 8px;
-    }
-
-    #dualChartXLabels.wide-labels .chart-label {
-        flex: 0 0 auto;
-        width: 42px;
-        min-width: 42px;
-        max-width: 42px;
-        text-align: center;
-    }
-
-    .chart-label {
-        flex: 1;
-        text-align: center;
-        font-weight: 500;
-        min-width: 15px;
-        max-width: 30px;
-        white-space: nowrap;
-        overflow: visible;
-        color: #7C7C7C;
-        font-size: 11px;
-        line-height: 1.2;
-    }
-
-    /* Wide labels mode - ensure minimum space for readable labels and align with bars */
-    .chart-x-labels.wide-labels .chart-label {
-        flex: 0 0 auto;
-        width: 42px;
-        min-width: 42px;
-        max-width: 42px;
-        text-align: center;
-    }
-
-    .chart-bars {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        height: 315px;
-        margin: 20px 0 0 0;
-        padding-left: 50px;
-        padding-right: 5px;
-        position: relative;
-        gap: 4px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    /* Wide labels mode - align bars with labels */
-    .chart-bars.wide-labels {
-        justify-content: flex-start;
-        min-width: max-content;
-        gap: 8px;
-    }
-
-    .chart-bars.wide-labels .chart-bar {
-        flex: 0 0 auto;
-        width: 42px;
-        min-width: 42px;
-        max-width: 42px;
-    }
-
-    .chart-bar {
-        background: linear-gradient(to top, #E0EC9B, #F0F8D4);
-        border: 1px solid rgba(224, 236, 155, 0.8);
-        flex: 1;
-        max-width: 30px;
-        min-width: 15px;
-        border-radius: 3px 3px 0 0;
-        min-height: 2px; /* Minimum 2px to show bar */
-        transition: all 0.3s ease;
-        cursor: pointer;
-        position: relative;
-        bottom: 0;
-    }
-
-    .chart-bar.hourly-style {
-        background: linear-gradient(to top, #E0EC9B, #F0F8D4);
-        border: 1px solid rgba(224, 236, 155, 0.8);
-    }
-
-    .chart-bar.nightly-style {
-        background: linear-gradient(to top, #A8D5BA, #C8E6C9);
-        border: 1px solid rgba(168, 213, 186, 0.8);
-    }
-
-    .chart-bar:hover {
-        transform: scaleY(1.05);
-        filter: brightness(1.1);
-    }
-
-    .chart-grid {
-        position: absolute;
-        top: 0;
-        left: 50px;
-        right: 5px;
-        height: 315px;
-        pointer-events: none;
-        width: calc(100% - 55px);
-    }
-
-    /* Wide labels mode - make grid expand with chart content */
-    .chart-container.wide-labels .chart-grid {
-        width: auto;
-        right: 5px;
-        min-width: max-content;
-    }
-
-    .grid-line {
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 0.2px;
-        background: rgba(124, 124, 124, 0.2);
     }
 
     .rating-stars {
@@ -853,10 +481,10 @@
     }
 
     .rating-stars i {
+        color: #FFD700;
         font-size: 12px;
+        margin-left: 4px;
     }
-    
-    /* Force refresh cache - v3.2 - Period state fix for wide labels */
 </style>
 {% endblock %}
 
@@ -931,134 +559,89 @@
                 </div>
             </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-dollar-sign"></i>
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-label">Lợi nhuận</div>
+                    <div class="stat-value" id="stat-profit">{{ "{:,}".format(stats.total_profit) }}đ</div>
+                    <div class="stat-change" id="change-profit">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
                 </div>
-                <div class="stat-label">Lợi nhuận</div>
-                <div class="stat-value">{{ "{:,}".format(stats.total_profit) }}đ</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-label">Số giờ đã thuê</div>
+                    <div class="stat-value" id="stat-hours">{{ stats.total_hours }} giờ</div>
+                    <div class="stat-change" id="change-hours">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
                 </div>
-                <div class="stat-label">Số giờ đã thuê</div>
-                <div class="stat-value">{{ stats.total_hours }} giờ</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-calendar-check"></i>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-label">Số lần thuê</div>
+                    <div class="stat-value" id="stat-bookings">{{ stats.total_bookings }} lần</div>
+                    <div class="stat-change" id="change-bookings">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
                 </div>
-                <div class="stat-label">Số lần thuê</div>
-                <div class="stat-value">{{ stats.total_bookings }} lần</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-percentage"></i>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-label">Tỷ lệ thuê</div>
+                    <div class="stat-value" id="stat-rate">{{ stats.booking_rate }}</div>
+                    <div class="stat-change" id="change-rate">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
                 </div>
-                <div class="stat-label">Tỷ lệ thuê</div>
-                <div class="stat-value">{{ stats.booking_rate }}</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-tag"></i>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="stat-label">Hình thức phổ biến</div>
+                    <div class="stat-value" id="stat-type">{{ stats.common_type }}</div>
+                    <div class="stat-change neutral" id="change-type">
+                        <i class="fas fa-minus"></i>
+                        <span>Không đổi</span>
+                    </div>
                 </div>
-                <div class="stat-label">Hình thức phổ biến</div>
-                <div class="stat-value">{{ stats.common_type }}</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-star"></i>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-label">Đánh giá trung bình</div>
+                    <div class="stat-value" id="stat-rating">{{ stats.average_rating }}</div>
+                    <div class="stat-change" id="change-rating">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
                 </div>
-                <div class="stat-label">Đánh giá trung bình</div>
-                <div class="stat-value">{{ stats.average_rating }}</div>
             </div>
         </div>
 
-        <div class="charts-section">
-            <!-- Unified Chart Container -->
-            <div class="chart-container" id="unifiedChart">
-                <div class="chart-title" id="chartTitle">
-                    <i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>
-                    Doanh thu thuê theo giờ
-                </div>
-                
-                <!-- Single Chart View -->
-                <div class="chart-scroll-container">
-                    <div class="chart-wrapper" id="singleChartWrapper">
-                        <div class="chart-y-labels" id="chartYLabels">
-                            <div>2000k</div>
-                            <div>1500k</div>
-                            <div>1000k</div>
-                            <div>500k</div>
-                            <div>0k</div>
-                        </div>
-                        <div class="chart-grid">
-                            <div class="grid-line" style="top: 0%;"></div>
-                            <div class="grid-line" style="top: 25%;"></div>
-                            <div class="grid-line" style="top: 50%;"></div>
-                            <div class="grid-line" style="top: 75%;"></div>
-                            <div class="grid-line" style="top: 100%;"></div>
-                            <div class="grid-line" style="bottom: 0%;"></div>
-                        </div>
-                        <div class="chart-bars" id="chartBars">
-                            {% for day in stats.chart_data %}
-                            <div class="chart-bar" data-revenue="{{ day.revenue }}" data-date="{{ day.date }}"></div>
-                            {% endfor %}
-                        </div>
-                        <div class="chart-x-labels" id="chartXLabels">
-                            {% for day in stats.chart_data %}
-                            <div class="chart-label" data-original-date="{{ day.date }}">{{ day.date }}</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Dual Chart View -->
-                <div class="dual-chart-wrapper" id="dualChartWrapper" style="display: none;">
-                    <div class="dual-chart-legend">
-                        <div class="legend-item">
-                            <div class="legend-color hourly-color"></div>
-                            <span>Theo giờ</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color nightly-color"></div>
-                            <span>Theo ngày</span>
-                        </div>
-                    </div>
-                    
-                    <div class="chart-scroll-container">
-                        <div class="chart-wrapper">
-                            <div class="chart-y-labels" id="dualChartYLabels">
-                                <div>2000k</div>
-                                <div>1500k</div>
-                                <div>1000k</div>
-                                <div>500k</div>
-                                <div>0k</div>
-                            </div>
-                            <div class="chart-grid">
-                                <div class="grid-line" style="top: 0%;"></div>
-                                <div class="grid-line" style="top: 25%;"></div>
-                                <div class="grid-line" style="top: 50%;"></div>
-                                <div class="grid-line" style="top: 75%;"></div>
-                                <div class="grid-line" style="bottom: 0%;"></div>
-                            </div>
-                            <div class="dual-chart-bars" id="dualChartBars" style="display: flex; align-items: flex-end; height: 220px; gap: 8px; padding-left: 50px; border-bottom: 1px solid #ccc;">
-                                <!-- Dynamic content will be loaded here by JavaScript -->
-                            </div>
-                            <div class="chart-x-labels" id="dualChartXLabels">
-                                <!-- Dynamic labels will be loaded here by JavaScript -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- Charts Section -->
+        <div class="chart-container">
+            <div class="chart-title" id="chartTitle">
+                <i class="fas fa-chart-line" style="color: #E0EC9B;"></i>
+                Doanh thu thuê theo giờ
             </div>
+            <div id="d3Chart" class="d3-chart"></div>
         </div>
 
         <div class="table-section">
@@ -1100,33 +683,29 @@
 </div>
 
 <script>
-// Data cache and state - v3.2 period state fix
+// Data cache and state
 let chartDataCache = {};
 let statsDataCache = {};
 let currentPeriod = 'total';
 let currentChart = 'hourly';
+let d3Chart = null;
+let tooltip = null;
 
-// Force clear any old cached data on load
+// Clear cache on load
 chartDataCache = {};
 statsDataCache = {};
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page loaded, starting initialization - v3.2 period state fix');
-    
-    // Force clear any cached styles that might interfere
-    const existingWideLabels = document.querySelectorAll('.wide-labels');
-    existingWideLabels.forEach(el => el.classList.remove('wide-labels'));
+    console.log('Page loaded, initializing D3.js charts');
     
     setupMasterFilters();
+    setupChartTypeFilters();
     
-    // Initialize static chart bars if they exist with a delay to ensure DOM is ready
-    setTimeout(() => {
-        console.log('Running delayed chart initialization');
-        initializeStaticChart();
-    }, 100);
+    // Initialize chart with initial data
+    initializeD3Chart();
     
-    // Load initial data with default chart type
+    // Load initial data
     loadAllDataWithChartType('total', currentChart);
     
     // Set default dates for date picker
@@ -1137,191 +716,396 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('masterEndDate').value = today.toISOString().split('T')[0];
 });
 
-// Force refresh chart labels
-function refreshChartLabels() {
-    const chartLabels = document.querySelectorAll('#chartXLabels .chart-label');
-    console.log('Refreshing', chartLabels.length, 'chart labels');
+// Initialize D3 Chart
+function initializeD3Chart() {
+    const container = d3.select('#d3Chart');
     
-    chartLabels.forEach((label, index) => {
-        const originalText = label.textContent.trim();
-        const formattedText = formatDateLabel(originalText);
-        
-        console.log(`Refreshing label ${index}: "${originalText}" -> "${formattedText}"`);
-        label.textContent = formattedText;
-        
-        // Force visibility
-        label.style.display = 'block';
-        label.style.visibility = 'visible';
-        label.style.color = '#7C7C7C';
-    });
+    // Clear any existing content
+    container.selectAll('*').remove();
+    
+    // Create SVG
+    const margin = { top: 15, right: 25, bottom: 50, left: 70 };
+    const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
+    const height = 320 - margin.top - margin.bottom;
+    
+    const svg = container
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom);
+    
+    const g = svg.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+    
+    // Create tooltip
+    tooltip = d3.select('body')
+        .append('div')
+        .attr('class', 'tooltip')
+        .style('position', 'absolute')
+        .style('background', 'rgba(16, 25, 23, 0.9)')
+        .style('color', 'white')
+        .style('padding', '8px 12px')
+        .style('border-radius', '6px')
+        .style('font-size', '12px')
+        .style('font-weight', '500')
+        .style('pointer-events', 'none')
+        .style('opacity', 0)
+        .style('z-index', 1000)
+        .style('box-shadow', '0 4px 12px rgba(0, 0, 0, 0.3)');
+    
+    // Store chart dimensions for later use
+    d3Chart = {
+        svg: svg,
+        g: g,
+        width: width,
+        height: height,
+        margin: margin
+    };
 }
 
-// Format date based on current period
-function formatDateLabel(dateStr) {
-    if (!dateStr) return '';
-    
-    // Convert to string if it's not already
-    const str = String(dateStr).trim();
-    
-    // Check if we should show year based on current period
-    const showYear = currentPeriod === 'year' || currentPeriod === 'total' || currentPeriod.startsWith('custom');
-    
-    // If already in desired MM/YY format, don't modify it
-    if (str.match(/^\d{1,2}\/\d{2}$/) && showYear) {
-        return str;
+// Update D3 Chart with new data
+function updateD3Chart(chartData, chartType) {
+    if (!d3Chart) {
+        initializeD3Chart();
     }
     
-    // If already in T + month format, don't modify it
-    if (str.match(/^T\d{1,2}$/) && !showYear) {
-        return str;
-    }
+    const { svg, g, width, height, margin } = d3Chart;
     
-    // Handle MM/YYYY format (monthly data like "07/2024")
-    if (str.match(/^\d{1,2}\/\d{4}$/)) {
-        const parts = str.split('/');
-        const month = parts[0].padStart(2, '0');
-        const year = parts[1];
-        
-        if (showYear) {
-            // Convert "07/2024" to "07/24"
-            const shortYear = year.slice(-2);
-            return `${month}/${shortYear}`;
-        } else {
-            // For week/month views, just show month
-            return `T${month}`;
-        }
-    }
+    // Clear existing chart
+    g.selectAll('*').remove();
     
-    // Handle DD/MM/YYYY format (daily data like "24/05/2025")
-    if (str.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
-        const parts = str.split('/');
-        const day = parts[0].padStart(2, '0');
-        const month = parts[1].padStart(2, '0');
-        const year = parts[2];
-        
-        if (showYear) {
-            const shortYear = year.slice(-2);
-            return `${day}/${month}/${shortYear}`;
-        } else {
-            return `${day}/${month}`;
-        }
+    if (chartType === 'both') {
+        updateStackedBarChart(chartData, g, width, height);
+    } else {
+        updateSingleBarChart(chartData[chartType] || [], chartType, g, width, height);
     }
-    
-    // Handle YYYY-MM-DD format
-    if (str.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
-        const parts = str.split('-');
-        const year = parts[0];
-        const month = parts[1].padStart(2, '0');
-        const day = parts[2].padStart(2, '0');
-        
-        if (showYear) {
-            const shortYear = year.slice(-2);
-            return `${day}/${month}/${shortYear}`;
-        } else {
-            return `${day}/${month}`;
-        }
-    }
-    
-    // Handle DD/MM format without year (but only if it's NOT already MM/YY)
-    if (str.match(/^\d{1,2}\/\d{1,2}$/) && !str.match(/^\d{1,2}\/\d{2}$/)) {
-        if (showYear) {
-            const currentYear = new Date().getFullYear().toString().slice(-2);
-            return `${str}/${currentYear}`;
-        } else {
-            return str;
-        }
-    }
-    
-    // Return original if no pattern matches
-    return str;
 }
 
-// Initialize static chart bars with proper heights
-function initializeStaticChart() {
-    const chartBars = document.querySelectorAll('#chartBars .chart-bar');
-    const chartLabels = document.querySelectorAll('#chartXLabels .chart-label');
-    const barsContainer = document.getElementById('chartBars');
-    const labelsContainer = document.getElementById('chartXLabels');
-    const chartContainer = document.getElementById('unifiedChart');
-    
-    console.log('Initializing static chart:', {
-        bars: chartBars.length,
-        labels: chartLabels.length
-    });
-    
-    // Apply wide labels mode if needed for initial load
-    const needsWideLabels = currentPeriod === 'total' || currentPeriod === 'month';
-    if (needsWideLabels && barsContainer && labelsContainer && chartContainer) {
-        barsContainer.classList.add('wide-labels');
-        labelsContainer.classList.add('wide-labels');
-        chartContainer.classList.add('wide-labels');
-        
-        // Adjust grid and labels width for initial load
-        setTimeout(() => {
-            const chartGrid = document.querySelector('#singleChartWrapper .chart-grid');
-            if (chartGrid && barsContainer) {
-                const barsWidth = barsContainer.scrollWidth;
-                const paddingRight = 5;
-                const totalWidth = barsWidth + paddingRight;
-                
-                chartGrid.style.width = `${totalWidth}px`;
-                chartGrid.style.right = '0px';
-                
-                // Also adjust labels container width to match
-                if (labelsContainer) {
-                    labelsContainer.style.width = `${totalWidth + 50}px`; // +50 for left padding
-                }
-            }
-        }, 100);
-    }
-    
-    if (chartBars.length === 0) {
-        console.log('No chart bars found');
+// Update single bar chart
+function updateSingleBarChart(data, chartType, g, width, height) {
+    if (!data || data.length === 0) {
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .style('color', '#7C7C7C')
+            .text('📊 Không có dữ liệu');
         return;
     }
     
-    // Find max revenue for scaling
-    let maxRevenue = 0;
-    chartBars.forEach(bar => {
-        const revenue = parseInt(bar.getAttribute('data-revenue')) || 0;
-        maxRevenue = Math.max(maxRevenue, revenue);
+    // Set up scales
+    const xScale = d3.scaleBand()
+        .domain(data.map(d => d.date))
+        .range([0, width])
+        .padding(0.1);
+    
+    const yScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.revenue)])
+        .range([height, 0]);
+    
+    // Create grid lines
+    const yGrid = d3.axisLeft(yScale)
+        .tickSize(-width)
+        .tickFormat('');
+    
+    g.append('g')
+        .attr('class', 'grid')
+        .call(yGrid)
+        .selectAll('line')
+        .style('stroke', 'rgba(124, 124, 124, 0.2)')
+        .style('stroke-width', 0.5)
+        .style('stroke-dasharray', '2,2');
+    
+    // Create axes
+    const xAxis = d3.axisBottom(xScale)
+        .tickFormat(d => {
+            // Format date labels
+            if (d.length > 8) return d.substring(0, 8) + '...';
+            return d;
+        });
+    
+    const yAxis = d3.axisLeft(yScale)
+        .tickFormat(d => {
+            if (d >= 1000000) return `${(d / 1000000).toFixed(0)}M`;
+            if (d >= 1000) return `${(d / 1000).toFixed(0)}k`;
+            return d.toString();
+        });
+    
+    g.append('g')
+        .attr('class', 'axis')
+        .attr('transform', `translate(0,${height})`)
+        .call(xAxis)
+        .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-45)')
+        .style('font-size', '11px')
+        .style('fill', '#7C7C7C');
+    
+    g.append('g')
+        .attr('class', 'axis')
+        .call(yAxis)
+        .selectAll('text')
+        .style('font-size', '11px')
+        .style('fill', '#7C7C7C');
+    
+    // Create bars
+    const color = chartType === 'hourly' ? '#E0EC9B' : '#A8D5BA';
+    
+    g.selectAll('.bar')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('x', d => xScale(d.date))
+        .attr('width', xScale.bandwidth())
+        .attr('y', height)
+        .attr('height', 0)
+        .attr('fill', color)
+        .attr('stroke', 'rgba(16, 25, 23, 0.1)')
+        .attr('stroke-width', 1)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+            d3.select(this)
+                .style('filter', 'brightness(1.1)')
+                .style('stroke', 'rgba(16, 25, 23, 0.3)')
+                .style('stroke-width', 2);
+            
+            tooltip
+                .style('opacity', 1)
+                .html(`<strong>${d.date}</strong><br/>Doanh thu: ${formatCurrency(d.revenue)}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+            d3.select(this)
+                .style('filter', 'brightness(1)')
+                .style('stroke', 'rgba(16, 25, 23, 0.1)')
+                .style('stroke-width', 1);
+            
+            tooltip.style('opacity', 0);
+        })
+        .transition()
+        .duration(800)
+        .ease(d3.easeElastic)
+        .attr('y', d => yScale(d.revenue))
+        .attr('height', d => height - yScale(d.revenue));
+}
+
+// Update stacked bar chart
+function updateStackedBarChart(chartData, g, width, height) {
+    const hourlyData = chartData.hourly || [];
+    const nightlyData = chartData.nightly || [];
+    
+    if (hourlyData.length === 0 && nightlyData.length === 0) {
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .style('color', '#7C7C7C')
+            .text('📊 Không có dữ liệu');
+        return;
+    }
+    
+    // Prepare stacked data
+    const dates = [...new Set([...hourlyData.map(d => d.date), ...nightlyData.map(d => d.date)])];
+    const stackedData = dates.map(date => {
+        const hourly = hourlyData.find(d => d.date === date)?.revenue || 0;
+        const nightly = nightlyData.find(d => d.date === date)?.revenue || 0;
+        return {
+            date: date,
+            hourly: hourly,
+            nightly: nightly,
+            total: hourly + nightly
+        };
     });
     
-    if (maxRevenue === 0) maxRevenue = 1; // Prevent division by zero
+    // Set up scales
+    const xScale = d3.scaleBand()
+        .domain(dates)
+        .range([0, width])
+        .padding(0.1);
     
-    console.log('Max revenue for scaling:', maxRevenue);
+    const yScale = d3.scaleLinear()
+        .domain([0, d3.max(stackedData, d => d.total)])
+        .range([height, 0]);
     
-    // Set heights for all bars and format labels
-    chartBars.forEach((bar, index) => {
-        const revenue = parseInt(bar.getAttribute('data-revenue')) || 0;
-        const height = Math.max((revenue / maxRevenue * 315), 2); // Updated to match new chart height
-        bar.style.height = height + 'px';
-        
-        // Apply correct color styling based on current chart type
-        bar.className = `chart-bar ${currentChart}-style`;
-        
-        // Add tooltip with formatted date
-        const originalDate = bar.getAttribute('data-date') || '';
-        const formattedDate = formatDateLabel(originalDate);
-        bar.title = `${formattedDate}: ${formatCurrency(revenue)}`;
-        
-        console.log(`Bar ${index}: ${originalDate} -> ${formattedDate}, Revenue: ${revenue}, Height: ${height}px`);
-    });
+    // Create grid lines
+    const yGrid = d3.axisLeft(yScale)
+        .tickSize(-width)
+        .tickFormat('');
     
-    // Format labels to show 2-digit years
-    chartLabels.forEach((label, index) => {
-        const originalText = label.textContent.trim();
-        const formattedText = formatDateLabel(originalText);
-        
-        if (formattedText !== originalText) {
-            label.textContent = formattedText;
-        }
-        
-        console.log(`Label ${index}: "${originalText}" -> "${formattedText}"`);
-        
-        if (!formattedText) {
-            console.warn(`Empty label at index ${index}`);
-        }
+    g.append('g')
+        .attr('class', 'grid')
+        .call(yGrid)
+        .selectAll('line')
+        .style('stroke', 'rgba(124, 124, 124, 0.2)')
+        .style('stroke-width', 0.5)
+        .style('stroke-dasharray', '2,2');
+    
+    // Create axes
+    const xAxis = d3.axisBottom(xScale)
+        .tickFormat(d => {
+            if (d.length > 8) return d.substring(0, 8) + '...';
+            return d;
+        });
+    
+    const yAxis = d3.axisLeft(yScale)
+        .tickFormat(d => {
+            if (d >= 1000000) return `${(d / 1000000).toFixed(0)}M`;
+            if (d >= 1000) return `${(d / 1000).toFixed(0)}k`;
+            return d.toString();
+        });
+    
+    g.append('g')
+        .attr('class', 'axis')
+        .attr('transform', `translate(0,${height})`)
+        .call(xAxis)
+        .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-45)')
+        .style('font-size', '11px')
+        .style('fill', '#7C7C7C');
+    
+    g.append('g')
+        .attr('class', 'axis')
+        .call(yAxis)
+        .selectAll('text')
+        .style('font-size', '11px')
+        .style('fill', '#7C7C7C');
+    
+    // Create nightly bars (bottom)
+    g.selectAll('.bar-nightly')
+        .data(stackedData)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar bar-nightly')
+        .attr('x', d => xScale(d.date))
+        .attr('width', xScale.bandwidth())
+        .attr('y', height)
+        .attr('height', 0)
+        .attr('fill', '#A8D5BA')
+        .attr('stroke', 'rgba(16, 25, 23, 0.1)')
+        .attr('stroke-width', 1)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+            tooltip
+                .style('opacity', 1)
+                .html(`<strong>${d.date}</strong><br/>Theo ngày: ${formatCurrency(d.nightly)}<br/>Theo giờ: ${formatCurrency(d.hourly)}<br/>Tổng: ${formatCurrency(d.total)}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+            tooltip.style('opacity', 0);
+        })
+        .transition()
+        .duration(800)
+        .ease(d3.easeElastic)
+        .attr('y', d => yScale(d.nightly))
+        .attr('height', d => height - yScale(d.nightly));
+    
+    // Create hourly bars (top)
+    g.selectAll('.bar-hourly')
+        .data(stackedData)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar bar-hourly')
+        .attr('x', d => xScale(d.date))
+        .attr('width', xScale.bandwidth())
+        .attr('y', d => yScale(d.nightly))
+        .attr('height', 0)
+        .attr('fill', '#E0EC9B')
+        .attr('stroke', 'rgba(16, 25, 23, 0.1)')
+        .attr('stroke-width', 1)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+            tooltip
+                .style('opacity', 1)
+                .html(`<strong>${d.date}</strong><br/>Theo ngày: ${formatCurrency(d.nightly)}<br/>Theo giờ: ${formatCurrency(d.hourly)}<br/>Tổng: ${formatCurrency(d.total)}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+            tooltip.style('opacity', 0);
+        })
+        .transition()
+        .duration(800)
+        .ease(d3.easeElastic)
+        .delay(200)
+        .attr('y', d => yScale(d.total))
+        .attr('height', d => yScale(d.nightly) - yScale(d.total));
+    
+    // Add legend
+    const legend = g.append('g')
+        .attr('class', 'legend')
+        .attr('transform', `translate(${width - 200}, 20)`);
+    
+    const legendData = [
+        { label: 'Theo giờ', color: '#E0EC9B' },
+        { label: 'Theo ngày', color: '#A8D5BA' }
+    ];
+    
+    const legendItems = legend.selectAll('.legend-item')
+        .data(legendData)
+        .enter()
+        .append('g')
+        .attr('class', 'legend-item')
+        .attr('transform', (d, i) => `translate(0, ${i * 20})`);
+    
+    legendItems.append('rect')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('fill', d => d.color)
+        .attr('rx', 2);
+    
+    legendItems.append('text')
+        .attr('x', 18)
+        .attr('y', 9)
+        .attr('dy', '0.35em')
+        .style('font-size', '12px')
+        .style('font-weight', '500')
+        .style('fill', '#101917')
+        .text(d => d.label);
+}
+
+// Setup chart type filters
+function setupChartTypeFilters() {
+    document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active state
+            document.querySelectorAll('.chart-type-btn').forEach(sibling => {
+                sibling.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Get chart type from data attribute
+            const chartType = this.getAttribute('data-chart');
+            currentChart = chartType;
+            
+            // Update chart title
+            const titles = {
+                'hourly': 'Doanh thu thuê theo giờ',
+                'nightly': 'Doanh thu thuê theo ngày',
+                'both': 'Doanh thu thuê (Tổng hợp)'
+            };
+            document.getElementById('chartTitle').innerHTML = `
+                <i class="fas fa-chart-line" style="color: #E0EC9B;"></i>
+                ${titles[chartType]}
+            `;
+            
+            // Reload chart data with new chart type
+            loadAllDataWithChartType(currentPeriod, chartType);
+        });
     });
 }
 
@@ -1388,23 +1172,15 @@ function setupMasterFilters() {
             const chartType = this.dataset.chart;
             currentChart = chartType;
             
-            // Update chart title and show/hide appropriate chart wrapper
+            // Update chart title
             const chartTitle = document.getElementById('chartTitle');
-            const singleWrapper = document.getElementById('singleChartWrapper');
-            const dualWrapper = document.getElementById('dualChartWrapper');
             
             if (chartType === 'hourly') {
                 chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo giờ';
-                singleWrapper.style.display = 'block';
-                dualWrapper.style.display = 'none';
             } else if (chartType === 'nightly') {
                 chartTitle.innerHTML = '<i class="fas fa-chart-bar" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo ngày';
-                singleWrapper.style.display = 'block';
-                dualWrapper.style.display = 'none';
             } else if (chartType === 'both') {
                 chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>So sánh doanh thu theo giờ và theo ngày';
-                singleWrapper.style.display = 'none';
-                dualWrapper.style.display = 'block';
             }
             
             // Reload both chart and stats data with new chart type
@@ -1516,6 +1292,9 @@ function updateAllUI(statsData, chartData, period = null) {
     // Update statistics cards
     updateStatsCards(statsData);
     
+    // Update percentage changes
+    updatePercentageChanges(statsData, period);
+    
     // Update chart with explicit period
     updateChart(chartData, period);
     
@@ -1527,15 +1306,8 @@ function updateAllUI(statsData, chartData, period = null) {
 
 // Update chart
 function updateChart(data, period = null) {
-    const activePeriod = period || currentPeriod;
-    console.log('updateChart called with period:', activePeriod, 'currentPeriod:', currentPeriod);
-    
-    if (currentChart === 'both') {
-        updateDualChart(data, activePeriod);
-    } else {
-        updateSingleChart(currentChart, data[currentChart], activePeriod);
-    }
-    document.getElementById('unifiedChart').style.opacity = '1';
+    console.log('Updating D3.js chart with data:', data, 'chartType:', currentChart);
+    updateD3Chart(data, currentChart);
 }
 
 // Update statistics cards
@@ -1556,6 +1328,103 @@ function updateStatsCards(data) {
             valueElement.textContent = values[index];
         }
     });
+}
+
+// Update percentage changes
+function updatePercentageChanges(data, period) {
+    // Only show percentage changes for week, month, year periods
+    if (!['week', 'month', 'year'].includes(period)) {
+        // Hide all percentage indicators for total or custom periods
+        document.querySelectorAll('.stat-change').forEach(el => {
+            el.style.display = 'none';
+        });
+        return;
+    }
+    
+    // Show percentage indicators
+    document.querySelectorAll('.stat-change').forEach(el => {
+        el.style.display = 'inline-flex';
+    });
+    
+    // Get percentage changes from data or generate demo data
+    const changes = data.percentage_changes || generateDemoPercentageChanges(period);
+    
+    // Update each stat change
+    updateStatChange('change-profit', changes.profit || 0, 'Tăng', 'Giảm');
+    updateStatChange('change-hours', changes.hours || 0, 'Tăng', 'Giảm');
+    updateStatChange('change-bookings', changes.bookings || 0, 'Tăng', 'Giảm');
+    updateStatChange('change-rate', changes.booking_rate || 0, 'Tăng', 'Giảm');
+    updateStatChange('change-rating', changes.rating || 0, 'Tăng', 'Giảm');
+    
+    // Handle common type (non-numeric)
+    const typeElement = document.getElementById('change-type');
+    if (changes.common_type_changed) {
+        typeElement.className = 'stat-change neutral';
+        typeElement.innerHTML = '<i class="fas fa-exchange-alt"></i><span>Đã thay đổi</span>';
+    } else {
+        typeElement.className = 'stat-change neutral';
+        typeElement.innerHTML = '<i class="fas fa-minus"></i><span>Không đổi</span>';
+    }
+}
+
+// Generate demo percentage changes (remove this when backend provides real data)
+function generateDemoPercentageChanges(period) {
+    // Different demo data based on period
+    const demoData = {
+        'week': {
+            profit: 12.5,
+            hours: 8.3,
+            bookings: 15.2,
+            booking_rate: 5.7,
+            rating: 2.1,
+            common_type_changed: false
+        },
+        'month': {
+            profit: -3.2,
+            hours: 4.8,
+            bookings: -1.5,
+            booking_rate: 7.3,
+            rating: -0.8,
+            common_type_changed: true
+        },
+        'year': {
+            profit: 28.7,
+            hours: 35.4,
+            bookings: 42.1,
+            booking_rate: 12.8,
+            rating: 8.5,
+            common_type_changed: false
+        }
+    };
+    
+    return demoData[period] || {
+        profit: 0,
+        hours: 0,
+        bookings: 0,
+        booking_rate: 0,
+        rating: 0,
+        common_type_changed: false
+    };
+}
+
+// Update individual stat change indicator
+function updateStatChange(elementId, percentage, increaseText, decreaseText) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const absPercentage = Math.abs(percentage);
+    const roundedPercentage = Math.round(absPercentage * 10) / 10; // Round to 1 decimal
+    
+    if (percentage > 0) {
+        element.className = 'stat-change increase';
+        element.innerHTML = `<i class="fas fa-arrow-up"></i><span>${increaseText} ${roundedPercentage}%</span>`;
+    } else if (percentage < 0) {
+        element.className = 'stat-change decrease';
+        element.innerHTML = `<i class="fas fa-arrow-down"></i><span>${decreaseText} ${roundedPercentage}%</span>`;
+    } else {
+        element.className = 'stat-change neutral';
+        element.innerHTML = '<i class="fas fa-minus"></i><span>Không đổi</span>';
+    }
 }
 
 // Update table with top rooms
@@ -1589,316 +1458,13 @@ function updateTable(topRooms) {
     });
 }
 
-function updateSingleChart(type, chartData, period = null) {
-    const barsContainer = document.getElementById('chartBars');
-    const labelsContainer = document.getElementById('chartXLabels');
-    const chartContainer = document.getElementById('unifiedChart');
-    
-    // Clear existing bars and labels
-    barsContainer.innerHTML = '';
-    labelsContainer.innerHTML = '';
-    
-    // Use passed period or fall back to currentPeriod
-    const activePeriod = period || currentPeriod;
-    
-    // Determine if we need wide labels mode (for total and month periods)
-    const needsWideLabels = activePeriod === 'total' || activePeriod === 'month';
-    
-    // Apply wide labels classes
-    if (needsWideLabels) {
-        barsContainer.classList.add('wide-labels');
-        labelsContainer.classList.add('wide-labels');
-        chartContainer.classList.add('wide-labels');
-        console.log('Applied wide-labels mode for single chart, period:', activePeriod);
-    } else {
-        barsContainer.classList.remove('wide-labels');
-        labelsContainer.classList.remove('wide-labels');
-        chartContainer.classList.remove('wide-labels');
-        console.log('Removed wide-labels mode for single chart, period:', activePeriod);
-    }
-    
-    if (!chartData || chartData.length === 0) {
-        barsContainer.innerHTML = '<div style="text-align: center; color: #7C7C7C; padding: 50px; font-size: 14px;">📊 Không có dữ liệu</div>';
-        return;
-    }
-    
-    // Find max revenue for scaling (include all data, even zeros)
-    const maxRevenue = Math.max(...chartData.map(d => d.revenue), 1); // Minimum 1 to avoid division by 0
-    const chartHeight = 315; // Height of chart area - updated to match CSS
-    
-    // Create bars and labels for all data (including zeros)
-    chartData.forEach(item => {
-        // Create bar
-        const bar = document.createElement('div');
-        bar.className = `chart-bar ${type}-style`; // Add chart type specific styling
-        const barHeight = maxRevenue > 0 ? (item.revenue / maxRevenue * chartHeight) : 0;
-        bar.style.height = `${Math.max(barHeight, 2)}px`; // Minimum 2px height to show bar
-        bar.title = `${item.date}: ${formatCurrency(item.revenue)}`;
-        
-        // Add hover effect
-        bar.addEventListener('mouseenter', function() {
-            this.style.transform = 'scaleY(1.05)';
-            this.style.filter = 'brightness(1.1)';
-        });
-        bar.addEventListener('mouseleave', function() {
-            this.style.transform = 'scaleY(1)';
-            this.style.filter = 'brightness(1)';
-        });
-        
-        barsContainer.appendChild(bar);
-        
-        // Create label with formatted date
-        const label = document.createElement('div');
-        label.className = 'chart-label';
-        label.textContent = formatDateLabel(item.date);
-        labelsContainer.appendChild(label);
-    });
-    
-    // Update Y-axis labels based on max revenue
-    const yLabels = document.querySelectorAll('#chartYLabels div');
-    const maxLabel = Math.ceil(maxRevenue / 1000000) * 1000000; // Round to nearest million
-    
-    yLabels.forEach((label, index) => {
-        const value = maxLabel * (1 - index / (yLabels.length - 1));
-        label.textContent = formatYAxisLabel(value);
-    });
-
-    // Adjust grid and labels width based on wide labels mode
-    setTimeout(() => {
-        const chartGrid = document.querySelector('#singleChartWrapper .chart-grid');
-        if (chartGrid) {
-            if (needsWideLabels && barsContainer) {
-                // Calculate full width including padding
-                const barsWidth = barsContainer.scrollWidth;
-                const paddingRight = 5; // padding-right of bars container
-                const totalWidth = barsWidth + paddingRight;
-                
-                chartGrid.style.width = `${totalWidth}px`;
-                chartGrid.style.right = '0px';
-                
-                // Also adjust labels container width to match
-                if (labelsContainer) {
-                    labelsContainer.style.width = `${totalWidth + 50}px`; // +50 for left padding
-                }
-            } else {
-                // Reset to default width
-                chartGrid.style.width = 'calc(100% - 55px)';
-                chartGrid.style.right = '5px';
-                
-                if (labelsContainer) {
-                    labelsContainer.style.width = '100%';
-                }
-            }
-        }
-    }, 50);
-}
-
-// Update dual chart (both hourly and nightly)
-function updateDualChart(data, period = null) {
-    const barsContainer = document.getElementById('dualChartBars');
-    const labelsContainer = document.getElementById('dualChartXLabels');
-    const chartContainer = document.getElementById('unifiedChart');
-    
-    // Clear existing bars and labels
-    barsContainer.innerHTML = '';
-    labelsContainer.innerHTML = '';
-    
-    // Use passed period or fall back to currentPeriod
-    const activePeriod = period || currentPeriod;
-    
-    // Determine if we need wide labels mode (for total and month periods)
-    const needsWideLabels = activePeriod === 'total' || activePeriod === 'month';
-    
-    // Apply wide labels classes
-    if (needsWideLabels) {
-        barsContainer.classList.add('wide-labels');
-        labelsContainer.classList.add('wide-labels');
-        chartContainer.classList.add('wide-labels');
-        console.log('Applied wide-labels mode for dual chart, period:', activePeriod);
-    } else {
-        barsContainer.classList.remove('wide-labels');
-        labelsContainer.classList.remove('wide-labels');
-        chartContainer.classList.remove('wide-labels');
-        console.log('Removed wide-labels mode for dual chart, period:', activePeriod);
-    }
-    
-    const hourlyData = data.hourly || [];
-    const nightlyData = data.nightly || [];
-    
-    if (hourlyData.length === 0 && nightlyData.length === 0) {
-        barsContainer.innerHTML = '<div style="text-align: center; color: #7C7C7C; padding: 50px; font-size: 14px;">📊 Không có dữ liệu</div>';
-        return;
-    }
-    
-    // Find max combined revenue for scaling (stacked bars)
-    let maxRevenue = 0;
-    const maxLength = Math.max(hourlyData.length, nightlyData.length);
-    for (let i = 0; i < maxLength; i++) {
-        const hourlyItem = hourlyData[i] || { revenue: 0 };
-        const nightlyItem = nightlyData[i] || { revenue: 0 };
-        const combinedRevenue = hourlyItem.revenue + nightlyItem.revenue;
-        maxRevenue = Math.max(maxRevenue, combinedRevenue);
-    }
-    const chartHeight = 220;
-    
-    // Ensure we have a minimum scale
-    if (maxRevenue === 0) {
-        maxRevenue = 1000000; // 1M minimum scale
-    }
-    
-    // Create bars for all days (including zeros) to maintain consistent timeline
-    for (let i = 0; i < maxLength; i++) {
-        const hourlyItem = hourlyData[i] || { date: '', revenue: 0 };
-        const nightlyItem = nightlyData[i] || { date: '', revenue: 0 };
-        
-        // Use the same date for both
-        const date = hourlyItem.date || nightlyItem.date || '';
-        
-        // Calculate revenue values
-        const hourlyRevenue = hourlyItem.revenue || 0;
-        const nightlyRevenue = nightlyItem.revenue || 0;
-        const totalRevenue = hourlyRevenue + nightlyRevenue;
-        
-        // Create bar group
-        const barGroup = document.createElement('div');
-        barGroup.className = 'dual-bar-group';
-        
-        // Set width based on wide labels mode
-        const barWidth = needsWideLabels ? '42px' : '30px';
-        barGroup.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            width: ${barWidth};
-            height: 100%;
-        `;
-        
-        // Calculate individual heights based on max revenue (allow 0 height)
-        const nightlyHeight = (nightlyRevenue / maxRevenue * chartHeight);
-        const hourlyHeight = (hourlyRevenue / maxRevenue * chartHeight);
-        
-        // Create stacked bar - SIMPLE approach
-        const stackedBar = document.createElement('div');
-        stackedBar.className = 'stacked-bar';
-        stackedBar.style.cssText = `
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-        `;
-        
-        // IMPORTANT: Add hourly bar FIRST (it will be on top due to flex-direction: column)
-        if (hourlyRevenue > 0) {
-            const hourlyBar = document.createElement('div');
-            hourlyBar.className = 'hourly-bar';
-            hourlyBar.style.cssText = `
-                height: ${Math.max(hourlyHeight, 2)}px;
-                width: 100%;
-                background-color: #facc15;
-                border-radius: 2px 2px 0 0;
-            `;
-            hourlyBar.title = `${date} - Theo giờ: ${formatCurrency(hourlyRevenue)}`;
-            stackedBar.appendChild(hourlyBar);
-        }
-        
-        // Add nightly bar SECOND (it will be at bottom due to flex-direction: column)
-        if (nightlyRevenue > 0) {
-            const nightlyBar = document.createElement('div');
-            nightlyBar.className = 'nightly-bar';
-            nightlyBar.style.cssText = `
-                height: ${Math.max(nightlyHeight, 2)}px;
-                width: 100%;
-                background-color: #4ade80;
-                border-radius: 0 0 2px 2px;
-            `;
-            nightlyBar.title = `${date} - Theo ngày: ${formatCurrency(nightlyRevenue)}`;
-            stackedBar.appendChild(nightlyBar);
-        }
-        
-        // Handle empty case - add minimal bar to show on baseline
-        if (totalRevenue === 0) {
-            const emptyBar = document.createElement('div');
-            emptyBar.style.cssText = `
-                height: 1px;
-                width: 100%;
-                background-color: #e5e7eb;
-            `;
-            stackedBar.appendChild(emptyBar);
-            stackedBar.title = `${date}\nKhông có doanh thu`;
-        } else {
-            stackedBar.title = `${date}\nTổng: ${formatCurrency(totalRevenue)}\nTheo ngày: ${formatCurrency(nightlyRevenue)}\nTheo giờ: ${formatCurrency(hourlyRevenue)}`;
-        }
-        
-        barGroup.appendChild(stackedBar);
-        
-        barsContainer.appendChild(barGroup);
-        
-        // Create label with formatted date
-        const label = document.createElement('div');
-        label.className = 'chart-label';
-        label.textContent = formatDateLabel(date);
-        labelsContainer.appendChild(label);
-    }
-    
-    // Update Y-axis labels based on max combined revenue (stacked)
-    const yLabels = document.querySelectorAll('#dualChartYLabels div');
-    const maxLabel = Math.ceil(maxRevenue / 1000000) * 1000000;
-    
-    yLabels.forEach((label, index) => {
-        const value = maxLabel * (1 - index / (yLabels.length - 1));
-        label.textContent = formatYAxisLabel(value);
-    });
-
-    // Adjust grid and labels width based on wide labels mode
-    setTimeout(() => {
-        const chartGrid = document.querySelector('#dualChartWrapper .chart-grid');
-        if (chartGrid) {
-            if (needsWideLabels && barsContainer) {
-                // Calculate full width including padding
-                const barsWidth = barsContainer.scrollWidth;
-                const paddingRight = 10; // padding for dual chart
-                const totalWidth = barsWidth + paddingRight;
-                
-                chartGrid.style.width = `${totalWidth}px`;
-                chartGrid.style.right = '0px';
-                
-                // Also adjust labels container width to match
-                if (labelsContainer) {
-                    labelsContainer.style.width = `${totalWidth + 50}px`; // +50 for left padding
-                }
-            } else {
-                // Reset to default width
-                chartGrid.style.width = 'calc(100% - 55px)';
-                chartGrid.style.right = '5px';
-                
-                if (labelsContainer) {
-                    labelsContainer.style.width = '100%';
-                }
-            }
-        }
-    }, 50);
-}
-
+// Utility functions
 function formatCurrency(amount) {
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND',
         minimumFractionDigits: 0
     }).format(amount);
-}
-
-function formatYAxisLabel(value) {
-    if (value >= 1000000) {
-        return `${(value / 1000000).toFixed(0)}M`;
-    } else if (value >= 1000) {
-        return `${(value / 1000).toFixed(0)}k`;
-    } else if (value === 0) {
-        return '0';
-    } else {
-        return value.toString();
-    }
 }
 
 // Utility functions

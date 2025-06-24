@@ -39,16 +39,16 @@ def create_comprehensive_data():
         # Create more test renters for diversity
         print("📝 Creating diverse test renters...")
         renter_profiles = [
-            ("business_traveler", "Business Traveler", "📧 business@company.com"),
-            ("family_vacation", "Family Vacation", "📧 family@email.com"), 
-            ("young_couple", "Young Couple", "📧 couple@gmail.com"),
-            ("solo_backpacker", "Solo Backpacker", "📧 solo@travel.com"),
-            ("group_friends", "Group of Friends", "📧 friends@party.com"),
-            ("digital_nomad", "Digital Nomad", "📧 nomad@remote.com"),
-            ("elderly_couple", "Elderly Couple", "📧 elderly@retired.com"),
-            ("local_staycation", "Local Staycation", "📧 local@city.com"),
-            ("international_tourist", "International Tourist", "📧 tourist@global.com"),
-            ("weekend_getaway", "Weekend Getaway", "📧 weekend@escape.com")
+            ("business_traveler", "Business Traveler", "business@company.com"),
+            ("family_vacation", "Family Vacation", "family@email.com"), 
+            ("young_couple", "Young Couple", "couple@gmail.com"),
+            ("solo_backpacker", "Solo Backpacker", "solo@travel.com"),
+            ("group_friends", "Group of Friends", "friends@party.com"),
+            ("digital_nomad", "Digital Nomad", "nomad@remote.com"),
+            ("elderly_couple", "Elderly Couple", "elderly@retired.com"),
+            ("local_staycation", "Local Staycation", "local@city.com"),
+            ("international_tourist", "International Tourist", "tourist@global.com"),
+            ("weekend_getaway", "Weekend Getaway", "weekend@escape.com")
         ]
         
         for i, (username, full_name, email) in enumerate(renter_profiles):

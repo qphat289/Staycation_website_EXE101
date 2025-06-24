@@ -385,7 +385,7 @@
         height: 100%;
         object-fit: cover;
         display: block;
-        transition: opacity 0.3s ease-in-out;
+        transition: opacity 0.3s ease-in-out, transform 0.2s ease;
     }
 
     .main-image img.fade-out {
@@ -591,13 +591,13 @@
         width: 100%;
         height: 100%;
         background-color: rgba(0, 0, 0, 0.8);
+        align-items: center;
+        justify-content: center;
         animation: fadeIn 0.3s ease;
     }
 
     .image-modal.show {
         display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
     .modal-content {
@@ -616,6 +616,7 @@
         max-height: 80vh;
         object-fit: contain;
         display: block;
+        transition: opacity 0.3s ease-in-out;
     }
 
     .modal-close {
@@ -1134,33 +1135,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Image gallery functions
 let currentImageIndex = 0;
+let modalCurrentIndex = 0;
 const allImages = {{ all_images|tojson|safe if all_images else '[]' }};
 
-function prevImage() {
+function prevImage(event) {
+    if (event) event.preventDefault();
     if (allImages.length > 1) {
         currentImageIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
         updateImage();
     }
 }
 
-function nextImage() {
+function nextImage(event) {
+    if (event) event.preventDefault();
     if (allImages.length > 1) {
         currentImageIndex = (currentImageIndex + 1) % allImages.length;
         updateImage();
     }
 }
 
-function currentSlide(index) {
+function currentSlide(index, event) {
+    if (event) event.preventDefault();
     currentImageIndex = index;
     updateImage();
 }
 
 function updateImage() {
-    const imageElement = document.querySelector('.preview-image img');
+    const imageElement = document.getElementById('currentImage');
     const dots = document.querySelectorAll('.dot');
+    const mainImageBadge = document.querySelector('.main-image-badge');
     
     if (imageElement && allImages[currentImageIndex]) {
-        imageElement.src = allImages[currentImageIndex].image_path;
+        // Add fade effect
+        imageElement.style.opacity = '0';
+        
+        setTimeout(() => {
+            imageElement.src = allImages[currentImageIndex].src;
+            imageElement.style.opacity = '1';
+            
+            // Show/hide main image badge
+            if (mainImageBadge) {
+                mainImageBadge.style.display = allImages[currentImageIndex].is_main ? 'block' : 'none';
+            }
+        }, 150);
     }
     
     // Update dots
@@ -1170,6 +1187,111 @@ function updateImage() {
 }
 
 // Modal functions
+function openImageModal(imageSrc, event) {
+    if (event) event.preventDefault();
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalCounter = document.getElementById('modalCounter');
+    const modalMainBadge = document.getElementById('modalMainBadge');
+    const modalPrevBtn = document.getElementById('modalPrevBtn');
+    const modalNextBtn = document.getElementById('modalNextBtn');
+    
+    // Find the index of the clicked image
+    modalCurrentIndex = allImages.findIndex(img => img.src === imageSrc);
+    if (modalCurrentIndex === -1) modalCurrentIndex = 0;
+    
+    // Set modal image
+    modalImage.src = imageSrc;
+    
+    // Update counter
+    modalCounter.textContent = `${modalCurrentIndex + 1}/${allImages.length}`;
+    
+    // Show/hide main image badge
+    if (modalMainBadge) {
+        modalMainBadge.style.display = allImages[modalCurrentIndex].is_main ? 'block' : 'none';
+    }
+    
+    // Show/hide navigation buttons
+    if (modalPrevBtn && modalNextBtn) {
+        modalPrevBtn.style.display = allImages.length > 1 ? 'block' : 'none';
+        modalNextBtn.style.display = allImages.length > 1 ? 'block' : 'none';
+    }
+    
+    // Show modal
+    modal.style.display = 'flex';
+    modal.classList.add('show');
+    
+    // Add keyboard navigation
+    document.addEventListener('keydown', handleModalKeyboard);
+}
+
+function closeImageModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    
+    // Remove keyboard navigation
+    document.removeEventListener('keydown', handleModalKeyboard);
+}
+
+function prevImageInModal(event) {
+    if (event) event.preventDefault();
+    if (allImages.length > 1) {
+        modalCurrentIndex = (modalCurrentIndex - 1 + allImages.length) % allImages.length;
+        updateModalImage();
+    }
+}
+
+function nextImageInModal(event) {
+    if (event) event.preventDefault();
+    if (allImages.length > 1) {
+        modalCurrentIndex = (modalCurrentIndex + 1) % allImages.length;
+        updateModalImage();
+    }
+}
+
+function updateModalImage() {
+    const modalImage = document.getElementById('modalImage');
+    const modalCounter = document.getElementById('modalCounter');
+    const modalMainBadge = document.getElementById('modalMainBadge');
+    
+    if (modalImage && allImages[modalCurrentIndex]) {
+        // Add fade effect
+        modalImage.style.opacity = '0';
+        
+        setTimeout(() => {
+            modalImage.src = allImages[modalCurrentIndex].src;
+            modalImage.style.opacity = '1';
+            
+            // Update counter
+            modalCounter.textContent = `${modalCurrentIndex + 1}/${allImages.length}`;
+            
+            // Show/hide main image badge
+            if (modalMainBadge) {
+                modalMainBadge.style.display = allImages[modalCurrentIndex].is_main ? 'block' : 'none';
+            }
+        }, 150);
+    }
+}
+
+function handleModalKeyboard(event) {
+    switch(event.key) {
+        case 'ArrowLeft':
+            event.preventDefault();
+            prevImageInModal();
+            break;
+        case 'ArrowRight':
+            event.preventDefault();
+            nextImageInModal();
+            break;
+        case 'Escape':
+            event.preventDefault();
+            closeImageModal();
+            break;
+    }
+}
+
 function showAllRulesModal() {
     document.getElementById('allRulesModal').style.display = 'block';
 }
@@ -1184,19 +1306,6 @@ function showAllAmenitiesModal() {
 
 function closeAllAmenitiesModal() {
     document.getElementById('allAmenitiesModal').style.display = 'none';
-}
-
-function closeImageModal(event) {
-    if (event && event.target !== event.currentTarget) return;
-    document.getElementById('imageModal').style.display = 'none';
-}
-
-function prevImageInModal() {
-    // Modal image navigation
-}
-
-function nextImageInModal() {
-    // Modal image navigation
 }
 </script>
 {% endblock %}
@@ -1431,17 +1540,17 @@ function nextImageInModal() {
             <div class="image-gallery">
                 <div class="main-image-container">
                     <div class="main-image" id="mainImage">
-                        <img src="{{ all_images[0].src }}" alt="Room Image" id="currentImage" class="gallery-image" onclick="openImageModal(this.src)">
+                        <img src="{{ all_images[0].src }}" alt="Room Image" id="currentImage" class="gallery-image" onclick="openImageModal(this.src, event)">
                         {% if all_images[0].is_main %}
                         <div class="main-image-badge">Ảnh bìa</div>
                         {% endif %}
                     </div>
                     
                     {% if all_images|length > 1 %}
-                    <button class="nav-btn prev-btn" onclick="prevImage()" id="prevBtn">
+                    <button class="nav-btn prev-btn" onclick="prevImage(event)" id="prevBtn">
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <button class="nav-btn next-btn" onclick="nextImage()" id="nextBtn">
+                    <button class="nav-btn next-btn" onclick="nextImage(event)" id="nextBtn">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                     {% endif %}
@@ -1450,7 +1559,7 @@ function nextImageInModal() {
                 {% if all_images|length > 1 %}
                 <div class="image-dots">
                     {% for image in all_images %}
-                    <span class="dot {% if loop.first %}active{% endif %}" onclick="currentSlide({{ loop.index0 }})" data-index="{{ loop.index0 }}"></span>
+                    <span class="dot {% if loop.first %}active{% endif %}" onclick="currentSlide({{ loop.index0 }}, event)" data-index="{{ loop.index0 }}"></span>
                     {% endfor %}
                 </div>
                 {% endif %}
@@ -1615,10 +1724,10 @@ function nextImageInModal() {
         <img id="modalImage" class="modal-image" src="" alt="Ảnh phòng">
         
         <!-- Navigation buttons in modal -->
-        <button class="modal-nav-btn modal-prev-btn" onclick="prevImageInModal()" id="modalPrevBtn">
+        <button class="modal-nav-btn modal-prev-btn" onclick="prevImageInModal(event)" id="modalPrevBtn">
             <i class="fas fa-chevron-left"></i>
         </button>
-        <button class="modal-nav-btn modal-next-btn" onclick="nextImageInModal()" id="modalNextBtn">
+        <button class="modal-nav-btn modal-next-btn" onclick="nextImageInModal(event)" id="modalNextBtn">
             <i class="fas fa-chevron-right"></i>
         </button>
         
