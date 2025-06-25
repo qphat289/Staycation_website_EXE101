@@ -19,6 +19,15 @@ from urllib.parse import quote
 
 owner_bp = Blueprint('owner', __name__, url_prefix='/owner')
 
+# Create a constant for property type mapping at module level
+PROPERTY_TYPE_MAP = {
+    'house': 'Nhà',
+    'apartment': 'Căn hộ', 
+    'hotel': 'Khách sạn'
+}
+
+PROPERTY_TYPE_REVERSE_MAP = {v: k for k, v in PROPERTY_TYPE_MAP.items()}
+
 def get_location_names(room_data):
     """Lấy tên đầy đủ của địa chỉ từ database thay vì hard code"""
     try:
@@ -106,14 +115,27 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def validate_uploaded_file(file, max_size_mb=5):
+    """Validate uploaded file for security and size"""
+    if not file or not file.filename:
+        return False, "No file selected"
+    
+    if not allowed_file(file.filename):
+        return False, "File type not allowed"
+    
+    # Check file size (read first to get size, then reset)
+    file.seek(0, 2)  # Seek to end
+    size = file.tell()
+    file.seek(0)  # Reset to beginning
+    
+    if size > max_size_mb * 1024 * 1024:
+        return False, f"File size exceeds {max_size_mb}MB limit"
+    
+    return True, "Valid file"
+
 def get_property_type_en(vn_value):
     """Chuyển đổi property type từ tiếng Việt sang English"""
-    vn_to_en_map = {
-        'Nhà': 'house',
-        'Căn hộ': 'apartment', 
-        'Khách sạn': 'hotel'
-    }
-    return vn_to_en_map.get(vn_value, 'house')  # Default là house
+    return PROPERTY_TYPE_REVERSE_MAP.get(vn_value, 'house')  # Default là house
 
 # Custom decorator to ensure user is an owner
 def owner_required(f):
@@ -158,7 +180,6 @@ def add_room(homestay_id=None):
         for key in list(session.keys()):
             if key.startswith('room_'):
                 session.pop(key, None)
-        print("DEBUG: Cleared session data for fresh add room request")
     
     if request.method == 'POST':
         try:
@@ -200,27 +221,37 @@ def add_room(homestay_id=None):
                     main_image.save(save_path)
                     main_image_path = f"/static/temp/{filename}"
             
-            # Xử lý các ảnh khác
-            for key in request.files:
-                if key.startswith('images'):
-                    files = request.files.getlist(key)
-                    for file in files:
-                        if file and file.filename:
-                            filename = secure_filename(file.filename)
-                            timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]  # microseconds to milliseconds
-                            filename = f"temp_{timestamp}_{filename}"
-                            save_path = os.path.join(temp_folder, filename)
-                            file.save(save_path)
-                            image_paths.append(f"/static/temp/{filename}")
+            # Xử lý các ảnh khác - chỉ xử lý key 'images[]' một lần và loại bỏ trùng lặp
+            if 'images[]' in request.files:
+                files = request.files.getlist('images[]')
+                
+                # Track processed filenames to avoid duplicates
+                processed_filenames = set()
+                
+                for file in files:
+                    if file and file.filename:
+                        original_filename = file.filename
+                        
+                        # Check for duplicate filename
+                        if original_filename in processed_filenames:
+                            continue
+                        
+                        processed_filenames.add(original_filename)
+                        
+                        filename = secure_filename(file.filename)
+                        timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]  # microseconds to milliseconds
+                        filename = f"temp_{timestamp}_{filename}"
+                        save_path = os.path.join(temp_folder, filename)
+                        file.save(save_path)
+                        image_paths.append(f"/static/temp/{filename}")
             
             # Thêm đường dẫn ảnh vào room_data
             room_data['main_image'] = main_image_path
             room_data['images'] = image_paths
             
             session['room_preview_data'] = room_data
-            print(f"DEBUG: Saving room_data to session with keys: {list(room_data.keys())}")
-            print(f"DEBUG: Main image: {main_image_path}")
-            print(f"DEBUG: Images: {image_paths}")
+            # Save the current step (assume user completed all steps before preview)
+            session['last_completed_step'] = 3
             return redirect(url_for('owner.room_preview'))
             
         except Exception as e:
@@ -229,17 +260,17 @@ def add_room(homestay_id=None):
     # Lấy dữ liệu từ session nếu có (khi quay lại từ preview), otherwise use empty dict
     if is_fresh_request:
         room_data = {}
-        print("DEBUG: Using empty room_data for fresh request")
+        last_step = 1  # Start from step 1 for fresh requests
     else:
         room_data = session.get('room_preview_data', {})
-        print(f"DEBUG: Loading add_room with room_data keys: {list(room_data.keys()) if room_data else 'None'}")
+        # Get the last step user was on before going to preview
+        last_step = session.get('last_completed_step', 1)
     
     # Nếu có rules/amenities trong session, chuẩn bị data cho JavaScript
     if room_data.get('rules') or room_data.get('amenities'):
-        print(f"DEBUG: Found saved rules: {room_data.get('rules', [])}")
-        print(f"DEBUG: Found saved amenities: {room_data.get('amenities', [])}")
+        pass
     
-    return render_template('owner/add_room.html', room_data=room_data)
+    return render_template('owner/add_room.html', room_data=room_data, last_step=last_step)
 
 @owner_bp.route('/room-preview')
 @login_required
@@ -256,11 +287,7 @@ def room_preview():
     # Lấy rules và amenities từ database
     rules_amenities = get_rules_and_amenities(room_data)
     
-    # Debug log - kiểm tra data trong session
-    print(f"DEBUG room_data keys: {list(room_data.keys())}")
-    print(f"DEBUG room_data rules: {room_data.get('rules', 'No rules')}")
-    print(f"DEBUG room_data amenities: {room_data.get('amenities', 'No amenities')}")
-    print(f"DEBUG lookup results: {rules_amenities}")
+
     
     # Chỉ hiển thị khi thực sự có data được chọn
     
@@ -298,6 +325,24 @@ def room_preview():
                          encoded_map_address=encoded_map_address,
                          all_images=all_images)
 
+@owner_bp.route('/save-current-step', methods=['POST'])
+@login_required
+def save_current_step():
+    """Save the current step to session for back-to-edit functionality"""
+    try:
+        data = request.get_json()
+        current_step = data.get('current_step', 1)
+        
+        # Validate step number
+        if current_step in [1, 2, 3]:
+            session['last_completed_step'] = current_step
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': 'Invalid step number'}), 400
+            
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @owner_bp.route('/back-to-edit')
 @login_required
 def back_to_edit():
@@ -322,24 +367,15 @@ def clear_room_session():
     for key in list(session.keys()):
         if key.startswith('room_'):
             session.pop(key, None)
-    print("DEBUG: Cleared all room-related session data")
     return jsonify({'status': 'success'})
 
 @owner_bp.route('/confirm-room', methods=['POST'])
 @login_required
 def confirm_room():
-    print("=== CONFIRM ROOM FUNCTION CALLED ===")
-    print(f"Request method: {request.method}")
-    print(f"Current user: {current_user.id}")
-    
     # Lấy dữ liệu từ session
     room_data = session.get('room_preview_data')
-    print(f"Room data found in session: {room_data is not None}")
-    if room_data:
-        print(f"Room data keys: {list(room_data.keys())}")
     
     if not room_data:
-        print("ERROR: No room data found in session")
         flash('Không tìm thấy dữ liệu phòng để tạo.', 'warning')
         return redirect(url_for('owner.add_room'))
     
@@ -353,21 +389,11 @@ def confirm_room():
             price_per_hour = float(room_data['hourly_price']) / 1000
         elif room_data['selected_rental_type'] == 'nightly' and room_data.get('nightly_price'):
             price_per_night = float(room_data['nightly_price']) / 1000
-            
-        print(f"DEBUG: Price per hour: {price_per_hour}")
-        print(f"DEBUG: Price per night: {price_per_night}")
-        print(f"DEBUG: Selected rental type: {room_data['selected_rental_type']}")
         
-        # Map property_type từ English sang Vietnamese
-        property_type_map = {
-            'house': 'Nhà',
-            'apartment': 'Căn hộ', 
-            'hotel': 'Khách sạn'
-        }
-        property_type_vn = property_type_map.get(room_data.get('property_type'), 'Mô hình chuẩn')
+        # Map property_type từ English sang Vietnamese using constant
+        property_type_vn = PROPERTY_TYPE_MAP.get(room_data.get('property_type'), 'Mô hình chuẩn')
         
         # Tạo room mới
-        print("DEBUG: Creating new room object...")
         new_room = Room(
             title=room_data['room_title'],
             room_type=property_type_vn,  # Lưu giá trị tiếng Việt
@@ -385,11 +411,8 @@ def confirm_room():
             owner_id=current_user.id
         )
         
-        print("DEBUG: Adding room to database...")
         db.session.add(new_room)
-        print("DEBUG: Committing room to database...")
         db.session.commit()
-        print(f"DEBUG: Room created successfully with ID: {new_room.id}")
         
         # Xử lý amenities và rules
         try:
@@ -398,33 +421,26 @@ def confirm_room():
                 amenity_ids = [int(amenity_id) for amenity_id in room_data['amenities']]
                 amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
                 new_room.amenities.extend(amenities)
-                print(f"DEBUG: Added {len(amenities)} amenities to room: {[a.name for a in amenities]}")
             
             # Lưu rules (rules trong session là array của ID strings)
             if room_data.get('rules'):
                 rule_ids = [int(rule_id) for rule_id in room_data['rules']]
                 rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
                 new_room.rules.extend(rules)
-                print(f"DEBUG: Added {len(rules)} rules to room: {[r.name for r in rules]}")
             
             db.session.commit()
-            print("DEBUG: Successfully saved amenities and rules")
             
         except Exception as e:
-            print(f"Lỗi khi lưu amenities/rules: {str(e)}")
             # Không làm fail việc tạo phòng nếu có lỗi
             pass
         
         # Xử lý ảnh với cấu trúc mới: data/owner/{owner_id}/{room_id}/
         try:
-            print(f"DEBUG: Processing images for room {new_room.id}, owner {current_user.id}")
-            
             # Xử lý ảnh chính (main_image)
             if room_data.get('main_image'):
                 main_image_path = room_data['main_image']
                 if main_image_path.startswith('/static/temp/'):
                     temp_file = main_image_path[1:]  # Bỏ '/' đầu để có đường dẫn tương đối
-                    print(f"DEBUG: Processing main image - temp_file: {temp_file}")
                     
                     if os.path.exists(temp_file):
                         # Tạo đường dẫn mới với cấu trúc data/owner/{owner_id}/{room_id}/
@@ -440,7 +456,6 @@ def confirm_room():
                         
                         # Copy từ temp sang thư mục mới
                         new_path = os.path.join(absolute_path, new_filename)
-                        print(f"DEBUG: Copying main image from {temp_file} to {new_path}")
                         shutil.copy2(temp_file, new_path)
                         
                         # Tạo record trong database với đường dẫn mới
@@ -450,7 +465,6 @@ def confirm_room():
                             is_featured=True
                         )
                         db.session.add(main_img)
-                        print(f"DEBUG: Created main image record: {main_img.image_path}")
                         
                         # Xóa file temp
                         os.remove(temp_file)
@@ -460,7 +474,6 @@ def confirm_room():
                 for i, image_path in enumerate(room_data['images']):
                     if image_path.startswith('/static/temp/'):
                         temp_file = image_path[1:]  # Bỏ '/' đầu
-                        print(f"DEBUG: Processing image {i+1} - temp_file: {temp_file}")
                         
                         if os.path.exists(temp_file):
                             # Tạo đường dẫn mới
@@ -476,7 +489,6 @@ def confirm_room():
                             
                             # Copy từ temp sang thư mục mới
                             new_path = os.path.join(absolute_path, new_filename)
-                            print(f"DEBUG: Copying image {i+1} from {temp_file} to {new_path}")
                             shutil.copy2(temp_file, new_path)
                             
                             # Tạo record trong database
@@ -486,7 +498,6 @@ def confirm_room():
                                 is_featured=False
                             )
                             db.session.add(img)
-                            print(f"DEBUG: Created image {i+1} record: {img.image_path}")
                             
                             # Xóa file temp
                             os.remove(temp_file)
@@ -494,22 +505,16 @@ def confirm_room():
             db.session.commit()
             
         except Exception as e:
-            print(f"Lỗi khi xử lý ảnh: {str(e)}")
             # Không làm fail việc tạo phòng nếu ảnh có lỗi
             pass
         
         # Xóa dữ liệu preview khỏi session
         session.pop('room_preview_data', None)
         
-        print("DEBUG: Room creation completed successfully!")
         flash('Đã tạo phòng thành công!', 'success')
         return redirect(url_for('owner.dashboard', created='success'))
         
     except Exception as e:
-        print(f"ERROR: Exception in confirm_room: {str(e)}")
-        print(f"ERROR: Exception type: {type(e).__name__}")
-        import traceback
-        print(f"ERROR: Full traceback: {traceback.format_exc()}")
         db.session.rollback()
         flash(f'Có lỗi xảy ra khi tạo phòng: {str(e)}', 'danger')
         return redirect(url_for('owner.room_preview'))
@@ -524,157 +529,152 @@ def edit_room(room_id):
     
     if request.method == 'POST':
         try:
-            # Cập nhật thông tin cơ bản
-            room.title = request.form.get('room_title') or room.title  # Keep existing if empty
-            room.description = request.form.get('room_description')
+            # Cập nhật thông tin cơ bản với validation
+            title = request.form.get('room_title', '').strip()
+            if not title:
+                flash('Tên phòng không được để trống!', 'danger')
+                return redirect(url_for('owner.edit_room', room_id=room_id))
+            
+            room.title = title
+            room.description = request.form.get('room_description', '').strip()
             
             # Chuyển đổi property_type sang tiếng Việt trước khi lưu
-            property_type_map = {
-                'house': 'Nhà',
-                'apartment': 'Căn hộ', 
-                'hotel': 'Khách sạn'
-            }
-            property_type_vn = property_type_map.get(request.form.get('property_type'), request.form.get('property_type'))
+            property_type_vn = PROPERTY_TYPE_MAP.get(
+                request.form.get('property_type'), 
+                request.form.get('property_type', room.room_type)
+            )
             room.room_type = property_type_vn
-            room.city = request.form.get('province') or room.city  # Keep existing if empty
-            room.district = request.form.get('district') or room.district  # Keep existing if empty
-
-            # Cập nhật địa chỉ
-            ward = request.form.get('ward')
-            street = request.form.get('street')
-            room.address = f"{street}, {ward}" if street and ward else street or ward or "Chưa cập nhật"
             
-            # Cập nhật thông tin phòng
-            room.bed_count = int(request.form.get('bed_count', 1))
-            room.bathroom_count = int(request.form.get('bathroom_count', 1))
-            room.max_guests = int(request.form.get('guest_count', 1))
+            # Update location with fallback to existing values
+            room.city = request.form.get('province') or room.city
+            room.district = request.form.get('district') or room.district
+
+            # Cập nhật địa chỉ - improved logic
+            ward = request.form.get('ward', '').strip()
+            street = request.form.get('street', '').strip()
+            if street and ward:
+                room.address = f"{street}, {ward}"
+            elif street:
+                room.address = street
+            elif ward:
+                room.address = ward
+            # If both empty, keep existing address
+            
+            # Cập nhật thông tin phòng với validation
+            try:
+                room.bed_count = max(1, int(request.form.get('bed_count', 1)))
+                room.bathroom_count = max(1, int(request.form.get('bathroom_count', 1)))
+                room.max_guests = max(1, int(request.form.get('guest_count', 1)))
+            except (ValueError, TypeError):
+                flash('Thông tin số lượng không hợp lệ!', 'danger')
+                return redirect(url_for('owner.edit_room', room_id=room_id))
             
             # Cập nhật giá dựa theo rental type
             rental_type = request.form.get('selected_rental_type')
-            room.price_per_hour = 0.0  # Set default values instead of None
+            room.price_per_hour = 0.0
             room.price_per_night = 0.0
             
-            if rental_type == 'hourly':
-                hourly_price = request.form.get('hourly_price')
-                if hourly_price:
-                    room.price_per_hour = float(hourly_price) / 1000
-            elif rental_type == 'nightly':
-                nightly_price = request.form.get('nightly_price')
-                if nightly_price:
-                    room.price_per_night = float(nightly_price) / 1000
+            try:
+                if rental_type == 'hourly':
+                    hourly_price = request.form.get('hourly_price')
+                    if hourly_price:
+                        price_value = float(hourly_price) / 1000
+                        if price_value <= 0:
+                            flash('Giá phòng phải lớn hơn 0!', 'danger')
+                            return redirect(url_for('owner.edit_room', room_id=room_id))
+                        room.price_per_hour = price_value
+                elif rental_type == 'nightly':
+                    nightly_price = request.form.get('nightly_price')
+                    if nightly_price:
+                        price_value = float(nightly_price) / 1000
+                        if price_value <= 0:
+                            flash('Giá phòng phải lớn hơn 0!', 'danger')
+                            return redirect(url_for('owner.edit_room', room_id=room_id))
+                        room.price_per_night = price_value
+            except (ValueError, TypeError):
+                flash('Giá phòng không hợp lệ!', 'danger')
+                return redirect(url_for('owner.edit_room', room_id=room_id))
             
             # Cập nhật amenities
-            try:
-                # Xóa amenities cũ
-                room.amenities.clear()
-                
-                # Thêm amenities mới
-                amenity_ids = request.form.getlist('amenities[]')
+            room.amenities.clear()
+            amenity_ids = request.form.getlist('amenities[]')
+            if amenity_ids:
+                amenity_ids = [int(aid) for aid in amenity_ids if aid.isdigit()]
                 if amenity_ids:
-                    amenity_ids = [int(aid) for aid in amenity_ids if aid.isdigit()]
-                    if amenity_ids:
-                        amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
-                        room.amenities.extend(amenities)
-                        
-            except Exception as e:
-                print(f"Lỗi khi cập nhật amenities: {str(e)}")
+                    amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
+                    room.amenities.extend(amenities)
             
             # Cập nhật rules
-            try:
-                # Xóa rules cũ
-                room.rules.clear()
-                
-                # Thêm rules mới
-                rule_ids = request.form.getlist('rules[]')
+            room.rules.clear()
+            rule_ids = request.form.getlist('rules[]')
+            if rule_ids:
+                rule_ids = [int(rid) for rid in rule_ids if rid.isdigit()]
                 if rule_ids:
-                    rule_ids = [int(rid) for rid in rule_ids if rid.isdigit()]
-                    if rule_ids:
-                        rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
-                        room.rules.extend(rules)
-                        
-            except Exception as e:
-                print(f"Lỗi khi cập nhật rules: {str(e)}")
+                    rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
+                    room.rules.extend(rules)
             
-            # Xử lý upload ảnh mới
-            try:
-                from werkzeug.utils import secure_filename
-                import os
-                import shutil
-                from app.utils.utils import generate_unique_filename
+            # Xử lý upload ảnh mới with validation
+            owner_id = current_user.id
+            room_folder = f"static/data/owner/{owner_id}/{room_id}"
+            os.makedirs(room_folder, exist_ok=True)
+            
+            # Xử lý ảnh chính (main_image)
+            if 'main_image' in request.files:
+                main_image = request.files['main_image']
+                is_valid, error_msg = validate_uploaded_file(main_image)
                 
-                # Tạo thư mục lưu ảnh cho phòng
-                owner_id = current_user.id
-                room_folder = f"static/data/owner/{owner_id}/{room_id}"
-                os.makedirs(room_folder, exist_ok=True)
-                
-                # Xử lý ảnh chính (main_image)
-                if 'main_image' in request.files:
-                    main_image = request.files['main_image']
-                    if main_image and main_image.filename:
-                        print(f"DEBUG: Processing main image: {main_image.filename}")
-                        
-                        # Tạo tên file unique
-                        filename = secure_filename(main_image.filename)
-                        unique_filename = generate_unique_filename(filename, 'main')
-                        
-                        # Lưu file
+                if is_valid:
+                    filename = secure_filename(main_image.filename)
+                    unique_filename = generate_unique_filename(filename, 'main')
+                    file_path = os.path.join(room_folder, unique_filename)
+                    main_image.save(file_path)
+                    
+                    # Tạo record trong database
+                    relative_path = f"data/owner/{owner_id}/{room_id}/{unique_filename}"
+                    
+                    # Xóa ảnh bìa cũ nếu có
+                    old_featured = RoomImage.query.filter_by(room_id=room_id, is_featured=True).first()
+                    if old_featured:
+                        old_file_path = os.path.join('static', old_featured.image_path)
+                        if os.path.exists(old_file_path):
+                            os.remove(old_file_path)
+                        db.session.delete(old_featured)
+                    
+                    # Tạo record mới
+                    new_main_image = RoomImage(
+                        image_path=relative_path,
+                        room_id=room_id,
+                        is_featured=True
+                    )
+                    db.session.add(new_main_image)
+                elif main_image.filename:  # Only show error if user actually selected a file
+                    flash(f'Ảnh chính: {error_msg}', 'danger')
+            
+            # Xử lý ảnh phụ (images[]) with validation
+            if 'images[]' in request.files:
+                additional_images = request.files.getlist('images[]')
+                for i, image in enumerate(additional_images):
+                    is_valid, error_msg = validate_uploaded_file(image)
+                    
+                    if is_valid:
+                        filename = secure_filename(image.filename)
+                        unique_filename = generate_unique_filename(filename, f'room_{i+1}')
                         file_path = os.path.join(room_folder, unique_filename)
-                        main_image.save(file_path)
+                        image.save(file_path)
                         
                         # Tạo record trong database
                         relative_path = f"data/owner/{owner_id}/{room_id}/{unique_filename}"
-                        
-                        # Xóa ảnh bìa cũ nếu có
-                        old_featured = RoomImage.query.filter_by(room_id=room_id, is_featured=True).first()
-                        if old_featured:
-                            # Xóa file cũ
-                            old_file_path = os.path.join('static', old_featured.image_path)
-                            if os.path.exists(old_file_path):
-                                os.remove(old_file_path)
-                            # Xóa record cũ
-                            db.session.delete(old_featured)
-                        
-                        # Tạo record mới
-                        new_main_image = RoomImage(
+                        new_image = RoomImage(
                             image_path=relative_path,
                             room_id=room_id,
-                            is_featured=True
+                            is_featured=False
                         )
-                        db.session.add(new_main_image)
-                        print(f"DEBUG: Added new main image: {relative_path}")
-                
-                # Xử lý ảnh phụ (images[])
-                if 'images[]' in request.files:
-                    additional_images = request.files.getlist('images[]')
-                    for i, image in enumerate(additional_images):
-                        if image and image.filename:
-                            print(f"DEBUG: Processing additional image {i+1}: {image.filename}")
-                            
-                            # Tạo tên file unique
-                            filename = secure_filename(image.filename)
-                            unique_filename = generate_unique_filename(filename, f'room_{i+1}')
-                            
-                            # Lưu file
-                            file_path = os.path.join(room_folder, unique_filename)
-                            image.save(file_path)
-                            
-                            # Tạo record trong database
-                            relative_path = f"data/owner/{owner_id}/{room_id}/{unique_filename}"
-                            new_image = RoomImage(
-                                image_path=relative_path,
-                                room_id=room_id,
-                                is_featured=False
-                            )
-                            db.session.add(new_image)
-                            print(f"DEBUG: Added additional image: {relative_path}")
-                
-            except Exception as e:
-                print(f"Lỗi khi xử lý ảnh: {str(e)}")
-                # Không làm fail việc cập nhật phòng nếu ảnh có lỗi
-                pass
+                        db.session.add(new_image)
+                    elif image.filename:  # Only show error if user actually selected a file
+                        flash(f'Ảnh {i+1}: {error_msg}', 'warning')
             
             # Cập nhật thời gian sửa đổi
-            room.updated_at = datetime.utcnow()
+            room.updated_at = datetime.now()
             
             db.session.commit()
             flash('Đã cập nhật thông tin phòng thành công!', 'success')
@@ -683,62 +683,46 @@ def edit_room(room_id):
         except Exception as e:
             db.session.rollback()
             flash(f'Có lỗi xảy ra khi cập nhật phòng: {str(e)}', 'danger')
-            # Prepare room_data for template on error
-            room_data = {
-                'id': room.id,
-                'title': room.title,
-                'description': room.description,
-                'property_type': get_property_type_en(room.room_type),
-                'province': room.city,
-                'district': room.district,
-                'ward': '',
-                'street': room.address,
-                'bathroom_count': room.bathroom_count,
-                'bed_count': room.bed_count,
-                'guest_count': room.max_guests,
-                'rental_type': 'nightly' if room.price_per_night and room.price_per_night > 0 else 'hourly',
-                'hourly_price': int(room.price_per_hour * 1000) if room.price_per_hour else 0,
-                'nightly_price': int(room.price_per_night * 1000) if room.price_per_night else None,
-                'rules': [{'id': rule.id, 'name': rule.name} for rule in room.rules],
-                'amenities': [{'id': amenity.id, 'name': amenity.name, 'icon': amenity.icon} for amenity in room.amenities],
-                'images': [{'id': img.id, 'path': img.image_path, 'is_featured': img.is_featured} for img in room.images]
-            }
-            return render_template('owner/edit_room.html', room=room_data)
-    
-    # Chuẩn bị dữ liệu cho template
-    # Tách địa chỉ để hiển thị đúng phường và số nhà
+            
+    # GET request - prepare room data for template with improved address parsing
     street_address = ''
     ward_name = ''
     
     if room.address:
-        # Tách địa chỉ nếu có phường
-        address_parts = room.address.split(', ')
-        if len(address_parts) >= 2:
-            # Nếu có nhiều phần, phần cuối có thể là phường
-            for i, part in enumerate(address_parts):
-                if 'phường' in part.lower() or 'xã' in part.lower():
-                    ward_name = part.strip()
-                    # Phần còn lại là địa chỉ số nhà
-                    street_address = ', '.join(address_parts[:i] + address_parts[i+1:]).strip()
-                    break
-            else:
-                # Nếu không tìm thấy phường, coi toàn bộ là địa chỉ số nhà
-                street_address = room.address
-        else:
+        # Improved address parsing logic
+        address_parts = [part.strip() for part in room.address.split(',')]
+        
+        # Strategy 1: Look for ward keywords
+        ward_found = False
+        for i, part in enumerate(address_parts):
+            if any(keyword in part.lower() for keyword in ['phường', 'xã', 'thị trấn']):
+                ward_name = part
+                # Remaining parts form street address
+                remaining_parts = address_parts[:i] + address_parts[i+1:]
+                street_address = ', '.join(remaining_parts).strip()
+                ward_found = True
+                break
+        
+        # Strategy 2: If no ward keywords found, assume last part is ward (if more than 1 part)
+        if not ward_found and len(address_parts) > 1:
+            ward_name = address_parts[-1]
+            street_address = ', '.join(address_parts[:-1]).strip()
+        elif not ward_found:
+            # Single part - treat as street address
             street_address = room.address
     
     room_data = {
         'id': room.id,
         'title': room.title,
         'description': room.description,
-        'property_type': get_property_type_en(room.room_type),  # Chuyển đổi ngược từ tiếng Việt sang English cho form
-        'province': room.city,  # Sử dụng city thay vì province
+        'property_type': get_property_type_en(room.room_type),
+        'province': room.city,
         'district': room.district,
-        'ward': ward_name,  # Phường được tách từ address
-        'street': street_address,  # Số nhà được tách từ address
+        'ward': ward_name,
+        'street': street_address,
         'bathroom_count': room.bathroom_count,
         'bed_count': room.bed_count,
-        'guest_count': room.max_guests,  # Sử dụng max_guests thay vì guest_count
+        'guest_count': room.max_guests,
         'rental_type': 'nightly' if room.price_per_night and room.price_per_night > 0 else 'hourly',
         'hourly_price': int(room.price_per_hour * 1000) if room.price_per_hour else 0,
         'nightly_price': int(room.price_per_night * 1000) if room.price_per_night else None,

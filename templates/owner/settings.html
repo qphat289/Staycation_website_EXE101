@@ -15,104 +15,573 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <!-- Account Settings -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-light">
+            <div class="card mb-4 shadow-sm settings-card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0" data-translate="account-settings">Thiết lập tài khoản</h5>
-                </div>                <div class="card-body">
-                    <form action="{{ url_for('owner.update_profile') }}" method="POST">
-                        <div class="mb-3">
-                            <label for="username" class="form-label" data-translate="username">Tên đăng nhập</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label" data-translate="email">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}">
-                        </div>
-                        <button type="submit" class="btn btn-primary" data-translate="save-changes">Lưu thay đổi</button>
-                    </form>
-                </div>
-            </div>
-              <!-- Change Password -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0" data-translate="change-password">Thay đổi mật khẩu</h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm edit-btn" onclick="toggleEditMode('account')">
+                        <i class="fas fa-edit me-1"></i>
+                        <span data-translate="edit">Chỉnh sửa</span>
+                    </button>
                 </div>
                 <div class="card-body">
-                    <form action="{{ url_for('owner.change_password') }}" method="POST">
-                        <div class="mb-3">
-                            <label for="current_password" class="form-label" data-translate="current-password">Mật khẩu hiện tại</label>
-                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    <!-- Display Mode -->
+                    <div id="account-display" class="info-display">
+                        <div class="info-row">
+                            <div class="info-label" data-translate="username">Tên đăng nhập:</div>
+                            <div class="info-value">{{ current_user.username or 'Chưa cập nhật' }}</div>
                         </div>
-                        <div class="mb-3">
-                            <label for="new_password" class="form-label" data-translate="new-password">Mật khẩu mới</label>
-                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                        <div class="info-row">
+                            <div class="info-label" data-translate="email">Email:</div>
+                            <div class="info-value">{{ current_user.email or 'Chưa cập nhật' }}</div>
                         </div>
-                        <div class="mb-3">
-                            <label for="confirm_password" class="form-label" data-translate="confirm-password">Xác nhận mật khẩu mới</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    
+                    <!-- Edit Mode -->
+                    <div id="account-edit" class="edit-form" style="display: none;">
+                        <form action="{{ url_for('owner.update_profile') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="username" class="form-label" data-translate="username">Tên đăng nhập</label>
+                                <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label" data-translate="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success" data-translate="save-changes">Lưu thay đổi</button>
+                                <button type="button" class="btn btn-secondary" onclick="cancelEdit('account')" data-translate="cancel">Hủy</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="card mb-4 shadow-sm settings-card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" data-translate="personal-info">Thông tin cá nhân</h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm edit-btn" onclick="toggleEditMode('personal')">
+                        <i class="fas fa-edit me-1"></i>
+                        <span data-translate="edit">Chỉnh sửa</span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Display Mode -->
+                    <div id="personal-display" class="info-display">
+                        <div class="info-row">
+                            <div class="info-label" data-translate="full-name">Họ và tên:</div>
+                            <div class="info-value">{{ current_user.full_name or 'Chưa cập nhật' }}</div>
                         </div>
-                        <button type="submit" class="btn btn-primary" data-translate="update-password">Cập nhật mật khẩu</button>
-                    </form>
+                        <div class="info-row">
+                            <div class="info-label" data-translate="first-name">Họ:</div>
+                            <div class="info-value">{{ current_user.first_name or 'Chưa cập nhật' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label" data-translate="last-name">Tên:</div>
+                            <div class="info-value">{{ current_user.last_name or 'Chưa cập nhật' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label" data-translate="gender">Giới tính:</div>
+                            <div class="info-value">{{ current_user.gender or 'Chưa cập nhật' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label" data-translate="phone">Số điện thoại:</div>
+                            <div class="info-value">{{ current_user.phone or 'Chưa cập nhật' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label" data-translate="address">Địa chỉ:</div>
+                            <div class="info-value">{{ current_user.address or 'Chưa cập nhật' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label" data-translate="birth-date">Ngày sinh:</div>
+                            <div class="info-value">{{ current_user.birth_date.strftime('%d/%m/%Y') if current_user.birth_date else 'Chưa cập nhật' }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Mode -->
+                    <div id="personal-edit" class="edit-form" style="display: none;">
+                        <form action="{{ url_for('owner.update_profile') }}" method="POST">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="full_name" class="form-label" data-translate="full-name">Họ và tên</label>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" value="{{ current_user.full_name or '' }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="gender" class="form-label" data-translate="gender">Giới tính</label>
+                                    <select class="form-control" id="gender" name="gender">
+                                        <option value="Nam" {{ 'selected' if current_user.gender == 'Nam' else '' }}>Nam</option>
+                                        <option value="Nữ" {{ 'selected' if current_user.gender == 'Nữ' else '' }}>Nữ</option>
+                                        <option value="Khác" {{ 'selected' if current_user.gender == 'Khác' else '' }}>Khác</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label" data-translate="first-name">Họ</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ current_user.first_name or '' }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label" data-translate="last-name">Tên</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ current_user.last_name or '' }}">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label" data-translate="phone">Số điện thoại</label>
+                                <input type="text" class="form-control" id="phone" name="phone" value="{{ current_user.phone or '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="address" class="form-label" data-translate="address">Địa chỉ</label>
+                                <input type="text" class="form-control" id="address" name="address" value="{{ current_user.address or '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="birth_date" class="form-label" data-translate="birth-date">Ngày sinh</label>
+                                <input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ current_user.birth_date.strftime('%Y-%m-%d') if current_user.birth_date else '' }}">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success" data-translate="save-changes">Lưu thay đổi</button>
+                                <button type="button" class="btn btn-secondary" onclick="cancelEdit('personal')" data-translate="cancel">Hủy</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="card mb-4 shadow-sm settings-card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" data-translate="change-password">Thay đổi mật khẩu</h5>
+                    <button type="button" class="btn btn-outline-warning btn-sm edit-btn" onclick="toggleEditMode('password')">
+                        <i class="fas fa-key me-1"></i>
+                        <span data-translate="change">Thay đổi</span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Display Mode -->
+                    <div id="password-display" class="info-display">
+                        <div class="info-row">
+                            <div class="info-label">Mật khẩu:</div>
+                            <div class="info-value">••••••••••</div>
+                        </div>
+                        <div class="text-muted small">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Nhấp "Thay đổi" để cập nhật mật khẩu của bạn
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Mode -->
+                    <div id="password-edit" class="edit-form" style="display: none;">
+                        <form action="{{ url_for('owner.change_password') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="current_password" class="form-label" data-translate="current-password">Mật khẩu hiện tại</label>
+                                <input type="password" class="form-control" id="current_password" name="current_password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label" data-translate="new-password">Mật khẩu mới</label>
+                                <input type="password" class="form-control" id="new_password" name="new_password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label" data-translate="confirm-password">Xác nhận mật khẩu mới</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-warning" data-translate="update-password">Cập nhật mật khẩu</button>
+                                <button type="button" class="btn btn-secondary" onclick="cancelEdit('password')" data-translate="cancel">Hủy</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
             
             <!-- Business Settings -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-light">
+            <div class="card mb-4 shadow-sm settings-card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0" data-translate="business-settings">Thông tin kinh doanh</h5>
-                </div>                <div class="card-body">
-                    <form action="{{ url_for('owner.update_profile') }}" method="POST">
-                        <div class="mb-3">
-                            <label for="business_name" class="form-label" data-translate="business-name">Tên doanh nghiệp</label>
-                            <input type="text" class="form-control" id="business_name" name="business_name" value="{{ current_user.business_name or '' }}">
+                    <button type="button" class="btn btn-outline-primary btn-sm edit-btn" onclick="toggleEditMode('business')">
+                        <i class="fas fa-edit me-1"></i>
+                        <span data-translate="edit">Chỉnh sửa</span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Display Mode -->
+                    <div id="business-display" class="info-display">
+                        <div class="info-row">
+                            <div class="info-label" data-translate="business-name">Tên doanh nghiệp:</div>
+                            <div class="info-value">{{ current_user.business_name or 'Chưa cập nhật' }}</div>
                         </div>
-                        <div class="mb-3">
-                            <label for="tax_code" class="form-label" data-translate="tax-code">Mã số thuế</label>
-                            <input type="text" class="form-control" id="tax_code" name="tax_code" value="{{ current_user.tax_code or '' }}">
+                        <div class="info-row">
+                            <div class="info-label" data-translate="tax-code">Mã số thuế:</div>
+                            <div class="info-value">{{ current_user.tax_code or 'Chưa cập nhật' }}</div>
                         </div>
-                        <div class="mb-3">
-                            <label for="bank_name" class="form-label" data-translate="bank-name">Tên ngân hàng</label>
-                            <input type="text" class="form-control" id="bank_name" name="bank_name" value="{{ current_user.bank_name or '' }}">
+                        <div class="info-row">
+                            <div class="info-label" data-translate="bank-name">Tên ngân hàng:</div>
+                            <div class="info-value">{{ current_user.bank_name or 'Chưa cập nhật' }}</div>
                         </div>
-                        <div class="mb-3">
-                            <label for="bank_account" class="form-label" data-translate="bank-account">Số tài khoản</label>
-                            <input type="text" class="form-control" id="bank_account" name="bank_account" value="{{ current_user.bank_account or '' }}">
+                        <div class="info-row">
+                            <div class="info-label" data-translate="bank-account">Số tài khoản:</div>
+                            <div class="info-value">{{ current_user.bank_account or 'Chưa cập nhật' }}</div>
                         </div>
-                        <button type="submit" class="btn btn-primary" data-translate="save-changes">Lưu thay đổi</button>
-                    </form>
+                    </div>
+                    
+                    <!-- Edit Mode -->
+                    <div id="business-edit" class="edit-form" style="display: none;">
+                        <form action="{{ url_for('owner.update_profile') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="business_name" class="form-label" data-translate="business-name">Tên doanh nghiệp</label>
+                                <input type="text" class="form-control" id="business_name" name="business_name" value="{{ current_user.business_name or '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="tax_code" class="form-label" data-translate="tax-code">Mã số thuế</label>
+                                <input type="text" class="form-control" id="tax_code" name="tax_code" value="{{ current_user.tax_code or '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="bank_name" class="form-label" data-translate="bank-name">Tên ngân hàng</label>
+                                <input type="text" class="form-control" id="bank_name" name="bank_name" value="{{ current_user.bank_name or '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="bank_account" class="form-label" data-translate="bank-account">Số tài khoản</label>
+                                <input type="text" class="form-control" id="bank_account" name="bank_account" value="{{ current_user.bank_account or '' }}">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success" data-translate="save-changes">Lưu thay đổi</button>
+                                <button type="button" class="btn btn-secondary" onclick="cancelEdit('business')" data-translate="cancel">Hủy</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
             
             <!-- Notification Settings -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-light">
+            <div class="card mb-4 shadow-sm settings-card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0" data-translate="notification-settings">Cài đặt thông báo</h5>
+                    <button type="button" class="btn btn-outline-info btn-sm edit-btn" onclick="toggleEditMode('notifications')">
+                        <i class="fas fa-bell me-1"></i>
+                        <span data-translate="edit">Chỉnh sửa</span>
+                    </button>
                 </div>
                 <div class="card-body">
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="emailNotification" checked>
-                        <label class="form-check-label" for="emailNotification" data-translate="email-notifications">Thông báo qua email</label>
+                    <!-- Display Mode -->
+                    <div id="notifications-display" class="info-display">
+                        <div class="info-row">
+                            <div class="info-label" data-translate="email-notifications">Thông báo qua email:</div>
+                            <div class="info-value">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Đã bật
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label" data-translate="booking-notifications">Thông báo đặt phòng mới:</div>
+                            <div class="info-value">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Đã bật
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label" data-translate="promotion-notifications">Thông báo khuyến mãi:</div>
+                            <div class="info-value">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Đã bật
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="bookingNotification" checked>
-                        <label class="form-check-label" for="bookingNotification" data-translate="booking-notifications">Thông báo đặt phòng mới</label>
+                    
+                    <!-- Edit Mode -->
+                    <div id="notifications-edit" class="edit-form" style="display: none;">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="emailNotification" checked>
+                            <label class="form-check-label" for="emailNotification" data-translate="email-notifications">Thông báo qua email</label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="bookingNotification" checked>
+                            <label class="form-check-label" for="bookingNotification" data-translate="booking-notifications">Thông báo đặt phòng mới</label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="promotionNotification" checked>
+                            <label class="form-check-label" for="promotionNotification" data-translate="promotion-notifications">Thông báo khuyến mãi</label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-info" onclick="saveNotificationSettings()" data-translate="save-notification-settings">Lưu thiết lập thông báo</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelEdit('notifications')" data-translate="cancel">Hủy</button>
+                        </div>
                     </div>
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="promotionNotification" checked>
-                        <label class="form-check-label" for="promotionNotification" data-translate="promotion-notifications">Thông báo khuyến mãi</label>
-                    </div>
-                    <button type="button" class="btn btn-primary" data-translate="save-notification-settings">Lưu thiết lập thông báo</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+.profile-title {
+    color: #2c3e50;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.title-underline {
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    border-radius: 2px;
+    margin: 0 auto 2rem;
+}
+
+.settings-card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.settings-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.card-header {
+    border-bottom: 2px solid #f8f9fa;
+    padding: 1.2rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.info-display {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+    flex: 0 0 40%;
+}
+
+.info-value {
+    color: #2c3e50;
+    font-weight: 500;
+    flex: 1;
+    text-align: right;
+}
+
+.edit-form {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.edit-btn {
+    border-radius: 20px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 0.6rem 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+}
+
+@media (max-width: 768px) {
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .info-label, .info-value {
+        flex: none;
+        text-align: left;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start !important;
+    }
+}
+</style>
+
 <!-- JavaScript for settings page -->
 <script>
+function toggleEditMode(section) {
+    const displayElement = document.getElementById(`${section}-display`);
+    const editElement = document.getElementById(`${section}-edit`);
+    const button = event.target.closest('.edit-btn');
+    
+    if (displayElement.style.display !== 'none') {
+        // Switch to edit mode
+        displayElement.style.display = 'none';
+        editElement.style.display = 'block';
+        button.innerHTML = '<i class="fas fa-times me-1"></i><span data-translate="cancel">Hủy</span>';
+        button.classList.remove('btn-outline-primary', 'btn-outline-warning', 'btn-outline-info');
+        button.classList.add('btn-outline-danger');
+        button.setAttribute('onclick', `cancelEdit('${section}')`);
+    }
+}
+
+function cancelEdit(section) {
+    const displayElement = document.getElementById(`${section}-display`);
+    const editElement = document.getElementById(`${section}-edit`);
+    const button = event.target.closest('.edit-btn');
+    
+    // Switch back to display mode
+    displayElement.style.display = 'block';
+    editElement.style.display = 'none';
+    
+    // Reset button text and style based on section
+    let buttonClass, buttonText, iconClass;
+    switch(section) {
+        case 'password':
+            buttonClass = 'btn-outline-warning';
+            buttonText = '<i class="fas fa-key me-1"></i><span data-translate="change">Thay đổi</span>';
+            break;
+        case 'notifications':
+            buttonClass = 'btn-outline-info';
+            buttonText = '<i class="fas fa-bell me-1"></i><span data-translate="edit">Chỉnh sửa</span>';
+            break;
+        default:
+            buttonClass = 'btn-outline-primary';
+            buttonText = '<i class="fas fa-edit me-1"></i><span data-translate="edit">Chỉnh sửa</span>';
+    }
+    
+    button.innerHTML = buttonText;
+    button.classList.remove('btn-outline-danger');
+    button.classList.add(buttonClass);
+    button.setAttribute('onclick', `toggleEditMode('${section}')`);
+    
+    // Reset form fields
+    const form = editElement.querySelector('form');
+    if (form) {
+        form.reset();
+        // Restore original values
+        const inputs = form.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            if (input.hasAttribute('value')) {
+                input.value = input.getAttribute('value');
+            }
+        });
+    }
+}
+
+function saveNotificationSettings() {
+    const emailNotif = document.getElementById('emailNotification').checked;
+    const bookingNotif = document.getElementById('bookingNotification').checked;
+    const promotionNotif = document.getElementById('promotionNotification').checked;
+    
+    // Here you would typically send an AJAX request to save the settings
+    // For now, we'll just show a success message and return to display mode
+    
+    // Update display values
+    const displayElement = document.getElementById('notifications-display');
+    const rows = displayElement.querySelectorAll('.info-row');
+    
+    rows[0].querySelector('.info-value').innerHTML = emailNotif ? 
+        '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Đã bật</span>' : 
+        '<span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Đã tắt</span>';
+    
+    rows[1].querySelector('.info-value').innerHTML = bookingNotif ? 
+        '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Đã bật</span>' : 
+        '<span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Đã tắt</span>';
+    
+    rows[2].querySelector('.info-value').innerHTML = promotionNotif ? 
+        '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Đã bật</span>' : 
+        '<span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Đã tắt</span>';
+    
+    // Show success message
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success alert-dismissible fade show';
+    alert.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>
+        Thiết lập thông báo đã được lưu thành công!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(alert, container.firstChild);
+    
+    // Auto dismiss after 3 seconds
+    setTimeout(() => {
+        alert.remove();
+    }, 3000);
+    
+    // Return to display mode
+    cancelEdit('notifications');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Client-side validation for password matching
-    const passwordForm = document.querySelector('form[action*="change_password"]');
+    const passwordForm = document.querySelector('#password-edit form');
     if (passwordForm) {
         passwordForm.addEventListener('submit', function(event) {
             const newPassword = document.getElementById('new_password').value;
@@ -122,20 +591,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 event.preventDefault();
                 alert('Mật khẩu mới và mật khẩu xác nhận không khớp!');
             }
-        });
-    }
-    
-    // Handle notification settings (placeholder for future functionality)
-    const saveNotificationBtn = document.querySelector('button[data-translate="save-notification-settings"]');
-    if (saveNotificationBtn) {
-        saveNotificationBtn.addEventListener('click', function() {
-            // Collect notification settings
-            const emailNotif = document.getElementById('emailNotification').checked;
-            const bookingNotif = document.getElementById('bookingNotification').checked;
-            const promotionNotif = document.getElementById('promotionNotification').checked;
-            
-            // Placeholder for saving notification settings
-            alert('Thiết lập thông báo đã được lưu!');
         });
     }
 });

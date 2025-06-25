@@ -297,60 +297,9 @@
         margin-bottom: 16px;
     }
 
-    .image-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
 
-    .image-item {
-        aspect-ratio: 1;
-        background: #f8f9fa;
-        border: 2px dashed #ddd;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #999;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
 
-    .image-item:hover {
-        border-color: #9ed649;
-        background: #f0f8f0;
-    }
 
-    .image-item.add-more {
-        border-style: dashed;
-        background: #fffde7;
-        border-color: #9ed649;
-    }
-
-    .add-icon {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .add-icon i {
-        font-size: 24px;
-        color: #9ed649;
-    }
-
-    .featured-badge {
-        background: #9ed649;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 500;
-        position: absolute;
-        top: 8px;
-        left: 8px;
-    }
 
     /* Image Gallery Styles */
     .image-header {
@@ -790,7 +739,7 @@
         }
     }
 
-    /* Modal Styles */
+    /* Rules and Amenities Modal Styles */
     .modal {
         position: fixed;
         z-index: 1000;
@@ -804,7 +753,7 @@
         justify-content: center;
     }
 
-    .modal-content {
+    .modal .modal-content {
         background-color: white;
         margin: auto;
         border-radius: 12px;
@@ -1001,313 +950,31 @@
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 
+<!-- Pass backend images to JavaScript -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Mapbox access token của bạn
-    mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
-    
-    // Tạo bản đồ Mapbox với style đẹp
-    const mapbox = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v12', // Mapbox Streets style
-        center: [106.6297, 10.8231], // [lng, lat] for Mapbox
-        zoom: 13,
-        attributionControl: true,
-        scrollZoom: false // Tắt scroll zoom
-    });
-        
-    // Thêm controls đẹp
-    mapbox.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
-    mapbox.addControl(new mapboxgl.FullscreenControl(), 'top-right');
-    
-    // Geocoding với Mapbox Geocoding API (chính xác hơn)
-    const address = {{ map_address|tojson|safe }};
-    const geocodeUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(address) + '.json?access_token=' + mapboxgl.accessToken + '&country=vn&limit=1&types=address,poi';
-    
-    fetch(geocodeUrl)
-        .then(response => response.json())
-        .then(data => {
-            if (data.features && data.features.length > 0) {
-                const coordinates = data.features[0].center; // [lng, lat]
-                const placeName = data.features[0].place_name;
-                
-                // Fly to location với animation mượt mà
-                mapbox.flyTo({
-                    center: coordinates,
-                    zoom: 15,
-                    duration: 2500,
-                    essential: true
-                });
-                
-                // Tạo custom marker element
-                const markerEl = document.createElement('div');
-                markerEl.innerHTML = `
-                    <div style="
-                        color: #8bc34a;
-                        font-size: 32px;
-                        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-                        cursor: pointer;
-                    ">
-                <i class="fas fa-map-marker-alt"></i>
-            </div>
-                `;
-                
-                // Thêm marker với popup đơn giản
-                const marker = new mapboxgl.Marker(markerEl)
-                    .setLngLat(coordinates)
-                    .setPopup(new mapboxgl.Popup({ 
-                        offset: 30,
-                        closeButton: true,
-                        closeOnClick: false
-                    }).setHTML(
-                        '<div style="text-align: center; padding: 15px; min-width: 200px;">' +
-                            '<h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">' +
-                                {{ (room_data.room_title or room_data.street)|tojson|safe }} +
-                            '</h6>' +
-                            '<a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" ' +
-                               'target="_blank" ' +
-                               'style="color: #007bff; text-decoration: none; font-size: 14px;">' +
-                                '<i class="fas fa-external-link-alt" style="margin-right: 5px;"></i>' +
-                                'Xem trên Google Maps' +
-                            '</a>' +
-                        '</div>'
-                    ))
-                    .addTo(mapbox);
-                
-                // Mở popup ngay lập tức
-                marker.getPopup().addTo(mapbox);
-                
-                // Add some animation to marker
-                setTimeout(() => {
-                    markerEl.style.animation = 'bounce 1s ease-in-out';
-                }, 2500);
-    }
-        })
-        .catch(error => {
-            console.log('Geocoding error, using fallback:', error);
-            // Fallback: hiển thị tọa độ mặc định
-            const fallbackCoords = [106.6297, 10.8231]; // Default to HCMC
-            
-            mapbox.flyTo({ center: fallbackCoords, zoom: 13 });
-            
-            const markerEl = document.createElement('div');
-            markerEl.innerHTML = `
-                <div style="
-                    color: #8bc34a;
-                    font-size: 32px;
-                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-                    cursor: pointer;
-                ">
-                    <i class="fas fa-map-marker-alt"></i>
-            </div>
-        `;
-            
-            new mapboxgl.Marker(markerEl)
-                .setLngLat(fallbackCoords)
-                .setPopup(new mapboxgl.Popup({ offset: 30 })
-                    .setHTML(
-                        '<div style="text-align: center; padding: 15px; min-width: 200px;">' +
-                            '<h6 style="margin: 0 0 10px 0; font-weight: 600; color: #333; font-size: 16px;">' +
-                                {{ (room_data.room_title or room_data.street)|tojson|safe }} +
-                            '</h6>' +
-                            '<a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" ' +
-                               'target="_blank" ' +
-                               'style="color: #007bff; text-decoration: none; font-size: 14px;">' +
-                                '<i class="fas fa-external-link-alt" style="margin-right: 5px;"></i>' +
-                                'Xem trên Google Maps' +
-                            '</a>' +
-                        '</div>'
-                    ))
-                .addTo(mapbox);
-        });
-    
-    // Thêm CSS cho animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes bounce {
-            0%, 20%, 60%, 100% { transform: translateY(0) rotate(-45deg); }
-            40% { transform: translateY(-20px) rotate(-45deg); }
-            80% { transform: translateY(-10px) rotate(-45deg); }
-        }
-    `;
-    document.head.appendChild(style);
-});
-
-// Image gallery functions
-let currentImageIndex = 0;
-let modalCurrentIndex = 0;
-const allImages = {{ all_images|tojson|safe if all_images else '[]' }};
-
-function prevImage(event) {
-    if (event) event.preventDefault();
-    if (allImages.length > 1) {
-        currentImageIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
-        updateImage();
-    }
-}
-
-function nextImage(event) {
-    if (event) event.preventDefault();
-    if (allImages.length > 1) {
-        currentImageIndex = (currentImageIndex + 1) % allImages.length;
-        updateImage();
-    }
-}
-
-function currentSlide(index, event) {
-    if (event) event.preventDefault();
-    currentImageIndex = index;
-    updateImage();
-}
-
-function updateImage() {
-    const imageElement = document.getElementById('currentImage');
-    const dots = document.querySelectorAll('.dot');
-    const mainImageBadge = document.querySelector('.main-image-badge');
-    
-    if (imageElement && allImages[currentImageIndex]) {
-        // Add fade effect
-        imageElement.style.opacity = '0';
-        
-        setTimeout(() => {
-            imageElement.src = allImages[currentImageIndex].src;
-            imageElement.style.opacity = '1';
-            
-            // Show/hide main image badge
-            if (mainImageBadge) {
-                mainImageBadge.style.display = allImages[currentImageIndex].is_main ? 'block' : 'none';
-            }
-        }, 150);
-    }
-    
-    // Update dots
-    dots.forEach((dot, index) => {
-        dot.classList.toggle('active', index === currentImageIndex);
-    });
-}
-
-// Modal functions
-function openImageModal(imageSrc, event) {
-    if (event) event.preventDefault();
-    const modal = document.getElementById('imageModal');
-    const modalImage = document.getElementById('modalImage');
-    const modalCounter = document.getElementById('modalCounter');
-    const modalMainBadge = document.getElementById('modalMainBadge');
-    const modalPrevBtn = document.getElementById('modalPrevBtn');
-    const modalNextBtn = document.getElementById('modalNextBtn');
-    
-    // Find the index of the clicked image
-    modalCurrentIndex = allImages.findIndex(img => img.src === imageSrc);
-    if (modalCurrentIndex === -1) modalCurrentIndex = 0;
-    
-    // Set modal image
-    modalImage.src = imageSrc;
-    
-    // Update counter
-    modalCounter.textContent = `${modalCurrentIndex + 1}/${allImages.length}`;
-    
-    // Show/hide main image badge
-    if (modalMainBadge) {
-        modalMainBadge.style.display = allImages[modalCurrentIndex].is_main ? 'block' : 'none';
-    }
-    
-    // Show/hide navigation buttons
-    if (modalPrevBtn && modalNextBtn) {
-        modalPrevBtn.style.display = allImages.length > 1 ? 'block' : 'none';
-        modalNextBtn.style.display = allImages.length > 1 ? 'block' : 'none';
-    }
-    
-    // Show modal
-    modal.style.display = 'flex';
-    modal.classList.add('show');
-    
-    // Add keyboard navigation
-    document.addEventListener('keydown', handleModalKeyboard);
-}
-
-function closeImageModal(event) {
-    if (event && event.target !== event.currentTarget) return;
-    const modal = document.getElementById('imageModal');
-    modal.style.display = 'none';
-    modal.classList.remove('show');
-    
-    // Remove keyboard navigation
-    document.removeEventListener('keydown', handleModalKeyboard);
-}
-
-function prevImageInModal(event) {
-    if (event) event.preventDefault();
-    if (allImages.length > 1) {
-        modalCurrentIndex = (modalCurrentIndex - 1 + allImages.length) % allImages.length;
-        updateModalImage();
-    }
-}
-
-function nextImageInModal(event) {
-    if (event) event.preventDefault();
-    if (allImages.length > 1) {
-        modalCurrentIndex = (modalCurrentIndex + 1) % allImages.length;
-        updateModalImage();
-    }
-}
-
-function updateModalImage() {
-    const modalImage = document.getElementById('modalImage');
-    const modalCounter = document.getElementById('modalCounter');
-    const modalMainBadge = document.getElementById('modalMainBadge');
-    
-    if (modalImage && allImages[modalCurrentIndex]) {
-        // Add fade effect
-        modalImage.style.opacity = '0';
-        
-        setTimeout(() => {
-            modalImage.src = allImages[modalCurrentIndex].src;
-            modalImage.style.opacity = '1';
-            
-            // Update counter
-            modalCounter.textContent = `${modalCurrentIndex + 1}/${allImages.length}`;
-            
-            // Show/hide main image badge
-            if (modalMainBadge) {
-                modalMainBadge.style.display = allImages[modalCurrentIndex].is_main ? 'block' : 'none';
-            }
-        }, 150);
-    }
-}
-
-function handleModalKeyboard(event) {
-    switch(event.key) {
-        case 'ArrowLeft':
-            event.preventDefault();
-            prevImageInModal();
-            break;
-        case 'ArrowRight':
-            event.preventDefault();
-            nextImageInModal();
-            break;
-        case 'Escape':
-            event.preventDefault();
-            closeImageModal();
-            break;
-    }
-}
-
-function showAllRulesModal() {
-    document.getElementById('allRulesModal').style.display = 'block';
-}
-
-function closeAllRulesModal() {
-    document.getElementById('allRulesModal').style.display = 'none';
-}
-
-function showAllAmenitiesModal() {
-    document.getElementById('allAmenitiesModal').style.display = 'block';
-}
-
-function closeAllAmenitiesModal() {
-    document.getElementById('allAmenitiesModal').style.display = 'none';
-}
+// Pass backend images data to the external JavaScript file
+window.backendImages = [
+    {% if room_data.main_image %}
+    {
+        src: '{{ room_data.main_image }}',
+        is_main: true,
+        filename: 'main_image'
+    },
+    {% endif %}
+    {% if room_data.images %}
+    {% for image_path in room_data.images %}
+    {
+        src: '{{ image_path }}',
+        is_main: false,
+        filename: 'backend_image_{{ loop.index }}'
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+    {% endif %}
+];
 </script>
+
+<!-- Load external room preview JavaScript -->
+<script src="{{ url_for('static', filename='js/room_preview.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -1521,57 +1188,36 @@ function closeAllAmenitiesModal() {
         </div>
 
         <div class="image-section">
-            {% set all_images = [] %}
-            {% if room_data.main_image %}
-                {% set _ = all_images.append({'src': room_data.main_image, 'is_main': true}) %}
-            {% endif %}
-            {% if room_data.images %}
-                {% for image_path in room_data.images %}
-                    {% set _ = all_images.append({'src': image_path, 'is_main': false}) %}
-                {% endfor %}
-            {% endif %}
-            
-            <div class="image-header">
-                <h3 class="section-title">Ảnh</h3>
-                <div class="image-counter">{{ all_images|length }}/10</div>
-            </div>
-            
-            {% if all_images|length > 0 %}
-            <div class="image-gallery">
-                <div class="main-image-container">
-                    <div class="main-image" id="mainImage">
-                        <img src="{{ all_images[0].src }}" alt="Room Image" id="currentImage" class="gallery-image" onclick="openImageModal(this.src, event)">
-                        {% if all_images[0].is_main %}
-                        <div class="main-image-badge">Ảnh bìa</div>
-                        {% endif %}
-                    </div>
-                    
-                    {% if all_images|length > 1 %}
-                    <button class="nav-btn prev-btn" onclick="prevImage(event)" id="prevBtn">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="nav-btn next-btn" onclick="nextImage(event)" id="nextBtn">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                    {% endif %}
+            <!-- Native JavaScript image preview block -->
+            <div id="imagePreviewContainer">
+                <div class="image-header">
+                    <h3 class="section-title">Ảnh</h3>
+                    <div class="image-counter" id="imageCounter">0/0</div>
                 </div>
                 
-                {% if all_images|length > 1 %}
-                <div class="image-dots">
-                    {% for image in all_images %}
-                    <span class="dot {% if loop.first %}active{% endif %}" onclick="currentSlide({{ loop.index0 }}, event)" data-index="{{ loop.index0 }}"></span>
-                    {% endfor %}
+                <div id="imageGalleryContainer">
+                    <!-- Will be populated by JavaScript -->
+                    <div class="image-gallery" id="imageGallery">
+                        <div class="main-image-container">
+                            <div class="main-image" id="mainImage">
+                                <img src="" alt="Room Image" class="gallery-image" style="opacity:0; display:none;">
+                                <div class="main-image-badge" style="display:none;">Ảnh bìa</div>
+                            </div>
+                                                         <button class="nav-btn prev-btn" style="display:none;"><i class="fas fa-chevron-left"></i></button>
+                             <button class="nav-btn next-btn" style="display:none;"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="image-dots" style="display:none;"></div>
+                    </div>
+                    
+                    <div class="no-images-placeholder" id="noImagesPlaceholder" style="display:none;">
+                        <div class="no-images-content">
+                            <i class="fas fa-camera" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+                            <p style="color: #666; margin: 0;">Chưa có ảnh nào được thêm</p>
+                        </div>
+                    </div>
                 </div>
-                {% endif %}
             </div>
-            {% else %}
-            <div class="no-images-placeholder">
-                <div class="no-images-content">
-                    <i class="fas fa-camera" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
-                    <p style="color: #666; margin: 0;">Chưa có ảnh nào được thêm</p>
-                </div>
-            </div>
-            {% endif %}
+            <!-- End Native JavaScript image preview block -->
             
             <!-- Location Section -->
             <div class="location-section">
@@ -1740,142 +1386,5 @@ function closeAllAmenitiesModal() {
 </div>
 
 </div>
-
-<script>
-// Image count validation for room creation
-function validateImageCount() {
-    const imageCount = {{ all_images|length if all_images else 0 }};
-    const minRequiredImages = 5;
-    
-    if (imageCount < minRequiredImages) {
-        // Show custom styled alert
-        showImageRequirementAlert(imageCount, minRequiredImages);
-        return false; // Prevent form submission
-    }
-    
-    return true; // Allow form submission
-}
-
-function showImageRequirementAlert(currentCount, requiredCount) {
-    // Create modal backdrop
-    const backdrop = document.createElement('div');
-    backdrop.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    `;
-    
-    // Create modal content
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: white;
-        padding: 32px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        max-width: 400px;
-        width: 90%;
-        text-align: center;
-        animation: modalSlideIn 0.3s ease-out;
-    `;
-    
-    modal.innerHTML = `
-        <div style="color: #f59e0b; font-size: 48px; margin-bottom: 16px;">
-            <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Cần thêm ảnh</h3>
-        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
-            Phòng cần có ít nhất <strong>${requiredCount} ảnh</strong> để có thể đăng.<br>
-            Hiện tại bạn có <strong>${currentCount} ảnh</strong>.
-        </p>
-        <p style="color: #9ed649; margin-bottom: 24px; font-size: 14px;">
-            <i class="fas fa-lightbulb" style="margin-right: 8px;"></i>
-            Hãy quay lại trang chỉnh sửa để thêm ${requiredCount - currentCount} ảnh nữa.
-        </p>
-        <div style="display: flex; gap: 12px; justify-content: center;">
-            <button onclick="closeImageAlert()" style="
-                background: #9ed649;
-                color: white;
-                border: none;
-                padding: 12px 24px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: 600;
-                transition: all 0.3s ease;
-            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
-                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>
-                Quay lại chỉnh sửa
-            </button>
-        </div>
-    `;
-    
-    backdrop.appendChild(modal);
-    document.body.appendChild(backdrop);
-    
-    // Add animation CSS
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Store reference for closing
-    window.currentImageAlert = backdrop;
-}
-
-function closeImageAlert() {
-    if (window.currentImageAlert) {
-        document.body.removeChild(window.currentImageAlert);
-        window.currentImageAlert = null;
-    }
-}
-
-// Close modal when clicking backdrop
-document.addEventListener('click', function(event) {
-    if (window.currentImageAlert && event.target === window.currentImageAlert) {
-        closeImageAlert();
-    }
-});
-
-// Update button state on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const imageCount = {{ all_images|length if all_images else 0 }};
-    const confirmBtn = document.getElementById('confirmBtn');
-    const minRequiredImages = 5;
-    
-    if (imageCount < minRequiredImages) {
-        // Disable button visually and add tooltip
-        confirmBtn.style.opacity = '0.6';
-        confirmBtn.style.cursor = 'not-allowed';
-        confirmBtn.title = `Cần thêm ${minRequiredImages - imageCount} ảnh nữa để có thể đăng phòng`;
-        
-        // Add warning text
-        const warningText = document.createElement('div');
-        warningText.style.cssText = `
-            color: #f59e0b;
-            font-size: 12px;
-            margin-top: 4px;
-            font-weight: 500;
-        `;
-        warningText.innerHTML = `<i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i>Cần ${minRequiredImages - imageCount} ảnh nữa`;
-        confirmBtn.parentNode.appendChild(warningText);
-    }
-});
-</script>
 
 {% endblock %}

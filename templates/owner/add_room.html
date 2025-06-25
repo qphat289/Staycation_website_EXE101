@@ -9,15 +9,15 @@
                 <div class="wizard-layout">
             <!-- Sidebar Steps -->
             <div class="steps-sidebar">
-                <div class="step active" data-step="1">
+                <div class="step {% if (last_step or 1) == 1 %}active{% endif %}" data-step="1">
                     <div class="step-number">1</div>
                     <div class="step-title">Thông tin cơ bản</div>
                 </div>
-                <div class="step" data-step="2">
+                <div class="step {% if (last_step or 1) == 2 %}active{% endif %}" data-step="2">
                     <div class="step-number">2</div>
                     <div class="step-title">Thông tin chi tiết</div>
                 </div>
-                <div class="step" data-step="3">
+                <div class="step {% if (last_step or 1) == 3 %}active{% endif %}" data-step="3">
                     <div class="step-number">3</div>
                     <div class="step-title">Thêm hình ảnh và giá</div>
                 </div>
@@ -32,7 +32,7 @@
             <input type="hidden" name="guest_count" id="guest_count_input" value="{{ room_data.guest_count or 1 }}">
             <input type="hidden" name="selected_rental_type" id="selected_rental_type" value="">
             <!-- Step 1: Basic Information -->
-            <div class="step-content active" id="step-1">
+            <div class="step-content {% if (last_step or 1) == 1 %}active{% endif %}" id="step-1">
                 <div class="form-section">
                     <h3>Tên Homestay</h3>
                     <div class="form-content">
@@ -112,7 +112,7 @@
             </div>
 
             <!-- Step 2: Detailed Information -->
-            <div class="step-content" id="step-2">
+            <div class="step-content {% if (last_step or 1) == 2 %}active{% endif %}" id="step-2">
                 <div class="form-section">
                     <h3>Sức chứa của phòng</h3>
                     <div class="form-content">
@@ -206,7 +206,7 @@
   </div>
 
             <!-- Step 3: Images and Pricing -->
-            <div class="step-content" id="step-3">
+            <div class="step-content {% if (last_step or 1) == 3 %}active{% endif %}" id="step-3">
                                 <div class="form-section">
                     <h3>Thêm ảnh phòng</h3>
                     <div class="form-content">
@@ -1744,13 +1744,105 @@ body.add-room-no-scroll, html.add-room-no-scroll {
 </style>
 
 <script>
-let currentStep = 1;
+let currentStep = {{ last_step or 1 }};
 const totalSteps = 3;
+
+// Function to initialize the correct step based on the last_step parameter
+function initializeCorrectStep() {
+    // Hide all steps first
+    for (let i = 1; i <= totalSteps; i++) {
+        document.getElementById(`step-${i}`).classList.remove('active');
+        document.querySelector(`.step[data-step="${i}"]`).classList.remove('active');
+    }
+    
+    // Show the correct step
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+    
+    // If we're on step 3, update pricing display
+    if (currentStep === 3) {
+        setTimeout(() => {
+            updatePricingDisplay();
+        }, 100); // Small delay to ensure DOM is ready
+    }
+}
+
+// Function to go directly to a specific step (for clicking step buttons)
+function goToStep(stepNumber) {
+    if (stepNumber === currentStep) {
+        return; // Already on this step
+    }
+    
+    // Save current form data
+    saveFormDataToSession();
+    console.log(`💾 Saved form data before jumping to step ${stepNumber}`);
+    
+    // Hide current step
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+    
+    // Update current step
+    currentStep = stepNumber;
+    
+    // Show target step
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+    
+    // Restore form data for the new step
+    setTimeout(() => {
+        restoreFormDataForCurrentStep();
+        console.log(`🔄 Restored form data for step ${currentStep}`);
+    }, 100);
+    
+    // Save current step to session
+    saveCurrentStepToSession();
+    
+    // Update pricing display when entering step 3
+    if (currentStep === 3) {
+        updatePricingDisplay();
+    }
+}
+
+// Function to save current step to session via AJAX
+function saveCurrentStepToSession() {
+    fetch('/owner/save-current-step', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            current_step: currentStep
+        })
+    }).catch(error => {
+        // Silently handle errors - step tracking is not critical
+        console.log('Step tracking error:', error);
+    });
+}
 
 // Ngăn cuộn trang khi tải trang và load dữ liệu địa chỉ
 document.addEventListener('DOMContentLoaded', function() {
     document.body.classList.add('add-room-no-scroll');
     document.documentElement.classList.add('add-room-no-scroll');
+    
+    // Initialize the correct step when coming back from preview
+    initializeCorrectStep();
+    
+    // Add click handlers to step buttons for direct navigation
+    const stepButtons = document.querySelectorAll('.step[data-step]');
+    stepButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetStep = parseInt(this.getAttribute('data-step'));
+            if (targetStep !== currentStep) {
+                goToStep(targetStep);
+            }
+        });
+        
+        // Add cursor pointer style
+        button.style.cursor = 'pointer';
+    });
+    
+    // Setup auto-save immediately for immediate form interactions
+    setupAutoSave();
     
     // Load dữ liệu từ API
     loadLocationData();
@@ -1784,6 +1876,10 @@ function nextStep() {
             }
         }
         
+        // Save current form data before changing steps
+        saveFormDataToSession();
+        console.log('💾 Saved form data before moving to next step');
+        
         // Hide current step
         document.getElementById(`step-${currentStep}`).classList.remove('active');
         document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
@@ -1793,6 +1889,15 @@ function nextStep() {
         // Show next step
         document.getElementById(`step-${currentStep}`).classList.add('active');
         document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+        
+        // Restore form data for the new step
+        setTimeout(() => {
+            restoreFormDataForCurrentStep();
+            console.log('🔄 Restored form data for step', currentStep);
+        }, 100);
+        
+        // Save current step to session for back-to-edit functionality
+        saveCurrentStepToSession();
         
         // Update pricing display when entering step 3
         if (currentStep === 3) {
@@ -2135,6 +2240,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function prevStep() {
     if (currentStep > 1) {
+        // Save current form data before changing steps
+        saveFormDataToSession();
+        console.log('💾 Saved form data before moving to previous step');
+        
         // Hide current step
         document.getElementById(`step-${currentStep}`).classList.remove('active');
         document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
@@ -2144,6 +2253,15 @@ function prevStep() {
         // Show previous step
         document.getElementById(`step-${currentStep}`).classList.add('active');
         document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+        
+        // Restore form data for the new step
+        setTimeout(() => {
+            restoreFormDataForCurrentStep();
+            console.log('🔄 Restored form data for step', currentStep);
+        }, 100);
+        
+        // Save current step to session for back-to-edit functionality
+        saveCurrentStepToSession();
     }
 }
 
@@ -3686,7 +3804,7 @@ window.onclick = function(event) {
 
 // Save form data to sessionStorage
 function saveFormDataToSession() {
-    // Lưu thông tin ảnh hiện tại
+    // Lưu thông tin ảnh hiện tại với base64 data để preview hoạt động đúng
     const uploadedImages = [];
     const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
     
@@ -3694,16 +3812,60 @@ function saveFormDataToSession() {
         const fileInput = item.querySelector('input[type="file"]');
         const img = item.querySelector('img');
         
-        if (fileInput && fileInput.files && fileInput.files[0] && img) {
+        if (img && img.src && img.src.startsWith('data:')) {
+            // Ảnh đã có base64 data - lưu trực tiếp
+            const isMainImage = index === 0 && item.querySelector('.upload-label')?.textContent.includes('Ảnh bìa');
             uploadedImages.push({
                 index: index,
                 src: img.src,
-                fileName: fileInput.files[0].name,
-                isMainImage: index === 0 && item.querySelector('.upload-label')?.textContent.includes('Ảnh bìa')
+                dataUrl: img.src, // Đảm bảo có dataUrl cho compatibility
+                fileName: fileInput?.files?.[0]?.name || `image_${index + 1}`,
+                isMain: isMainImage,
+                isMainImage: isMainImage // Compatibility field
             });
+        } else if (fileInput && fileInput.files && fileInput.files[0]) {
+            // Ảnh mới upload - cần convert sang base64
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const isMainImage = index === 0 && item.querySelector('.upload-label')?.textContent.includes('Ảnh bìa');
+                uploadedImages.push({
+                    index: index,
+                    src: e.target.result,
+                    dataUrl: e.target.result,
+                    fileName: file.name,
+                    isMain: isMainImage,
+                    isMainImage: isMainImage
+                });
+                
+                // Re-save after async conversion
+                const currentFormData = {
+                    room_title: document.getElementById('room_title')?.value || '',
+                    room_description: document.getElementById('room_description')?.value || '',
+                    property_type: document.querySelector('input[name="property_type"]:checked')?.value || '',
+                    province: document.getElementById('province')?.value || '',
+                    district: document.getElementById('district')?.value || '',
+                    ward: document.getElementById('ward')?.value || '',
+                    street: document.getElementById('street')?.value || '',
+                    bed_count: parseInt(document.getElementById('bed-count')?.textContent || document.getElementById('bed_count_input')?.value || 1),
+                    bathroom_count: parseInt(document.getElementById('bathroom-count')?.textContent || document.getElementById('bathroom_count_input')?.value || 2),
+                    guest_count: parseInt(document.getElementById('guest-count')?.textContent || document.getElementById('guest_count_input')?.value || 1),
+                    selected_rental_type: document.querySelector('input[name="rental_type"]:checked')?.value || '',
+                    hourly_price: getNumericPrice(document.querySelector('input[name="hourly_price"]')) || '',
+                    nightly_price: getNumericPrice(document.querySelector('input[name="nightly_price"]')) || '',
+                    selectedAmenities: selectedAmenities || [],
+                    selectedRules: selectedRules || [],
+                    uploadedImages: uploadedImages
+                };
+                
+                sessionStorage.setItem('room_form_data', JSON.stringify(currentFormData));
+                console.log('💾 Re-saved with base64 data:', uploadedImages.length, 'images');
+            };
+            reader.readAsDataURL(file);
         }
     });
     
+    // Save current form data (images will be updated async if needed)
     const formData = {
         room_title: document.getElementById('room_title')?.value || '',
         room_description: document.getElementById('room_description')?.value || '',
@@ -3726,7 +3888,12 @@ function saveFormDataToSession() {
     };
     
     sessionStorage.setItem('room_form_data', JSON.stringify(formData));
-    console.log('💾 Saved images to sessionStorage:', uploadedImages.length, 'images');
+    console.log('💾 Saved form data to sessionStorage:', {
+        images: uploadedImages.length,
+        title: formData.room_title,
+        amenities: formData.selectedAmenities.length,
+        rules: formData.selectedRules.length
+    });
 }
 
 // Load form data from sessionStorage
@@ -3755,6 +3922,221 @@ function loadFormDataFromSession() {
     return null;
 }
 
+// Restore form data specifically for the current step during navigation
+function restoreFormDataForCurrentStep() {
+    const formData = loadFormDataFromSession();
+    if (!formData) {
+        console.log('❌ No form data to restore');
+        return;
+    }
+    
+    console.log(`🔄 Restoring data for step ${currentStep}...`);
+    
+    if (currentStep === 1) {
+        // Restore Step 1: Basic Information
+        if (formData.room_title) {
+            const titleInput = document.getElementById('room_title');
+            if (titleInput) titleInput.value = formData.room_title;
+        }
+        
+        if (formData.room_description) {
+            const descInput = document.getElementById('room_description');
+            if (descInput) descInput.value = formData.room_description;
+        }
+        
+        if (formData.property_type) {
+            const propertyTypeInput = document.querySelector(`input[name="property_type"][value="${formData.property_type}"]`);
+            if (propertyTypeInput) propertyTypeInput.checked = true;
+        }
+        
+        // Restore location fields
+        if (formData.street) {
+            const streetInput = document.getElementById('street');
+            if (streetInput) streetInput.value = formData.street;
+        }
+        
+        // Restore location selects with proper timing
+        if (formData.province) {
+            const provinceSelect = document.getElementById('province');
+            if (provinceSelect) {
+                provinceSelect.value = formData.province;
+                updateDistricts();
+                
+                setTimeout(() => {
+                    if (formData.district) {
+                        const districtSelect = document.getElementById('district');
+                        if (districtSelect) {
+                            districtSelect.value = formData.district;
+                            updateWards();
+                            
+                            setTimeout(() => {
+                                if (formData.ward) {
+                                    const wardSelect = document.getElementById('ward');
+                                    if (wardSelect) wardSelect.value = formData.ward;
+                                }
+                            }, 300);
+                        }
+                    }
+                }, 300);
+            }
+        }
+        
+    } else if (currentStep === 2) {
+        // Restore Step 2: Detailed Information
+        
+        // Restore counters
+        if (formData.bed_count) {
+            updateCounterValue('bed_count', formData.bed_count);
+        }
+        if (formData.bathroom_count) {
+            updateCounterValue('bathroom_count', formData.bathroom_count);
+        }
+        if (formData.guest_count) {
+            updateCounterValue('guest_count', formData.guest_count);
+        }
+        
+        // Restore rental type
+        if (formData.selected_rental_type) {
+            const rentalTypeInput = document.querySelector(`input[name="rental_type"][value="${formData.selected_rental_type}"]`);
+            if (rentalTypeInput) rentalTypeInput.checked = true;
+        }
+        
+        // Restore rules and amenities
+        if (formData.selectedRules && Array.isArray(formData.selectedRules)) {
+            selectedRules = formData.selectedRules;
+            updateSelectedRulesDisplay();
+        }
+        
+        if (formData.selectedAmenities && Array.isArray(formData.selectedAmenities)) {
+            selectedAmenities = formData.selectedAmenities;
+            updateSelectedAmenitiesDisplay();
+        }
+        
+    } else if (currentStep === 3) {
+        // Restore Step 3: Images and Pricing
+        
+        // Restore pricing fields
+        if (formData.hourly_price) {
+            const hourlyInput = document.querySelector('input[name="hourly_price"]');
+            if (hourlyInput) {
+                const numericValue = parseInt(formData.hourly_price);
+                if (!isNaN(numericValue) && numericValue > 0) {
+                    hourlyInput.value = numericValue.toLocaleString('vi-VN');
+                    hourlyInput.setAttribute('data-value', formData.hourly_price);
+                }
+            }
+        }
+        
+        if (formData.nightly_price) {
+            const nightlyInput = document.querySelector('input[name="nightly_price"]');
+            if (nightlyInput) {
+                const numericValue = parseInt(formData.nightly_price);
+                if (!isNaN(numericValue) && numericValue > 0) {
+                    nightlyInput.value = numericValue.toLocaleString('vi-VN');
+                    nightlyInput.setAttribute('data-value', formData.nightly_price);
+                }
+            }
+        }
+        
+        // Restore uploaded images
+        if (formData.uploadedImages && formData.uploadedImages.length > 0) {
+            setTimeout(() => {
+                formData.uploadedImages.forEach(imageData => {
+                    restoreImageToUploadItem(imageData);
+                });
+            }, 200);
+        }
+        
+        // Update pricing display
+        updatePricingDisplay();
+    }
+    
+    console.log(`✅ Form data restored for step ${currentStep}`);
+}
+
+// Restore upload grid from sessionStorage
+function restoreUploadGridFromSession() {
+    const formData = loadFormDataFromSession();
+    if (!formData || !formData.uploadedImages) return;
+
+    const uploadGrid = document.querySelector('.upload-grid');
+    if (!uploadGrid) return;
+
+    // Remove all upload-item except the "add-more" button
+    uploadGrid.querySelectorAll('.upload-item:not(.add-more)').forEach(item => item.remove());
+
+    // For each image in session, create a new upload-item and restore the image
+    formData.uploadedImages.forEach((imageData, idx) => {
+        // Create upload-item
+        const uploadItem = document.createElement('div');
+        uploadItem.className = 'upload-item';
+
+        // Create file input (hidden, for compatibility)
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.name = 'images[]';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+
+        // Create placeholder (hidden)
+        const placeholder = document.createElement('div');
+        placeholder.className = 'upload-placeholder';
+        placeholder.innerHTML = '<i class="bi bi-camera"></i>';
+        placeholder.style.display = 'none';
+
+        // Create preview image
+        const img = document.createElement('img');
+        img.src = imageData.src;
+        img.style.cssText = `
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        `;
+
+        // Create remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '×';
+        removeBtn.type = 'button';
+        removeBtn.style.cssText = `
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        removeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadItem.remove();
+            saveFormDataToSession();
+        });
+
+        // Assemble upload item
+        uploadItem.appendChild(fileInput);
+        uploadItem.appendChild(placeholder);
+        uploadItem.appendChild(img);
+        uploadItem.appendChild(removeBtn);
+
+        // Insert before the "add-more" button
+        const addMoreBtn = uploadGrid.querySelector('.upload-item.add-more');
+        uploadGrid.insertBefore(uploadItem, addMoreBtn);
+    });
+}
+
 // Clear session storage
 function clearFormSession() {
     sessionStorage.removeItem('room_form_data');
@@ -3763,6 +4145,8 @@ function clearFormSession() {
 
 // Setup auto-save listeners
 function setupAutoSave() {
+    console.log('🔧 Setting up auto-save listeners...');
+    
     // Save on input changes
     const inputs = document.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
@@ -3791,6 +4175,21 @@ function setupAutoSave() {
             });
         }
     });
+    
+    // Save when radio buttons change (property type, rental type)
+    const radioButtons = document.querySelectorAll('input[type="radio"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', saveFormDataToSession);
+    });
+    
+    // Save when price inputs change
+    const priceInputs = document.querySelectorAll('input[name="hourly_price"], input[name="nightly_price"]');
+    priceInputs.forEach(priceInput => {
+        priceInput.addEventListener('input', debounce(saveFormDataToSession, 500));
+        priceInput.addEventListener('blur', saveFormDataToSession);
+    });
+    
+    console.log('✅ Auto-save listeners setup complete');
 }
 
 // Debounce function to limit save frequency
