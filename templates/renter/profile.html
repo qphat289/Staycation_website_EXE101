@@ -190,14 +190,6 @@ if (window.MutationObserver) {
 
 {% block content %}
 <div class="container py-4">
-    <div class="text-center mb-4">
-        <h2 class="profile-title" data-translate="my-profile">
-            <i class="fas fa-user-circle me-2"></i>
-            Hồ Sơ Của Tôi
-        </h2>
-        <div class="title-underline"></div>
-    </div>
-    
     <!-- RENTER LAYOUT: Avatar bên trái, Form bên phải -->
     <div class="row">
         <!-- LEFT COLUMN: Avatar Display -->
@@ -236,11 +228,25 @@ if (window.MutationObserver) {
         <div class="col-md-8">
             <div class="form-card-renter mt-2">
                 <div class="card-body">
-                    <h5 class="form-title-renter">
-                        <i class="fas fa-edit me-2"></i>
-                        Thông Tin Cá Nhân
-                    </h5>
-                    <form method="POST" enctype="multipart/form-data" id="profileForm" onsubmit="return validateForm()">
+                    <!-- Main Profile Title inside card -->
+                    <h2 class="profile-title mb-3" data-translate="my-profile">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Hồ Sơ Của Tôi
+                    </h2>
+                    <div class="title-underline mb-4"></div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="form-title-renter mb-0">
+                            <i class="fas fa-edit me-2"></i>
+                            Thông Tin Cá Nhân
+                        </h5>
+                        <!-- Edit/Save Button -->
+                        <button type="button" id="editToggleBtn" class="btn btn-outline-primary btn-sm" onclick="toggleEditMode()">
+                            <i class="fas fa-edit me-1"></i>
+                            Chỉnh sửa
+                        </button>
+                    </div>
+                    <form method="POST" enctype="multipart/form-data" id="profileForm" onsubmit="return validateAndSubmitForm(event)">
                         <!-- Tên đăng nhập, Họ, Tên và Giới tính cùng hàng -->
                         <div class="row">
                             <div class="col-md-3 mb-2">
@@ -419,13 +425,7 @@ if (window.MutationObserver) {
                             </div>
                         </div>
                         
-                        <!-- Action Buttons -->
-                        <div class="d-flex justify-content-start mt-3">
-                            <button type="submit" class="btn btn-renter-primary">
-                                <i class="fas fa-save me-1"></i>
-                                Lưu thay đổi
-                            </button>
-                        </div>
+
                     </form>
                 </div>
             </div>
@@ -466,16 +466,17 @@ if (window.MutationObserver) {
 <style>
 .profile-title {
     color: #000000;
-    font-weight: 700;
-    font-size: 2rem;
+    font-weight: 600;
+    font-size: 1.5rem;
     margin-bottom: 10px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-shadow: none;
 }
 
 .container.py-4 {
-    margin-top: 20px;
+    margin-top: -60px;
     position: relative;
     z-index: 1;
+    padding-top: 1rem;
 }
 
 .title-underline {
@@ -484,6 +485,52 @@ if (window.MutationObserver) {
     background: linear-gradient(90deg, #9ed649, #8ab82f);
     border-radius: 2px;
     margin: 0 auto;
+}
+
+/* Override title-underline to align left when inside form card */
+.form-card-renter .title-underline {
+    margin: 0;
+    width: auto;
+    display: inline-block;
+    min-width: 200px; /* Adjust based on text length */
+}
+
+/* Disabled form styling */
+.form-input-renter:disabled {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.form-input-renter:disabled:hover {
+    border-color: #e9ecef;
+    background-color: #f8f9fa;
+}
+
+/* Edit button styling */
+#editToggleBtn.btn-outline-primary {
+    color: #000000 !important;
+    border-color: #8ab82f;
+}
+
+#editToggleBtn.btn-outline-primary:hover {
+    background-color: #8ab82f;
+    border-color: #8ab82f;
+    color: #000000 !important;
+}
+
+/* Save button styling */
+#editToggleBtn.btn-success {
+    color: #ffffff !important;
+    background-color: #8ab82f;
+    border-color: #8ab82f;
+}
+
+#editToggleBtn.btn-success:hover {
+    background-color: #7ba428;
+    border-color: #7ba428;
+    color: #ffffff !important;
 }
 
 .renter-profile-card {
@@ -770,6 +817,54 @@ if (window.MutationObserver) {
 </style>
 
 <script>
+let isEditMode = false;
+
+function toggleEditMode() {
+    const editBtn = document.getElementById('editToggleBtn');
+    const formInputs = document.querySelectorAll('.form-input-renter');
+    const avatarInput = document.getElementById('avatar');
+    
+    if (!isEditMode) {
+        // Switch to edit mode
+        isEditMode = true;
+        editBtn.innerHTML = '<i class="fas fa-save me-1"></i>Lưu thay đổi';
+        editBtn.classList.remove('btn-outline-primary');
+        editBtn.classList.add('btn-success');
+        editBtn.setAttribute('onclick', 'saveChanges()');
+        
+        // Enable all inputs
+        formInputs.forEach(input => {
+            input.disabled = false;
+        });
+        if (avatarInput) avatarInput.disabled = false;
+        
+    } else {
+        // Switch back to view mode
+        isEditMode = false;
+        editBtn.innerHTML = '<i class="fas fa-edit me-1"></i>Chỉnh sửa';
+        editBtn.classList.remove('btn-success');
+        editBtn.classList.add('btn-outline-primary');
+        editBtn.setAttribute('onclick', 'toggleEditMode()');
+        
+        // Disable all inputs
+        formInputs.forEach(input => {
+            input.disabled = true;
+        });
+        if (avatarInput) avatarInput.disabled = true;
+    }
+}
+
+function saveChanges() {
+    if (validateForm()) {
+        document.getElementById('profileForm').submit();
+    }
+}
+
+function validateAndSubmitForm(event) {
+    event.preventDefault();
+    return false; // Prevent default form submission
+}
+
 function validateForm() {
     let isValid = true;
     const form = document.getElementById('profileForm');
@@ -794,6 +889,18 @@ function validateForm() {
     
     return isValid;
 }
+
+// Initialize form in view mode when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const formInputs = document.querySelectorAll('.form-input-renter');
+    const avatarInput = document.getElementById('avatar');
+    
+    // Disable all inputs initially
+    formInputs.forEach(input => {
+        input.disabled = true;
+    });
+    if (avatarInput) avatarInput.disabled = true;
+});
 
 function previewImage(input) {
     if (input.files && input.files[0]) {
