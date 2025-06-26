@@ -6,6 +6,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- D3.js -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
 /* Reset & Base */
 * {
@@ -2969,6 +2971,7 @@ nav[aria-label="Page navigation"] {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
 
 <script>
 // Ensure DOM is fully loaded before initializing anything
@@ -4221,27 +4224,22 @@ document.addEventListener('DOMContentLoaded', function() {
         return data;
     }
 
-    // Update booking chart
+    // Update booking chart with D3.js
     function updateBookingChart(data) {
-        const svg = document.getElementById('bookingLineChartSvg');
-        const hourlyLine = document.getElementById('hourlyLine');
-        const nightlyLine = document.getElementById('nightlyLine');
-        const hourlyPoints = document.getElementById('hourlyPoints');
-        const nightlyPoints = document.getElementById('nightlyPoints');
+        const chartContainer = document.querySelector('#bookingStatsChart .chart-area');
         const xAxisLabels = document.getElementById('bookingXAxisLabels');
         const yAxisLabels = document.querySelector('#bookingStatsChart .y-axis-labels');
         
-        if (!svg || !data) return;
+        if (!chartContainer || !data) return;
         
-        // Clear existing points
-        hourlyPoints.innerHTML = '';
-        nightlyPoints.innerHTML = '';
+        // Clear existing content
+        d3.select('#bookingLineChartSvg').remove();
         xAxisLabels.innerHTML = '';
         
-        // Get SVG dimensions
-        const svgRect = svg.getBoundingClientRect();
-        const width = svgRect.width;
-        const height = svgRect.height;
+        // Get container dimensions
+        const containerRect = chartContainer.getBoundingClientRect();
+        const width = containerRect.width;
+        const height = containerRect.height;
         
         // Find max value for scaling
         const maxHourly = Math.max(...data.hourly);
@@ -4255,94 +4253,156 @@ document.addEventListener('DOMContentLoaded', function() {
             yLabels[i].textContent = value;
         }
         
-        // Calculate points for lines
-        const hourlyPoints_coords = [];
-        const nightlyPoints_coords = [];
+        // Create new SVG with D3
+        const svg = d3.select(chartContainer)
+            .append('svg')
+            .attr('id', 'bookingLineChartSvg')
+            .attr('width', width)
+            .attr('height', height)
+            .style('position', 'absolute')
+            .style('top', 0)
+            .style('left', 0);
         
-        data.hourly.forEach((value, index) => {
-            const x = (index / (data.hourly.length - 1)) * width;
-            const y = height - (value / maxValue) * height;
-            hourlyPoints_coords.push(`${x},${y}`);
+        // Create scales
+        const xScale = d3.scaleLinear()
+            .domain([0, data.hourly.length - 1])
+            .range([0, width]);
             
-            // Create point circle
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', x);
-            circle.setAttribute('cy', y);
-            circle.setAttribute('r', '4');
-            circle.setAttribute('fill', '#f59e0b');
-            circle.setAttribute('stroke', 'white');
-            circle.setAttribute('stroke-width', '2');
-            circle.style.cursor = 'pointer';
+        const yScale = d3.scaleLinear()
+            .domain([0, maxValue])
+            .range([height, 0]);
             
-            // Add tooltip
-            circle.addEventListener('mouseenter', function(e) {
-                showTooltip(e, `Theo giờ: ${value}`, data.labels[index]);
-            });
-            circle.addEventListener('mouseleave', hideTooltip);
+        // Create line generators
+        const hourlyLine = d3.line()
+            .x((d, i) => xScale(i))
+            .y(d => yScale(d))
+            .curve(d3.curveMonotoneX);
             
-            hourlyPoints.appendChild(circle);
-        });
+        const nightlyLine = d3.line()
+            .x((d, i) => xScale(i))
+            .y(d => yScale(d))
+            .curve(d3.curveMonotoneX);
         
-        data.nightly.forEach((value, index) => {
-            const x = (index / (data.nightly.length - 1)) * width;
-            const y = height - (value / maxValue) * height;
-            nightlyPoints_coords.push(`${x},${y}`);
+        // Add hourly line
+        svg.append('path')
+            .datum(data.hourly)
+            .attr('fill', 'none')
+            .attr('stroke', '#f59e0b')
+            .attr('stroke-width', 3)
+            .attr('d', hourlyLine)
+            .style('opacity', 0)
+            .transition()
+            .duration(1000)
+            .style('opacity', 1);
             
-            // Create point circle
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', x);
-            circle.setAttribute('cy', y);
-            circle.setAttribute('r', '4');
-            circle.setAttribute('fill', '#3b82f6');
-            circle.setAttribute('stroke', 'white');
-            circle.setAttribute('stroke-width', '2');
-            circle.style.cursor = 'pointer';
+        // Add nightly line
+        svg.append('path')
+            .datum(data.nightly)
+            .attr('fill', 'none')
+            .attr('stroke', '#3b82f6')
+            .attr('stroke-width', 3)
+            .attr('d', nightlyLine)
+            .style('opacity', 0)
+            .transition()
+            .duration(1000)
+            .style('opacity', 1);
             
-            // Add tooltip
-            circle.addEventListener('mouseenter', function(e) {
-                showTooltip(e, `Qua đêm: ${value}`, data.labels[index]);
-            });
-            circle.addEventListener('mouseleave', hideTooltip);
+        // Add hourly points
+        svg.selectAll('.hourly-point')
+            .data(data.hourly)
+            .enter()
+            .append('circle')
+            .attr('class', 'hourly-point')
+            .attr('cx', (d, i) => xScale(i))
+            .attr('cy', d => yScale(d))
+            .attr('r', 0)
+            .attr('fill', '#f59e0b')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2)
+            .style('cursor', 'pointer')
+            .on('mouseenter', function(event, d, i) {
+                const index = data.hourly.indexOf(d);
+                showTooltip(event, `Theo giờ: ${d}`, data.labels[index]);
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 6);
+            })
+            .on('mouseleave', function() {
+                hideTooltip();
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 4);
+            })
+            .transition()
+            .duration(1000)
+            .delay((d, i) => i * 50)
+            .attr('r', 4);
             
-            nightlyPoints.appendChild(circle);
-        });
-        
-        // Update line paths
-        hourlyLine.setAttribute('points', hourlyPoints_coords.join(' '));
-        nightlyLine.setAttribute('points', nightlyPoints_coords.join(' '));
-        
+        // Add nightly points
+        svg.selectAll('.nightly-point')
+            .data(data.nightly)
+            .enter()
+            .append('circle')
+            .attr('class', 'nightly-point')
+            .attr('cx', (d, i) => xScale(i))
+            .attr('cy', d => yScale(d))
+            .attr('r', 0)
+            .attr('fill', '#3b82f6')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2)
+            .style('cursor', 'pointer')
+            .on('mouseenter', function(event, d) {
+                const index = data.nightly.indexOf(d);
+                showTooltip(event, `Qua đêm: ${d}`, data.labels[index]);
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 6);
+            })
+            .on('mouseleave', function() {
+                hideTooltip();
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 4);
+            })
+            .transition()
+            .duration(1000)
+            .delay((d, i) => i * 50 + 100)
+            .attr('r', 4);
+            
         // Update X-axis labels
         data.labels.forEach((label, index) => {
             if (index % Math.ceil(data.labels.length / 7) === 0 || index === data.labels.length - 1) {
                 const labelDiv = document.createElement('div');
                 labelDiv.textContent = label;
                 labelDiv.style.fontSize = '11px';
+                labelDiv.style.position = 'absolute';
+                labelDiv.style.left = `${xScale(index)}px`;
+                labelDiv.style.transform = 'translateX(-50%)';
                 xAxisLabels.appendChild(labelDiv);
             }
         });
     }
 
-    // Update line chart
+    // Update line chart with D3.js
     function updateLineChart(data) {
-        const svg = document.getElementById('lineChartSvg');
-        const ownerLine = document.getElementById('ownerLine');
-        const renterLine = document.getElementById('renterLine');
-        const ownerPoints = document.getElementById('ownerPoints');
-        const renterPoints = document.getElementById('renterPoints');
+        const chartContainer = document.querySelector('#userGrowthChart .chart-area');
         const xAxisLabels = document.getElementById('xAxisLabels');
-        const yAxisLabels = document.querySelector('.y-axis-labels');
+        const yAxisLabels = document.querySelector('#userGrowthChart .y-axis-labels');
         
-        if (!svg || !data) return;
+        if (!chartContainer || !data) return;
         
-        // Clear existing points
-        ownerPoints.innerHTML = '';
-        renterPoints.innerHTML = '';
+        // Clear existing content
+        d3.select('#lineChartSvg').remove();
         xAxisLabels.innerHTML = '';
         
-        // Get SVG dimensions
-        const svgRect = svg.getBoundingClientRect();
-        const width = svgRect.width;
-        const height = svgRect.height;
+        // Get container dimensions
+        const containerRect = chartContainer.getBoundingClientRect();
+        const width = containerRect.width;
+        const height = containerRect.height;
         
         // Find max value for scaling
         const maxOwner = Math.max(...data.owners);
@@ -4356,68 +4416,135 @@ document.addEventListener('DOMContentLoaded', function() {
             yLabels[i].textContent = value;
         }
         
-        // Calculate points for lines
-        const ownerPoints_coords = [];
-        const renterPoints_coords = [];
+        // Create new SVG with D3
+        const svg = d3.select(chartContainer)
+            .append('svg')
+            .attr('id', 'lineChartSvg')
+            .attr('width', width)
+            .attr('height', height)
+            .style('position', 'absolute')
+            .style('top', 0)
+            .style('left', 0);
         
-        data.owners.forEach((value, index) => {
-            const x = (index / (data.owners.length - 1)) * width;
-            const y = height - (value / maxValue) * height;
-            ownerPoints_coords.push(`${x},${y}`);
+        // Create scales
+        const xScale = d3.scaleLinear()
+            .domain([0, data.owners.length - 1])
+            .range([0, width]);
             
-            // Create point circle
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', x);
-            circle.setAttribute('cy', y);
-            circle.setAttribute('r', '4');
-            circle.setAttribute('fill', '#dc2626');
-            circle.setAttribute('stroke', 'white');
-            circle.setAttribute('stroke-width', '2');
-            circle.style.cursor = 'pointer';
+        const yScale = d3.scaleLinear()
+            .domain([0, maxValue])
+            .range([height, 0]);
             
-            // Add tooltip
-            circle.addEventListener('mouseenter', function(e) {
-                showTooltip(e, `Owner: ${value}`, data.labels[index]);
-            });
-            circle.addEventListener('mouseleave', hideTooltip);
+        // Create line generators
+        const ownerLine = d3.line()
+            .x((d, i) => xScale(i))
+            .y(d => yScale(d))
+            .curve(d3.curveMonotoneX);
             
-            ownerPoints.appendChild(circle);
-        });
+        const renterLine = d3.line()
+            .x((d, i) => xScale(i))
+            .y(d => yScale(d))
+            .curve(d3.curveMonotoneX);
         
-        data.renters.forEach((value, index) => {
-            const x = (index / (data.renters.length - 1)) * width;
-            const y = height - (value / maxValue) * height;
-            renterPoints_coords.push(`${x},${y}`);
+        // Add owner line with animation
+        svg.append('path')
+            .datum(data.owners)
+            .attr('fill', 'none')
+            .attr('stroke', '#dc2626')
+            .attr('stroke-width', 3)
+            .attr('d', ownerLine)
+            .style('opacity', 0)
+            .transition()
+            .duration(1000)
+            .style('opacity', 1);
             
-            // Create point circle
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', x);
-            circle.setAttribute('cy', y);
-            circle.setAttribute('r', '4');
-            circle.setAttribute('fill', '#9ed649');
-            circle.setAttribute('stroke', 'white');
-            circle.setAttribute('stroke-width', '2');
-            circle.style.cursor = 'pointer';
+        // Add renter line with animation
+        svg.append('path')
+            .datum(data.renters)
+            .attr('fill', 'none')
+            .attr('stroke', '#9ed649')
+            .attr('stroke-width', 3)
+            .attr('d', renterLine)
+            .style('opacity', 0)
+            .transition()
+            .duration(1000)
+            .style('opacity', 1);
             
-            // Add tooltip
-            circle.addEventListener('mouseenter', function(e) {
-                showTooltip(e, `Renter: ${value}`, data.labels[index]);
-            });
-            circle.addEventListener('mouseleave', hideTooltip);
+        // Add owner points with animation
+        svg.selectAll('.owner-point')
+            .data(data.owners)
+            .enter()
+            .append('circle')
+            .attr('class', 'owner-point')
+            .attr('cx', (d, i) => xScale(i))
+            .attr('cy', d => yScale(d))
+            .attr('r', 0)
+            .attr('fill', '#dc2626')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2)
+            .style('cursor', 'pointer')
+            .on('mouseenter', function(event, d) {
+                const index = data.owners.indexOf(d);
+                showTooltip(event, `Owner: ${d}`, data.labels[index]);
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 6);
+            })
+            .on('mouseleave', function() {
+                hideTooltip();
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 4);
+            })
+            .transition()
+            .duration(1000)
+            .delay((d, i) => i * 50)
+            .attr('r', 4);
             
-            renterPoints.appendChild(circle);
-        });
-        
-        // Update line paths
-        ownerLine.setAttribute('points', ownerPoints_coords.join(' '));
-        renterLine.setAttribute('points', renterPoints_coords.join(' '));
-        
+        // Add renter points with animation
+        svg.selectAll('.renter-point')
+            .data(data.renters)
+            .enter()
+            .append('circle')
+            .attr('class', 'renter-point')
+            .attr('cx', (d, i) => xScale(i))
+            .attr('cy', d => yScale(d))
+            .attr('r', 0)
+            .attr('fill', '#9ed649')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2)
+            .style('cursor', 'pointer')
+            .on('mouseenter', function(event, d) {
+                const index = data.renters.indexOf(d);
+                showTooltip(event, `Renter: ${d}`, data.labels[index]);
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 6);
+            })
+            .on('mouseleave', function() {
+                hideTooltip();
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr('r', 4);
+            })
+            .transition()
+            .duration(1000)
+            .delay((d, i) => i * 50 + 100)
+            .attr('r', 4);
+            
         // Update X-axis labels
         data.labels.forEach((label, index) => {
             if (index % Math.ceil(data.labels.length / 7) === 0 || index === data.labels.length - 1) {
                 const labelDiv = document.createElement('div');
                 labelDiv.textContent = label;
                 labelDiv.style.fontSize = '11px';
+                labelDiv.style.position = 'absolute';
+                labelDiv.style.left = `${xScale(index)}px`;
+                labelDiv.style.transform = 'translateX(-50%)';
                 xAxisLabels.appendChild(labelDiv);
             }
         });
@@ -4530,16 +4657,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Update revenue chart
+    // Update revenue chart with D3.js
     function updateRevenueChart(data) {
-        const container = document.getElementById('barChartContainer');
+        const chartContainer = document.querySelector('#revenueChart .chart-area');
         const xAxisLabels = document.getElementById('revenueXAxisLabels');
         const yAxisLabels = document.querySelector('#revenueChart .y-axis-labels');
         
-        if (!container || !data) return;
+        if (!chartContainer || !data) return;
         
         // Clear existing content
-        container.innerHTML = '';
+        d3.select(chartContainer).selectAll('svg').remove();
         xAxisLabels.innerHTML = '';
         
         // Find max value for scaling
@@ -4551,24 +4678,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const value = maxValue * (1 - i / (yLabels.length - 1));
             yLabels[i].textContent = formatCurrency(value);
         }
-        
-        // Set container to use flexbox for even distribution
-        container.style.display = 'flex';
-        container.style.alignItems = 'end';
-        container.style.justifyContent = 'space-evenly';
-        container.style.width = '100%';
-        container.style.height = '100%';
-        container.style.minWidth = '800px'; // Optimized minimum width for 12 months
-        container.style.paddingLeft = '0px';
-        container.style.paddingRight = '0px';
-        
-        // Set x-axis labels to match exactly
-        xAxisLabels.style.display = 'flex';
-        xAxisLabels.style.justifyContent = 'space-evenly';
-        xAxisLabels.style.width = '100%';
-        xAxisLabels.style.minWidth = '800px'; // Match container min-width
-        xAxisLabels.style.paddingLeft = '0px';
-        xAxisLabels.style.paddingRight = '0px';
         
         // Create all 12 month groups (including future months)
         const monthNames = [
@@ -4583,227 +4692,258 @@ document.addEventListener('DOMContentLoaded', function() {
             data.total_revenue.push(0);
         }
         
-        console.log('Creating 12 months for revenue chart...');
-        for (let index = 0; index < 12; index++) {
-            const label = monthNames[index];
-            console.log(`Creating month ${index + 1}: ${label}`);
-            const monthGroup = document.createElement('div');
-            monthGroup.className = 'month-group';
-            monthGroup.style.flex = '1';
-            monthGroup.style.display = 'flex';
-            monthGroup.style.flexDirection = 'column';
-            monthGroup.style.alignItems = 'center';
-            monthGroup.style.minWidth = '60px';
-            monthGroup.style.maxWidth = '80px';
+        // Get container dimensions
+        const containerRect = chartContainer.getBoundingClientRect();
+        const width = containerRect.width;
+        const height = containerRect.height;
+        
+        // Create SVG with D3
+        const svg = d3.select(chartContainer)
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .style('position', 'absolute')
+            .style('top', 0)
+            .style('left', 0);
             
-            // Create bars container with overlapping bars
-            const barsContainer = document.createElement('div');
-            barsContainer.className = 'month-bars';
-            barsContainer.style.height = '100%';
-            barsContainer.style.position = 'relative';
-            barsContainer.style.display = 'flex';
-            barsContainer.style.alignItems = 'end';
-            barsContainer.style.justifyContent = 'center';
-            barsContainer.style.width = '50px';
+        // Create scales
+        const xScale = d3.scaleBand()
+            .domain(monthNames)
+            .range([0, width])
+            .padding(0.4);
             
-            // Check if this month has data (for current year, only show data for months that have passed)
-            const currentDate = new Date();
-            const currentYear = currentDate.getFullYear();
-            const currentMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11
+        const yScale = d3.scaleLinear()
+            .domain([0, maxValue])
+            .range([height, 0]);
+            
+        // Current date to determine which months have data
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11
+        
+        // Define gradients for bars
+        const defs = svg.append('defs');
+        
+        // Total revenue gradient
+        const totalGradient = defs.append('linearGradient')
+            .attr('id', 'totalGradient')
+            .attr('x1', '0%')
+            .attr('y1', '0%')
+            .attr('x2', '100%')
+            .attr('y2', '100%');
+            
+        totalGradient.append('stop')
+            .attr('offset', '0%')
+            .attr('stop-color', '#9ed649');
+            
+        totalGradient.append('stop')
+            .attr('offset', '100%')
+            .attr('stop-color', '#8ab82f');
+            
+        // Nightly revenue gradient
+        const nightlyGradient = defs.append('linearGradient')
+            .attr('id', 'nightlyGradient')
+            .attr('x1', '0%')
+            .attr('y1', '0%')
+            .attr('x2', '100%')
+            .attr('y2', '100%');
+            
+        nightlyGradient.append('stop')
+            .attr('offset', '0%')
+            .attr('stop-color', '#ef4444');
+            
+        nightlyGradient.append('stop')
+            .attr('offset', '100%')
+            .attr('stop-color', '#dc2626');
+            
+        // Hourly revenue gradient
+        const hourlyGradient = defs.append('linearGradient')
+            .attr('id', 'hourlyGradient')
+            .attr('x1', '0%')
+            .attr('y1', '0%')
+            .attr('x2', '100%')
+            .attr('y2', '100%');
+            
+        hourlyGradient.append('stop')
+            .attr('offset', '0%')
+            .attr('stop-color', '#fbbf24');
+            
+        hourlyGradient.append('stop')
+            .attr('offset', '100%')
+            .attr('stop-color', '#f59e0b');
+        
+        // Create bar groups for each month
+        const barGroups = svg.selectAll('.bar-group')
+            .data(monthNames)
+            .enter()
+            .append('g')
+            .attr('class', 'bar-group')
+            .attr('transform', d => `translate(${xScale(d) + xScale.bandwidth()/2}, 0)`);
+            
+        // Add bars for each month
+        monthNames.forEach((month, index) => {
             const monthNumber = index + 1;
             const hasData = (data.year !== 2025) || (data.year === 2025 && monthNumber <= currentMonth);
             
             if (hasData) {
-                // Calculate heights
                 const totalRevenue = data.total_revenue[index];
                 const hourlyRevenue = data.hourly_revenue[index];
                 const nightlyRevenue = data.nightly_revenue[index];
                 
-                const hourlyHeight = (hourlyRevenue / maxValue) * 100;
-                const nightlyHeight = (nightlyRevenue / maxValue) * 100;
-                const totalHeight = (totalRevenue / maxValue) * 100;
-                
-                // Create total revenue bar (green, background layer)
-                const totalBar = document.createElement('div');
-                totalBar.className = 'revenue-bar total';
-                totalBar.style.position = 'absolute';
-                totalBar.style.bottom = '0';
-                totalBar.style.left = '50%';
-                totalBar.style.transform = 'translateX(-50%)';
-                totalBar.style.height = `${Math.max(totalHeight, 3)}%`;
-                totalBar.style.width = '32px';
-                totalBar.style.background = 'linear-gradient(135deg, #9ed649 0%, #8ab82f 100%)';
-                totalBar.style.borderRadius = '4px 4px 0 0';
-                totalBar.style.cursor = 'pointer';
-                totalBar.style.transition = 'all 0.3s ease';
-                totalBar.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-                totalBar.style.border = '2px solid #7cb518';
-                totalBar.style.zIndex = '1';
-                
-                totalBar.addEventListener('mouseenter', function(e) {
-                    showTooltip(e, `Tổng doanh thu: ${formatCurrency(totalRevenue)} VND`, label);
-                    this.style.transform = 'translateX(-50%) translateY(-2px)';
-                    this.style.filter = 'brightness(1.1)';
-                    this.style.zIndex = '10';
-                });
-                totalBar.addEventListener('mouseleave', function() {
-                    hideTooltip();
-                    this.style.transform = 'translateX(-50%) translateY(0)';
-                    this.style.filter = 'brightness(1)';
-                    this.style.zIndex = '1';
-                });
-                
-                // Create nightly revenue bar (red, middle layer)
-                const nightlyBar = document.createElement('div');
-                nightlyBar.className = 'revenue-bar nightly';
-                nightlyBar.style.position = 'absolute';
-                nightlyBar.style.bottom = '0';
-                nightlyBar.style.left = '50%';
-                nightlyBar.style.transform = 'translateX(-50%)';
-                nightlyBar.style.height = `${Math.max(nightlyHeight, 3)}%`;
-                nightlyBar.style.width = '32px';
-                nightlyBar.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-                nightlyBar.style.borderRadius = '4px 4px 0 0';
-                nightlyBar.style.cursor = 'pointer';
-                nightlyBar.style.transition = 'all 0.3s ease';
-                nightlyBar.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-                nightlyBar.style.border = '2px solid #dc2626';
-                nightlyBar.style.zIndex = '2';
-                
-                nightlyBar.addEventListener('mouseenter', function(e) {
-                    showTooltip(e, `Qua đêm: ${formatCurrency(nightlyRevenue)} VND`, label);
-                    this.style.transform = 'translateX(-50%) translateY(-2px)';
-                    this.style.filter = 'brightness(1.1)';
-                    this.style.zIndex = '10';
-                });
-                nightlyBar.addEventListener('mouseleave', function() {
-                    hideTooltip();
-                    this.style.transform = 'translateX(-50%) translateY(0)';
-                    this.style.filter = 'brightness(1)';
-                    this.style.zIndex = '2';
-                });
-                
-                // Create hourly revenue bar (yellow, front layer)
-                const hourlyBar = document.createElement('div');
-                hourlyBar.className = 'revenue-bar hourly';
-                hourlyBar.style.position = 'absolute';
-                hourlyBar.style.bottom = '0';
-                hourlyBar.style.left = '50%';
-                hourlyBar.style.transform = 'translateX(-50%)';
-                hourlyBar.style.height = `${Math.max(hourlyHeight, 3)}%`;
-                hourlyBar.style.width = '32px';
-                hourlyBar.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
-                hourlyBar.style.borderRadius = '4px 4px 0 0';
-                hourlyBar.style.cursor = 'pointer';
-                hourlyBar.style.transition = 'all 0.3s ease';
-                hourlyBar.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-                hourlyBar.style.border = '2px solid #f59e0b';
-                hourlyBar.style.zIndex = '3';
-                
-                hourlyBar.addEventListener('mouseenter', function(e) {
-                    showTooltip(e, `Theo giờ: ${formatCurrency(hourlyRevenue)} VND`, label);
-                    this.style.transform = 'translateX(-50%) translateY(-2px)';
-                    this.style.filter = 'brightness(1.1)';
-                    this.style.zIndex = '10';
-                });
-                hourlyBar.addEventListener('mouseleave', function() {
-                    hideTooltip();
-                    this.style.transform = 'translateX(-50%) translateY(0)';
-                    this.style.filter = 'brightness(1)';
-                    this.style.zIndex = '3';
-                });
-                
-                // Add animations with proper transforms
-                totalBar.style.transform = 'translateX(-50%) scaleY(0)';
-                totalBar.style.transformOrigin = 'bottom';
-                totalBar.style.animation = `growBarCentered 1s ease-out ${index * 0.1}s forwards`;
-                
-                nightlyBar.style.transform = 'translateX(-50%) scaleY(0)';
-                nightlyBar.style.transformOrigin = 'bottom';
-                nightlyBar.style.animation = `growBarCentered 1s ease-out ${index * 0.1 + 0.1}s forwards`;
-                
-                hourlyBar.style.transform = 'translateX(-50%) scaleY(0)';
-                hourlyBar.style.transformOrigin = 'bottom';
-                hourlyBar.style.animation = `growBarCentered 1s ease-out ${index * 0.1 + 0.2}s forwards`;
-                
-                // Append bars to container (order matters for z-index)
-                barsContainer.appendChild(totalBar);
-                barsContainer.appendChild(nightlyBar);
-                barsContainer.appendChild(hourlyBar);
-            } else {
-                // Create 3 overlapping gray placeholder bars for future months
-                const widths = [32, 32, 32]; // All same width for consistency
-                const zIndexes = [1, 2, 3];
-                const types = ['tổng', 'qua đêm', 'theo giờ'];
-                
-                for (let i = 0; i < 3; i++) {
-                    const placeholderBar = document.createElement('div');
-                    placeholderBar.style.position = 'absolute';
-                    placeholderBar.style.bottom = '0';
-                    placeholderBar.style.left = '50%';
-                    placeholderBar.style.transform = 'translateX(-50%)';
-                    placeholderBar.style.height = '15px';
-                    placeholderBar.style.width = `${widths[i]}px`;
-                    placeholderBar.style.background = 'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)';
-                    placeholderBar.style.borderRadius = '4px 4px 0 0';
-                    placeholderBar.style.opacity = '0.4';
-                    placeholderBar.style.cursor = 'not-allowed';
-                    placeholderBar.style.transition = 'all 0.3s ease';
-                    placeholderBar.style.zIndex = zIndexes[i];
-                    placeholderBar.style.border = '1px solid #9ca3af';
-                    
-                    placeholderBar.addEventListener('mouseenter', function(e) {
-                        showTooltip(e, `Tháng ${monthNumber}: Chưa có dữ liệu ${types[i]}`, label);
-                        this.style.opacity = '0.6';
-                        this.style.zIndex = '10';
-                    });
-                    placeholderBar.addEventListener('mouseleave', function() {
+                // Total revenue bar (green, background)
+                barGroups.filter(d => d === month)
+                    .append('rect')
+                    .attr('class', 'total-bar')
+                    .attr('x', -16) // Half of bar width
+                    .attr('y', height)
+                    .attr('width', 32)
+                    .attr('height', 0)
+                    .attr('rx', 4)
+                    .attr('fill', 'url(#totalGradient)')
+                    .style('stroke', '#7cb518')
+                    .style('stroke-width', 2)
+                    .style('cursor', 'pointer')
+                    .on('mouseenter', function(event, d) {
+                        showTooltip(event, `Tổng doanh thu: ${formatCurrency(totalRevenue)} VND`, month);
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .attr('y', yScale(totalRevenue) - 2)
+                            .attr('height', height - yScale(totalRevenue) + 2)
+                            .style('filter', 'brightness(1.1)');
+                    })
+                    .on('mouseleave', function() {
                         hideTooltip();
-                        this.style.opacity = '0.4';
-                        this.style.zIndex = zIndexes[i];
-                    });
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .attr('y', yScale(totalRevenue))
+                            .attr('height', height - yScale(totalRevenue))
+                            .style('filter', 'brightness(1)');
+                    })
+                    .transition()
+                    .duration(1000)
+                    .delay(index * 100)
+                    .attr('y', yScale(totalRevenue))
+                    .attr('height', height - yScale(totalRevenue));
                     
-                    barsContainer.appendChild(placeholderBar);
-                }
+                // Nightly revenue bar (red, middle)
+                barGroups.filter(d => d === month)
+                    .append('rect')
+                    .attr('class', 'nightly-bar')
+                    .attr('x', -16)
+                    .attr('y', height)
+                    .attr('width', 32)
+                    .attr('height', 0)
+                    .attr('rx', 4)
+                    .attr('fill', 'url(#nightlyGradient)')
+                    .style('stroke', '#dc2626')
+                    .style('stroke-width', 2)
+                    .style('cursor', 'pointer')
+                    .on('mouseenter', function(event, d) {
+                        showTooltip(event, `Qua đêm: ${formatCurrency(nightlyRevenue)} VND`, month);
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .attr('y', yScale(nightlyRevenue) - 2)
+                            .attr('height', height - yScale(nightlyRevenue) + 2)
+                            .style('filter', 'brightness(1.1)');
+                    })
+                    .on('mouseleave', function() {
+                        hideTooltip();
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .attr('y', yScale(nightlyRevenue))
+                            .attr('height', height - yScale(nightlyRevenue))
+                            .style('filter', 'brightness(1)');
+                    })
+                    .transition()
+                    .duration(1000)
+                    .delay(index * 100 + 100)
+                    .attr('y', yScale(nightlyRevenue))
+                    .attr('height', height - yScale(nightlyRevenue));
+                    
+                // Hourly revenue bar (yellow, front)
+                barGroups.filter(d => d === month)
+                    .append('rect')
+                    .attr('class', 'hourly-bar')
+                    .attr('x', -16)
+                    .attr('y', height)
+                    .attr('width', 32)
+                    .attr('height', 0)
+                    .attr('rx', 4)
+                    .attr('fill', 'url(#hourlyGradient)')
+                    .style('stroke', '#f59e0b')
+                    .style('stroke-width', 2)
+                    .style('cursor', 'pointer')
+                    .on('mouseenter', function(event, d) {
+                        showTooltip(event, `Theo giờ: ${formatCurrency(hourlyRevenue)} VND`, month);
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .attr('y', yScale(hourlyRevenue) - 2)
+                            .attr('height', height - yScale(hourlyRevenue) + 2)
+                            .style('filter', 'brightness(1.1)');
+                    })
+                    .on('mouseleave', function() {
+                        hideTooltip();
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .attr('y', yScale(hourlyRevenue))
+                            .attr('height', height - yScale(hourlyRevenue))
+                            .style('filter', 'brightness(1)');
+                    })
+                    .transition()
+                    .duration(1000)
+                    .delay(index * 100 + 200)
+                    .attr('y', yScale(hourlyRevenue))
+                    .attr('height', height - yScale(hourlyRevenue));
+            } else {
+                // Placeholder bars for future months
+                barGroups.filter(d => d === month)
+                    .append('rect')
+                    .attr('class', 'placeholder-bar')
+                    .attr('x', -16)
+                    .attr('y', height - 15)
+                    .attr('width', 32)
+                    .attr('height', 15)
+                    .attr('rx', 4)
+                    .attr('fill', '#d1d5db')
+                    .style('stroke', '#9ca3af')
+                    .style('stroke-width', 1)
+                    .style('opacity', 0.4)
+                    .style('cursor', 'not-allowed')
+                    .on('mouseenter', function(event, d) {
+                        showTooltip(event, `Tháng ${monthNames.indexOf(month) + 1}: Chưa có dữ liệu`, month);
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style('opacity', 0.6);
+                    })
+                    .on('mouseleave', function() {
+                        hideTooltip();
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style('opacity', 0.4);
+                    });
             }
+        });
             
-            // Append to month group
-            monthGroup.appendChild(barsContainer);
-            
-            // Append to main container
-            container.appendChild(monthGroup);
-        }
-        
-        // Create X-axis labels for all 12 months
-        const monthLabels = [
-            'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-            'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
-        ];
-        
-        // Always show all 12 months - must match exactly with month groups
-        console.log('Creating 12 month labels...');
-        console.log('Month labels array:', monthLabels);
-        console.log('X-axis container:', xAxisLabels);
-        
-        for (let i = 0; i < 12; i++) {
-            console.log(`Creating label ${i + 1}: ${monthLabels[i]}`);
+        // Update X-axis labels
+        monthNames.forEach((month, index) => {
             const labelDiv = document.createElement('div');
-            labelDiv.textContent = monthLabels[i].replace('Tháng ', 'T');
-            labelDiv.style.textAlign = 'center';
+            labelDiv.textContent = month.replace('Tháng ', 'T');
             labelDiv.style.fontSize = '11px';
-            labelDiv.style.fontWeight = '500';
-            labelDiv.style.flex = '1';
-            labelDiv.style.minWidth = '60px';  // Match month groups exactly
-            labelDiv.style.maxWidth = '80px';  // Match month groups exactly
-            labelDiv.style.display = 'flex';
-            labelDiv.style.alignItems = 'center';
-            labelDiv.style.justifyContent = 'center';
+            labelDiv.style.position = 'absolute';
+            labelDiv.style.left = `${xScale(month) + xScale.bandwidth()/2}px`;
+            labelDiv.style.transform = 'translateX(-50%)';
+            labelDiv.style.textAlign = 'center';
             
             // Gray out future months
-            const currentDate = new Date();
-            const currentYear = currentDate.getFullYear();
-            const currentMonth = currentDate.getMonth() + 1;
-            const monthNumber = i + 1;
+            const monthNumber = index + 1;
             const hasData = (data.year !== 2025) || (data.year === 2025 && monthNumber <= currentMonth);
             
             if (!hasData) {
@@ -4815,55 +4955,50 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             xAxisLabels.appendChild(labelDiv);
+        });
+        
+        // Make chart responsive
+        function resizeChart() {
+            const newWidth = chartContainer.getBoundingClientRect().width;
+            
+            // Update SVG dimensions
+            svg.attr('width', newWidth);
+            
+            // Update x scale
+            xScale.range([0, newWidth]);
+            
+            // Update bar positions
+            barGroups.attr('transform', d => `translate(${xScale(d) + xScale.bandwidth()/2}, 0)`);
+            
+            // Update x-axis labels
+            xAxisLabels.innerHTML = '';
+            monthNames.forEach((month, index) => {
+                const labelDiv = document.createElement('div');
+                labelDiv.textContent = month.replace('Tháng ', 'T');
+                labelDiv.style.fontSize = '11px';
+                labelDiv.style.position = 'absolute';
+                labelDiv.style.left = `${xScale(month) + xScale.bandwidth()/2}px`;
+                labelDiv.style.transform = 'translateX(-50%)';
+                labelDiv.style.textAlign = 'center';
+                
+                // Gray out future months
+                const monthNumber = index + 1;
+                const hasData = (data.year !== 2025) || (data.year === 2025 && monthNumber <= currentMonth);
+                
+                if (!hasData) {
+                    labelDiv.style.color = '#9ca3af';
+                    labelDiv.style.opacity = '0.6';
+                } else {
+                    labelDiv.style.color = '#374151';
+                    labelDiv.style.opacity = '1';
+                }
+                
+                xAxisLabels.appendChild(labelDiv);
+            });
         }
         
-        console.log(`Total labels created: ${xAxisLabels.children.length}`);
-        console.log(`Total month groups created: ${container.children.length}`);
-        
-        // Responsive adjustments - ensure both containers stay synchronized
-        function syncContainerWidths() {
-            if (window.innerWidth < 768) {
-                // Mobile adjustments
-                for (let i = 0; i < 12; i++) {
-                    const monthGroup = container.children[i];
-                    const labelDiv = xAxisLabels.children[i];
-                    
-                    if (monthGroup) {
-                        monthGroup.style.minWidth = '50px';
-                        monthGroup.style.maxWidth = '70px';
-                    }
-                    if (labelDiv) {
-                        labelDiv.style.minWidth = '50px';
-                        labelDiv.style.maxWidth = '70px';
-                    }
-                }
-                container.style.minWidth = '700px';
-                xAxisLabels.style.minWidth = '700px';
-            } else {
-                // Desktop - reset to default
-                for (let i = 0; i < 12; i++) {
-                    const monthGroup = container.children[i];
-                    const labelDiv = xAxisLabels.children[i];
-                    
-                    if (monthGroup) {
-                        monthGroup.style.minWidth = '60px';
-                        monthGroup.style.maxWidth = '80px';
-                    }
-                    if (labelDiv) {
-                        labelDiv.style.minWidth = '60px';
-                        labelDiv.style.maxWidth = '80px';
-                    }
-                }
-                container.style.minWidth = '800px';
-                xAxisLabels.style.minWidth = '800px';
-            }
-        }
-        
-        // Apply responsive adjustments
-        syncContainerWidths();
-        
-        // Listen for window resize to maintain alignment
-        window.addEventListener('resize', syncContainerWidths);
+        // Listen for window resize to maintain responsiveness
+        window.addEventListener('resize', resizeChart);
     }
 
     // Tooltip functions
