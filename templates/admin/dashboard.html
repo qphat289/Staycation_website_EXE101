@@ -4790,19 +4790,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 const hourlyRevenue = data.hourly_revenue[index];
                 const nightlyRevenue = data.nightly_revenue[index];
                 
+                const barGroup = barGroups.filter(d => d === month);
+                
+                // Determine the rendering order based on revenue values
+                // Total revenue is always at the bottom
+                // For hourly and nightly, the one with lower value goes on top
+                const totalBarGroup = barGroup.append('g').attr('class', 'total-bar-group');
+                
+                // Create the other groups based on which revenue is higher
+                let firstBarGroup, secondBarGroup, firstType, secondType;
+                
+                if (hourlyRevenue >= nightlyRevenue) {
+                    // Hourly is higher, so render it first (bottom)
+                    firstBarGroup = barGroup.append('g').attr('class', 'hourly-bar-group');
+                    secondBarGroup = barGroup.append('g').attr('class', 'nightly-bar-group');
+                    firstType = 'hourly';
+                    secondType = 'nightly';
+                } else {
+                    // Nightly is higher, so render it first (bottom)
+                    firstBarGroup = barGroup.append('g').attr('class', 'nightly-bar-group');
+                    secondBarGroup = barGroup.append('g').attr('class', 'hourly-bar-group');
+                    firstType = 'nightly';
+                    secondType = 'hourly';
+                }
+                
+                // Store references for later use
+                const hourlyBarGroup = firstType === 'hourly' ? firstBarGroup : secondBarGroup;
+                const nightlyBarGroup = firstType === 'nightly' ? firstBarGroup : secondBarGroup;
+                
+                // Define consistent bar width and positioning
+                const barWidth = 30;
+                const halfBarWidth = barWidth / 2;
+                
                 // Total revenue bar (green, background)
-                barGroups.filter(d => d === month)
+                totalBarGroup
                     .append('rect')
                     .attr('class', 'total-bar')
-                    .attr('x', -16) // Half of bar width
+                    .attr('x', -halfBarWidth) // Centered exactly
                     .attr('y', height)
-                    .attr('width', 32)
+                    .attr('width', barWidth)
                     .attr('height', 0)
                     .attr('rx', 4)
                     .attr('fill', 'url(#totalGradient)')
                     .style('stroke', '#7cb518')
                     .style('stroke-width', 2)
                     .style('cursor', 'pointer')
+                    .style('opacity', 0.95)
                     .on('mouseenter', function(event, d) {
                         showTooltip(event, `Tổng doanh thu: ${formatCurrency(totalRevenue)} VND`, month);
                         d3.select(this)
@@ -4826,27 +4859,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     .delay(index * 100)
                     .attr('y', yScale(totalRevenue))
                     .attr('height', height - yScale(totalRevenue));
+                
+                // Calculate the visible height for the nightly bar
+                // Make sure it's always visible if it has a value
+                const visibleNightlyHeight = nightlyRevenue > 0 ? 
+                    Math.max(height - yScale(nightlyRevenue), 5) : 0;
                     
                 // Nightly revenue bar (red, middle)
-                barGroups.filter(d => d === month)
+                nightlyBarGroup
                     .append('rect')
                     .attr('class', 'nightly-bar')
-                    .attr('x', -16)
+                    .attr('x', -halfBarWidth) // Perfectly centered
                     .attr('y', height)
-                    .attr('width', 32)
+                    .attr('width', barWidth)
                     .attr('height', 0)
                     .attr('rx', 4)
                     .attr('fill', 'url(#nightlyGradient)')
                     .style('stroke', '#dc2626')
                     .style('stroke-width', 2)
                     .style('cursor', 'pointer')
+                    .style('opacity', 1)
                     .on('mouseenter', function(event, d) {
                         showTooltip(event, `Qua đêm: ${formatCurrency(nightlyRevenue)} VND`, month);
                         d3.select(this)
                             .transition()
                             .duration(200)
                             .attr('y', yScale(nightlyRevenue) - 2)
-                            .attr('height', height - yScale(nightlyRevenue) + 2)
+                            .attr('height', visibleNightlyHeight + 2)
                             .style('filter', 'brightness(1.1)');
                     })
                     .on('mouseleave', function() {
@@ -4855,35 +4894,41 @@ document.addEventListener('DOMContentLoaded', function() {
                             .transition()
                             .duration(200)
                             .attr('y', yScale(nightlyRevenue))
-                            .attr('height', height - yScale(nightlyRevenue))
+                            .attr('height', visibleNightlyHeight)
                             .style('filter', 'brightness(1)');
                     })
                     .transition()
                     .duration(1000)
                     .delay(index * 100 + 100)
                     .attr('y', yScale(nightlyRevenue))
-                    .attr('height', height - yScale(nightlyRevenue));
+                    .attr('height', visibleNightlyHeight);
+                    
+                // Calculate the visible height for the hourly bar
+                // Make sure it's always visible if it has a value
+                const visibleHourlyHeight = hourlyRevenue > 0 ? 
+                    Math.max(height - yScale(hourlyRevenue), 5) : 0;
                     
                 // Hourly revenue bar (yellow, front)
-                barGroups.filter(d => d === month)
+                hourlyBarGroup
                     .append('rect')
                     .attr('class', 'hourly-bar')
-                    .attr('x', -16)
+                    .attr('x', -halfBarWidth) // Perfectly centered
                     .attr('y', height)
-                    .attr('width', 32)
+                    .attr('width', barWidth)
                     .attr('height', 0)
                     .attr('rx', 4)
                     .attr('fill', 'url(#hourlyGradient)')
                     .style('stroke', '#f59e0b')
                     .style('stroke-width', 2)
                     .style('cursor', 'pointer')
+                    .style('opacity', 1)
                     .on('mouseenter', function(event, d) {
                         showTooltip(event, `Theo giờ: ${formatCurrency(hourlyRevenue)} VND`, month);
                         d3.select(this)
                             .transition()
                             .duration(200)
                             .attr('y', yScale(hourlyRevenue) - 2)
-                            .attr('height', height - yScale(hourlyRevenue) + 2)
+                            .attr('height', visibleHourlyHeight + 2)
                             .style('filter', 'brightness(1.1)');
                     })
                     .on('mouseleave', function() {
@@ -4892,17 +4937,22 @@ document.addEventListener('DOMContentLoaded', function() {
                             .transition()
                             .duration(200)
                             .attr('y', yScale(hourlyRevenue))
-                            .attr('height', height - yScale(hourlyRevenue))
+                            .attr('height', visibleHourlyHeight)
                             .style('filter', 'brightness(1)');
                     })
                     .transition()
                     .duration(1000)
                     .delay(index * 100 + 200)
                     .attr('y', yScale(hourlyRevenue))
-                    .attr('height', height - yScale(hourlyRevenue));
+                    .attr('height', visibleHourlyHeight);
             } else {
                 // Placeholder bars for future months
-                barGroups.filter(d => d === month)
+                const barGroup = barGroups.filter(d => d === month);
+                
+                // Create a group for the placeholder bar
+                const placeholderGroup = barGroup.append('g').attr('class', 'placeholder-group');
+                
+                placeholderGroup
                     .append('rect')
                     .attr('class', 'placeholder-bar')
                     .attr('x', -16)
