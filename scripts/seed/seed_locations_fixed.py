@@ -217,7 +217,7 @@ LOCATION_DATA = {
             },
             'huyenchuongmy': {
                 'name': 'Huyện Chương Mỹ',
-                'wards': ['Thị trấn Chúc Sơn', 'Thị trấn Xuân Mai', 'Xã Phụng Châu', 'Xã Tiên Phương', 'Xã Đông Sơn', 'Xã Đông Phương Yên', 'Xã Phú Nghĩa', 'Xã Trường Yên', 'Xã Ngọc Hòa', 'Xã Thủy Xuân Tiên', 'Xã Thanh Bình', 'Xã Tân Tiến', 'Xã Văn Võ', 'Xã Đồng Lạc', 'Xã Hòa Chính', 'Xã Trung Hòa', 'Xã Nam Phương Tiến', 'Xã Hợp Đồng', 'Xã Lam Điền', 'Xã Tốt Động', 'Xã Cẩm Yên', 'Xã Sơn Tây', 'Xã Hòa Phú', 'Xã Đại Yên', 'Xã Hoàng Diệu', 'Xã Thụy Hương', 'Xã Hữu Văn', 'Xã Quảng Bị', 'Xã Mỹ Lương', 'Xã Trần Phú', 'Xã Đồng Phú']
+                'wards': ['Thị trấn Chúc Sơn', 'Thị trấn Xuân Mai', 'Xã Phụng Châu', 'Xã Tiên Phương', 'Xã Đông Sơn', 'Xã Đông Phương Yên', 'Xã Phú Nghĩa', 'Xã Trường Yên', 'Xã Ngọc Hòa', 'Xã Thủy Xuân Tiên', 'Xã Thanh Bình', 'Xã Tân Tiến', 'Xã Văn Võ', 'Xã Đồng Lạc', 'Xã Hòa Chính', 'Xã Trung Hòa', 'Xã Nam Phương Tiến', 'Xã Hợp Đồng', 'Xã Lam Điền', 'Xã Tốt Động', 'Xã Cẩm Yên', 'Xã Sơn Tây', 'Xã Xuân Mai', 'Xã Hòa Phú', 'Xã Đại Yên', 'Xã Hoàng Diệu', 'Xã Thụy Hương', 'Xã Hữu Văn', 'Xã Quảng Bị', 'Xã Mỹ Lương', 'Xã Trần Phú', 'Xã Đồng Phú']
             },
             'huyendanphuong': {
                 'name': 'Huyện Đan Phượng',
@@ -225,7 +225,7 @@ LOCATION_DATA = {
             },
             'huyendonganh': {
                 'name': 'Huyện Đông Anh',
-                'wards': ['Thị trấn Đông Anh', 'Xã Xuân Nộn', 'Xã Thuỵ Lâm', 'Xã Bắc Hồng', 'Xã Nguyên Khê', 'Xã Nam Hồng', 'Xã Tiên Dương', 'Xã Vân Hà', 'Xã Uy Nỗ', 'Xã Vân Nội', 'Xã Liên Hà', 'Xã Việt Hùng', 'Xã Kim Nỗ', 'Xã Kim Chung', 'Xã Dục Tú', 'Xã Đại Mạch', 'Xã Vọng La', 'Xã Cổ Loa', 'Xã Hải Bối', 'Xã Xuân Canh', 'Xã Tàm Xá', 'Xã Mai Lâm', 'Xã Đông Hội', 'Xã Vĩnh Ngọc']
+                'wards': ['Thị trấn Đông Anh', 'Xã Xuân Nộn', 'Xã Thuỵ Lâm', 'Xã Bắc Hồng', 'Xã Nguyên Khê', 'Xã Nam Hồng', 'Xã Tiên Dương', 'Xã Vân Hà', 'Xã Uy Nỗ', 'Xã Vân Nội', 'Xã Liên Hà', 'Xã Việt Hùng', 'Xã Kim Nỗ', 'Xã Kim Chung', 'Xã Dục Tú', 'Xã Đại Mạch', 'Xã Vọng La', 'Xã Cổ Loa', 'Xã Hải Bối', 'Xã Xuân Canh', 'Xã Võng La', 'Xã Tàm Xá', 'Xã Mai Lâm', 'Xã Đông Hội', 'Xã Vĩnh Ngọc']
             },
             'huyengialâm': {
                 'name': 'Huyện Gia Lâm',
