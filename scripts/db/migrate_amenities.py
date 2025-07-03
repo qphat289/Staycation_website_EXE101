@@ -70,18 +70,18 @@ def migrate_amenities():
         cursor.execute("ALTER TABLE amenity_new RENAME TO amenity")
         print("Đã đổi tên bảng amenity_new thành amenity")
         
-        # 5. Cập nhật bảng room_amenities nếu cần
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='room_amenities'")
+        # 5. Cập nhật bảng home_amenities nếu cần
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='home_amenities'")
         if cursor.fetchone():
-            print("Bảng room_amenities đã tồn tại")
+            print("Bảng home_amenities đã tồn tại")
         else:
-            print("Tạo bảng room_amenities...")
+            print("Tạo bảng home_amenities...")
             cursor.execute('''
-                CREATE TABLE room_amenities (
-                    room_id INTEGER,
+                CREATE TABLE home_amenities (
+                    home_id INTEGER,
                     amenity_id INTEGER,
-                    PRIMARY KEY (room_id, amenity_id),
-                    FOREIGN KEY (room_id) REFERENCES room (id),
+                    PRIMARY KEY (home_id, amenity_id),
+                    FOREIGN KEY (home_id) REFERENCES home (id),
                     FOREIGN KEY (amenity_id) REFERENCES amenity (id)
                 )
             ''')

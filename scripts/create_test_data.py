@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 import random
 
 # Import models first
-from app.models.models import db, Owner, Room, Booking, Review, Renter
+from app.models.models import db, Owner, Home, Booking, Review, Renter
 
 def create_test_data():
     """Create test data for statistics"""
@@ -59,12 +59,12 @@ def create_test_data():
             
         print(f"📋 Found owner: {owner.username}")
         
-        # Get or create rooms
-        rooms = Room.query.filter_by(owner_id=owner.id).all()
-        if not rooms:
-            print("📝 Creating test rooms...")
-            rooms = [
-                Room(
+        # Get or create homes
+        homes = Home.query.filter_by(owner_id=owner.id).all()
+        if not homes:
+            print("📝 Creating test homes...")
+            homes = [
+                Home(
                     name="Downtown Apartment",
                     description="Cozy downtown apartment",
                     price_per_hour=50000,
@@ -75,7 +75,7 @@ def create_test_data():
                     status='available',
                     is_active=True
                 ),
-                Room(
+                Home(
                     name="Luxury Villa",
                     description="Beautiful villa with pool",
                     price_per_hour=100000,
@@ -87,9 +87,9 @@ def create_test_data():
                     is_active=True
                 )
             ]
-            db.session.add_all(rooms)
+            db.session.add_all(homes)
             db.session.commit()
-            print(f"✅ Created {len(rooms)} rooms")
+            print(f"✅ Created {len(homes)} homes")
         
         # Get or create renters
         renters = Renter.query.limit(5).all()
@@ -118,28 +118,28 @@ def create_test_data():
             
             # Create 1-3 bookings per day
             for _ in range(random.randint(1, 3)):
-                room = random.choice(rooms)
+                home = random.choice(homes)
                 renter = random.choice(renters)
                 booking_type = random.choice(['hourly', 'nightly'])
                 status = random.choice(['completed', 'completed', 'confirmed'])  # More completed
                 
                 if booking_type == 'hourly':
                     hours = random.randint(2, 6)
-                    amount = room.price_per_hour * hours
+                    amount = home.price_per_hour * hours
                     check_in = date.replace(hour=random.randint(10, 16))
                     check_out = check_in + timedelta(hours=hours)
                 else:
                     nights = random.randint(1, 3)
-                    amount = room.price_per_night * nights
+                    amount = home.price_per_night * nights
                     check_in = date.replace(hour=15)
                     check_out = check_in + timedelta(days=nights)
                 
                 booking = Booking(
-                    room_id=room.id,
+                    home_id=home.id,
                     renter_id=renter.id,
                     check_in=check_in,
                     check_out=check_out,
-                    guests=random.randint(1, room.max_guests),
+                    guests=random.randint(1, home.max_guests),
                     total_amount=amount,
                     booking_type=booking_type,
                     status=status
@@ -152,7 +152,7 @@ def create_test_data():
                     review = Review(
                         booking_id=booking.id,
                         renter_id=renter.id,
-                        room_id=room.id,
+                        home_id=home.id,
                         rating=random.choice([4, 4, 5, 5, 5]),
                         comment="Great place to stay!",
                         created_at=check_out + timedelta(days=1)

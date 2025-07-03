@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config.config import Config
-from app.models.models import db, Owner, Room, Booking, Review, Renter
+from app.models.models import db, Owner, Home, Booking, Review, Renter
 
 # Create a simple Flask app
 app = Flask(__name__)
@@ -64,22 +64,22 @@ def create_comprehensive_data():
         
         db.session.commit()
         
-        # Get owner's rooms
-        rooms = Room.query.filter_by(owner_id=owner.id).all()
-        if not rooms:
-            print("❌ No rooms found for this owner!")
+        # Get owner's homes
+        homes = Home.query.filter_by(owner_id=owner.id).all()
+        if not homes:
+            print("❌ No homes found for this owner!")
             return
         
-        print(f"📋 Found {len(rooms)} rooms")
+        print(f"📋 Found {len(homes)} homes")
         
         # Get renters
         renters = Renter.query.all()
         print(f"📋 Found {len(renters)} renters")
         
         # Clear existing data
-        room_ids = [r.id for r in rooms]
-        Booking.query.filter(Booking.room_id.in_(room_ids)).delete(synchronize_session=False)
-        Review.query.filter(Review.room_id.in_(room_ids)).delete(synchronize_session=False)
+        home_ids = [r.id for r in homes]
+        Booking.query.filter(Booking.home_id.in_(home_ids)).delete(synchronize_session=False)
+        Review.query.filter(Review.home_id.in_(home_ids)).delete(synchronize_session=False)
         db.session.commit()
         print("🧹 Cleared existing bookings and reviews")
         
@@ -118,7 +118,7 @@ def create_comprehensive_data():
             
             # Create bookings for this day
             for _ in range(num_bookings):
-                room = select_room_by_popularity(rooms, current_date)
+                home = select_home_by_popularity(homes, current_date)
                 renter = select_renter_by_pattern(renters, current_date, is_weekend, is_holiday)
                 
                 # Determine booking type based on day patterns
@@ -130,7 +130,7 @@ def create_comprehensive_data():
                 # Calculate pricing with seasonal adjustments
                 if booking_type == 'hourly':
                     hours = get_hourly_duration(current_date, is_weekend, renter)
-                    base_price = room.price_per_hour if room.price_per_hour else 50000
+                    base_price = home.price_per_hour if home.price_per_hour else 50000
                     seasonal_multiplier = get_seasonal_price_multiplier(current_date, is_holiday, is_peak_season)
                     total_price = base_price * hours * seasonal_multiplier
                     
@@ -139,7 +139,7 @@ def create_comprehensive_data():
                     total_hours = hours
                 else:  # nightly
                     nights = get_nightly_duration(current_date, is_weekend, is_holiday, renter)
-                    base_price = room.price_per_night if room.price_per_night else 300000
+                    base_price = home.price_per_night if home.price_per_night else 300000
                     seasonal_multiplier = get_seasonal_price_multiplier(current_date, is_holiday, is_peak_season)
                     total_price = base_price * nights * seasonal_multiplier
                     
@@ -149,7 +149,7 @@ def create_comprehensive_data():
                 
                 # Create booking
                 booking = Booking(
-                    room_id=room.id,
+                    home_id=home.id,
                     renter_id=renter.id,
                     start_time=start_time,
                     end_time=end_time,
@@ -166,14 +166,14 @@ def create_comprehensive_data():
                 
                 # Create reviews with realistic patterns
                 if should_create_review(status, booking_type, renter, current_date):
-                    rating = get_realistic_rating(room, renter, booking_type, current_date)
+                    rating = get_realistic_rating(home, renter, booking_type, current_date)
                     comment = get_realistic_comment(rating, booking_type, renter)
                     
                     review_date = end_time + timedelta(days=random.randint(1, 14))
                     
                     review = Review(
                         renter_id=renter.id,
-                        room_id=room.id,
+                        home_id=home.id,
                         rating=rating,
                         content=comment,
                         created_at=review_date
@@ -192,7 +192,7 @@ def create_comprehensive_data():
             print(f"\n✅ Successfully created {bookings_created} bookings and {reviews_created} reviews!")
             
             # Show comprehensive statistics
-            show_comprehensive_stats(room_ids)
+            show_comprehensive_stats(home_ids)
             
         except Exception as e:
             db.session.rollback()
@@ -250,16 +250,16 @@ def get_monthly_booking_factor(month):
     }
     return factors.get(month, 1.0)
 
-def select_room_by_popularity(rooms, date):
-    """Select room based on popularity patterns"""
-    # Some rooms are more popular than others
-    if len(rooms) >= 2:
-        # 60% chance for first room, 40% for others
+def select_home_by_popularity(homes, date):
+    """Select home based on popularity patterns"""
+    # Some homes are more popular than others
+    if len(homes) >= 2:
+        # 60% chance for first home, 40% for others
         if random.random() < 0.6:
-            return rooms[0]
+            return homes[0]
         else:
-            return random.choice(rooms[1:])
-    return random.choice(rooms)
+            return random.choice(homes[1:])
+    return random.choice(homes)
 
 def select_renter_by_pattern(renters, date, is_weekend, is_holiday):
     """Select renter based on patterns"""
@@ -380,7 +380,7 @@ def should_create_review(status, booking_type, renter, date):
     
     return random.random() < review_rate
 
-def get_realistic_rating(room, renter, booking_type, date):
+def get_realistic_rating(home, renter, booking_type, date):
     """Get realistic rating based on various factors"""
     # Base ratings tend to be good
     base_ratings = [3, 4, 4, 4, 5, 5, 5]
@@ -426,10 +426,10 @@ def get_realistic_comment(rating, booking_type, renter):
         "Decent place, nothing special but adequate.",
         "Average accommodation, could be improved.",
         "Okay for the price, basic amenities.",
-        "Room was fine, nothing to complain about.",
+        "Home was fine, nothing to complain about.",
         "Standard accommodation, meets basic needs.",
         "Fair value, reasonable for a short stay.",
-        "Acceptable but has room for improvement.",
+        "Acceptable but has home for improvement.",
         "Basic but clean and functional."
     ]
     
@@ -440,14 +440,14 @@ def get_realistic_comment(rating, booking_type, renter):
     else:
         return random.choice(average_comments)
 
-def show_comprehensive_stats(room_ids):
+def show_comprehensive_stats(home_ids):
     """Show comprehensive statistics summary"""
     print(f"\n📊 Comprehensive Statistics Summary:")
     
     # Overall stats
-    all_bookings = Booking.query.filter(Booking.room_id.in_(room_ids)).all()
+    all_bookings = Booking.query.filter(Booking.home_id.in_(home_ids)).all()
     completed_bookings = [b for b in all_bookings if b.status == 'completed']
-    all_reviews = Review.query.filter(Review.room_id.in_(room_ids)).all()
+    all_reviews = Review.query.filter(Review.home_id.in_(home_ids)).all()
     
     total_revenue = sum(b.total_price for b in completed_bookings)
     hourly_count = len([b for b in completed_bookings if b.booking_type == 'hourly'])

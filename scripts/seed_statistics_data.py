@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import the Flask app and database
-from app.models.models import db, Owner, Room, Booking, Review, Renter
+from app.models.models import db, Owner, Home, Booking, Review, Renter
 from datetime import datetime, timedelta
 import random
 
@@ -27,12 +27,12 @@ def create_dummy_statistics_data():
         
         print(f"Creating dummy data for owner: {owner.username}")
         
-        # Get owner's rooms
-        rooms = Room.query.filter_by(owner_id=owner.id).all()
-        if not rooms:
-            print("No rooms found for this owner. Creating some test rooms first...")
-            # Create some test rooms
-            room1 = Room(
+        # Get owner's homes
+        homes = Home.query.filter_by(owner_id=owner.id).all()
+        if not homes:
+            print("No homes found for this owner. Creating some test homes first...")
+            # Create some test homes
+            home1 = Home(
                 name="Cozy Downtown Apartment",
                 description="Beautiful apartment in the city center",
                 price_per_hour=50000,
@@ -44,7 +44,7 @@ def create_dummy_statistics_data():
                 is_active=True
             )
             
-            room2 = Room(
+            home2 = Home(
                 name="Luxury Villa with Pool",
                 description="Spacious villa with private pool",
                 price_per_hour=80000,
@@ -56,7 +56,7 @@ def create_dummy_statistics_data():
                 is_active=True
             )
             
-            room3 = Room(
+            home3 = Home(
                 name="Modern Studio",
                 description="Perfect for solo travelers",
                 price_per_hour=30000,
@@ -68,10 +68,10 @@ def create_dummy_statistics_data():
                 is_active=True
             )
             
-            db.session.add_all([room1, room2, room3])
+            db.session.add_all([home1, home2, home3])
             db.session.commit()
-            rooms = [room1, room2, room3]
-            print(f"Created {len(rooms)} test rooms")
+            homes = [home1, home2, home3]
+            print(f"Created {len(homes)} test homes")
         
         # Create some test renters if they don't exist
         test_renters = []
@@ -96,7 +96,7 @@ def create_dummy_statistics_data():
             print("No renters found in database")
             return
         
-        print(f"Found {len(rooms)} rooms and {len(renters)} renters")
+        print(f"Found {len(homes)} homes and {len(renters)} renters")
         
         # Generate bookings for the last 30 days
         base_date = datetime.now() - timedelta(days=30)
@@ -113,7 +113,7 @@ def create_dummy_statistics_data():
             num_bookings = random.randint(1, 5)
             
             for _ in range(num_bookings):
-                room = random.choice(rooms)
+                home = random.choice(homes)
                 renter = random.choice(renters)
                 booking_type = random.choice(booking_types)
                 status = random.choices(
@@ -123,7 +123,7 @@ def create_dummy_statistics_data():
                 
                 if booking_type == 'hourly':
                     duration = random.randint(2, 8)  # 2-8 hours
-                    total_amount = room.price_per_hour * duration
+                    total_amount = home.price_per_hour * duration
                     check_in = current_date.replace(
                         hour=random.randint(9, 18),
                         minute=random.choice([0, 30])
@@ -131,17 +131,17 @@ def create_dummy_statistics_data():
                     check_out = check_in + timedelta(hours=duration)
                 else:  # nightly
                     duration = random.randint(1, 5)  # 1-5 nights
-                    total_amount = room.price_per_night * duration
+                    total_amount = home.price_per_night * duration
                     check_in = current_date.replace(hour=15, minute=0)
                     check_out = check_in + timedelta(days=duration, hours=11)  # 11 AM checkout
                 
                 # Create booking
                 booking = Booking(
-                    room_id=room.id,
+                    home_id=home.id,
                     renter_id=renter.id,
                     check_in=check_in,
                     check_out=check_out,
-                    guests=random.randint(1, room.max_guests),
+                    guests=random.randint(1, home.max_guests),
                     total_amount=total_amount,
                     booking_type=booking_type,
                     status=status,
@@ -174,7 +174,7 @@ def create_dummy_statistics_data():
                     review = Review(
                         booking_id=booking.id,
                         renter_id=renter.id,
-                        room_id=room.id,
+                        home_id=home.id,
                         rating=rating,
                         comment=random.choice(review_comments),
                         created_at=check_out + timedelta(days=random.randint(1, 7))
@@ -192,19 +192,19 @@ def create_dummy_statistics_data():
             print("\n📊 Generated Statistics Preview:")
             
             completed_bookings = Booking.query.filter_by(status='completed').filter(
-                Booking.room_id.in_([r.id for r in rooms])
+                Booking.home_id.in_([r.id for r in homes])
             ).all()
             
             total_revenue = sum(b.total_amount for b in completed_bookings)
             total_bookings = len(Booking.query.filter(
-                Booking.room_id.in_([r.id for r in rooms])
+                Booking.home_id.in_([r.id for r in homes])
             ).all())
             
             hourly_bookings = len([b for b in completed_bookings if b.booking_type == 'hourly'])
             nightly_bookings = len([b for b in completed_bookings if b.booking_type == 'nightly'])
             
             all_reviews = Review.query.filter(
-                Review.room_id.in_([r.id for r in rooms])
+                Review.home_id.in_([r.id for r in homes])
             ).all()
             avg_rating = sum(r.rating for r in all_reviews) / len(all_reviews) if all_reviews else 0
             

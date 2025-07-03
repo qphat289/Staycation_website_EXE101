@@ -4,7 +4,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
-from models import db, Admin, Owner, Renter, Room, Booking, Review, Amenity, RoomImage, Statistics, AmenityCategory
+from models import db, Admin, Owner, Renter, Home, Booking, Review, Amenity, HomeImage, Statistics, AmenityCategory
 
 # Tạo ứng dụng Flask
 app = Flask(__name__)
@@ -16,10 +16,10 @@ db.init_app(app)
 # Dữ liệu phân loại tiện nghi
 amenity_categories = [
     {
-        'name': 'Tiện nghi phòng',
-        'code': 'room',
+        'name': 'Tiện nghi nhà',
+        'code': 'home',
         'icon': 'bi-house-door',
-        'description': 'Các tiện nghi cơ bản trong phòng',
+        'description': 'Các tiện nghi cơ bản trong nhà',
         'display_order': 1
     },
     {
@@ -40,7 +40,7 @@ amenity_categories = [
 
 # Dữ liệu tiện nghi theo từng loại
 amenities_data = {
-    'room': [
+    'home': [
         {'name': 'Điều hòa không khí', 'icon': 'bi-thermometer-sun', 'display_order': 1},
         {'name': 'Tivi màn hình phẳng', 'icon': 'bi-tv', 'display_order': 2},
         {'name': 'Tủ lạnh mini', 'icon': 'bi-box', 'display_order': 3},
@@ -54,7 +54,7 @@ amenities_data = {
     ],
     'common': [
         {'name': 'WiFi miễn phí', 'icon': 'bi-wifi', 'display_order': 1},
-        {'name': 'Dọn phòng hàng ngày', 'icon': 'bi-brush', 'display_order': 2},
+        {'name': 'Dọn nhà hàng ngày', 'icon': 'bi-brush', 'display_order': 2},
         {'name': 'Đồ vệ sinh cá nhân', 'icon': 'bi-droplet', 'display_order': 3},
         {'name': 'Khăn tắm và ga giường', 'icon': 'bi-house-check', 'display_order': 4},
         {'name': 'Nước uống miễn phí', 'icon': 'bi-cup-straw', 'display_order': 5},
@@ -68,7 +68,7 @@ amenities_data = {
         {'name': 'Jacuzzi riêng', 'icon': 'bi-droplet-half', 'display_order': 1},
         {'name': 'Ban công view đẹp', 'icon': 'bi-tree', 'display_order': 2},
         {'name': 'Bếp nhỏ riêng', 'icon': 'bi-fire', 'display_order': 3},
-        {'name': 'Phòng gym mini', 'icon': 'bi-heart-pulse', 'display_order': 4},
+        {'name': 'Nhà gym mini', 'icon': 'bi-heart-pulse', 'display_order': 4},
         {'name': 'Hồ bơi riêng', 'icon': 'bi-water', 'display_order': 5},
         {'name': 'Karaoke riêng', 'icon': 'bi-mic', 'display_order': 6},
         {'name': 'Cinema mini', 'icon': 'bi-camera-reels', 'display_order': 7},
