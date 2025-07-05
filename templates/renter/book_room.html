@@ -172,6 +172,34 @@
     background-color: #e9ecef;
     border-bottom: 1px solid #dee2e6;
 }
+
+/* Fix date/time inputs styling */
+input[type="date"], input[type="time"] {
+    color: #212529 !important;
+    opacity: 1 !important;
+}
+
+input[type="date"]:focus, input[type="time"]:focus {
+    color: #212529 !important;
+}
+
+/* Fix for Firefox */
+input[type="date"]::-moz-placeholder, 
+input[type="time"]::-moz-placeholder {
+    opacity: 0;
+}
+
+/* Fix for Chrome */
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+    color: #212529;
+}
+
+/* Force display of text */
+input[type="date"]:not(:placeholder-shown),
+input[type="time"]:not(:placeholder-shown) {
+    color: #212529 !important;
+}
 </style>
 {% endblock %}
 
@@ -192,6 +220,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set minimum date to today
     const today = new Date().toISOString().split('T')[0];
     startDateInput.min = today;
+    
+    // Ensure date and time inputs show text properly
+    startDateInput.style.color = '#212529';
+    startTimeInput.style.color = '#212529';
     
     function updateSummary() {
         const duration = parseInt(durationInput.value) || 1;
