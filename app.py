@@ -1,19 +1,17 @@
+from dotenv import load_dotenv
+load_dotenv()
 import os
 from flask import Flask, render_template, session, send_from_directory, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_migrate import Migrate
 from config.config import Config
-from app.models.models import db, Admin, Owner, Renter, Statistics, Home, Booking, Review, Amenity, HomeImage
+from app.models.models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity, RoomImage, Home
 from app.utils.utils import get_rank_info, get_location_name
 from app.utils.address_formatter import format_district, format_city, format_full_address
-from dotenv import load_dotenv
 import json
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
-
-# Load environment variables from .env file for google login
-load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -25,7 +23,7 @@ db.init_app(app)
 # Initialize login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'auth.login'
 
 app.jinja_env.filters['rank_info'] = get_rank_info
 app.jinja_env.filters['location_name'] = get_location_name
@@ -169,6 +167,9 @@ from app.routes.owner import owner_bp
 from app.routes.renter import renter_bp
 from app.routes.admin import admin_bp
 from app.routes.payment import payment_bp
+from app.routes.payment_api import payment_api
+from app.routes.webhook_handler import webhook_bp
+from app.routes.notification_api import notification_api
 from app.routes.api import api_bp
 from app.routes.test_map import test_map_bp
 
@@ -177,6 +178,9 @@ app.register_blueprint(owner_bp)
 app.register_blueprint(renter_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(payment_bp)
+app.register_blueprint(payment_api)
+app.register_blueprint(webhook_bp)
+app.register_blueprint(notification_api)
 app.register_blueprint(api_bp)
 app.register_blueprint(test_map_bp)
 

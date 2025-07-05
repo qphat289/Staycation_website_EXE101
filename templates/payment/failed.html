@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Thanh toán thành công{% endblock %}
+{% block title %}Thanh toán thất bại{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -8,22 +8,33 @@
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-body text-center">
-                    <!-- Success icon -->
-                    <div class="success-icon mb-4">
-                        <div class="success-circle">
-                            <i class="fas fa-check"></i>
+                    <!-- Failed icon -->
+                    <div class="failed-icon mb-4">
+                        <div class="failed-circle">
+                            <i class="fas fa-times"></i>
                         </div>
                     </div>
 
-                    <!-- Success message -->
-                    <h3 class="text-success mb-3">Thanh toán thành công!</h3>
+                    <!-- Failed message -->
+                    <h3 class="text-danger mb-3">Thanh toán thất bại</h3>
                     <p class="text-muted mb-4">
-                        Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. 
-                        Giao dịch của bạn đã được xử lý thành công.
+                        Rất tiếc, giao dịch của bạn không thể hoàn tất. 
+                        Vui lòng thử lại hoặc liên hệ hỗ trợ nếu cần thiết.
                     </p>
+
+                    <!-- Error details -->
+                    {% if payment.description %}
+                    <div class="error-details mb-4">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Lý do:</strong> {{ payment.description }}
+                        </div>
+                    </div>
+                    {% endif %}
 
                     <!-- Payment details -->
                     <div class="payment-details mb-4">
+                        <h5>Thông tin giao dịch</h5>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="detail-item">
@@ -32,17 +43,17 @@
                                 </div>
                                 <div class="detail-item">
                                     <span class="label">Số tiền:</span>
-                                    <span class="value text-success">{{ "{:,.0f}".format(payment.amount) }} VND</span>
+                                    <span class="value">{{ "{:,.0f}".format(payment.amount) }} VND</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="detail-item">
                                     <span class="label">Thời gian:</span>
-                                    <span class="value">{{ payment.paid_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                    <span class="value">{{ payment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
                                 </div>
                                 <div class="detail-item">
-                                    <span class="label">Phương thức:</span>
-                                    <span class="value">{{ payment.payment_method or 'PayOS' }}</span>
+                                    <span class="label">Trạng thái:</span>
+                                    <span class="value text-danger">Thất bại</span>
                                 </div>
                             </div>
                         </div>
@@ -65,32 +76,55 @@
 
                     <!-- Action buttons -->
                     <div class="action-buttons">
-                        <a href="{{ url_for('renter.booking_details', booking_id=booking.id) }}" 
+                        <a href="{{ url_for('payment.retry_payment', payment_id=payment.id) }}" 
                            class="btn btn-primary me-2">
+                            <i class="fas fa-redo me-2"></i>
+                            Thử lại thanh toán
+                        </a>
+                        <a href="{{ url_for('renter.booking_details', booking_id=booking.id) }}" 
+                           class="btn btn-outline-primary me-2">
                             <i class="fas fa-eye me-2"></i>
                             Xem chi tiết đặt phòng
                         </a>
                         <a href="{{ url_for('renter.dashboard') }}" 
-                           class="btn btn-outline-primary me-2">
+                           class="btn btn-outline-secondary">
                             <i class="fas fa-home me-2"></i>
                             Về trang chủ
                         </a>
-                        <button onclick="window.print()" class="btn btn-outline-secondary">
-                            <i class="fas fa-print me-2"></i>
-                            In hóa đơn
-                        </button>
                     </div>
 
-                    <!-- Additional info -->
+                    <!-- Help section -->
                     <div class="mt-4">
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
-                            <strong>Lưu ý:</strong>
+                            <strong>Hỗ trợ:</strong>
                             <ul class="mb-0 mt-2">
-                                <li>Email xác nhận đã được gửi đến {{ current_user.email }}</li>
-                                <li>Bạn có thể xem chi tiết đặt phòng trong tài khoản</li>
-                                <li>Liên hệ chủ phòng nếu cần hỗ trợ thêm</li>
+                                <li>Kiểm tra lại thông tin thẻ/tài khoản</li>
+                                <li>Đảm bảo có đủ số dư để thanh toán</li>
+                                <li>Thử lại với phương thức thanh toán khác</li>
+                                <li>Liên hệ hỗ trợ: <a href="mailto:support@example.com">support@example.com</a></li>
                             </ul>
+                        </div>
+                    </div>
+
+                    <!-- Common issues -->
+                    <div class="mt-4">
+                        <h6>Nguyên nhân thường gặp:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="text-start">
+                                    <li>Số dư tài khoản không đủ</li>
+                                    <li>Thông tin thẻ không chính xác</li>
+                                    <li>Thẻ bị khóa hoặc hết hạn</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="text-start">
+                                    <li>Lỗi kết nối mạng</li>
+                                    <li>Hệ thống ngân hàng bảo trì</li>
+                                    <li>Giao dịch bị từ chối bởi ngân hàng</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -100,22 +134,22 @@
 </div>
 
 <style>
-.success-icon {
+.failed-icon {
     margin: 20px 0;
 }
 
-.success-circle {
+.failed-circle {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background-color: #28a745;
+    background-color: #dc3545;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto;
 }
 
-.success-circle i {
+.failed-circle i {
     color: white;
     font-size: 2rem;
 }
@@ -144,10 +178,8 @@
     border-radius: 8px;
 }
 
-@media print {
-    .action-buttons {
-        display: none;
-    }
+.error-details .alert {
+    text-align: left;
 }
 </style>
 {% endblock %} 

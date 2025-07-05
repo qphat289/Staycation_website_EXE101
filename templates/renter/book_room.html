@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% block title %}Đặt phòng: {{ room.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Đặt phòng: {{ room.title }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          <div class="alert alert-{{ 'danger' if category in ['danger', 'error'] else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                          </div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+                    <!-- Room Information -->
+                    <div class="room-info mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>{{ room.title }}</h5>
+                                <p class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    {{ room.address }}
+                                </p>
+                                <p class="text-muted">
+                                    <i class="fas fa-user me-2"></i>
+                                    Chủ phòng: {{ room.owner.full_name }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="room-details">
+                                    <p><strong>Loại phòng:</strong> {{ room.room_type }}</p>
+                                    <p><strong>Số giường:</strong> {{ room.bed_count }}</p>
+                                    <p><strong>Số phòng tắm:</strong> {{ room.bathroom_count }}</p>
+                                    <p><strong>Sức chứa:</strong> {{ room.max_guests }} người</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Form -->
+                    <form method="post" id="booking-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Check-in Date -->
+                                <div class="mb-3">
+                                    <label for="start_date" class="form-label">
+                                        <i class="fas fa-calendar me-2"></i>Ngày check-in
+                                    </label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Check-in Time -->
+                                <div class="mb-3">
+                                    <label for="start_time" class="form-label">
+                                        <i class="fas fa-clock me-2"></i>Giờ check-in
+                                    </label>
+                                    <input type="time" class="form-control" id="start_time" name="start_time" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="mb-3">
+                            <label for="duration" class="form-label">
+                                <i class="fas fa-moon me-2"></i>Số đêm
+                            </label>
+                            <input type="number" class="form-control" id="duration" name="duration" 
+                                   min="1" value="1" required>
+                            <div class="form-text">Tối thiểu 1 đêm</div>
+                        </div>
+
+                        <!-- Booking Summary -->
+                        <div class="booking-summary mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-receipt me-2"></i>
+                                        Tóm tắt đặt phòng
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Phòng:</strong> {{ room.title }}</p>
+                                            <p><strong>Địa chỉ:</strong> {{ room.address }}</p>
+                                            <p><strong>Giá theo đêm:</strong> {{ "{:,.0f}".format(room.price_per_night) }} VND</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Số đêm:</strong> <span id="duration-display">1</span></p>
+                                            <p><strong>Ngày check-in:</strong> <span id="checkin-display">-</span></p>
+                                            <p><strong>Ngày check-out:</strong> <span id="checkout-display">-</span></p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Giá theo đêm:</strong></p>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <p><strong>{{ "{:,.0f}".format(room.price_per_night) }} VND</strong></p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Số đêm:</strong></p>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <p><strong>× <span id="nights-display">1</span></strong></p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6><strong>Tổng cộng:</strong></h6>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <h6 class="text-primary"><strong id="total-price">{{ "{:,.0f}".format(room.price_per_night) }} VND</strong></h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-credit-card me-2"></i>
+                                Xác nhận đặt phòng
+                            </button>
+                            <a href="{{ url_for('renter.view_room', id=room.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.room-info {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.booking-summary {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.booking-summary .card {
+    border: none;
+    background-color: transparent;
+}
+
+.booking-summary .card-header {
+    background-color: #e9ecef;
+    border-bottom: 1px solid #dee2e6;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('start_date');
+    const startTimeInput = document.getElementById('start_time');
+    const durationInput = document.getElementById('duration');
+    const durationDisplay = document.getElementById('duration-display');
+    const nightsDisplay = document.getElementById('nights-display');
+    const checkinDisplay = document.getElementById('checkin-display');
+    const checkoutDisplay = document.getElementById('checkout-display');
+    const totalPriceElement = document.getElementById('total-price');
+    
+    const pricePerNight = parseInt('{{ room.price_per_night or 0 }}');
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    startDateInput.min = today;
+    
+    function updateSummary() {
+        const duration = parseInt(durationInput.value) || 1;
+        const startDate = startDateInput.value;
+        const startTime = startTimeInput.value;
+        
+        // Update displays
+        durationDisplay.textContent = duration;
+        nightsDisplay.textContent = duration;
+        
+        if (startDate) {
+            checkinDisplay.textContent = startDate;
+            
+            // Calculate checkout date
+            const checkinDate = new Date(startDate);
+            const checkoutDate = new Date(checkinDate);
+            checkoutDate.setDate(checkinDate.getDate() + duration);
+            checkoutDisplay.textContent = checkoutDate.toISOString().split('T')[0];
+        } else {
+            checkinDisplay.textContent = '-';
+            checkoutDisplay.textContent = '-';
+        }
+        
+        // Calculate total price
+        const totalPrice = pricePerNight * duration;
+        totalPriceElement.textContent = totalPrice.toLocaleString('vi-VN') + ' VND';
+    }
+    
+    // Add event listeners
+    startDateInput.addEventListener('change', updateSummary);
+    startTimeInput.addEventListener('change', updateSummary);
+    durationInput.addEventListener('input', updateSummary);
+    
+    // Initialize summary
+    updateSummary();
+    
+    // Form validation
+    document.getElementById('booking-form').addEventListener('submit', function(e) {
+        const startDate = startDateInput.value;
+        const startTime = startTimeInput.value;
+        const duration = parseInt(durationInput.value);
+        
+        if (!startDate || !startTime || !duration || duration < 1) {
+            e.preventDefault();
+            alert('Vui lòng điền đầy đủ thông tin và số đêm tối thiểu là 1.');
+            return false;
+        }
+        
+        // Check if selected date is in the past
+        const selectedDateTime = new Date(startDate + ' ' + startTime);
+        const now = new Date();
+        
+        if (selectedDateTime <= now) {
+            e.preventDefault();
+            alert('Không thể đặt phòng trong quá khứ.');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %} 

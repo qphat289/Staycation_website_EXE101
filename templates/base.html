@@ -200,6 +200,19 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
         }
 
+        /* View room specific styles */
+        .view-room-style {
+            color: #000 !important;
+        }
+        
+        .view-room-text {
+            color: #000 !important;
+        }
+        
+        .view-room-icon {
+            color: #000 !important;
+        }
+
         .user-dropdown-container:hover {
             background: rgba(255, 255, 255, 0.2) !important;
             transform: translateY(-1px);
@@ -393,6 +406,7 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/translation.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/notification.js') }}"></script>
     
     <script>
         // Prevent zooming on double tap
@@ -424,8 +438,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const alerts = document.querySelectorAll('.flash-message');
             alerts.forEach(function(alert) {
-                );
-                
                 // Add a small delay to ensure page is fully loaded
                 setTimeout(function() {
                     // Add slide up animation class
@@ -457,7 +469,6 @@
             removeURLParameter('login_error');
         } else if (message === 'Profile updated successfully!') {
             showNotification('success', 'Thông tin của bạn đã được cập nhật');
-        } else {
             }
         
         // Function to remove URL parameter without page reload
@@ -466,7 +477,6 @@
             url.searchParams.delete(param);
             // Update URL without reloading the page
             history.replaceState({}, document.title, url.toString());
-            );
         }
         
         function showNotification(type, message, title = '') {
