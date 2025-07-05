@@ -196,10 +196,10 @@
                                             <i class="bi bi-door-open"></i>
                                         </div>
                                         <div class="info-content">
-                                            <div class="info-label">Room</div>
+                                            <div class="info-label">Home</div>
                                             <div class="info-value">
-                                                Room {{ booking.room.room_number }} 
-                                                <span class="room-type-badge">{{ booking.room.room_type }}</span>
+                                                {{ booking.home.title }} 
+                                                <span class="room-type-badge">{{ booking.home.home_type }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -221,8 +221,8 @@
                                             <i class="bi bi-currency-dollar"></i>
                                         </div>
                                         <div class="info-content">
-                                            <div class="info-label">Price per hour</div>
-                                            <div class="info-value">{{ "{:,.0f}".format(booking.room.price_per_hour) }} VND</div>
+                                            <div class="info-label">Price per night</div>
+                                            <div class="info-value">{{ "{:,.0f}".format(booking.home.price_per_night) }} VND</div>
                                         </div>
                                     </div>
                                 </div>

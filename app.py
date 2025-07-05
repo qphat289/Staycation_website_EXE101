@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_migrate import Migrate
 from config.config import Config
-from app.models.models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity, RoomImage, Home
+from app.models.models import db, Admin, Owner, Renter, Statistics, Booking, Review, Amenity, Home
 from app.utils.utils import get_rank_info, get_location_name
 from app.utils.address_formatter import format_district, format_city, format_full_address
 import json

@@ -43,7 +43,7 @@ def create_payment():
         
         # Lấy cấu hình PayOS của owner
         owner_config = PaymentConfig.query.filter_by(
-            owner_id=booking.room.owner_id, 
+            owner_id=booking.home.owner_id, 
             is_active=True
         ).first()
         
@@ -71,7 +71,7 @@ def create_payment():
         payment_response = payos.create_payment_link(
             order_code=payment.order_code,
             amount=payos.format_amount(booking.total_price),
-            description=f"Thanh toán booking #{booking.id} - {booking.room.title}",
+            description=f"Thanh toán booking #{booking.id} - {booking.home.title}",
             return_url=return_url or url_for('payment.success', payment_id=payment.id, _external=True),
             cancel_url=cancel_url or url_for('payment.cancel', payment_id=payment.id, _external=True),
             items=items

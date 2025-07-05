@@ -1,9 +1,9 @@
 {% extends 'owner/base_owner.html' %}
 
-{% block title %}Quản lý đặt phòng{% endblock %}
+{% block title %}Quản lý booking{% endblock %}
 
-{% block page_title %}Quản lý đặt phòng{% endblock %}
-{% block page_subtitle %}Xem và quản lý tất cả đặt phòng của bạn{% endblock %}
+{% block page_title %}Quản lý booking{% endblock %}
+{% block page_subtitle %}Xem và quản lý tất cả đơn đặt Homestay của bạn{% endblock %}
 
 {% block page_css %}
 <style>
@@ -1163,7 +1163,7 @@ function printReceipt() {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Hóa đơn đặt phòng</title>
+      <title>Hóa đơn booking</title>
       <style>
         body { 
           font-family: 'Courier New', monospace; 
@@ -1241,7 +1241,7 @@ function showSortOptions() {
   <div class="booking-tabs">
     <button class="tab-button active" data-tab="orders">
       <i class="fas fa-file-alt"></i>
-      Đơn đặt phòng
+      Đơn đã đặt
     </button>
     <button class="tab-button" data-tab="renting">
       <i class="fas fa-home"></i>
@@ -1249,7 +1249,7 @@ function showSortOptions() {
     </button>
     <button class="tab-button" data-tab="history">
       <i class="fas fa-history"></i>
-      Lịch sử đặt phòng
+      Lịch sử
     </button>
   </div>
 
@@ -1354,7 +1354,7 @@ function showSortOptions() {
       <div class="receipt-header">
         <div class="receipt-logo">
           <i class="fas fa-receipt"></i>
-          <span>HÓA ĐƠN ĐẶT PHÒNG</span>
+          <span>HÓA ĐƠN BOOKING</span>
         </div>
         <button class="receipt-close" onclick="closeReceiptModal()">
           <i class="fas fa-times"></i>
@@ -1365,14 +1365,14 @@ function showSortOptions() {
         <!-- Company Info -->
         <div class="receipt-company">
           <h3>STAYCATION</h3>
-          <p>Dịch vụ đặt phòng trực tuyến</p>
+          <p>Dịch vụ đặt homestay trực tuyến</p>
           <div class="receipt-divider"></div>
         </div>
         
         <!-- Booking ID & Date -->
         <div class="receipt-info">
           <div class="receipt-row">
-            <span class="receipt-label">Mã đặt phòng:</span>
+            <span class="receipt-label">Mã booking:</span>
             <span class="receipt-value" id="receiptBookingId">#BK001</span>
           </div>
           <div class="receipt-row">
@@ -1435,7 +1435,7 @@ function showSortOptions() {
         <div class="receipt-section">
           <h4 class="receipt-section-title">
             <i class="fas fa-calendar-alt"></i>
-            CHI TIẾT ĐẶT PHÒNG
+            CHI TIẾT BOOKING
           </h4>
           <div class="receipt-row">
             <span class="receipt-label">Check-in:</span>

@@ -1,0 +1,139 @@
+<!-- templates/renter/book_home.html -->
+{% extends 'base.html' %}
+{% block title %}Book Home: {{ home.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card">
+      <div class="card-header">
+        <h4 data-translate="book-home">Book Home: {{ home.title }}</h4>
+      </div>
+      <div class="card-body">
+        <!-- Home booking form -->
+        <form method="post" action="{{ url_for('renter.book_home', home_id=home.id) }}" id="booking-form">
+
+          <!-- Home Information Display -->
+          <div class="mb-3">
+            <div class="card bg-light">
+              <div class="card-body">
+                <h6 class="card-title">{{ home.title }}</h6>
+                <p class="card-text">
+                  <small class="text-muted">
+                    <i class="fas fa-map-marker-alt"></i> {{ home.address }}
+                  </small>
+                </p>
+                <p class="card-text">
+                  <span class="badge bg-primary">{{ home.home_type }}</span>
+                  <span class="badge bg-info">{{ home.max_guests }} guests</span>
+                  <span class="badge bg-success">${{ home.price_per_night }}/night</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Check-in Date -->
+          <div class="mb-3">
+            <label for="start_date" class="form-label" data-translate="checkin-date">Check-in Date</label>
+            <input type="text" class="form-control" id="start_date" name="start_date" required>
+          </div>
+
+          <!-- Duration in Days -->
+          <div class="mb-3">
+            <label for="duration" class="form-label" data-translate="duration-days">Duration (in days)</label>
+            <input type="number" class="form-control" id="duration" name="duration" min="1" value="1" required>
+          </div>
+
+          <!-- Number of Guests -->
+          <div class="mb-3">
+            <label for="guests" class="form-label" data-translate="guests">Number of Guests</label>
+            <input type="number" class="form-control" id="guests" name="guests" min="1" max="{{ home.max_guests }}" value="1" required>
+          </div>
+
+          <!-- Booking Summary -->
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 data-translate="booking-summary">Booking Summary</h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td data-translate="price-per-night">Price per Night</td>
+                  <td class="text-end" id="price-per-night">${{ home.price_per_night }}</td>
+                </tr>
+                <tr>
+                  <td data-translate="duration-days">Duration (days)</td>
+                  <td class="text-end" id="duration-display">1</td>
+                </tr>
+                <tr>
+                  <td data-translate="guests">Guests</td>
+                  <td class="text-end" id="guests-display">1</td>
+                </tr>
+                <tr class="fw-bold">
+                  <td data-translate="total-price">Total</td>
+                  <td class="text-end" id="total-price">${{ home.price_per_night }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100" data-translate="confirm-booking">Confirm Booking</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  // Initialize flatpickr on the date input
+  flatpickr("#start_date", {
+    minDate: "today",
+    dateFormat: "Y-m-d"
+  });
+
+  // Grab elements for summary calculation
+  const durationInput = document.getElementById('duration');
+  const guestsInput = document.getElementById('guests');
+  const durationDisplay = document.getElementById('duration-display');
+  const guestsDisplay = document.getElementById('guests-display');
+  const totalPriceEl = document.getElementById('total-price');
+  const pricePerNight = {{ home.price_per_night }};
+
+  // Function to update booking summary
+  function updateSummary() {
+    const duration = parseInt(durationInput.value) || 1;
+    const guests = parseInt(guestsInput.value) || 1;
+    
+    durationDisplay.textContent = duration;
+    guestsDisplay.textContent = guests;
+
+    // Calculate total price (price per night * duration)
+    const totalPrice = duration * pricePerNight;
+    totalPriceEl.textContent = '$' + totalPrice.toFixed(2);
+  }
+
+  durationInput.addEventListener('input', updateSummary);
+  guestsInput.addEventListener('input', updateSummary);
+  updateSummary();
+  
+  // Function to set up the page for translation
+  document.addEventListener('DOMContentLoaded', function() {
+    // Update content initially
+    updateTranslations();
+    
+    // Listen to language changes
+    window.addEventListener('languageChanged', updateTranslations);
+  });
+  
+  // Function to update translations
+  function updateTranslations() {
+    // The data-translate elements will be handled by the main translation system
+    // Any additional translation logic can be added here
+  }
+</script>
+{% endblock %} 

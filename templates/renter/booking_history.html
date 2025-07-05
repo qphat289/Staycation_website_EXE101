@@ -21,8 +21,8 @@
             <tbody>
                 {% for booking in bookings %}
                 <tr>
-                    <td>{{ booking.room.title }}</td>
-                    <td>{{ booking.room.room_number or 'N/A' }}</td>
+                                  <td>{{ booking.home.title }}</td>
+              <td>{{ booking.home.home_type or 'N/A' }}</td>
                     <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>{{ "%.0f"|format(booking.total_price * 1000) }} VND</td>

@@ -226,33 +226,39 @@ def book_home(home_id):
     
     if request.method == 'POST':
         start_date = request.form.get('start_date')
-        start_time = request.form.get('start_time')
         duration_str = request.form.get('duration')
+        guests_str = request.form.get('guests')
         
-        if not start_date or not start_time or not duration_str:
-            flash("You must select date, time and duration.", "warning")
+        if not start_date or not duration_str:
+            flash("You must select date and duration.", "warning")
             return redirect(url_for('renter.book_home', home_id=home.id))
         
         try:
             duration = int(duration_str)
+            guests = int(guests_str) if guests_str else 1
         except ValueError:
-            flash("Invalid duration value.", "danger")
+            flash("Invalid duration or guest count.", "danger")
             return redirect(url_for('renter.book_home', home_id=home.id))
         
         if duration < 1:
             flash("Minimum duration is 1 night.", "warning")
             return redirect(url_for('renter.book_home', home_id=home.id))
         
-        # Check if room has price_per_night
-        if not room.price_per_night:
-            flash("This room does not have nightly pricing available.", "danger")
-            return redirect(url_for('renter.book_room', room_id=room.id))
+        if guests > home.max_guests:
+            flash(f"Maximum guests allowed: {home.max_guests}", "warning")
+            return redirect(url_for('renter.book_home', home_id=home.id))
         
-        start_str = f"{start_date} {start_time}"
+        # Check if home has price_per_night
+        if not home.price_per_night:
+            flash("This home does not have nightly pricing available.", "danger")
+            return redirect(url_for('renter.book_home', home_id=home.id))
+        
+        # For home bookings, check-in is typically at 3 PM
+        start_str = f"{start_date} 15:00"
         try:
             start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
         except ValueError:
-            flash("Invalid date or time format.", "danger")
+            flash("Invalid date format.", "danger")
             return redirect(url_for('renter.book_home', home_id=home.id))
         
         end_datetime = start_datetime + timedelta(days=duration)

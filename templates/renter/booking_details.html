@@ -7,7 +7,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header" style="background-color: #e2b77b; color: white;">
-                    <h4 class="mb-0">Chi Tiết Đặt Phòng</h4>
+                    <h4 class="mb-0">Chi Tiết Booking</h4>
                 </div>
                 
                 <!-- Notification Section -->
@@ -141,16 +141,16 @@
                                             <div class="card-body">
                                                 <table class="table table-bordered table-striped text-center align-middle detail-table">
                                                     <tr>
-                                                        <th class="align-middle" style="width: 20%">Homestay:</th>
-                                                        <td class="align-middle">{{ booking.room.title }}</td>
-                                                        <th class="align-middle" style="width: 20%">Room:</th>
-                                                        <td class="align-middle">Room {{ booking.room.room_number }}</td>
+                                                        <th class="align-middle" style="width: 20%">Home:</th>
+                                                        <td class="align-middle">{{ booking.home.title }}</td>
+                                                        <th class="align-middle" style="width: 20%">Type:</th>
+                                                        <td class="align-middle">{{ booking.home.home_type }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th class="align-middle">Room Type:</th>
-                                                        <td class="align-middle">{{ booking.room.room_type }}</td>
+                                                        <th class="align-middle">Max Guests:</th>
+                                                        <td class="align-middle">{{ booking.home.max_guests }}</td>
                                                         <th class="align-middle">Address:</th>
-                                                        <td class="align-middle">{{ format_full_address(booking.room.address, None, booking.room.district, booking.room.city) }}</td>
+                                                        <td class="align-middle">{{ format_full_address(booking.home.address, None, booking.home.district, booking.home.city) }}</td>
                                                     </tr>
                                                 </table>
                                             </div>

@@ -213,7 +213,7 @@ class PayOSService:
     def create_payment_items(self, booking):
         """Tạo items từ booking"""
         return [ItemData(
-            name=f"Phong {booking.room.title}"[:50],  # Giới hạn 50 ký tự
+                            name=f"Nha {booking.home.title}"[:50],  # Giới hạn 50 ký tự
             quantity=1,
             price=int(booking.total_price)
         )]

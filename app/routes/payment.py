@@ -73,9 +73,9 @@ def process_payment():
             db.session.commit()
         
         # Lấy payment config
-        payment_config = PaymentConfig.query.filter_by(owner_id=booking.room.owner_id).first()
+        payment_config = PaymentConfig.query.filter_by(owner_id=booking.home.owner_id).first()
         if not payment_config:
-            flash('Chưa cấu hình thanh toán cho chủ phòng.', 'danger')
+            flash('Chưa cấu hình thanh toán cho chủ nhà.', 'danger')
             return redirect(url_for('payment.checkout', booking_id=booking_id))
         
         # Tạo payment record với orderCode số nguyên
@@ -95,7 +95,7 @@ def process_payment():
             customer_email=current_user.email,
             customer_phone=current_user.phone,
             booking_id=booking.id,
-            owner_id=booking.room.owner_id,
+            owner_id=booking.home.owner_id,
             renter_id=current_user.id
         )
         db.session.add(payment)
@@ -119,7 +119,7 @@ def process_payment():
             return_url=url_for('payment.payment_success', payment_id=payment.id, _external=True),
             cancel_url=url_for('payment.payment_cancelled', payment_id=payment.id, _external=True),
             items=[{
-                'name': f"Phong {booking.room.title}"[:25],
+                'name': f"Nha {booking.home.title}"[:25],
                 'quantity': 1,
                 'price': int(payment.amount)
             }]

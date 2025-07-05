@@ -20,8 +20,8 @@
                             <i class="fas fa-bed"></i> Thông tin đặt phòng
                         </div>
                         <div class="card-body">
-                            <p><strong>Phòng:</strong> {{ booking.room.title }}</p>
-                            <p><strong>Địa chỉ:</strong> {{ booking.room.address }}, {{ booking.room.district }}, {{ booking.room.city }}</p>
+                                        <p><strong>Nhà:</strong> {{ booking.home.title }}</p>
+            <p><strong>Địa chỉ:</strong> {{ booking.home.address }}, {{ booking.home.district }}, {{ booking.home.city }}</p>
                             <p><strong>Ngày:</strong> {{ booking.start_time.strftime('%d/%m/%Y') }}</p>
                             <p><strong>Giờ:</strong> {{ booking.start_time.strftime('%H:%M') }} - {{ booking.end_time.strftime('%H:%M') }}</p>
                             <p><strong>Loại đặt:</strong> {{ booking.booking_type|title }}</p>
