@@ -44,11 +44,12 @@ def checkout(booking_id):
         booking.payment_status = 'paid'
         booking.payment_date = datetime.now()
         booking.payment_method = 'demo'
-        booking.status = 'completed'
+        # Set status to confirmed after payment (no need for owner approval)
+        booking.status = 'confirmed'
         booking.renter.experience_points += int(booking.total_price)
         db.session.commit()
         
-        flash('Thanh toán thành công!', 'success')
+        flash('Thanh toán thành công! Đặt phòng đã được xác nhận.', 'success')
         return redirect(url_for('renter.booking_details', booking_id=booking_id))
     
     except Exception as e:

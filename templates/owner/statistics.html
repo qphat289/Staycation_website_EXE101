@@ -658,16 +658,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for room in stats.top_rooms[:5] %}
+                    {% for home in stats.top_homes[:5] %}
                     <tr>
-                        <td>{{ room.name }}</td>
-                        <td>{{ room.type }}</td>
-                        <td>{{ "{:,}".format(room.revenue) }}đ</td>
-                        <td>{{ room.bookings }}</td>
-                        <td>{{ room.booking_rate }}</td>
+                        <td>{{ home.name }}</td>
+                        <td>{{ home.type }}</td>
+                        <td>{{ "{:,}".format(home.revenue) }}đ</td>
+                        <td>{{ home.bookings }}</td>
+                        <td>{{ home.booking_rate }}</td>
                         <td>
                             <span class="rating-stars">
-                                {{ room.rating }}
+                                {{ home.rating }}
                                 <i class="fas fa-star"></i>
                             </span>
                         </td>
@@ -783,15 +783,95 @@ function updateD3Chart(chartData, chartType) {
 // Update single bar chart
 function updateSingleBarChart(data, chartType, g, width, height) {
     if (!data || data.length === 0) {
+        // Show empty state
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
         g.append('text')
             .attr('x', width / 2)
-            .attr('y', height / 2)
+            .attr('y', height / 2 - 10)
             .attr('text-anchor', 'middle')
-            .style('font-size', '14px')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
             .style('color', '#7C7C7C')
-            .text('📊 Không có dữ liệu');
+            .text('📊 Chưa có dữ liệu');
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('color', '#7C7C7C')
+            .text('Dữ liệu sẽ hiển thị khi có booking');
         return;
     }
+    
+    // Check if all data is zero
+    const hasRealData = data.some(d => d.revenue > 0);
+    if (!hasRealData) {
+        // Show empty state
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 - 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .style('color', '#7C7C7C')
+            .text('📊 Chưa có dữ liệu');
+            
+                 g.append('text')
+             .attr('x', width / 2)
+             .attr('y', height / 2 + 10)
+             .attr('text-anchor', 'middle')
+             .style('font-size', '12px')
+             .style('color', '#7C7C7C')
+             .text('Dữ liệu sẽ hiển thị khi có booking');
+         return;
+     }
+     
+     // Continue with normal chart rendering
+     updateSingleBarChartWithData(data, chartType, g, width, height);
+}
+
+function generateSampleData(days, chartType) {
+    const sampleData = [];
+    const today = new Date();
+    
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        
+        // Generate random but realistic sample revenue
+        const baseRevenue = chartType === 'hourly' ? 50000 : 200000;
+        const randomMultiplier = 0.3 + Math.random() * 0.7; // 30% to 100% of base
+        const revenue = Math.floor(baseRevenue * randomMultiplier);
+        
+        sampleData.push({
+            date: date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+            revenue: revenue
+        });
+    }
+    
+    return sampleData;
+}
+
+// Update single bar chart with data
+function updateSingleBarChartWithData(data, chartType, g, width, height, isPlaceholder = false) {
     
     // Set up scales
     const xScale = d3.scaleBand()
@@ -799,8 +879,9 @@ function updateSingleBarChart(data, chartType, g, width, height) {
         .range([0, width])
         .padding(0.1);
     
+    const maxRevenue = d3.max(data, d => d.revenue) || 0;
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.revenue)])
+        .domain([0, Math.max(maxRevenue, 100)]) // Ensure minimum domain of 100
         .range([height, 0]);
     
     // Create grid lines
@@ -901,13 +982,32 @@ function updateStackedBarChart(chartData, g, width, height) {
     const nightlyData = chartData.nightly || [];
     
     if (hourlyData.length === 0 && nightlyData.length === 0) {
+        // Show empty state with background
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
         g.append('text')
             .attr('x', width / 2)
-            .attr('y', height / 2)
+            .attr('y', height / 2 - 10)
             .attr('text-anchor', 'middle')
-            .style('font-size', '14px')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
             .style('color', '#7C7C7C')
-            .text('📊 Không có dữ liệu');
+            .text('📊 Chưa có dữ liệu');
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('color', '#7C7C7C')
+            .text('Dữ liệu sẽ hiển thị khi có booking');
         return;
     }
     
@@ -924,14 +1024,47 @@ function updateStackedBarChart(chartData, g, width, height) {
         };
     });
     
+    // Check if all data is zero
+    const hasRealData = stackedData.some(d => d.total > 0);
+    if (!hasRealData) {
+        // Show empty state with background
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 - 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .style('color', '#7C7C7C')
+            .text('📊 Chưa có dữ liệu');
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('color', '#7C7C7C')
+            .text('Dữ liệu sẽ hiển thị khi có booking');
+        return;
+    }
+    
     // Set up scales
     const xScale = d3.scaleBand()
         .domain(dates)
         .range([0, width])
         .padding(0.1);
     
+    const maxTotal = d3.max(stackedData, d => d.total) || 0;
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(stackedData, d => d.total)])
+        .domain([0, Math.max(maxTotal, 100)]) // Ensure minimum domain of 100
         .range([height, 0]);
     
     // Create grid lines
@@ -1299,7 +1432,7 @@ function updateAllUI(statsData, chartData, period = null) {
     updateChart(chartData, period);
     
     // Update table
-    updateTable(statsData.top_rooms);
+    updateTable(statsData.top_homes);
     
     hideLoadingState();
 }
@@ -1427,29 +1560,29 @@ function updateStatChange(elementId, percentage, increaseText, decreaseText) {
     }
 }
 
-// Update table with top rooms
-function updateTable(topRooms) {
+// Update table with top homes
+function updateTable(topHomes) {
     const tbody = document.querySelector('.stats-table tbody');
     if (!tbody) return;
     
     tbody.innerHTML = '';
     
-    if (!topRooms || topRooms.length === 0) {
+    if (!topHomes || topHomes.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #7C7C7C;">Chưa có dữ liệu</td></tr>';
         return;
     }
     
-    topRooms.slice(0, 5).forEach(room => {
+    topHomes.slice(0, 5).forEach(home => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${room.name}</td>
-            <td>${room.type}</td>
-            <td>${room.revenue.toLocaleString()}đ</td>
-            <td>${room.bookings}</td>
-            <td>${room.booking_rate}</td>
+            <td>${home.name}</td>
+            <td>${home.type}</td>
+            <td>${home.revenue.toLocaleString()}đ</td>
+            <td>${home.bookings}</td>
+            <td>${home.booking_rate}</td>
             <td>
                 <span class="rating-stars">
-                    ${room.rating}
+                    ${home.rating}
                     <i class="fas fa-star"></i>
                 </span>
             </td>

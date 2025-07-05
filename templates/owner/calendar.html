@@ -763,7 +763,7 @@
 
 <script>
     // Get real data from server
-    const rooms = {% if rooms %}{{ rooms|tojson|safe }}{% else %}[]{% endif %};
+    const rooms = {% if homes %}{{ homes|tojson|safe }}{% else %}[]{% endif %};
     const bookings = {% if bookings %}{{ bookings|tojson|safe }}{% else %}[]{% endif %};
     
     // Calendar functionality
@@ -985,7 +985,7 @@
             roomHeader.className = 'room-header';
             roomHeader.innerHTML = `
                 <div class="room-title" title="${room.title}">${room.title}</div>
-                <div class="room-info">${room.room_type} • ${room.city}</div>
+                <div class="room-info">${room.home_type} • ${room.city}</div>
             `;
             roomsHeader.appendChild(roomHeader);
         });
@@ -1020,7 +1020,7 @@
         });
         
         bookings.forEach(booking => {
-            if (!booking.start_time || !booking.end_time || !booking.room) return;
+            if (!booking.start_time || !booking.end_time || !booking.home) return;
             
             const startTime = new Date(booking.start_time);
             const endTime = new Date(booking.end_time);
@@ -1039,7 +1039,7 @@
             const duration = endPosition - startPosition;
             
             // Find the room timeline for this booking
-            const roomTimeline = document.querySelector(`[data-room-id="${booking.room.id}"]`);
+            const roomTimeline = document.querySelector(`[data-room-id="${booking.home.id}"]`);
             if (roomTimeline) {
                 const blockElement = document.createElement('div');
                 blockElement.className = 'booking-block';
@@ -1082,7 +1082,7 @@
 
         summaryContainer.innerHTML = '';
         todayBookings.forEach(booking => {
-            const room = rooms.find(r => r.id === booking.room.id);
+            const room = rooms.find(r => r.id === booking.home.id);
             const startTime = new Date(booking.start_time);
             const endTime = new Date(booking.end_time);
             const customerName = booking.renter ? 
@@ -1216,7 +1216,7 @@
                 document.getElementById('modalUsername').textContent = 
                     detailedBooking.renter?.username || 'Chưa cung cấp';
                 document.getElementById('modalRoomTitle').textContent = 
-                    detailedBooking.room?.title || 'N/A';
+                    detailedBooking.home?.title || 'N/A';
                 
                 // Format dates and times
                 const startTime = new Date(detailedBooking.start_time);
@@ -1239,12 +1239,10 @@
                 // Status with color coding
                 const statusElement = document.getElementById('modalStatus');
                 const statusMap = {
-                    'pending': { text: 'Chờ xác nhận', class: 'text-warning' },
                     'confirmed': { text: 'Đã xác nhận', class: 'text-success' },
                     'active': { text: 'Đang sử dụng', class: 'text-primary' },
                     'completed': { text: 'Hoàn thành', class: 'text-info' },
-                    'cancelled': { text: 'Đã hủy', class: 'text-danger' },
-                    'rejected': { text: 'Từ chối', class: 'text-danger' }
+                    'cancelled': { text: 'Đã hủy', class: 'text-danger' }
                 };
                 
                 const status = statusMap[detailedBooking.status] || { text: detailedBooking.status, class: '' };

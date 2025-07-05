@@ -39,21 +39,21 @@
       2.1 Homestay Cards
       2.2 Price Display
    
-   3. ROOM CARD STYLES
-      3.1 Room Card Base
-      3.2 Room Image Container
-      3.3 Room Details Layout
-      3.4 Room Specs Grid
+   3. HOME CARD STYLES
+      3.1 Home Card Base
+      3.2 Home Image Container
+      3.3 Home Details Layout
+      3.4 Home Specs Grid
       3.5 Price Styling
-      3.6 Room Action Buttons
+      3.6 Home Action Buttons
    
-   4. ROOM DETAIL PAGE STYLES
+   4. HOME DETAIL PAGE STYLES
       4.1 Main Gallery Container
       4.2 Main Image Styling
       4.3 Thumbnail Gallery
       4.4 Gallery Navigation
       4.5 Feature Items
-      4.6 Room Description
+      4.6 Home Description
    
    5. MODAL AND FULLSCREEN STYLES
       5.1 Modal Base
@@ -496,16 +496,16 @@ footer .mb-4 {
 }
 
 /* =======================================================================
-   3. ROOM CARD STYLES (view_homestay.html)
+   3. HOME CARD STYLES (view_homestay.html)
    ======================================================================= */
 
-/* 3.1 Room Card Base */
-.room-card {
+/* 3.1 Home Card Base */
+.home-card {
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     margin-bottom: 20px;
 }
 
-.room-card .card-header {
+.home-card .card-header {
     background-color: var(--primary-light);
     color: var(--text-primary);
     font-weight: 600;
@@ -513,18 +513,18 @@ footer .mb-4 {
     border-bottom: none;
 }
 
-.room-card .card-body {
+.home-card .card-body {
     background-color: var(--white);
 }
 
-.room-card .card-footer {
+.home-card .card-footer {
     background-color: var(--background-light);
     border-top: 1px solid var(--border-color);
     padding: 15px;
 }
 
-/* Tùy chỉnh cho trạng thái phòng */
-.room-status {
+/* Tùy chỉnh cho trạng thái nhà */
+.home-status {
     padding: 5px 10px;
     border-radius: 4px;
     font-weight: 500;
@@ -532,17 +532,17 @@ footer .mb-4 {
     display: inline-block;
 }
 
-.room-status.available {
+.home-status.available {
     background-color: rgba(122, 188, 14, 0.15);
     color: var(--accent-dark);
 }
 
-.room-status.booked {
+.home-status.booked {
     background-color: rgba(168, 100, 0, 0.15);
     color: var(--warning-dark);
 }
 
-/* Tùy chỉnh cho các nút hành động phòng */
+/* Tùy chỉnh cho các nút hành động nhà */
 .action-button {
     display: inline-flex;
     align-items: center;
@@ -602,15 +602,15 @@ footer .mb-4 {
     border-bottom: 2px solid var(--primary-dark);
 }
 
-/* 3.2 Room Image Container */
-.room-image-container {
+/* 3.2 Home Image Container */
+.home-image-container {
     position: relative;
     height: 220px;
     overflow: hidden;
 }
 
-.room-image-container img,
-.room-thumbnail {
+.home-image-container img,
+.home-thumbnail {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -618,18 +618,18 @@ footer .mb-4 {
     transition: transform 0.5s ease;
 }
 
-.room-card:hover .room-image-container img {
+.home-card:hover .home-image-container img {
     transform: scale(1.08);
 }
 
-/* 3.3 Room Details Layout */
-.room-details {
+/* 3.3 Home Details Layout */
+.home-details {
     padding: 15px;
     background-color: var(--white);
 }
 
-/* 3.4 Room Specs Grid */
-.room-specs {
+/* 3.4 Home Specs Grid */
+.home-specs {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
@@ -673,21 +673,21 @@ footer .mb-4 {
     color: var(--primary-color);
 }
 
-/* 3.6 Room Action Buttons */
-.room-actions {
+/* 3.6 Home Action Buttons */
+.home-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     padding: 0 15px 15px 15px;
 }
 
-.room-actions .btn {
+.home-actions .btn {
     padding: 8px 0;
     font-weight: 500;
 }
 
 /* =======================================================================
-   4. ROOM DETAIL PAGE STYLES (view_room_detail.html)
+   4. HOME DETAIL PAGE STYLES (view_home_detail.html)
    ======================================================================= */
 
 /* 4.1 Main Gallery Container */
@@ -807,13 +807,13 @@ footer .mb-4 {
     font-weight: 600;
 }
 
-/* 4.6 Room Description */
-.room-description h5 {
+/* 4.6 Home Description */
+.home-description h5 {
     color: var(--primary-color);
     margin-bottom: 0.75rem;
 }
 
-.room-description p {
+.home-description p {
     color: var(--text-secondary);
     line-height: 1.6;
 }
@@ -877,13 +877,13 @@ footer .mb-4 {
     .jumbotron {
         padding: 2rem 1rem;
     }
-    .room-specs {
+    .home-specs {
         grid-template-columns: 1fr 1fr;
     }
     .price-item {
         grid-column: span 2;
     }
-    .room-actions {
+    .home-actions {
         grid-template-columns: 1fr;
     }
 

@@ -161,14 +161,14 @@
                                 <div class="row mt-4">
                                     <div class="col-md-12 text-center">
                                         <div class="action-buttons-container">
-                                            {% if booking.status == 'confirmed' and booking.payment_status != 'paid' %}
+                                            {% if booking.payment_status != 'paid' %}
                                                 <a href="{{ url_for('payment.checkout', booking_id=booking.id) }}" class="detail-action-button payment-btn">
                                                     <i class="bi bi-credit-card"></i> Thanh toán ngay
                                                 </a>
                                             {% endif %}
                                             
-                                            {% if booking.room is not none %}
-                                                <a href="{{ url_for('renter.book_room', room_id=booking.room.id) }}" class="detail-action-button book-again-btn">
+                                            {% if booking.home is not none %}
+                                                <a href="{{ url_for('renter.book_home', home_id=booking.home.id) }}" class="detail-action-button book-again-btn">
                                                     <i class="bi bi-calendar-plus"></i> Đặt phòng lại
                                                 </a>
                                             {% endif %}
@@ -179,7 +179,7 @@
                                                 </a>
                                             {% endif %}
                                             
-                                            {% if booking.status not in ['cancelled', 'completed', 'rejected'] %}
+                                            {% if booking.status not in ['cancelled', 'completed'] and booking.payment_status != 'paid' %}
                                                 <a href="{{ url_for('renter.cancel_booking', id=booking.id) }}" class="detail-action-button cancel-btn">
                                                     <i class="bi bi-x-circle"></i> Hủy đặt phòng
                                                 </a>

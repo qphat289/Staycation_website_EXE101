@@ -1,0 +1,33 @@
+/* Fix navbar username text color on home detail page */
+.user-dropdown-container span { 
+    color: #000 !important; 
+}
+
+.user-dropdown-container { 
+    color: #000 !important; 
+}
+
+.user-dropdown-container:hover span { 
+    color: #333 !important; 
+}
+
+.user-dropdown-container:hover { 
+    color: #333 !important; 
+}
+
+/* Additional specific selectors to ensure override */
+.navbar .nav-link.user-dropdown-container span {
+    color: #000 !important;
+}
+
+.navbar .nav-link.user-dropdown-container {
+    color: #000 !important;
+}
+
+.navbar .nav-link.user-dropdown-container:hover span {
+    color: #333 !important;
+}
+
+.navbar .nav-link.user-dropdown-container:hover {
+    color: #333 !important;
+} 

@@ -67,24 +67,24 @@
         </div>
     </div>
     
-    <!-- Room Results -->
+    <!-- Home Results -->
     <div class="col-md-9">
         <h2 class="mb-4">
             {% if search_params.booking_type == 'daily' %}
-                Phòng cho thuê theo đêm
+                Nhà cho thuê theo đêm
             {% else %}
-                Phòng cho thuê theo giờ
+                Nhà cho thuê theo giờ
             {% endif %}
         </h2>
         
-        {% if rooms %}
+        {% if homes %}
             <div class="row">
-                {% for room in rooms %}
+                {% for home in homes %}
                 <div class="col-md-6 mb-4">
                     <div class="card h-100">
-                        {% if room.images and room.images|length > 0 %}
+                        {% if home.images and home.images|length > 0 %}
                             {% set featured_image = None %}
-                            {% for img in room.images %}
+                            {% for img in home.images %}
                                 {% if img.is_featured %}
                                     {% set featured_image = img %}
                                 {% endif %}
@@ -92,38 +92,38 @@
                             
                             {% if featured_image %}
                                 <img src="{{ url_for('static', filename=featured_image.image_path) }}" 
-                                     class="card-img-top" alt="{{ room.title }}" 
+                                     class="card-img-top" alt="{{ home.title }}" 
                                      style="height: 200px; object-fit: cover;">
                             {% else %}
-                                <img src="{{ url_for('static', filename=room.images[0].image_path) }}" 
-                                     class="card-img-top" alt="{{ room.title }}" 
+                                <img src="{{ url_for('static', filename=home.images[0].image_path) }}" 
+                                     class="card-img-top" alt="{{ home.title }}" 
                                      style="height: 200px; object-fit: cover;">
                             {% endif %}
                         {% else %}
-                            <img src="{{ url_for('static', filename='images/default-room.jpg') }}" 
+                            <img src="{{ url_for('static', filename='images/default-home.jpg') }}" 
                                  class="card-img-top" alt="Default Image" 
                                  style="height: 200px; object-fit: cover;">
                         {% endif %}
                         <div class="card-body">
-                            <h5 class="card-title">{{ room.title }}</h5>
-                            <p class="card-text">{{ room.description|truncate(100) }}</p>
+                            <h5 class="card-title">{{ home.title }}</h5>
+                            <p class="card-text">{{ home.description|truncate(100) }}</p>
                             <p class="card-text">
                                 <small class="text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ room.city | format_city }}, {{ room.district | format_district }}
+                                    <i class="bi bi-geo-alt"></i> {{ home.city | format_city }}, {{ home.district | format_district }}
                                 </small>
                             </p>
                             <p class="card-text fw-bold">
                                 {% if search_params.booking_type == 'daily' %}
-                                    {{ "{:,.0f}".format(room.display_price_per_night) }}đ /đêm
+                                    {{ "{:,.0f}".format(home.display_price_per_night) }}đ /đêm
                                 {% else %}
-                                    {{ "{:,.0f}".format(room.display_price) }}đ /giờ
+                                    {{ "{:,.0f}".format(home.display_price) }}đ /giờ
                                 {% endif %}
                             </p>
                         </div>
                         <div class="card-footer">
-                            <a href="{{ url_for('renter.view_room', id=room.id) }}" class="btn btn-primary" data-translate="view-details">Xem chi tiết</a>
+                            <a href="{{ url_for('renter.view_home', id=home.id) }}" class="btn btn-primary" data-translate="view-details">Xem chi tiết</a>
                             {% if current_user.is_authenticated and current_user.is_renter() %}
-                                <a href="{{ url_for('renter.book_room', room_id=room.id) }}" class="btn btn-outline-primary" data-translate="book-now">Đặt phòng</a>
+                                <a href="{{ url_for('renter.book_home', home_id=home.id) }}" class="btn btn-outline-primary" data-translate="book-now">Đặt nhà</a>
                             {% endif %}
                         </div>
                     </div>
@@ -132,7 +132,7 @@
             </div>
         {% else %}
             <div class="alert alert-info">
-                Không tìm thấy phòng phù hợp với tiêu chí tìm kiếm. Vui lòng thử lại với bộ lọc khác.
+                Không tìm thấy nhà phù hợp với tiêu chí tìm kiếm. Vui lòng thử lại với bộ lọc khác.
             </div>
         {% endif %}
     </div>

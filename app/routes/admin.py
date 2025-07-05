@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
-from app.models.models import db, Admin, Owner, Renter, Room, Booking, Statistics, Review
+from app.models.models import db, Admin, Owner, Renter, Home, Booking, Statistics, Review
 from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
@@ -174,7 +174,7 @@ def dashboard():
         stats.total_owners = Owner.query.count()
         stats.total_renters = Renter.query.count()
         stats.total_users = stats.total_owners + stats.total_renters
-        stats.total_rooms = Room.query.count()
+        stats.total_homes = Home.query.count()
         
         completed_bookings = Booking.query.filter_by(status='completed').all()
         stats.total_bookings = len(completed_bookings)
@@ -193,7 +193,7 @@ def dashboard():
         # Calculate new records added this week
         new_owners_this_week = Owner.query.filter(Owner.created_at >= week_start_datetime).count()
         new_renters_this_week = Renter.query.filter(Renter.created_at >= week_start_datetime).count()
-        new_rooms_this_week = Room.query.filter(Room.created_at >= week_start_datetime).count()
+        new_homes_this_week = Home.query.filter(Home.created_at >= week_start_datetime).count()
         new_bookings_this_week = Booking.query.filter(Booking.created_at >= week_start_datetime).count()
         
         # Calculate booking growth rate (compared to total)
@@ -246,14 +246,14 @@ def dashboard():
         top_homestays_query = db.session.query(
             Owner.id,
             Owner.full_name,
-            func.count(distinct(Room.id)).label('room_count'),
+            func.count(distinct(Home.id)).label('home_count'),
             func.count(Booking.id).label('booking_count'),
             func.sum(Booking.total_price).label('total_revenue'),
             func.avg(Review.rating).label('avg_rating')
-        ).join(Room, Owner.id == Room.owner_id) \
-         .outerjoin(Booking, Room.id == Booking.room_id) \
-         .outerjoin(Review, Room.id == Review.room_id) \
-         .filter(Room.is_active == True) \
+        ).join(Home, Owner.id == Home.owner_id) \
+         .outerjoin(Booking, Home.id == Booking.home_id) \
+         .outerjoin(Review, Home.id == Review.home_id) \
+         .filter(Home.is_active == True) \
          .group_by(Owner.id, Owner.full_name) \
          .order_by(func.count(Booking.id).desc()) \
          .limit(5).all()
@@ -266,7 +266,7 @@ def dashboard():
             
             homestay_data = {
                 'name': homestay.full_name or f'Homestay {homestay.id}',
-                'room_count': homestay.room_count,  # Number of rooms instead of rental type
+                'home_count': homestay.home_count,  # Number of homes instead of rental type
                 'revenue': homestay_revenue,
                 'admin_commission': admin_commission_homestay,  # Add admin commission for this homestay
                 'bookings': homestay.booking_count,
@@ -274,7 +274,7 @@ def dashboard():
             }
             top_homestays_list.append(homestay_data)
 
-        stats.top_rooms = json.dumps(top_homestays_list)
+        stats.top_homes = json.dumps(top_homestays_list)
 
         # Create empty chart data if no real data exists
         if not stats.hourly_stats:
@@ -312,12 +312,12 @@ def dashboard():
         # Default weekly stats when error occurs
         new_owners_this_week = 0
         new_renters_this_week = 0
-        new_rooms_this_week = 0
+        new_homes_this_week = 0
         new_bookings_this_week = 0
         booking_growth_rate = 0
         new_owners_this_month = 0
         new_renters_this_month = 0
-        new_rooms_this_month = 0
+        new_homes_this_month = 0
         new_bookings_this_month = 0
     
     # --- RETURN TEMPLATE ---
@@ -338,12 +338,12 @@ def dashboard():
                           weekly_stats={
                               'new_owners': new_owners_this_week,
                               'new_renters': new_renters_this_week,
-                              'new_rooms': new_rooms_this_week,
+                              'new_homes': new_homes_this_week,
                               'new_bookings': new_bookings_this_week,
                               'booking_growth_rate': booking_growth_rate,
                               'new_owners_month': new_owners_this_month,
                               'new_renters_month': new_renters_this_month,
-                              'new_rooms_month': new_rooms_this_month,
+                              'new_homes_month': new_homes_this_month,
                               'new_bookings_month': new_bookings_this_month
                           })
 

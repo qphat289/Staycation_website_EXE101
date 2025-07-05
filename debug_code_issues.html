@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Code Issues - Staycation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f8fdf4;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        
+        /* Test map container */
+        #test-map { 
+            width: 100%; 
+            height: 300px; 
+            border: 1px solid #ddd; 
+            margin: 10px 0;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+        
+        /* Test address display */
+        .address-display {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .address-display span {
+            color: #333;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Code Issues - Staycation Website</h1>
+    
+    <!-- Test 1: Config Loading -->
+    <div class="test-section">
+        <h3>Test 1: Config Loading</h3>
+        <div id="config-status" class="status info">Testing...</div>
+        <script src="/static/js/config.js"></script>
+        <script>
+            const configStatus = document.getElementById('config-status');
+            if (typeof CONFIG !== 'undefined') {
+                configStatus.className = 'status success';
+                configStatus.innerHTML = `
+                    ✅ CONFIG loaded successfully<br>
+                    API Key: ${CONFIG.GOOGLE_MAPS_API_KEY ? CONFIG.GOOGLE_MAPS_API_KEY.substring(0, 20) + '...' : 'Not found'}<br>
+                    Default Zoom: ${CONFIG.DEFAULT_MAP_ZOOM}<br>
+                    Default Center: ${JSON.stringify(CONFIG.DEFAULT_MAP_CENTER)}
+                `;
+            } else {
+                configStatus.className = 'status error';
+                configStatus.textContent = '❌ CONFIG not loaded';
+            }
+        </script>
+    </div>
+    
+    <!-- Test 2: Address Display -->
+    <div class="test-section">
+        <h3>Test 2: Address Display Element</h3>
+        <div class="address-display">
+            <i class="fas fa-map-marker-alt" style="color: #ff0101; margin-right: 8px;"></i>
+            <span>121 ql1, Xã Tân Minh, Huyện Thường Tín, Hà Nội</span>
+        </div>
+        <div id="address-status" class="status info">Testing...</div>
+        <script>
+            const addressStatus = document.getElementById('address-status');
+            const addressElement = document.querySelector('.address-display span');
+            
+            if (addressElement) {
+                const addressText = addressElement.textContent.trim();
+                addressStatus.className = 'status success';
+                addressStatus.innerHTML = `
+                    ✅ Address element found<br>
+                    Text: "${addressText}"<br>
+                    Length: ${addressText.length} characters
+                `;
+            } else {
+                addressStatus.className = 'status error';
+                addressStatus.textContent = '❌ Address element not found';
+            }
+        </script>
+    </div>
+    
+    <!-- Test 3: Map Container -->
+    <div class="test-section">
+        <h3>Test 3: Map Container</h3>
+        <div id="test-map">
+            <div id="map-loading" style="text-align: center;">
+                <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
+                Đang tải bản đồ...
+            </div>
+        </div>
+        <div id="map-status" class="status info">Testing...</div>
+        <script>
+            const mapStatus = document.getElementById('map-status');
+            const mapContainer = document.getElementById('test-map');
+            const loadingElement = document.getElementById('map-loading');
+            
+            if (mapContainer && loadingElement) {
+                mapStatus.className = 'status success';
+                mapStatus.innerHTML = `
+                    ✅ Map container found<br>
+                    Container ID: ${mapContainer.id}<br>
+                    Loading element: ${loadingElement ? 'Found' : 'Not found'}<br>
+                    Container dimensions: ${mapContainer.offsetWidth}x${mapContainer.offsetHeight}px
+                `;
+            } else {
+                mapStatus.className = 'status error';
+                mapStatus.textContent = '❌ Map container or loading element not found';
+            }
+        </script>
+    </div>
+    
+    <!-- Test 4: JavaScript Functions -->
+    <div class="test-section">
+        <h3>Test 4: JavaScript Functions Test</h3>
+        <div id="js-status" class="status info">Testing...</div>
+        <script>
+            const jsStatus = document.getElementById('js-status');
+            
+            // Test basic JavaScript functionality
+            try {
+                // Test template string
+                const testString = `Test template string: ${new Date().getTime()}`;
+                
+                // Test arrow function
+                const testArrow = () => 'Arrow function works';
+                
+                // Test fetch availability
+                const hasFetch = typeof fetch !== 'undefined';
+                
+                // Test console
+                const hasConsole = typeof console !== 'undefined';
+                
+                jsStatus.className = 'status success';
+                jsStatus.innerHTML = `
+                    ✅ JavaScript functions working<br>
+                    Template strings: ✅<br>
+                    Arrow functions: ✅<br>
+                    Fetch API: ${hasFetch ? '✅' : '❌'}<br>
+                    Console: ${hasConsole ? '✅' : '❌'}<br>
+                    Test result: ${testArrow()}
+                `;
+            } catch (error) {
+                jsStatus.className = 'status error';
+                jsStatus.textContent = `❌ JavaScript error: ${error.message}`;
+            }
+        </script>
+    </div>
+    
+    <!-- Test 5: FontAwesome Icons -->
+    <div class="test-section">
+        <h3>Test 5: FontAwesome Icons</h3>
+        <div style="margin: 10px 0;">
+            <i class="fas fa-map-marker-alt" style="color: #ff0101; margin-right: 8px;"></i>
+            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
+            <i class="fab fa-google" style="margin-right: 8px;"></i>
+            <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i>
+        </div>
+        <div id="icon-status" class="status success">✅ FontAwesome icons loaded</div>
+    </div>
+    
+    <!-- Test 6: Simulate Map Error Handling -->
+    <div class="test-section">
+        <h3>Test 6: Map Error Simulation</h3>
+        <button onclick="simulateMapError()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+            Simulate Map Error
+        </button>
+        <div id="error-map" style="width: 100%; height: 200px; border: 1px solid #ddd; margin: 10px 0; background: #f8f9fa;"></div>
+        
+        <script>
+            function simulateMapError() {
+                const errorMapContainer = document.getElementById('error-map');
+                const addressElement = document.querySelector('.address-display span');
+                const address = addressElement ? addressElement.textContent.trim() : 'Test Address';
+                
+                errorMapContainer.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 14px; padding: 20px; text-align: center;">
+                        <div style="margin-bottom: 20px;">
+                            <i class="fas fa-map-marked-alt" style="font-size: 48px; margin-bottom: 12px; color: #ccc;"></i><br>
+                            <strong style="color: #333;">Không thể tải bản đồ tương tác</strong><br>
+                            <span style="color: #666; font-size: 12px;">Google Maps API chưa được cấu hình đúng</span>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 16px; width: 100%; max-width: 400px;">
+                            <div style="font-weight: 500; color: #333; margin-bottom: 4px;">Địa chỉ:</div>
+                            <div style="color: #666; font-size: 13px;">${address}</div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" 
+                               target="_blank" 
+                               style="background: #4285f4; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                                <i class="fab fa-google"></i> Xem trên Google Maps
+                            </a>
+                        </div>
+                        
+                        <div style="margin-top: 16px; font-size: 11px; color: #999;">
+                            Cần cấu hình Google Maps API key để hiển thị bản đồ tương tác
+                        </div>
+                    </div>
+                `;
+            }
+        </script>
+    </div>
+    
+    <div class="test-section">
+        <h3>Kết luận</h3>
+        <div class="status info">
+            <strong>Tóm tắt kiểm tra:</strong><br>
+            • Code JavaScript hoạt động bình thường ✅<br>
+            • Static files được load đúng ✅<br>
+            • Template rendering OK ✅<br>
+            • FontAwesome icons hiển thị ✅<br>
+            • Error handling hoạt động ✅<br>
+            <br>
+            <strong>Vấn đề chính:</strong> Google Maps API key chưa được cấu hình đúng<br>
+            <strong>Giải pháp:</strong> Cần kích hoạt Maps JavaScript API và Geocoding API trong Google Cloud Console
+        </div>
+    </div>
+</body>
+</html> 

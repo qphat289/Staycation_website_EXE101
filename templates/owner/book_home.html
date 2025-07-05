@@ -1,0 +1,88 @@
+{% extends "owner/base_owner.html" %}
+
+{% block title %}Đặt nhà{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Đặt nhà: {{ home.title }}</h3>
+                    <div class="card-tools">
+                        <a href="{{ url_for('owner.dashboard') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Thông tin nhà -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Thông tin nhà</h5>
+                            <p><strong>Tên:</strong> {{ home.title }}</p>
+                            <p><strong>Địa chỉ:</strong> {{ home.address }}, {{ home.district }}, {{ home.city }}</p>
+                            <p><strong>Số giường:</strong> {{ home.bed_count }}</p>
+                            <p><strong>Số phòng tắm:</strong> {{ home.bathroom_count }}</p>
+                            <p><strong>Số khách tối đa:</strong> {{ home.max_guests }}</p>
+                            {% if home.price_per_hour %}
+                            <p><strong>Giá theo giờ:</strong> {{ "{:,.0f}".format(home.price_per_hour * 1000) }}đ/giờ</p>
+                            {% endif %}
+                            {% if home.price_per_night %}
+                            <p><strong>Giá theo đêm:</strong> {{ "{:,.0f}".format(home.price_per_night * 1000) }}đ/đêm</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if home.images %}
+                            {% set featured_image = home.images|selectattr('is_featured', 'equalto', True)|list|first %}
+                            <img src="{{ url_for('static', filename=(featured_image.image_path if featured_image else home.images[0].image_path)) }}" 
+                                 class="img-fluid rounded" style="max-height: 300px; width: 100%; object-fit: cover;">
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Form đặt nhà -->
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="start_date">Ngày bắt đầu:</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="start_time">Giờ bắt đầu:</label>
+                                    <input type="time" class="form-control" id="start_time" name="start_time" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="duration">Số đêm:</label>
+                                    <input type="number" class="form-control" id="duration" name="duration" min="1" value="1" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-calendar-check"></i> Đặt nhà
+                                </button>
+                                <a href="{{ url_for('owner.dashboard') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Hủy
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set minimum date to today
+    document.getElementById('start_date').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %} 

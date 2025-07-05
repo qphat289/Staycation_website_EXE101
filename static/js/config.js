@@ -1,6 +1,9 @@
 // Configuration file for API keys and other settings
 const CONFIG = {
     // Google Maps API Key - Updated with user's API key
+    // NOTE: This API key needs to be properly configured in Google Cloud Console
+    // Required APIs: Maps JavaScript API, Geocoding API
+    // Required Billing: Active billing account
     GOOGLE_MAPS_API_KEY: 'AIzaSyDQtHXQcHIaZgKYX7pEWQkntBPeTfu1hqQ',
     
     // Default map settings

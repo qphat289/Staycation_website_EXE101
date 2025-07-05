@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user, logout_user
-from app.models.models import Booking, Review, db, Room, RoomImage, Admin, Owner, Renter, Amenity, AmenityCategory
+from app.models.models import Booking, Review, db, Home, HomeImage, Admin, Owner, Renter, Amenity, AmenityCategory
 from datetime import datetime, timedelta
 from PIL import Image
 import io
@@ -38,13 +38,11 @@ def dashboard():
     updated = False
 
     for booking in bookings:
-        if booking.status == 'pending' and booking.start_time <= now:
+        # Only update confirmed bookings that have been paid
+        if booking.status == 'confirmed' and booking.payment_status == 'paid' and booking.start_time <= now:
             booking.status = 'active'
             updated = True
-        elif booking.status == 'confirmed' and booking.start_time <= now:
-            booking.status = 'active'
-            updated = True
-        elif booking.status in ['active', 'confirmed'] and booking.end_time <= now:
+        elif booking.status == 'active' and booking.end_time <= now:
             booking.status = 'completed'
             updated = True
 
@@ -115,7 +113,7 @@ def search():
     print(f"Total Guests: {total_guests}")
     
     # Build query
-    query = Room.query.filter_by(is_active=True)
+    query = Home.query.filter_by(is_active=True)
     
     # Filter by location (city, district or room title)
     if location:
@@ -129,9 +127,9 @@ def search():
         # Try to match location against city, district, or title
         query = query.filter(
             db.or_(
-                Room.city.ilike(f'%{location_db}%'),
-                Room.district.ilike(f'%{location_db}%'),
-                Room.title.ilike(f'%{location}%')  # Keep original for title search
+                Home.city.ilike(f'%{location_db}%'),
+                Home.district.ilike(f'%{location_db}%'),
+                Home.title.ilike(f'%{location}%')  # Keep original for title search
             )
         )
         print(f"🔍 Location filter: {location} -> {location_db}")
@@ -139,53 +137,53 @@ def search():
     # Apply price filters based on booking type
     if booking_type == 'hourly':
         if min_price is not None:
-            query = query.filter(Room.price_per_hour >= min_price)
+            query = query.filter(Home.price_per_hour >= min_price)
             print(f"🔍 Min hourly price filter: {min_price}")
         if max_price is not None:
-            query = query.filter(Room.price_per_hour <= max_price)
+            query = query.filter(Home.price_per_hour <= max_price)
             print(f"🔍 Max hourly price filter: {max_price}")
-        # Ensure room has hourly price and it's not zero
-        query = query.filter(Room.price_per_hour.isnot(None))
-        query = query.filter(Room.price_per_hour > 0)
+        # Ensure home has hourly price and it's not zero
+        query = query.filter(Home.price_per_hour.isnot(None))
+        query = query.filter(Home.price_per_hour > 0)
     else:  # daily/nightly
         if min_price is not None:
-            query = query.filter(Room.price_per_night >= min_price)
+            query = query.filter(Home.price_per_night >= min_price)
             print(f"🔍 Min nightly price filter: {min_price}")
         if max_price is not None:
-            query = query.filter(Room.price_per_night <= max_price)
+            query = query.filter(Home.price_per_night <= max_price)
             print(f"🔍 Max nightly price filter: {max_price}")
-        # Ensure room has nightly price and it's not zero
-        query = query.filter(Room.price_per_night.isnot(None))
-        query = query.filter(Room.price_per_night > 0)
+        # Ensure home has nightly price and it's not zero
+        query = query.filter(Home.price_per_night.isnot(None))
+        query = query.filter(Home.price_per_night > 0)
     
     if room_type:
-        query = query.filter(Room.room_type == room_type)
-        print(f"🔍 Room type filter: {room_type}")
+        query = query.filter(Home.home_type == room_type)
+        print(f"🔍 Home type filter: {room_type}")
     
     # Filter by max guests if specified
     if total_guests is not None:
-        query = query.filter(Room.max_guests >= total_guests)
+        query = query.filter(Home.max_guests >= total_guests)
         print(f"🔍 Max guests filter: {total_guests}")
     
-    # Execute query and get all matching rooms
-    rooms = query.all()
-    print(f"🔍 Found {len(rooms)} matching rooms")
+    # Execute query and get all matching homes
+    homes = query.all()
+    print(f"🔍 Found {len(homes)} matching homes")
     
-    # Print details of each room for debugging
-    for room in rooms:
-        print(f"\nRoom Details:")
-        print(f"Title: {room.title}")
-        print(f"City: {room.city}")
-        print(f"District: {room.district}")
-        print(f"Max Guests: {room.max_guests}")
-        print(f"Price per Hour: {room.price_per_hour}")
-        print(f"Price per Night: {room.price_per_night}")
-        print(f"Is Active: {room.is_active}")
+    # Print details of each home for debugging
+    for home in homes:
+        print(f"\nHome Details:")
+        print(f"Title: {home.title}")
+        print(f"City: {home.city}")
+        print(f"District: {home.district}")
+        print(f"Max Guests: {home.max_guests}")
+        print(f"Price per Hour: {home.price_per_hour}")
+        print(f"Price per Night: {home.price_per_night}")
+        print(f"Is Active: {home.is_active}")
     
     # Get unique cities and districts for filter dropdowns
-    cities = db.session.query(Room.city).distinct().all()
-    districts = db.session.query(Room.district).distinct().all()
-    room_types = db.session.query(Room.room_type).distinct().all()
+    cities = db.session.query(Home.city).distinct().all()
+    districts = db.session.query(Home.district).distinct().all()
+    home_types = db.session.query(Home.home_type).distinct().all()
     
     # Map database values to display names
     city_display_names = {v: k for k, v in CITY_MAPPING.items()}
@@ -195,36 +193,36 @@ def search():
     districts = [district_display_names.get(district[0], district[0].upper()) for district in districts]
     
     return render_template('renter/search.html', 
-                          rooms=rooms,
+                          homes=homes,
                           cities=cities,
                           districts=districts,
-                          room_types=[rt[0] for rt in room_types if rt[0]],
+                          home_types=[rt[0] for rt in home_types if rt[0]],
                           search_params=request.args)
 
-@renter_bp.route('/view-room/<int:id>')
-def view_room(id):
-    # Load room với amenities và category relationships
-    room = Room.query.options(
-        joinedload(Room.amenities).joinedload(Amenity.amenity_category),
-        joinedload(Room.images)
+@renter_bp.route('/view-home/<int:id>')
+def view_home(id):
+    # Load home với amenities và category relationships
+    home = Home.query.options(
+        joinedload(Home.amenities).joinedload(Amenity.amenity_category),
+        joinedload(Home.images)
     ).get_or_404(id)
     
-    # Kiểm tra nếu phòng đã bị khóa
-    if not room.is_active:
-        flash("Phòng này hiện tại đã ngừng hoạt động và không khả dụng để đặt.", "warning")
+    # Kiểm tra nếu nhà đã bị khóa
+    if not home.is_active:
+        flash("Nhà này hiện tại đã ngừng hoạt động và không khả dụng để đặt.", "warning")
         return redirect(url_for('home'))
     
-    # Load reviews for this room
-    reviews = Review.query.filter_by(room_id=id).order_by(Review.created_at.desc()).all()
+    # Load reviews for this home
+    reviews = Review.query.filter_by(home_id=id).order_by(Review.created_at.desc()).all()
     
-    return render_template('renter/view_room_detail.html', 
-                          room=room,
+    return render_template('renter/view_home_detail.html', 
+                          home=home,
                           reviews=reviews)
 
-@renter_bp.route('/book/<int:room_id>', methods=['GET', 'POST'])
+@renter_bp.route('/book/<int:home_id>', methods=['GET', 'POST'])
 @renter_required
-def book_room(room_id):
-    room = Room.query.get_or_404(room_id)
+def book_home(home_id):
+    home = Home.query.get_or_404(home_id)
     
     if request.method == 'POST':
         start_date = request.form.get('start_date')
@@ -233,53 +231,55 @@ def book_room(room_id):
         
         if not start_date or not start_time or not duration_str:
             flash("You must select date, time and duration.", "warning")
-            return redirect(url_for('renter.book_room', room_id=room.id))
+            return redirect(url_for('renter.book_home', home_id=home.id))
         
         try:
             duration = int(duration_str)
         except ValueError:
             flash("Invalid duration value.", "danger")
-            return redirect(url_for('renter.book_room', room_id=room.id))
+            return redirect(url_for('renter.book_home', home_id=home.id))
         
         if duration < 1:
             flash("Minimum duration is 1 night.", "warning")
-            return redirect(url_for('renter.book_room', room_id=room.id))
+            return redirect(url_for('renter.book_home', home_id=home.id))
         
         start_str = f"{start_date} {start_time}"
         try:
             start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
         except ValueError:
             flash("Invalid date or time format.", "danger")
-            return redirect(url_for('renter.book_room', room_id=room.id))
+            return redirect(url_for('renter.book_home', home_id=home.id))
         
         end_datetime = start_datetime + timedelta(days=duration)
-        # Calculate total price using the room's price per night
-        total_price = room.price_per_night * duration
+        # Calculate total price using the home's price per night
+        total_price = home.price_per_night * duration
         
-        # Check for overlapping bookings for this room
-        existing_bookings = Booking.query.filter_by(room_id=room.id).all()
+        # Check for overlapping bookings for this home
+        existing_bookings = Booking.query.filter_by(home_id=home.id).all()
         for booking in existing_bookings:
             if start_datetime < booking.end_time and end_datetime > booking.start_time:
-                flash('This room is not available during the selected time period.', 'danger')
-                return redirect(url_for('renter.book_room', room_id=room.id))
+                flash('This home is not available during the selected time period.', 'danger')
+                return redirect(url_for('renter.book_home', home_id=home.id))
         
         new_booking = Booking(
-            room_id=room.id,
+            home_id=home.id,
             renter_id=current_user.id,
             start_time=start_datetime,
             end_time=end_datetime,
             total_price=total_price,
-            status='pending'
+            status='confirmed',
+            payment_status='pending'
         )
         
         db.session.add(new_booking)
         current_user.experience_points += total_price * 10  # Update user XP based on total price
         db.session.commit()
 
-        flash('Booking request submitted successfully!', 'success')
-        return redirect(url_for('renter.dashboard'))
+        # Redirect directly to payment instead of dashboard
+        flash('Booking created successfully! Please proceed with payment.', 'success')
+        return redirect(url_for('payment.checkout', booking_id=new_booking.id))
 
-    return render_template('renter/book_room.html', room=room)
+    return render_template('renter/book_home.html', home=home)
   
 
 
@@ -466,13 +466,11 @@ def booking_history():
     updated = False
 
     for booking in bookings:
-        if booking.status == 'pending' and booking.start_time <= now:
+        # Only update confirmed bookings that have been paid
+        if booking.status == 'confirmed' and booking.payment_status == 'paid' and booking.start_time <= now:
             booking.status = 'active'
             updated = True
-        elif booking.status == 'confirmed' and booking.start_time <= now:
-            booking.status = 'active'
-            updated = True
-        elif booking.status in ['active', 'confirmed'] and booking.end_time <= now:
+        elif booking.status == 'active' and booking.end_time <= now:
             booking.status = 'completed'
             updated = True
 
@@ -603,11 +601,11 @@ def view_reviews(homestay_id):
         write_mode=write_mode
     )
 
-@renter_bp.route('/room/<int:room_id>/detail')
-def view_room_detail(room_id):
-    room = Room.query.get_or_404(room_id)
-    # This page shows all images for the room
-    return render_template('renter/view_room_detail.html', room=room)
+@renter_bp.route('/home/<int:home_id>/detail')
+def view_home_detail(home_id):
+    home = Home.query.get_or_404(home_id)
+    # This page shows all images for the home
+    return render_template('renter/view_home_detail.html', home=home)
 
 @renter_bp.route('/settings')
 @login_required

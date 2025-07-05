@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.models.models import db, Room, Booking, RoomImage, Renter, Admin, Owner, Province, District, Ward, Rule, Amenity, RoomDeletionLog, Review
+from app.models.models import db, Home, Booking, HomeImage, Renter, Admin, Owner, Province, District, Ward, Rule, Amenity, HomeDeletionLog, Review
 import os
 import shutil
 from datetime import datetime, timedelta
@@ -28,7 +28,7 @@ PROPERTY_TYPE_MAP = {
 
 PROPERTY_TYPE_REVERSE_MAP = {v: k for k, v in PROPERTY_TYPE_MAP.items()}
 
-def get_location_names(room_data):
+def get_location_names(home_data):
     """Lấy tên đầy đủ của địa chỉ từ database thay vì hard code"""
     try:
         result = {
@@ -37,21 +37,21 @@ def get_location_names(room_data):
             'ward_name': 'Chưa chọn'
         }
         
-        if room_data.get('province'):
-            province = Province.query.filter_by(code=room_data['province']).first()
+        if home_data.get('province'):
+            province = Province.query.filter_by(code=home_data['province']).first()
             if province:
                 result['province_name'] = province.name
                 
-                if room_data.get('district'):
-                    district = District.query.filter_by(code=room_data['district'], province_id=province.id).first()
+                if home_data.get('district'):
+                    district = District.query.filter_by(code=home_data['district'], province_id=province.id).first()
                     if district:
                         result['district_name'] = district.name
                         
-                        if room_data.get('ward'):
+                        if home_data.get('ward'):
                             # Ward có thể là tên đầy đủ hoặc code
                             ward = Ward.query.filter(
                                 Ward.district_id == district.id,
-                                (Ward.name == room_data['ward']) | (Ward.code == room_data['ward'])
+                                (Ward.name == home_data['ward']) | (Ward.code == home_data['ward'])
                             ).first()
                             if ward:
                                 result['ward_name'] = ward.name
@@ -67,7 +67,7 @@ def get_location_names(room_data):
             'ward_name': 'Chưa chọn'
         }
 
-def get_rules_and_amenities(room_data):
+def get_rules_and_amenities(home_data):
     """Lấy thông tin rules và amenities từ database"""
     try:
         result = {
@@ -76,29 +76,29 @@ def get_rules_and_amenities(room_data):
         }
         
         # Lấy rules nếu có
-        if room_data.get('rules'):
+        if home_data.get('rules'):
             # Check if rules are already dict objects or string IDs
-            if isinstance(room_data['rules'], list) and room_data['rules']:
-                if isinstance(room_data['rules'][0], dict):
+            if isinstance(home_data['rules'], list) and home_data['rules']:
+                if isinstance(home_data['rules'][0], dict):
                     # Already processed as dict objects
-                    result['rules'] = room_data['rules']
+                    result['rules'] = home_data['rules']
                 else:
                     # String IDs, need to lookup from database
-                    rule_ids = [int(id) for id in room_data['rules'] if str(id).isdigit()]
+                    rule_ids = [int(id) for id in home_data['rules'] if str(id).isdigit()]
                     if rule_ids:
                         rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
                         result['rules'] = [rule.to_dict() for rule in rules]
         
         # Lấy amenities nếu có
-        if room_data.get('amenities'):
+        if home_data.get('amenities'):
             # Check if amenities are already dict objects or string IDs
-            if isinstance(room_data['amenities'], list) and room_data['amenities']:
-                if isinstance(room_data['amenities'][0], dict):
+            if isinstance(home_data['amenities'], list) and home_data['amenities']:
+                if isinstance(home_data['amenities'][0], dict):
                     # Already processed as dict objects
-                    result['amenities'] = room_data['amenities']
+                    result['amenities'] = home_data['amenities']
                 else:
                     # String IDs, need to lookup from database
-                    amenity_ids = [int(id) for id in room_data['amenities'] if str(id).isdigit()]
+                    amenity_ids = [int(id) for id in home_data['amenities'] if str(id).isdigit()]
                     if amenity_ids:
                         amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
                         result['amenities'] = [amenity.to_dict() for amenity in amenities]
@@ -157,36 +157,36 @@ def owner_required(f):
 @owner_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Lấy tất cả phòng của owner hiện tại với relationship images, sắp xếp theo ngày tạo mới nhất
-    rooms = Room.query.options(joinedload(Room.images)).filter_by(owner_id=current_user.id).order_by(Room.created_at.desc()).all()
+    # Lấy tất cả nhà của owner hiện tại với relationship images, sắp xếp theo ngày tạo mới nhất
+    homes = Home.query.options(joinedload(Home.images)).filter_by(owner_id=current_user.id).order_by(Home.created_at.desc()).all()
     
-    return render_template('owner/dashboard.html', rooms=rooms)
+    return render_template('owner/dashboard.html', homes=homes)
 
 
 
 
 
-@owner_bp.route('/add-room', methods=['GET', 'POST'])
-@owner_bp.route('/add-room/<int:homestay_id>', methods=['GET', 'POST'])
+@owner_bp.route('/add-home', methods=['GET', 'POST'])
+@owner_bp.route('/add-home/<int:homestay_id>', methods=['GET', 'POST'])
 @login_required
-def add_room(homestay_id=None):
+def add_home(homestay_id=None):
     # Determine if this is a fresh request or coming back from preview
     is_fresh_request = request.method == 'GET' and not request.args.get('from_preview')
     
     # Clear session data if this is a fresh GET request (not coming from back-to-edit)
     if is_fresh_request:
-        session.pop('room_preview_data', None)
-        # Also clear any other room-related session data
+        session.pop('home_preview_data', None)
+        # Also clear any other home-related session data
         for key in list(session.keys()):
-            if key.startswith('room_'):
+            if key.startswith('home_'):
                 session.pop(key, None)
     
     if request.method == 'POST':
         try:
             # Lưu dữ liệu vào session để preview
-            room_data = {
-                'room_title': request.form.get('room_title'),
-                'room_description': request.form.get('room_description'),
+            home_data = {
+                'home_title': request.form.get('home_title'),
+                'home_description': request.form.get('home_description'),
                 'property_type': request.form.get('property_type'),
                 'province': request.form.get('province'),
                 'district': request.form.get('district'),
@@ -245,57 +245,57 @@ def add_room(homestay_id=None):
                         file.save(save_path)
                         image_paths.append(f"/static/temp/{filename}")
             
-            # Thêm đường dẫn ảnh vào room_data
-            room_data['main_image'] = main_image_path
-            room_data['images'] = image_paths
+            # Thêm đường dẫn ảnh vào home_data
+            home_data['main_image'] = main_image_path
+            home_data['images'] = image_paths
             
-            session['room_preview_data'] = room_data
+            session['home_preview_data'] = home_data
             # Save the current step (assume user completed all steps before preview)
             session['last_completed_step'] = 3
-            return redirect(url_for('owner.room_preview'))
+            return redirect(url_for('owner.home_preview'))
             
         except Exception as e:
             flash(f'Có lỗi xảy ra: {str(e)}', 'danger')
     
     # Lấy dữ liệu từ session nếu có (khi quay lại từ preview), otherwise use empty dict
     if is_fresh_request:
-        room_data = {}
+        home_data = {}
         last_step = 1  # Start from step 1 for fresh requests
     else:
-        room_data = session.get('room_preview_data', {})
+        home_data = session.get('home_preview_data', {})
         # Get the last step user was on before going to preview
         last_step = session.get('last_completed_step', 1)
     
     # Nếu có rules/amenities trong session, chuẩn bị data cho JavaScript
-    if room_data.get('rules') or room_data.get('amenities'):
+    if home_data.get('rules') or home_data.get('amenities'):
         pass
     
-    return render_template('owner/add_room.html', room_data=room_data, last_step=last_step)
+    return render_template('owner/add_home.html', home_data=home_data, last_step=last_step)
 
-@owner_bp.route('/room-preview')
+@owner_bp.route('/home-preview')
 @login_required
-def room_preview():
+def home_preview():
     # Lấy dữ liệu từ session
-    room_data = session.get('room_preview_data')
-    if not room_data:
-        flash('Không tìm thấy dữ liệu phòng để xem trước.', 'warning')
-        return redirect(url_for('owner.add_room'))
+    home_data = session.get('home_preview_data')
+    if not home_data:
+        flash('Không tìm thấy dữ liệu nhà để xem trước.', 'warning')
+        return redirect(url_for('owner.add_home'))
     
     # Lookup tên đầy đủ từ database
-    location_names = get_location_names(room_data)
+    location_names = get_location_names(home_data)
     
     # Lấy rules và amenities từ database
-    rules_amenities = get_rules_and_amenities(room_data)
+    rules_amenities = get_rules_and_amenities(home_data)
     
 
     
     # Chỉ hiển thị khi thực sự có data được chọn
     
-    # Merge rules và amenities vào room_data
-    room_data.update(rules_amenities)
+    # Merge rules và amenities vào home_data
+    home_data.update(rules_amenities)
     
     # Tạo map_address và encoded_map_address cho template
-    street = room_data.get('street', '')
+    street = home_data.get('street', '')
     ward_name = location_names.get('ward_name', '')
     district_name = location_names.get('district_name', '')
     province_name = location_names.get('province_name', '')
@@ -305,21 +305,21 @@ def room_preview():
     
     # Tạo danh sách ảnh để hiển thị
     all_images = []
-    if room_data.get('main_image'):
+    if home_data.get('main_image'):
         all_images.append({
-            'image_path': room_data['main_image'],
+            'image_path': home_data['main_image'],
             'is_main': True
         })
     
-    if room_data.get('images'):
-        for img_path in room_data['images']:
+    if home_data.get('images'):
+        for img_path in home_data['images']:
             all_images.append({
                 'image_path': img_path,
                 'is_main': False
             })
     
-    return render_template('owner/room_preview.html', 
-                         room_data=room_data, 
+    return render_template('owner/home_preview.html', 
+                         home_data=home_data, 
                          location_names=location_names,
                          map_address=map_address,
                          encoded_map_address=encoded_map_address,
@@ -347,37 +347,37 @@ def save_current_step():
 @login_required
 def back_to_edit():
     # Dữ liệu đã được lưu trong session từ lúc tạo preview
-    # Chỉ cần redirect về add_room với parameter để không xóa session
-    return redirect(url_for('owner.add_room', from_preview=1))
+    # Chỉ cần redirect về add_home với parameter để không xóa session
+    return redirect(url_for('owner.add_home', from_preview=1))
 
-@owner_bp.route('/clear-room-data')
+@owner_bp.route('/clear-home-data')
 @login_required
-def clear_room_data():
-    # Xóa dữ liệu tạm thời khỏi session khi owner thoát khỏi giao diện tạo phòng
-    session.pop('room_preview_data', None)
-    flash('Đã hủy quá trình tạo phòng.', 'info')
+def clear_home_data():
+    # Xóa dữ liệu tạm thời khỏi session khi owner thoát khỏi giao diện tạo nhà
+    session.pop('home_preview_data', None)
+    flash('Đã hủy quá trình tạo nhà.', 'info')
     return redirect(url_for('owner.dashboard'))
 
-@owner_bp.route('/clear-room-session', methods=['POST'])
+@owner_bp.route('/clear-home-session', methods=['POST'])
 @login_required
-def clear_room_session():
+def clear_home_session():
     # API endpoint để xóa session data qua AJAX
-    session.pop('room_preview_data', None)
-    # Also clear any other room-related session data
+    session.pop('home_preview_data', None)
+    # Also clear any other home-related session data
     for key in list(session.keys()):
-        if key.startswith('room_'):
+        if key.startswith('home_'):
             session.pop(key, None)
     return jsonify({'status': 'success'})
 
-@owner_bp.route('/confirm-room', methods=['POST'])
+@owner_bp.route('/confirm-home', methods=['POST'])
 @login_required
-def confirm_room():
+def confirm_home():
     # Lấy dữ liệu từ session
-    room_data = session.get('room_preview_data')
+    home_data = session.get('home_preview_data')
     
-    if not room_data:
-        flash('Không tìm thấy dữ liệu phòng để tạo.', 'warning')
-        return redirect(url_for('owner.add_room'))
+    if not home_data:
+        flash('Không tìm thấy dữ liệu nhà để tạo.', 'warning')
+        return redirect(url_for('owner.add_home'))
     
     try:
         # Xử lý giá dựa theo rental type được chọn
@@ -385,66 +385,66 @@ def confirm_room():
         price_per_hour = 0.0
         price_per_night = 0.0
         
-        if room_data['selected_rental_type'] == 'hourly' and room_data.get('hourly_price'):
-            price_per_hour = float(room_data['hourly_price']) / 1000
-        elif room_data['selected_rental_type'] == 'nightly' and room_data.get('nightly_price'):
-            price_per_night = float(room_data['nightly_price']) / 1000
+        if home_data['selected_rental_type'] == 'hourly' and home_data.get('hourly_price'):
+            price_per_hour = float(home_data['hourly_price']) / 1000
+        elif home_data['selected_rental_type'] == 'nightly' and home_data.get('nightly_price'):
+            price_per_night = float(home_data['nightly_price']) / 1000
         
         # Map property_type từ English sang Vietnamese using constant
-        property_type_vn = PROPERTY_TYPE_MAP.get(room_data.get('property_type'), 'Mô hình chuẩn')
+        property_type_vn = PROPERTY_TYPE_MAP.get(home_data.get('property_type'), 'Mô hình chuẩn')
         
-        # Tạo room mới
-        new_room = Room(
-            title=room_data['room_title'],
-            room_type=property_type_vn,  # Lưu giá trị tiếng Việt
-            address=f"{room_data['street']}, {room_data['ward']}" if room_data['street'] and room_data['ward'] else "Chưa cập nhật",
-            city=room_data['province'] if room_data['province'] else "Chưa cập nhật",
-            district=room_data['district'] if room_data['district'] else "Chưa cập nhật",
-            room_number=room_data['room_title'],  # Sử dụng title làm room number
-            bed_count=room_data['bed_count'],
-            bathroom_count=room_data['bathroom_count'],
-            max_guests=room_data['guest_count'],
+        # Tạo home mới
+        new_home = Home(
+            title=home_data['home_title'],
+            home_type=property_type_vn,  # Lưu giá trị tiếng Việt
+            address=f"{home_data['street']}, {home_data['ward']}" if home_data['street'] and home_data['ward'] else "Chưa cập nhật",
+            city=home_data['province'] if home_data['province'] else "Chưa cập nhật",
+            district=home_data['district'] if home_data['district'] else "Chưa cập nhật",
+            home_number=home_data['home_title'],  # Sử dụng title làm home number
+            bed_count=home_data['bed_count'],
+            bathroom_count=home_data['bathroom_count'],
+            max_guests=home_data['guest_count'],
             price_per_hour=price_per_hour,
             price_per_night=price_per_night,
-            description=room_data['room_description'],
+            description=home_data['home_description'],
             floor_number=1,  # Mặc định
             owner_id=current_user.id
         )
         
-        db.session.add(new_room)
+        db.session.add(new_home)
         db.session.commit()
         
         # Xử lý amenities và rules
         try:
             # Lưu amenities (amenities trong session là array của ID strings)
-            if room_data.get('amenities'):
-                amenity_ids = [int(amenity_id) for amenity_id in room_data['amenities']]
+            if home_data.get('amenities'):
+                amenity_ids = [int(amenity_id) for amenity_id in home_data['amenities']]
                 amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
-                new_room.amenities.extend(amenities)
+                new_home.amenities.extend(amenities)
             
             # Lưu rules (rules trong session là array của ID strings)
-            if room_data.get('rules'):
-                rule_ids = [int(rule_id) for rule_id in room_data['rules']]
+            if home_data.get('rules'):
+                rule_ids = [int(rule_id) for rule_id in home_data['rules']]
                 rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
-                new_room.rules.extend(rules)
+                new_home.rules.extend(rules)
             
             db.session.commit()
             
         except Exception as e:
-            # Không làm fail việc tạo phòng nếu có lỗi
+            # Không làm fail việc tạo nhà nếu có lỗi
             pass
         
-        # Xử lý ảnh với cấu trúc mới: data/owner/{owner_id}/{room_id}/
+        # Xử lý ảnh với cấu trúc mới: data/owner/{owner_id}/{home_id}/
         try:
             # Xử lý ảnh chính (main_image)
-            if room_data.get('main_image'):
-                main_image_path = room_data['main_image']
+            if home_data.get('main_image'):
+                main_image_path = home_data['main_image']
                 if main_image_path.startswith('/static/temp/'):
                     temp_file = main_image_path[1:]  # Bỏ '/' đầu để có đường dẫn tương đối
                     
                     if os.path.exists(temp_file):
-                        # Tạo đường dẫn mới với cấu trúc data/owner/{owner_id}/{room_id}/
-                        relative_path, absolute_path = get_user_upload_path('owner', current_user.id, new_room.id)
+                        # Tạo đường dẫn mới với cấu trúc data/owner/{owner_id}/{home_id}/
+                        relative_path, absolute_path = get_user_upload_path('owner', current_user.id, new_home.id)
                         
                         # Tạo tên file mới
                         original_name = os.path.basename(temp_file).replace('temp_main_', '', 1)
@@ -459,9 +459,9 @@ def confirm_room():
                         shutil.copy2(temp_file, new_path)
                         
                         # Tạo record trong database với đường dẫn mới
-                        main_img = RoomImage(
+                        main_img = HomeImage(
                             image_path=f"{relative_path}/{new_filename}",
-                            room_id=new_room.id,
+                            home_id=new_home.id,
                             is_featured=True
                         )
                         db.session.add(main_img)
@@ -470,14 +470,14 @@ def confirm_room():
                         os.remove(temp_file)
             
             # Xử lý các ảnh khác
-            if room_data.get('images'):
-                for i, image_path in enumerate(room_data['images']):
+            if home_data.get('images'):
+                for i, image_path in enumerate(home_data['images']):
                     if image_path.startswith('/static/temp/'):
                         temp_file = image_path[1:]  # Bỏ '/' đầu
                         
                         if os.path.exists(temp_file):
                             # Tạo đường dẫn mới
-                            relative_path, absolute_path = get_user_upload_path('owner', current_user.id, new_room.id)
+                            relative_path, absolute_path = get_user_upload_path('owner', current_user.id, new_home.id)
                             
                             # Tạo tên file mới
                             original_name = os.path.basename(temp_file).replace('temp_', '', 1)
@@ -485,16 +485,16 @@ def confirm_room():
                                 parts = original_name.split('_', 1)
                                 if len(parts) > 1:
                                     original_name = parts[1]
-                            new_filename = generate_unique_filename(original_name, f'room_{i+1}')
+                            new_filename = generate_unique_filename(original_name, f'home_{i+1}')
                             
                             # Copy từ temp sang thư mục mới
                             new_path = os.path.join(absolute_path, new_filename)
                             shutil.copy2(temp_file, new_path)
                             
                             # Tạo record trong database
-                            img = RoomImage(
+                            img = HomeImage(
                                 image_path=f"{relative_path}/{new_filename}",
-                                room_id=new_room.id,
+                                home_id=new_home.id,
                                 is_featured=False
                             )
                             db.session.add(img)
@@ -505,74 +505,74 @@ def confirm_room():
             db.session.commit()
             
         except Exception as e:
-            # Không làm fail việc tạo phòng nếu ảnh có lỗi
+            # Không làm fail việc tạo nhà nếu ảnh có lỗi
             pass
         
         # Xóa dữ liệu preview khỏi session
-        session.pop('room_preview_data', None)
+        session.pop('home_preview_data', None)
         
-        flash('Đã tạo phòng thành công!', 'success')
+        flash('Đã tạo nhà thành công!', 'success')
         return redirect(url_for('owner.dashboard', created='success'))
         
     except Exception as e:
         db.session.rollback()
-        flash(f'Có lỗi xảy ra khi tạo phòng: {str(e)}', 'danger')
-        return redirect(url_for('owner.room_preview'))
+        flash(f'Có lỗi xảy ra khi tạo nhà: {str(e)}', 'danger')
+        return redirect(url_for('owner.home_preview'))
 
-@owner_bp.route('/edit-room/<int:room_id>', methods=['GET', 'POST'])
+@owner_bp.route('/edit-home/<int:home_id>', methods=['GET', 'POST'])
 @login_required
-def edit_room(room_id):
-    room = Room.query.options(joinedload(Room.images)).get_or_404(room_id)
-    if room.owner_id != current_user.id:
-        flash('Bạn không có quyền chỉnh sửa phòng này!', 'danger')
+def edit_home(home_id):
+    home = Home.query.options(joinedload(Home.images)).get_or_404(home_id)
+    if home.owner_id != current_user.id:
+        flash('Bạn không có quyền chỉnh sửa nhà này!', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     if request.method == 'POST':
         try:
             # Cập nhật thông tin cơ bản với validation
-            title = request.form.get('room_title', '').strip()
+            title = request.form.get('home_title', '').strip()
             if not title:
-                flash('Tên phòng không được để trống!', 'danger')
-                return redirect(url_for('owner.edit_room', room_id=room_id))
+                flash('Tên nhà không được để trống!', 'danger')
+                return redirect(url_for('owner.edit_home', home_id=home_id))
             
-            room.title = title
-            room.description = request.form.get('room_description', '').strip()
+            home.title = title
+            home.description = request.form.get('home_description', '').strip()
             
             # Chuyển đổi property_type sang tiếng Việt trước khi lưu
             property_type_vn = PROPERTY_TYPE_MAP.get(
                 request.form.get('property_type'), 
-                request.form.get('property_type', room.room_type)
+                request.form.get('property_type', home.home_type)
             )
-            room.room_type = property_type_vn
+            home.home_type = property_type_vn
             
             # Update location with fallback to existing values
-            room.city = request.form.get('province') or room.city
-            room.district = request.form.get('district') or room.district
+            home.city = request.form.get('province') or home.city
+            home.district = request.form.get('district') or home.district
 
             # Cập nhật địa chỉ - improved logic
             ward = request.form.get('ward', '').strip()
             street = request.form.get('street', '').strip()
             if street and ward:
-                room.address = f"{street}, {ward}"
+                home.address = f"{street}, {ward}"
             elif street:
-                room.address = street
+                home.address = street
             elif ward:
-                room.address = ward
+                home.address = ward
             # If both empty, keep existing address
             
-            # Cập nhật thông tin phòng với validation
+            # Cập nhật thông tin nhà với validation
             try:
-                room.bed_count = max(1, int(request.form.get('bed_count', 1)))
-                room.bathroom_count = max(1, int(request.form.get('bathroom_count', 1)))
-                room.max_guests = max(1, int(request.form.get('guest_count', 1)))
+                home.bed_count = max(1, int(request.form.get('bed_count', 1)))
+                home.bathroom_count = max(1, int(request.form.get('bathroom_count', 1)))
+                home.max_guests = max(1, int(request.form.get('guest_count', 1)))
             except (ValueError, TypeError):
                 flash('Thông tin số lượng không hợp lệ!', 'danger')
-                return redirect(url_for('owner.edit_room', room_id=room_id))
+                return redirect(url_for('owner.edit_home', home_id=home_id))
             
             # Cập nhật giá dựa theo rental type
             rental_type = request.form.get('selected_rental_type')
-            room.price_per_hour = 0.0
-            room.price_per_night = 0.0
+            home.price_per_hour = 0.0
+            home.price_per_night = 0.0
             
             try:
                 if rental_type == 'hourly':
@@ -580,43 +580,43 @@ def edit_room(room_id):
                     if hourly_price:
                         price_value = float(hourly_price) / 1000
                         if price_value <= 0:
-                            flash('Giá phòng phải lớn hơn 0!', 'danger')
-                            return redirect(url_for('owner.edit_room', room_id=room_id))
-                        room.price_per_hour = price_value
+                            flash('Giá nhà phải lớn hơn 0!', 'danger')
+                            return redirect(url_for('owner.edit_home', home_id=home_id))
+                        home.price_per_hour = price_value
                 elif rental_type == 'nightly':
                     nightly_price = request.form.get('nightly_price')
                     if nightly_price:
                         price_value = float(nightly_price) / 1000
                         if price_value <= 0:
-                            flash('Giá phòng phải lớn hơn 0!', 'danger')
-                            return redirect(url_for('owner.edit_room', room_id=room_id))
-                        room.price_per_night = price_value
+                            flash('Giá nhà phải lớn hơn 0!', 'danger')
+                            return redirect(url_for('owner.edit_home', home_id=home_id))
+                        home.price_per_night = price_value
             except (ValueError, TypeError):
-                flash('Giá phòng không hợp lệ!', 'danger')
-                return redirect(url_for('owner.edit_room', room_id=room_id))
+                flash('Giá nhà không hợp lệ!', 'danger')
+                return redirect(url_for('owner.edit_home', home_id=home_id))
             
             # Cập nhật amenities
-            room.amenities.clear()
+            home.amenities.clear()
             amenity_ids = request.form.getlist('amenities[]')
             if amenity_ids:
                 amenity_ids = [int(aid) for aid in amenity_ids if aid.isdigit()]
                 if amenity_ids:
                     amenities = Amenity.query.filter(Amenity.id.in_(amenity_ids)).all()
-                    room.amenities.extend(amenities)
+                    home.amenities.extend(amenities)
             
             # Cập nhật rules
-            room.rules.clear()
+            home.rules.clear()
             rule_ids = request.form.getlist('rules[]')
             if rule_ids:
                 rule_ids = [int(rid) for rid in rule_ids if rid.isdigit()]
                 if rule_ids:
                     rules = Rule.query.filter(Rule.id.in_(rule_ids)).all()
-                    room.rules.extend(rules)
+                    home.rules.extend(rules)
             
             # Xử lý upload ảnh mới with validation
             owner_id = current_user.id
-            room_folder = f"static/data/owner/{owner_id}/{room_id}"
-            os.makedirs(room_folder, exist_ok=True)
+            home_folder = f"static/data/owner/{owner_id}/{home_id}"
+            os.makedirs(home_folder, exist_ok=True)
             
             # Xử lý ảnh chính (main_image)
             if 'main_image' in request.files:
@@ -626,14 +626,14 @@ def edit_room(room_id):
                 if is_valid:
                     filename = secure_filename(main_image.filename)
                     unique_filename = generate_unique_filename(filename, 'main')
-                    file_path = os.path.join(room_folder, unique_filename)
+                    file_path = os.path.join(home_folder, unique_filename)
                     main_image.save(file_path)
                     
                     # Tạo record trong database
-                    relative_path = f"data/owner/{owner_id}/{room_id}/{unique_filename}"
+                    relative_path = f"data/owner/{owner_id}/{home_id}/{unique_filename}"
                     
                     # Xóa ảnh bìa cũ nếu có
-                    old_featured = RoomImage.query.filter_by(room_id=room_id, is_featured=True).first()
+                    old_featured = HomeImage.query.filter_by(home_id=home_id, is_featured=True).first()
                     if old_featured:
                         old_file_path = os.path.join('static', old_featured.image_path)
                         if os.path.exists(old_file_path):
@@ -641,9 +641,9 @@ def edit_room(room_id):
                         db.session.delete(old_featured)
                     
                     # Tạo record mới
-                    new_main_image = RoomImage(
+                    new_main_image = HomeImage(
                         image_path=relative_path,
-                        room_id=room_id,
+                        home_id=home_id,
                         is_featured=True
                     )
                     db.session.add(new_main_image)
@@ -658,15 +658,15 @@ def edit_room(room_id):
                     
                     if is_valid:
                         filename = secure_filename(image.filename)
-                        unique_filename = generate_unique_filename(filename, f'room_{i+1}')
-                        file_path = os.path.join(room_folder, unique_filename)
+                        unique_filename = generate_unique_filename(filename, f'home_{i+1}')
+                        file_path = os.path.join(home_folder, unique_filename)
                         image.save(file_path)
                         
                         # Tạo record trong database
-                        relative_path = f"data/owner/{owner_id}/{room_id}/{unique_filename}"
-                        new_image = RoomImage(
+                        relative_path = f"data/owner/{owner_id}/{home_id}/{unique_filename}"
+                        new_image = HomeImage(
                             image_path=relative_path,
-                            room_id=room_id,
+                            home_id=home_id,
                             is_featured=False
                         )
                         db.session.add(new_image)
@@ -674,23 +674,23 @@ def edit_room(room_id):
                         flash(f'Ảnh {i+1}: {error_msg}', 'warning')
             
             # Cập nhật thời gian sửa đổi
-            room.updated_at = datetime.now()
+            home.updated_at = datetime.now()
             
             db.session.commit()
-            flash('Đã cập nhật thông tin phòng thành công!', 'success')
+            flash('Đã cập nhật thông tin nhà thành công!', 'success')
             return redirect(url_for('owner.dashboard'))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Có lỗi xảy ra khi cập nhật phòng: {str(e)}', 'danger')
+            flash(f'Có lỗi xảy ra khi cập nhật nhà: {str(e)}', 'danger')
             
-    # GET request - prepare room data for template with improved address parsing
+    # GET request - prepare home data for template with improved address parsing
     street_address = ''
     ward_name = ''
     
-    if room.address:
+    if home.address:
         # Improved address parsing logic
-        address_parts = [part.strip() for part in room.address.split(',')]
+        address_parts = [part.strip() for part in home.address.split(',')]
         
         # Strategy 1: Look for ward keywords
         ward_found = False
@@ -709,36 +709,36 @@ def edit_room(room_id):
             street_address = ', '.join(address_parts[:-1]).strip()
         elif not ward_found:
             # Single part - treat as street address
-            street_address = room.address
+            street_address = home.address
     
-    room_data = {
-        'id': room.id,
-        'title': room.title,
-        'description': room.description,
-        'property_type': get_property_type_en(room.room_type),
-        'province': room.city,
-        'district': room.district,
+    home_data = {
+        'id': home.id,
+        'title': home.title,
+        'description': home.description,
+        'property_type': get_property_type_en(home.home_type),
+        'province': home.city,
+        'district': home.district,
         'ward': ward_name,
         'street': street_address,
-        'bathroom_count': room.bathroom_count,
-        'bed_count': room.bed_count,
-        'guest_count': room.max_guests,
-        'rental_type': 'nightly' if room.price_per_night and room.price_per_night > 0 else 'hourly',
-        'hourly_price': int(room.price_per_hour * 1000) if room.price_per_hour else 0,
-        'nightly_price': int(room.price_per_night * 1000) if room.price_per_night else None,
-        'rules': [{'id': rule.id, 'name': rule.name} for rule in room.rules],
-        'amenities': [{'id': amenity.id, 'name': amenity.name, 'icon': amenity.icon} for amenity in room.amenities],
-        'images': [{'id': img.id, 'path': img.image_path, 'is_featured': img.is_featured} for img in room.images]
+        'bathroom_count': home.bathroom_count,
+        'bed_count': home.bed_count,
+        'guest_count': home.max_guests,
+        'rental_type': 'nightly' if home.price_per_night and home.price_per_night > 0 else 'hourly',
+        'hourly_price': int(home.price_per_hour * 1000) if home.price_per_hour else 0,
+        'nightly_price': int(home.price_per_night * 1000) if home.price_per_night else None,
+        'rules': [{'id': rule.id, 'name': rule.name} for rule in home.rules],
+        'amenities': [{'id': amenity.id, 'name': amenity.name, 'icon': amenity.icon} for amenity in home.amenities],
+        'images': [{'id': img.id, 'path': img.image_path, 'is_featured': img.is_featured} for img in home.images]
     }
     
-    return render_template('owner/edit_room.html', room=room_data)
+    return render_template('owner/edit_home.html', home=home_data)
 
-@owner_bp.route('/delete-room/<int:room_id>', methods=['POST'])
+@owner_bp.route('/delete-home/<int:home_id>', methods=['POST'])
 @login_required
-def delete_room(room_id):
-    room = Room.query.get_or_404(room_id)
-    if room.owner_id != current_user.id:
-        flash('Bạn không có quyền xóa phòng này!', 'danger')
+def delete_home(home_id):
+    home = Home.query.get_or_404(home_id)
+    if home.owner_id != current_user.id:
+        flash('Bạn không có quyền xóa nhà này!', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     # Lấy lý do xóa từ form
@@ -746,24 +746,24 @@ def delete_room(room_id):
     
     # Validate lý do xóa
     if not delete_reason or len(delete_reason) < 10:
-        flash('Lý do xóa phòng phải có ít nhất 10 ký tự!', 'danger')
+        flash('Lý do xóa nhà phải có ít nhất 10 ký tự!', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     try:
-        # Lưu log xóa phòng (tùy chọn - có thể tạo bảng RoomDeletionLog)
-        room_title = room.title
+        # Lưu log xóa nhà (tùy chọn - có thể tạo bảng HomeDeletionLog)
+        home_title = home.title
         owner_name = current_user.full_name or current_user.username
         
-        # Xóa folder ảnh của phòng
-        room_folder = os.path.join('static', 'uploads', f'room_{room_id}')
-        if os.path.exists(room_folder):
+        # Xóa folder ảnh của nhà
+        home_folder = os.path.join('static', 'uploads', f'home_{home_id}')
+        if os.path.exists(home_folder):
             try:
-                shutil.rmtree(room_folder)
-                print(f"Đã xóa folder ảnh: {room_folder}")
+                shutil.rmtree(home_folder)
+                print(f"Đã xóa folder ảnh: {home_folder}")
             except Exception as e:
                 print(f"Không thể xóa folder ảnh: {e}")
                 # Fallback: xóa từng file
-                for image in room.images:
+                for image in home.images:
                     if image.image_path:
                         file_path = os.path.join('static', image.image_path)
                         if os.path.exists(file_path):
@@ -773,31 +773,31 @@ def delete_room(room_id):
                                 print(f"Không thể xóa file ảnh: {e}")
         
         # Lưu log vào database
-        deletion_log = RoomDeletionLog(
-            room_id=room_id,
-            room_title=room_title,
+        deletion_log = HomeDeletionLog(
+            home_id=home_id,
+            home_title=home_title,
             owner_id=current_user.id,
             owner_name=owner_name,
             delete_reason=delete_reason,
-            room_address=f"{room.address}, {room.district}, {room.city}",
-            room_price=room.price_per_hour or room.price_per_night
+            home_address=f"{home.address}, {home.district}, {home.city}",
+            home_price=home.price_per_hour or home.price_per_night
         )
         db.session.add(deletion_log)
         
         # Ghi log ra console
-        log_message = f"[{datetime.now()}] Owner '{owner_name}' (ID: {current_user.id}) đã xóa phòng '{room_title}' (ID: {room_id}). Lý do: {delete_reason}"
+        log_message = f"[{datetime.now()}] Owner '{owner_name}' (ID: {current_user.id}) đã xóa nhà '{home_title}' (ID: {home_id}). Lý do: {delete_reason}"
         print(log_message)
         
-        # Xóa phòng (cascade sẽ tự động xóa các record liên quan)
-        db.session.delete(room)
+        # Xóa nhà (cascade sẽ tự động xóa các record liên quan)
+        db.session.delete(home)
         db.session.commit()
         
-        flash(f'Đã xóa phòng "{room_title}" thành công!', 'success')
+        flash(f'Đã xóa nhà "{home_title}" thành công!', 'success')
         
     except Exception as e:
         db.session.rollback()
-        print(f"Lỗi khi xóa phòng: {str(e)}")
-        flash('Có lỗi xảy ra khi xóa phòng. Vui lòng thử lại!', 'danger')
+        print(f"Lỗi khi xóa nhà: {str(e)}")
+        flash('Có lỗi xảy ra khi xóa nhà. Vui lòng thử lại!', 'danger')
     
     return redirect(url_for('owner.dashboard'))
 
@@ -805,13 +805,13 @@ def delete_room(room_id):
 @owner_bp.route('/calendar')
 @owner_required
 def calendar():
-    # Get all rooms owned by current user
-    rooms = Room.query.filter_by(owner_id=current_user.id).all()
+    # Get all homes owned by current user
+    homes = Home.query.filter_by(owner_id=current_user.id).all()
     
-    # Get all bookings for these rooms
+    # Get all bookings for these homes
     all_bookings = []
-    for room in rooms:
-        all_bookings.extend(room.bookings)
+    for home in homes:
+        all_bookings.extend(home.bookings)
     
     # Sort bookings by start_time
     all_bookings.sort(key=lambda x: x.start_time)
@@ -828,10 +828,10 @@ def calendar():
             'total_hours': booking.total_hours,
             'total_price': float(booking.total_price) if booking.total_price else 0,
             'status': booking.status,
-            'room': {
-                'id': booking.room.id if booking.room else None,
-                'title': booking.room.title if booking.room else None
-            } if booking.room else None,
+            'home': {
+                'id': booking.home.id if booking.home else None,
+                'title': booking.home.title if booking.home else None
+            } if booking.home else None,
             'renter': {
                 'id': booking.renter.id if booking.renter else None,
                 'username': booking.renter.username if booking.renter else None,
@@ -842,23 +842,23 @@ def calendar():
         }
         bookings_data.append(booking_dict)
     
-    # Convert rooms to JSON-serializable format
-    rooms_data = []
-    for room in rooms:
-        room_dict = {
-            'id': room.id,
-            'title': room.title,
-            'room_type': room.room_type,
-            'city': room.city,
-            'district': room.district,
-            'price_per_hour': float(room.price_per_hour) if room.price_per_hour else 0,
-            'max_guests': room.max_guests
+    # Convert homes to JSON-serializable format
+    homes_data = []
+    for home in homes:
+        home_dict = {
+            'id': home.id,
+            'title': home.title,
+            'home_type': home.home_type,
+            'city': home.city,
+            'district': home.district,
+            'price_per_hour': float(home.price_per_hour) if home.price_per_hour else 0,
+            'max_guests': home.max_guests
         }
-        rooms_data.append(room_dict)
+        homes_data.append(home_dict)
     
     return render_template('owner/calendar.html', 
                           bookings=bookings_data,
-                          rooms=rooms_data)
+                          homes=homes_data)
 
 @owner_bp.route('/calendar/api/bookings/<date>')
 @owner_required
@@ -868,13 +868,13 @@ def get_bookings_by_date(date):
         from datetime import datetime
         target_date = datetime.strptime(date, '%Y-%m-%d').date()
         
-        # Get all rooms owned by current user
-        rooms = Room.query.filter_by(owner_id=current_user.id).all()
-        room_ids = [room.id for room in rooms]
+        # Get all homes owned by current user
+        homes = Home.query.filter_by(owner_id=current_user.id).all()
+        home_ids = [home.id for home in homes]
         
         # Get bookings for the specific date
         bookings = Booking.query.filter(
-            Booking.room_id.in_(room_ids),
+            Booking.home_id.in_(home_ids),
             func.date(Booking.start_time) == target_date
         ).all()
         
@@ -888,10 +888,10 @@ def get_bookings_by_date(date):
                 'total_hours': booking.total_hours,
                 'total_price': float(booking.total_price) if booking.total_price else 0,
                 'status': booking.status,
-                'room': {
-                    'id': booking.room.id if booking.room else None,
-                    'title': booking.room.title if booking.room else None
-                } if booking.room else None,
+                'home': {
+                    'id': booking.home.id if booking.home else None,
+                    'title': booking.home.title if booking.home else None
+                } if booking.home else None,
                 'renter': {
                     'id': booking.renter.id if booking.renter else None,
                     'username': booking.renter.username if booking.renter else None,
@@ -921,8 +921,8 @@ def get_booking_detail(booking_id):
     try:
         booking = Booking.query.get_or_404(booking_id)
         
-        # Check if booking belongs to current user's room
-        if booking.room.owner_id != current_user.id:
+        # Check if booking belongs to current user's home
+        if booking.home.owner_id != current_user.id:
             return jsonify({
                 'success': False,
                 'error': 'Unauthorized access'
@@ -938,14 +938,14 @@ def get_booking_detail(booking_id):
             'total_price': float(booking.total_price) if booking.total_price else 0,
             'status': booking.status,
             'special_requests': getattr(booking, 'special_requests', None),
-            'room': {
-                'id': booking.room.id,
-                'title': booking.room.title,
-                'room_type': booking.room.room_type,
-                'city': booking.room.city,
-                'district': booking.room.district,
-                'price_per_hour': float(booking.room.price_per_hour) if booking.room.price_per_hour else 0
-            } if booking.room else None,
+            'home': {
+                'id': booking.home.id,
+                'title': booking.home.title,
+                'home_type': booking.home.home_type,
+                'city': booking.home.city,
+                'district': booking.home.district,
+                'price_per_hour': float(booking.home.price_per_hour) if booking.home.price_per_hour else 0
+            } if booking.home else None,
             'renter': {
                 'id': booking.renter.id,
                 'username': booking.renter.username,
@@ -978,13 +978,13 @@ def get_dates_with_bookings(year, month):
         first_day = date(year, month, 1)
         last_day = date(year, month, monthrange(year, month)[1])
         
-        # Get all rooms owned by current user
-        rooms = Room.query.filter_by(owner_id=current_user.id).all()
-        room_ids = [room.id for room in rooms]
+        # Get all homes owned by current user
+        homes = Home.query.filter_by(owner_id=current_user.id).all()
+        home_ids = [home.id for home in homes]
         
         # Get bookings for the month
         bookings = Booking.query.filter(
-            Booking.room_id.in_(room_ids),
+            Booking.home_id.in_(home_ids),
             func.date(Booking.start_time) >= first_day,
             func.date(Booking.start_time) <= last_day
         ).all()
@@ -1016,13 +1016,13 @@ def view_bookings(status=None):
     page = request.args.get('page', 1, type=int)
     per_page = 50  # 50 items per page
     
-    # Get all rooms owned by current user
-    rooms = Room.query.filter_by(owner_id=current_user.id).all()
+    # Get all homes owned by current user
+    homes = Home.query.filter_by(owner_id=current_user.id).all()
     
-    # Get all bookings for these rooms
+    # Get all bookings for these homes
     all_bookings = []
-    for room in rooms:
-        all_bookings.extend(room.bookings)
+    for home in homes:
+        all_bookings.extend(home.bookings)
     
     # Filter bookings by status if specified
     if status:
@@ -1059,14 +1059,14 @@ def view_bookings(status=None):
                           pagination=pagination)
 
 
-@owner_bp.route('/room/<int:room_id>/add-images', methods=['GET', 'POST'])
+@owner_bp.route('/home/<int:home_id>/add-images', methods=['GET', 'POST'])
 @owner_required
-def add_room_images(room_id):
-    room = Room.query.get_or_404(room_id)
+def add_home_images(home_id):
+    home = Home.query.get_or_404(home_id)
     
     # Kiểm tra quyền sở hữu
-    if room.owner_id != current_user.id:
-        flash('Bạn không có quyền thêm ảnh cho phòng này.', 'danger')
+    if home.owner_id != current_user.id:
+        flash('Bạn không có quyền thêm ảnh cho nhà này.', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     if request.method == 'POST':
@@ -1087,21 +1087,21 @@ def add_room_images(room_id):
                     img.thumbnail(max_size, Image.LANCZOS)
                     
                     # Use new image storage structure
-                    relative_path, absolute_path = get_user_upload_path('owner', current_user.id, room.id)
+                    relative_path, absolute_path = get_user_upload_path('owner', current_user.id, home.id)
                     
                     # Generate unique filename
-                    filename = generate_unique_filename(img_file.filename, 'room')
+                    filename = generate_unique_filename(img_file.filename, 'home')
                     save_path = os.path.join(absolute_path, filename)
                     
                     # Save the processed image
                     img.save(save_path, quality=85, optimize=True)
                     
                     # Create database record
-                    is_featured = not RoomImage.query.filter_by(room_id=room.id, is_featured=True).first()
+                    is_featured = not HomeImage.query.filter_by(home_id=home.id, is_featured=True).first()
                     
-                    new_img = RoomImage(
+                    new_img = HomeImage(
                         image_path=f"{relative_path}/{filename}",
-                        room_id=room.id,
+                        home_id=home.id,
                         is_featured=is_featured
                     )
                     db.session.add(new_img)
@@ -1112,48 +1112,48 @@ def add_room_images(room_id):
                     continue
                     
         db.session.commit()
-        flash("Ảnh đã được thêm thành công vào thư viện phòng!", "success")
-        return redirect(url_for('owner.add_room_images', room_id=room.id))
+        flash("Ảnh đã được thêm thành công vào thư viện nhà!", "success")
+        return redirect(url_for('owner.add_home_images', home_id=home.id))
     
-    # Get existing images for this room
-    existing_images = RoomImage.query.filter_by(room_id=room.id).all()
+    # Get existing images for this home
+    existing_images = HomeImage.query.filter_by(home_id=home.id).all()
     
-    return render_template('owner/add_room_images.html', room=room, existing_images=existing_images)
+    return render_template('owner/add_home_images.html', home=home, existing_images=existing_images)
 
 @owner_bp.route('/set-featured-image/<int:image_id>', methods=['GET'])
 @login_required
 def set_featured_image(image_id):
     # Lấy thông tin ảnh
-    image = RoomImage.query.get_or_404(image_id)
-    room = image.room
+    image = HomeImage.query.get_or_404(image_id)
+    home = image.home
 
     # Kiểm tra quyền sở hữu
-    if room.owner_id != current_user.id:
+    if home.owner_id != current_user.id:
         flash("Bạn không có quyền thực hiện thao tác này.", "danger")
         return redirect(url_for('owner.dashboard'))
 
-    # Bỏ featured của tất cả ảnh khác trong phòng
-    RoomImage.query.filter_by(room_id=room.id).update({RoomImage.is_featured: False})
+    # Bỏ featured của tất cả ảnh khác trong nhà
+    HomeImage.query.filter_by(home_id=home.id).update({HomeImage.is_featured: False})
     
     # Đặt ảnh được chọn làm featured
     image.is_featured = True
     db.session.commit()
 
     flash("Đã đặt ảnh làm ảnh đại diện thành công!", "success")
-    return redirect(url_for('owner.add_room_images', room_id=room.id))
+    return redirect(url_for('owner.add_home_images', home_id=home.id))
 
-@owner_bp.route('/room-image/<int:image_id>/delete', methods=['GET', 'POST'])
+@owner_bp.route('/home-image/<int:image_id>/delete', methods=['GET', 'POST'])
 @owner_required
-def delete_room_image(image_id):
-    image = RoomImage.query.get_or_404(image_id)
-    room_id = image.room_id
+def delete_home_image(image_id):
+    image = HomeImage.query.get_or_404(image_id)
+    home_id = image.home_id
     
-    # Lấy thông tin phòng để kiểm tra quyền sở hữu
-    room = Room.query.get_or_404(room_id)
+    # Lấy thông tin nhà để kiểm tra quyền sở hữu
+    home = Home.query.get_or_404(home_id)
     
     # Kiểm tra quyền sở hữu
-    if room.owner_id != current_user.id:
-        flash('Bạn không có quyền xóa ảnh của phòng này.', 'danger')
+    if home.owner_id != current_user.id:
+        flash('Bạn không có quyền xóa ảnh của nhà này.', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     # Delete the image file using new utility function
@@ -1169,108 +1169,32 @@ def delete_room_image(image_id):
     
     # If we deleted the featured image, set a new one if available
     if was_featured:
-        next_image = RoomImage.query.filter_by(room_id=room_id).first()
+        next_image = HomeImage.query.filter_by(home_id=home_id).first()
         if next_image:
             next_image.is_featured = True
             db.session.commit()
     
     flash('Đã xóa ảnh thành công!', 'success')
     
-    # Check if the request came from edit_room page
+    # Check if the request came from edit_home page
     referer = request.headers.get('Referer', '')
-    if '/edit-room/' in referer:
-        return redirect(url_for('owner.edit_room', room_id=room_id))
+    if '/edit-home/' in referer:
+        return redirect(url_for('owner.edit_home', home_id=home_id))
     else:
-        return redirect(url_for('owner.add_room_images', room_id=room_id))
+        return redirect(url_for('owner.add_home_images', home_id=home_id))
 
 
-@owner_bp.route('/room-detail/<int:room_id>')
+@owner_bp.route('/home-detail/<int:home_id>')
 @login_required
-def room_detail(room_id):
-    """Redirect to edit room - no separate detail page needed"""
-    room = Room.query.get_or_404(room_id)
-    if room.owner_id != current_user.id:
-        flash('Bạn không có quyền xem phòng này!', 'danger')
+def home_detail(home_id):
+    """Redirect to edit home - no separate detail page needed"""
+    home = Home.query.get_or_404(home_id)
+    if home.owner_id != current_user.id:
+        flash('Bạn không có quyền xem nhà này!', 'danger')
         return redirect(url_for('owner.dashboard'))
     
     # Redirect to edit page to view/edit details
-    return redirect(url_for('owner.edit_room', room_id=room_id))
-
-@owner_bp.route('/booking/confirm/<int:id>')
-@owner_required
-def confirm_booking(id):
-    booking = Booking.query.get_or_404(id)
-    
-    # Make sure the owner owns this booking's room
-    if booking.room.owner_id != current_user.id:
-        flash('You do not have permission to manage this booking.', 'danger')
-        return redirect(url_for('owner.view_bookings'))
-    
-    # Get all other pending bookings for the same room with overlapping time
-    overlapping_pending_bookings = Booking.query.filter(
-        Booking.room_id == booking.room_id,
-        Booking.id != booking.id,
-        Booking.status == 'pending',
-        Booking.start_time < booking.end_time,
-        Booking.end_time > booking.start_time
-    ).all()
-    
-    # Reject all other overlapping pending bookings
-    for other_booking in overlapping_pending_bookings:
-        other_booking.status = 'rejected'
-        # You could also set a rejection reason here
-        other_booking.rejection_reason = "Room was booked by another guest for the same time period."
-    
-    # Set status to confirmed
-    booking.status = 'confirmed'
-    
-    # Add notification (you can expand this into a proper notification system)
-    booking.notification_for_renter = 'Your booking has been confirmed! Please proceed with payment.'
-    booking.notification_date = datetime.now()
-    
-    db.session.commit()
-    
-    flash('Booking #' + str(booking.id) + ' has been confirmed! Renter will be prompted for payment.', 'success')
-    return redirect(url_for('owner.booking_details', booking_id=id))
-
-@owner_bp.route('/reject-booking/<int:id>')
-@owner_required
-def reject_booking(id):
-    booking = Booking.query.get_or_404(id)
-    
-    # Ensure this booking belongs to one of the current owner's rooms
-    if booking.room.owner_id != current_user.id:
-        flash('Bạn không có quyền từ chối đặt phòng này.', 'danger')
-        return redirect(url_for('owner.dashboard'))
-
-    # Update the booking status
-    booking.status = 'rejected'
-    
-    # Add notification with suggestion to book another room/homestay
-    booking.notification_for_renter = 'Yêu cầu đặt phòng của bạn đã bị từ chối. Vui lòng tìm kiếm và đặt phòng khác phù hợp với nhu cầu của bạn.'
-    booking.notification_date = datetime.now()
-    
-    db.session.commit()
-    
-    flash('Đã từ chối đặt phòng.', 'warning')
-    return redirect(url_for('owner.view_bookings'))
-
-# @owner_bp.route('/mark-completed/<int:id>')
-# @owner_required
-
-#     booking = Booking.query.get_or_404(id)
-    
-#     # Ensure this booking belongs to one of the current owner's homestays
-#     if booking.homestay.owner_id != current_user.id:
-#         flash('You do not have permission to update this booking.', 'danger')
-#         return redirect(url_for('owner.view_bookings'))
-
-#     # Update the booking status
-#     booking.status = 'completed'
-#     db.session.commit()
-
-#     flash('Booking marked as completed.', 'success')
-#     return redirect(url_for('owner.view_bookings'))
+    return redirect(url_for('owner.edit_home', home_id=home_id))
 
 @owner_bp.route('/booking-details/<int:booking_id>')
 @owner_required
@@ -1278,8 +1202,8 @@ def booking_details(booking_id):
     booking = Booking.query.get_or_404(booking_id)
     
     # Ensure this booking belongs to one of the current owner's homestays
-    if booking.homestay.owner_id != current_user.id:
-        flash('Bạn không có quyền xem thông tin đặt phòng này.', 'danger')
+    if booking.home.owner_id != current_user.id:
+        flash('Bạn không có quyền xem thông tin đặt nhà này.', 'danger')
         return redirect(url_for('owner.dashboard'))
 
     return render_template('owner/booking_details.html', booking=booking)
@@ -1457,18 +1381,18 @@ def profile():
             
     return render_template('owner/profile.html')
 
-@owner_bp.route('/book-room/<int:room_id>', methods=['GET', 'POST'])
-@owner_bp.route('/book-room', methods=['GET', 'POST'])
+@owner_bp.route('/book-home/<int:home_id>', methods=['GET', 'POST'])
+@owner_bp.route('/book-home', methods=['GET', 'POST'])
 @owner_required
-def book_room(room_id=None):
+def book_home(home_id=None):
     # If homestay_id is provided in URL params, use it (though we don't really need it since homestay = owner)
     homestay_id = request.args.get('homestay_id', type=int)
     
-    if room_id:
-        # Original functionality - book a specific room
-        room = Room.query.get_or_404(room_id)
+    if home_id:
+        # Original functionality - book a specific home
+        home = Home.query.get_or_404(home_id)
     else:
-        # If no room_id, redirect to manage rooms to select a room
+        # If no home_id, redirect to manage homes to select a home
         return redirect(url_for('owner.dashboard'))
     
     if request.method == 'POST':
@@ -1478,38 +1402,38 @@ def book_room(room_id=None):
         
         if not start_date or not start_time or not duration_str:
             flash("You must select date, time and duration.", "warning")
-            return redirect(url_for('owner.book_room', room_id=room.id))
+            return redirect(url_for('owner.book_home', home_id=home.id))
         
         try:
             duration = int(duration_str)
         except ValueError:
             flash("Invalid duration value.", "danger")
-            return redirect(url_for('owner.book_room', room_id=room.id))
+            return redirect(url_for('owner.book_home', home_id=home.id))
         
         if duration < 1:
             flash("Minimum duration is 1 night.", "warning")
-            return redirect(url_for('owner.book_room', room_id=room.id))
+            return redirect(url_for('owner.book_home', home_id=home.id))
         
         start_str = f"{start_date} {start_time}"
         try:
             start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
         except ValueError:
             flash("Invalid date or time format.", "danger")
-            return redirect(url_for('owner.book_room', room_id=room.id))
+            return redirect(url_for('owner.book_home', home_id=home.id))
         
         end_datetime = start_datetime + timedelta(days=duration)
-        # Calculate total price using the room's price per night
-        total_price = room.price_per_night * duration
+        # Calculate total price using the home's price per night
+        total_price = home.price_per_night * duration
         
-        # Check for overlapping bookings for this room
-        existing_bookings = Booking.query.filter_by(room_id=room.id).all()
+        # Check for overlapping bookings for this home
+        existing_bookings = Booking.query.filter_by(home_id=home.id).all()
         for booking in existing_bookings:
             if start_datetime < booking.end_time and end_datetime > booking.start_time:
-                flash('This room is not available during the selected time period.', 'danger')
-                return redirect(url_for('owner.book_room', room_id=room.id))
+                flash('This home is not available during the selected time period.', 'danger')
+                return redirect(url_for('owner.book_home', home_id=home.id))
         
         new_booking = Booking(
-            room_id=room.id,
+            home_id=home.id,
             renter_id=current_user.id,
             start_time=start_datetime,
             end_time=end_datetime,
@@ -1530,7 +1454,7 @@ def book_room(room_id=None):
     if not hasattr(homestay, 'title'):
         homestay.title = homestay.full_name or homestay.username or "My Homestay"
 
-    return render_template('owner/book_room.html', room=room, homestay=homestay)
+    return render_template('owner/book_home.html', home=home, homestay=homestay)
 
 @owner_bp.route('/check-username', methods=['POST'])
 @login_required
@@ -1568,20 +1492,20 @@ def check_email():
         'available': not bool(existing_owner or existing_admin or existing_renter)
     })
 
-@owner_bp.route('/toggle-room-status/<int:room_id>', methods=['GET', 'POST'])
+@owner_bp.route('/toggle-home-status/<int:home_id>', methods=['GET', 'POST'])
 @login_required
-def toggle_room_status(room_id):
-    room = Room.query.get_or_404(room_id)
-    if room.owner_id != current_user.id:
-        flash('Bạn không có quyền thay đổi trạng thái phòng này!', 'danger')
+def toggle_home_status(home_id):
+    home = Home.query.get_or_404(home_id)
+    if home.owner_id != current_user.id:
+        flash('Bạn không có quyền thay đổi trạng thái nhà này!', 'danger')
         return redirect(url_for('owner.dashboard'))
     
-    # Toggle the room's active status
-    room.is_active = not room.is_active
+    # Toggle the home's active status
+    home.is_active = not home.is_active
     db.session.commit()
     
-    status = 'mở khóa' if room.is_active else 'khóa'
-    flash(f'Đã {status} phòng thành công!', 'success')
+    status = 'mở khóa' if home.is_active else 'khóa'
+    flash(f'Đã {status} nhà thành công!', 'success')
     return redirect(url_for('owner.dashboard'))
 
 @owner_bp.route('/statistics')
@@ -1589,12 +1513,12 @@ def toggle_room_status(room_id):
 def statistics():
     """Owner statistics page showing revenue, bookings, and performance data"""
     try:
-        # Get all rooms owned by current user
-        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
-        room_ids = [room.id for room in owner_rooms]
+        # Get all homes owned by current user
+        owner_homes = Home.query.filter_by(owner_id=current_user.id).all()
+        home_ids = [home.id for home in owner_homes]
         
-        if not room_ids:
-            # If owner has no rooms, show empty stats
+        if not home_ids:
+            # If owner has no homes, show empty stats
             return render_template('owner/statistics.html', 
                                    stats={
                                        'total_profit': 0,
@@ -1605,12 +1529,12 @@ def statistics():
                                        'average_rating': 0,
                                        'hourly_revenue': 0,
                                        'nightly_revenue': 0,
-                                       'top_rooms': []
+                                       'top_homes': []
                                    })
         
-        # Get all completed bookings for owner's rooms
+        # Get all completed bookings for owner's homes
         completed_bookings = Booking.query.filter(
-            Booking.room_id.in_(room_ids),
+            Booking.home_id.in_(home_ids),
             Booking.status == 'completed'
         ).all()
         
@@ -1635,50 +1559,50 @@ def statistics():
         else:
             common_type = "N/A"
         
-        # Calculate booking rate (percentage of time rooms are booked)
+        # Calculate booking rate (percentage of time homes are booked)
         # This is a simplified calculation - you might want to make it more sophisticated
-        booking_rate = min((total_hours / (len(owner_rooms) * 24 * 30)) * 100, 100) if owner_rooms else 0
+        booking_rate = min((total_hours / (len(owner_homes) * 24 * 30)) * 100, 100) if owner_homes else 0
         
         # Calculate average rating
-        all_reviews = Review.query.filter(Review.room_id.in_(room_ids)).all()
+        all_reviews = Review.query.filter(Review.home_id.in_(home_ids)).all()
         average_rating = sum(r.rating for r in all_reviews) / len(all_reviews) if all_reviews else 0
         
-        # Get top performing rooms
-        top_rooms_query = db.session.query(
-            Room.id,
-            Room.title,
+        # Get top performing homes
+        top_homes_query = db.session.query(
+            Home.id,
+            Home.title,
             func.count(Booking.id).label('booking_count'),
             func.sum(Booking.total_price).label('total_revenue'),
             func.avg(Review.rating).label('avg_rating')
-        ).select_from(Room)\
-         .outerjoin(Booking, (Room.id == Booking.room_id) & (Booking.status == 'completed'))\
-         .outerjoin(Review, Room.id == Review.room_id)\
-         .filter(Room.owner_id == current_user.id)\
-         .group_by(Room.id, Room.title)\
+        ).select_from(Home)\
+         .outerjoin(Booking, (Home.id == Booking.home_id) & (Booking.status == 'completed'))\
+         .outerjoin(Review, Home.id == Review.home_id)\
+         .filter(Home.owner_id == current_user.id)\
+         .group_by(Home.id, Home.title)\
          .order_by(func.sum(Booking.total_price).desc())\
          .limit(5).all()
         
-        top_rooms = []
-        for room_data in top_rooms_query:
-            room = Room.query.get(room_data.id)
-            room_bookings = [b for b in completed_bookings if b.room_id == room_data.id]
+        top_homes = []
+        for home_data in top_homes_query:
+            home = Home.query.get(home_data.id)
+            home_bookings = [b for b in completed_bookings if b.home_id == home_data.id]
             
-            # Determine most common booking type for this room
-            room_hourly = sum(1 for b in room_bookings if b.booking_type == 'hourly')
-            room_nightly = len(room_bookings) - room_hourly
-            room_common_type = "Theo giờ" if room_hourly >= room_nightly else "Qua đêm"
+            # Determine most common booking type for this home
+            home_hourly = sum(1 for b in home_bookings if b.booking_type == 'hourly')
+            home_nightly = len(home_bookings) - home_hourly
+            home_common_type = "Theo giờ" if home_hourly >= home_nightly else "Qua đêm"
             
-            # Calculate booking rate for this room
-            room_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in room_bookings)
-            room_booking_rate = min((room_total_hours / (24 * 30)) * 100, 100) if room_total_hours > 0 else 0
+            # Calculate booking rate for this home
+            home_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in home_bookings)
+            home_booking_rate = min((home_total_hours / (24 * 30)) * 100, 100) if home_total_hours > 0 else 0
             
-            top_rooms.append({
-                'name': room_data.title,
-                'type': room_common_type,
-                'revenue': int(room_data.total_revenue or 0),
-                'bookings': room_data.booking_count or 0,
-                'booking_rate': f"{room_booking_rate:.0f}%",
-                'rating': f"{room_data.avg_rating:.1f}" if room_data.avg_rating else "0.0"
+            top_homes.append({
+                'name': home_data.title,
+                'type': home_common_type,
+                'revenue': int(home_data.total_revenue or 0),
+                'bookings': home_data.booking_count or 0,
+                'booking_rate': f"{home_booking_rate:.0f}%",
+                'rating': f"{home_data.avg_rating:.1f}" if home_data.avg_rating else "0.0"
             })
         
         # Generate chart data for the last 7 days
@@ -1701,7 +1625,7 @@ def statistics():
             'average_rating': f"{average_rating:.1f}/5.0",
             'hourly_revenue': int(hourly_revenue),
             'nightly_revenue': int(nightly_revenue),
-            'top_rooms': top_rooms,
+            'top_homes': top_homes,
             'chart_data': chart_data
         }
         
@@ -1720,7 +1644,7 @@ def statistics():
                                    'average_rating': 0,
                                    'hourly_revenue': 0,
                                    'nightly_revenue': 0,
-                                   'top_rooms': []
+                                   'top_homes': []
                                })
 
 @owner_bp.route('/api/chart-data/<period>')
@@ -1729,16 +1653,16 @@ def statistics():
 def get_chart_data(period, chart_type='both'):
     """API endpoint to get chart data for different periods"""
     try:
-        # Get all rooms owned by current user
-        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
-        room_ids = [room.id for room in owner_rooms]
+        # Get all homes owned by current user
+        owner_homes = Home.query.filter_by(owner_id=current_user.id).all()
+        home_ids = [home.id for home in owner_homes]
         
-        if not room_ids:
+        if not home_ids:
             return jsonify({'hourly': [], 'nightly': []})
         
         # Get completed bookings
         completed_bookings = Booking.query.filter(
-            Booking.room_id.in_(room_ids),
+            Booking.home_id.in_(home_ids),
             Booking.status == 'completed'
         ).all()
         
@@ -1876,11 +1800,11 @@ def get_chart_data(period, chart_type='both'):
 def get_stats_data(period, chart_type='both'):
     """API endpoint to get statistics data for different periods"""
     try:
-        # Get all rooms owned by current user
-        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
-        room_ids = [room.id for room in owner_rooms]
+        # Get all homes owned by current user
+        owner_homes = Home.query.filter_by(owner_id=current_user.id).all()
+        home_ids = [home.id for home in owner_homes]
         
-        if not room_ids:
+        if not home_ids:
             return jsonify({
                 'total_profit': '0đ',
                 'total_hours': '0 giờ',
@@ -1888,7 +1812,7 @@ def get_stats_data(period, chart_type='both'):
                 'booking_rate': '0%',
                 'common_type': 'N/A',
                 'average_rating': '0/5',
-                'top_rooms': []
+                'top_homes': []
             })
         
         # Calculate date range based on period
@@ -1907,7 +1831,7 @@ def get_stats_data(period, chart_type='both'):
         
         # Get completed bookings
         query = Booking.query.filter(
-            Booking.room_id.in_(room_ids),
+            Booking.home_id.in_(home_ids),
             Booking.status == 'completed'
         )
         
@@ -1940,57 +1864,57 @@ def get_stats_data(period, chart_type='both'):
         else:
             common_type = "N/A"
         
-        # Calculate booking rate (percentage of time rooms are booked)
+        # Calculate booking rate (percentage of time homes are booked)
         days_in_period = 30 if period == 'month' else (7 if period == 'week' else (365 if period == 'year' else 30))
-        booking_rate = min((total_hours / (len(owner_rooms) * 24 * days_in_period)) * 100, 100) if owner_rooms else 0
+        booking_rate = min((total_hours / (len(owner_homes) * 24 * days_in_period)) * 100, 100) if owner_homes else 0
         
         # Calculate average rating
-        review_query = Review.query.filter(Review.room_id.in_(room_ids))
+        review_query = Review.query.filter(Review.home_id.in_(home_ids))
         if start_date:
             review_query = review_query.filter(Review.created_at >= start_date)
         
         all_reviews = review_query.all()
         average_rating = sum(r.rating for r in all_reviews) / len(all_reviews) if all_reviews else 0
         
-        # Get top performing rooms
-        top_rooms_query = db.session.query(
-            Room.id,
-            Room.title,
+        # Get top performing homes
+        top_homes_query = db.session.query(
+            Home.id,
+            Home.title,
             func.count(Booking.id).label('booking_count'),
             func.sum(Booking.total_price).label('total_revenue'),
             func.avg(Review.rating).label('avg_rating')
-        ).select_from(Room)\
-         .outerjoin(Booking, (Room.id == Booking.room_id) & (Booking.status == 'completed'))\
-         .outerjoin(Review, Room.id == Review.room_id)\
-         .filter(Room.owner_id == current_user.id)
+        ).select_from(Home)\
+         .outerjoin(Booking, (Home.id == Booking.home_id) & (Booking.status == 'completed'))\
+         .outerjoin(Review, Home.id == Review.home_id)\
+         .filter(Home.owner_id == current_user.id)
         
         if start_date:
-            top_rooms_query = top_rooms_query.filter(Booking.created_at >= start_date)
+            top_homes_query = top_homes_query.filter(Booking.created_at >= start_date)
         
-        top_rooms_data = top_rooms_query.group_by(Room.id, Room.title)\
+        top_homes_data = top_homes_query.group_by(Home.id, Home.title)\
                                        .order_by(func.sum(Booking.total_price).desc())\
                                        .limit(5).all()
         
-        top_rooms = []
-        for room_data in top_rooms_data:
-            room_bookings = [b for b in completed_bookings if b.room_id == room_data.id]
+        top_homes = []
+        for home_data in top_homes_data:
+            home_bookings = [b for b in completed_bookings if b.home_id == home_data.id]
             
-            # Determine most common booking type for this room
-            room_hourly = sum(1 for b in room_bookings if b.booking_type == 'hourly')
-            room_nightly = len(room_bookings) - room_hourly
-            room_common_type = "Theo giờ" if room_hourly >= room_nightly else "Qua đêm"
+            # Determine most common booking type for this home
+            home_hourly = sum(1 for b in home_bookings if b.booking_type == 'hourly')
+            home_nightly = len(home_bookings) - home_hourly
+            home_common_type = "Theo giờ" if home_hourly >= home_nightly else "Qua đêm"
             
-            # Calculate booking rate for this room
-            room_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in room_bookings)
-            room_booking_rate = min((room_total_hours / (24 * days_in_period)) * 100, 100) if room_total_hours > 0 else 0
+            # Calculate booking rate for this home
+            home_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in home_bookings)
+            home_booking_rate = min((home_total_hours / (24 * days_in_period)) * 100, 100) if home_total_hours > 0 else 0
             
-            top_rooms.append({
-                'name': room_data.title,
-                'type': room_common_type,
-                'revenue': int(room_data.total_revenue or 0),
-                'bookings': room_data.booking_count or 0,
-                'booking_rate': f"{room_booking_rate:.0f}%",
-                'rating': f"{room_data.avg_rating:.1f}" if room_data.avg_rating else "0.0"
+            top_homes.append({
+                'name': home_data.title,
+                'type': home_common_type,
+                'revenue': int(home_data.total_revenue or 0),
+                'bookings': home_data.booking_count or 0,
+                'booking_rate': f"{home_booking_rate:.0f}%",
+                'rating': f"{home_data.avg_rating:.1f}" if home_data.avg_rating else "0.0"
             })
         
         return jsonify({
@@ -2000,7 +1924,7 @@ def get_stats_data(period, chart_type='both'):
             'booking_rate': f"{booking_rate:.0f}%",
             'common_type': common_type,
             'average_rating': f"{average_rating:.1f}/5",
-            'top_rooms': top_rooms
+            'top_homes': top_homes
         })
         
     except Exception as e:
@@ -2025,11 +1949,11 @@ def get_custom_stats_data(chart_type='both'):
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)  # Include end date
         
-        # Get all rooms owned by current user
-        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
-        room_ids = [room.id for room in owner_rooms]
+        # Get all homes owned by current user
+        owner_homes = Home.query.filter_by(owner_id=current_user.id).all()
+        home_ids = [home.id for home in owner_homes]
         
-        if not room_ids:
+        if not home_ids:
             return jsonify({
                 'total_profit': '0đ',
                 'total_hours': '0 giờ',
@@ -2037,12 +1961,12 @@ def get_custom_stats_data(chart_type='both'):
                 'booking_rate': '0%',
                 'common_type': 'N/A',
                 'average_rating': '0/5',
-                'top_rooms': []
+                'top_homes': []
             })
         
         # Get completed bookings in date range
         query = Booking.query.filter(
-            Booking.room_id.in_(room_ids),
+            Booking.home_id.in_(home_ids),
             Booking.status == 'completed',
             Booking.created_at >= start_date,
             Booking.created_at < end_date
@@ -2074,55 +1998,55 @@ def get_custom_stats_data(chart_type='both'):
         else:
             common_type = "N/A"
         
-        # Calculate booking rate (percentage of time rooms are booked)
+        # Calculate booking rate (percentage of time homes are booked)
         days_in_range = (end_date - start_date).days
-        booking_rate = min((total_hours / (len(owner_rooms) * 24 * days_in_range)) * 100, 100) if owner_rooms and days_in_range > 0 else 0
+        booking_rate = min((total_hours / (len(owner_homes) * 24 * days_in_range)) * 100, 100) if owner_homes and days_in_range > 0 else 0
         
         # Calculate average rating
         all_reviews = Review.query.filter(
-            Review.room_id.in_(room_ids),
+            Review.home_id.in_(home_ids),
             Review.created_at >= start_date,
             Review.created_at < end_date
         ).all()
         average_rating = sum(r.rating for r in all_reviews) / len(all_reviews) if all_reviews else 0
         
-        # Get top performing rooms
-        top_rooms_query = db.session.query(
-            Room.id,
-            Room.title,
+        # Get top performing homes
+        top_homes_query = db.session.query(
+            Home.id,
+            Home.title,
             func.count(Booking.id).label('booking_count'),
             func.sum(Booking.total_price).label('total_revenue'),
             func.avg(Review.rating).label('avg_rating')
-        ).select_from(Room)\
-         .outerjoin(Booking, (Room.id == Booking.room_id) & (Booking.status == 'completed') & 
+        ).select_from(Home)\
+         .outerjoin(Booking, (Home.id == Booking.home_id) & (Booking.status == 'completed') & 
                     (Booking.created_at >= start_date) & (Booking.created_at < end_date))\
-         .outerjoin(Review, (Room.id == Review.room_id) & 
+         .outerjoin(Review, (Home.id == Review.home_id) & 
                     (Review.created_at >= start_date) & (Review.created_at < end_date))\
-         .filter(Room.owner_id == current_user.id)\
-         .group_by(Room.id, Room.title)\
+         .filter(Home.owner_id == current_user.id)\
+         .group_by(Home.id, Home.title)\
          .order_by(func.sum(Booking.total_price).desc())\
          .limit(5).all()
         
-        top_rooms = []
-        for room_data in top_rooms_query:
-            room_bookings = [b for b in completed_bookings if b.room_id == room_data.id]
+        top_homes = []
+        for home_data in top_homes_query:
+            home_bookings = [b for b in completed_bookings if b.home_id == home_data.id]
             
-            # Determine most common booking type for this room
-            room_hourly = sum(1 for b in room_bookings if b.booking_type == 'hourly')
-            room_nightly = len(room_bookings) - room_hourly
-            room_common_type = "Theo giờ" if room_hourly >= room_nightly else "Qua đêm"
+            # Determine most common booking type for this home
+            home_hourly = sum(1 for b in home_bookings if b.booking_type == 'hourly')
+            home_nightly = len(home_bookings) - home_hourly
+            home_common_type = "Theo giờ" if home_hourly >= home_nightly else "Qua đêm"
             
-            # Calculate booking rate for this room
-            room_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in room_bookings)
-            room_booking_rate = min((room_total_hours / (24 * days_in_range)) * 100, 100) if room_total_hours > 0 and days_in_range > 0 else 0
+            # Calculate booking rate for this home
+            home_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in home_bookings)
+            home_booking_rate = min((home_total_hours / (24 * days_in_range)) * 100, 100) if home_total_hours > 0 and days_in_range > 0 else 0
             
-            top_rooms.append({
-                'name': room_data.title,
-                'type': room_common_type,
-                'revenue': int(room_data.total_revenue or 0),
-                'bookings': room_data.booking_count or 0,
-                'booking_rate': f"{room_booking_rate:.0f}%",
-                'rating': f"{room_data.avg_rating:.1f}" if room_data.avg_rating else "0.0"
+            top_homes.append({
+                'name': home_data.title,
+                'type': home_common_type,
+                'revenue': int(home_data.total_revenue or 0),
+                'bookings': home_data.booking_count or 0,
+                'booking_rate': f"{home_booking_rate:.0f}%",
+                'rating': f"{home_data.avg_rating:.1f}" if home_data.avg_rating else "0.0"
             })
         
         return jsonify({
@@ -2132,7 +2056,7 @@ def get_custom_stats_data(chart_type='both'):
             'booking_rate': f"{booking_rate:.0f}%",
             'common_type': common_type,
             'average_rating': f"{average_rating:.1f}/5",
-            'top_rooms': top_rooms
+            'top_homes': top_homes
         })
         
     except Exception as e:
@@ -2154,16 +2078,16 @@ def get_custom_chart_data_query():
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)  # Include end date
         
-        # Get all rooms owned by current user
-        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
-        room_ids = [room.id for room in owner_rooms]
+        # Get all homes owned by current user
+        owner_homes = Home.query.filter_by(owner_id=current_user.id).all()
+        home_ids = [home.id for home in owner_homes]
         
-        if not room_ids:
+        if not home_ids:
             return jsonify({'hourly': [], 'nightly': []})
         
         # Get completed bookings in date range
         completed_bookings = Booking.query.filter(
-            Booking.room_id.in_(room_ids),
+            Booking.home_id.in_(home_ids),
             Booking.status == 'completed',
             Booking.created_at >= start_date,
             Booking.created_at < end_date
@@ -2253,11 +2177,11 @@ def get_bookings_api():
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 20))
         
-        # Get all rooms owned by current user
-        owner_rooms = Room.query.filter_by(owner_id=current_user.id).all()
-        room_ids = [room.id for room in owner_rooms]
+        # Get all homes owned by current user
+        owner_homes = Home.query.filter_by(owner_id=current_user.id).all()
+        home_ids = [home.id for home in owner_homes]
         
-        if not room_ids:
+        if not home_ids:
             return jsonify({
                 'bookings': [],
                 'pagination': {
@@ -2271,8 +2195,8 @@ def get_bookings_api():
             })
         
         # Build query
-        query = Booking.query.join(Room).join(Renter).filter(
-            Booking.room_id.in_(room_ids)
+        query = Booking.query.join(Home).join(Renter).filter(
+            Booking.home_id.in_(home_ids)
         )
         
         # Apply status filter
@@ -2310,7 +2234,7 @@ def get_bookings_api():
         if search_term:
             query = query.filter(
                 db.or_(
-                    Room.title.ilike(f'%{search_term}%'),
+                    Home.title.ilike(f'%{search_term}%'),
                     Renter.full_name.ilike(f'%{search_term}%'),
                     Renter.username.ilike(f'%{search_term}%')
                 )
@@ -2348,7 +2272,7 @@ def get_bookings_api():
             bookings_data.append({
                 'id': booking.id,
                 'created_at': booking.created_at.isoformat(),
-                'room_title': booking.room.title,
+                'home_title': booking.home.title,
                 'renter_name': booking.renter.full_name or booking.renter.username,
                 'duration': duration,
                 'total_price': booking.total_price,

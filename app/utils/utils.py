@@ -271,7 +271,7 @@ def migrate_old_images():
     """
     try:
         # Import here to avoid circular imports
-        from app.models.models import Admin, Owner, Renter, Room, RoomImage
+        from app.models.models import Admin, Owner, Renter, Home, HomeImage
         from app import db
         
         print("Starting image migration...")
@@ -330,26 +330,26 @@ def migrate_old_images():
                     renter.avatar = f"{new_relative_path}/{new_filename}"
                     print(f"Migrated renter {renter.id} avatar: {renter.avatar}")
         
-        # Migrate room images
-        room_images = RoomImage.query.all()
-        for room_image in room_images:
-            if room_image.image_path and room_image.image_path.startswith('uploads/'):
-                old_path = f"static/{room_image.image_path}"
+        # Migrate home images
+        home_images = HomeImage.query.all()
+        for home_image in home_images:
+            if home_image.image_path and home_image.image_path.startswith('uploads/'):
+                old_path = f"static/{home_image.image_path}"
                 if os.path.exists(old_path):
-                    room = room_image.room
-                    if room:
+                    home = home_image.home
+                    if home:
                         # Create new path
-                        new_relative_path, new_absolute_path = get_user_upload_path('owner', room.owner_id, room.id)
-                        prefix = 'main' if room_image.is_featured else 'room'
-                        new_filename = generate_unique_filename(os.path.basename(room_image.image_path), prefix)
+                        new_relative_path, new_absolute_path = get_user_upload_path('owner', home.owner_id, home.id)
+                        prefix = 'main' if home_image.is_featured else 'home'
+                        new_filename = generate_unique_filename(os.path.basename(home_image.image_path), prefix)
                         new_full_path = os.path.join(new_absolute_path, new_filename)
                         
                         # Move file
                         os.rename(old_path, new_full_path)
                         
                         # Update database
-                        room_image.image_path = f"{new_relative_path}/{new_filename}"
-                        print(f"Migrated room {room.id} image: {room_image.image_path}")
+                        home_image.image_path = f"{new_relative_path}/{new_filename}"
+                        print(f"Migrated home {home.id} image: {home_image.image_path}")
         
         # Commit all changes
         db.session.commit()

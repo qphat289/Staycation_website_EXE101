@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_migrate import Migrate
 from config.config import Config
-from app.models.models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity, RoomImage
+from app.models.models import db, Admin, Owner, Renter, Statistics, Home, Booking, Review, Amenity, HomeImage
 from app.utils.utils import get_rank_info, get_location_name
 from app.utils.address_formatter import format_district, format_city, format_full_address
 from dotenv import load_dotenv
@@ -155,7 +155,7 @@ with app.app_context():
                     'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
                     'data': [0, 0, 0, 0, 0, 0, 0]
                 }),
-                top_rooms=json.dumps([])
+                top_homes=json.dumps([])
             )
             db.session.add(stats)
             db.session.commit()
@@ -170,6 +170,7 @@ from app.routes.renter import renter_bp
 from app.routes.admin import admin_bp
 from app.routes.payment import payment_bp
 from app.routes.api import api_bp
+from app.routes.test_map import test_map_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(owner_bp)
@@ -177,6 +178,7 @@ app.register_blueprint(renter_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(payment_bp)
 app.register_blueprint(api_bp)
+app.register_blueprint(test_map_bp)
 
 # Home route
 @app.route('/')
@@ -189,9 +191,9 @@ def home():
         return redirect(url_for('admin.dashboard'))
     # Retrieve featured homestays to display on the homepage
     from sqlalchemy.orm import joinedload
-    homestays = Room.query.options(
-        joinedload(Room.images),
-        joinedload(Room.reviews)
+    homestays = Home.query.options(
+        joinedload(Home.images),
+        joinedload(Home.reviews)
     ).filter_by(is_active=True).limit(6).all()
     return render_template('home.html', homestays=homestays)
 

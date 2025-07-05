@@ -464,11 +464,6 @@
     text-transform: uppercase;
   }
 
-  .receipt-status.status-pending {
-    background: rgba(255, 193, 7, 0.2);
-    color: #856404;
-  }
-
   .receipt-status.status-confirmed {
     background: rgba(13, 110, 253, 0.2);
     color: #084298;
@@ -484,8 +479,7 @@
     color: #0f5132;
   }
 
-  .receipt-status.status-cancelled,
-  .receipt-status.status-rejected {
+  .receipt-status.status-cancelled {
     background: rgba(220, 53, 69, 0.2);
     color: #842029;
   }
@@ -888,13 +882,13 @@ function loadTabData(tabType, page = 1) {
   let statusFilter = '';
   switch(tabType) {
     case 'orders':
-      statusFilter = 'pending,confirmed';
+      statusFilter = 'confirmed';
       break;
     case 'renting':
       statusFilter = 'active';
       break;
     case 'history':
-      statusFilter = 'completed,rejected,cancelled';
+      statusFilter = 'completed,cancelled';
       break;
   }
   
@@ -969,7 +963,7 @@ function renderBookings(bookings, tableBody, tabType) {
     html += `
       <tr>
         <td>${formattedDate}</td>
-        <td>${booking.room_title || 'N/A'}</td>
+        <td>${booking.home_title || 'N/A'}</td>
         <td>${booking.renter_name || 'N/A'}</td>
         <td>${booking.duration || 'N/A'}</td>
         <td>${formatCurrency(booking.total_price)}</td>
@@ -988,12 +982,7 @@ function renderBookings(bookings, tableBody, tabType) {
 function getActionButtons(booking, tabType) {
   let buttons = `<button class="action-btn btn-view" onclick="showBookingReceipt(${booking.id})"><i class="fas fa-eye"></i> Xem</button>`;
   
-  if (tabType === 'orders' && booking.status === 'pending') {
-    buttons += `
-      <a href="/owner/booking/confirm/${booking.id}" class="action-btn btn-confirm"><i class="fas fa-check"></i> Xác nhận</a>
-      <a href="/owner/reject-booking/${booking.id}" class="action-btn btn-reject"><i class="fas fa-times"></i> Từ chối</a>
-    `;
-  }
+  // Removed confirm/reject buttons since no owner approval needed
   
   return buttons;
 }
@@ -1115,7 +1104,7 @@ async function showBookingReceipt(bookingId) {
       document.getElementById('receiptUsername').textContent = booking.renter?.username || 'Chưa cung cấp';
       
       // Room information
-      document.getElementById('receiptRoomTitle').textContent = booking.room?.title || 'N/A';
+      document.getElementById('receiptRoomTitle').textContent = booking.home?.title || 'N/A';
       document.getElementById('receiptBookingType').textContent = booking.booking_type === 'hourly' ? 'Theo giờ' : 'Qua đêm';
       
       // Booking details
@@ -1132,12 +1121,10 @@ async function showBookingReceipt(bookingId) {
       // Status with proper styling
       const statusElement = document.getElementById('receiptStatus');
       const statusMap = {
-        'pending': { text: 'Chờ xác nhận', class: 'status-pending' },
         'confirmed': { text: 'Đã xác nhận', class: 'status-confirmed' },
         'active': { text: 'Đang sử dụng', class: 'status-active' },
         'completed': { text: 'Hoàn thành', class: 'status-completed' },
-        'cancelled': { text: 'Đã hủy', class: 'status-cancelled' },
-        'rejected': { text: 'Từ chối', class: 'status-rejected' }
+        'cancelled': { text: 'Đã hủy', class: 'status-cancelled' }
       };
       
       const status = statusMap[booking.status] || { text: booking.status, class: '' };

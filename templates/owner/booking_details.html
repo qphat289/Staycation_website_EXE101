@@ -22,7 +22,7 @@
                     <div class="status-indicator bg-primary me-3"></div>
                 {% elif booking.status == 'completed' %}
                     <div class="status-indicator bg-success me-3"></div>
-                {% elif booking.status == 'rejected' or booking.status == 'cancelled' %}
+                {% elif booking.status == 'cancelled' %}
                     <div class="status-indicator bg-danger me-3"></div>
                 {% else %}
                     <div class="status-indicator bg-secondary me-3"></div>
@@ -36,16 +36,6 @@
                 </div>
             </div>
             <div>
-                {% if booking.status == 'pending' %}
-                    <a href="{{ url_for('owner.confirm_booking', id=booking.id) }}" 
-                       class="btn btn-success px-4 py-2 fw-medium">
-                        Confirm
-                    </a>
-                    <a href="{{ url_for('owner.reject_booking', id=booking.id) }}" 
-                       class="btn btn-danger ms-2 px-4 py-2 fw-medium">
-                        Reject
-                    </a>
-                {% endif %}
                 <a href="{{ url_for('owner.view_bookings') }}" 
                    class="btn btn-outline-secondary ms-2 px-4 py-2">
                     BACK
@@ -55,14 +45,9 @@
         
         <!-- Booking Status Bar -->
         <div class="booking-status-bar">
-            <div class="booking-status-step {% if booking.status in ['pending', 'confirmed', 'active', 'completed'] %}completed{% endif %}">
+            <div class="booking-status-step {% if booking.status in ['confirmed', 'active', 'completed'] %}completed{% endif %}">
                 <div class="step-icon"><i class="bi bi-calendar-plus"></i></div>
                 <div class="step-label">Booked</div>
-            </div>
-            
-            <div class="booking-status-step {% if booking.status in ['confirmed', 'active', 'completed'] %}completed{% elif booking.status == 'rejected' %}rejected{% endif %}">
-                <div class="step-icon"><i class="bi bi-check-circle"></i></div>
-                <div class="step-label">Approval</div>
             </div>
             
             <div class="booking-status-step {% if booking.payment_status == 'paid' %}completed{% endif %}">
@@ -91,12 +76,10 @@
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-center">
                                 <div class="status-badge 
-                                    {% if booking.status == 'pending' %}status-pending
-                                    {% elif booking.status == 'confirmed' %}status-confirmed
+                                    {% if booking.status == 'confirmed' %}status-confirmed
                                     {% elif booking.status == 'active' %}status-active
                                     {% elif booking.status == 'completed' %}status-completed
                                     {% elif booking.status == 'cancelled' %}status-cancelled
-                                    {% elif booking.status == 'rejected' %}status-rejected
                                     {% endif %}">
                                     {{ booking.status|capitalize }}
                                 </div>
@@ -434,9 +417,6 @@
         font-size: 0.9rem;
         color: white;
     }
-    .status-pending {
-        background: linear-gradient(to right, #fd7e14, #ffc107);
-    }
     .status-confirmed {
         background: linear-gradient(to right, #0d6efd, #0dcaf0);
     }
@@ -446,7 +426,7 @@
     .status-completed {
         background: linear-gradient(to right, #198754, #20c997);
     }
-    .status-cancelled, .status-rejected {
+    .status-cancelled {
         background: linear-gradient(to right, #dc3545, #fd7e14);
     }
     

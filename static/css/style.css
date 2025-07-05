@@ -384,10 +384,10 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-.room-card,
-.room-card.available,
-.room-card.booked,
-.room-card[class] {
+.home-card,
+.home-card.available,
+.home-card.booked,
+.home-card[class] {
     background: none !important;
     background-color: #F2F4DF !important;
     color: var(--primary-dark) !important;
@@ -395,17 +395,17 @@ body {
     box-shadow: 0 2px 8px rgba(24, 40, 44, 0.05) !important;
 }
 
-.room-card:hover,
-.room-card.available:hover,
-.room-card.booked:hover,
-.room-card[class]:hover {
+.home-card:hover,
+.home-card.available:hover,
+.home-card.booked:hover,
+.home-card[class]:hover {
     background: none !important;
     background-color: #E0EC9B !important;
     color: var(--primary-dark) !important;
     border: 1px solid var(--border-color) !important;
 }
 
-.room-card .room-number {
+.home-card .home-number {
     color: var(--primary-dark) !important;
 }
 
@@ -415,20 +415,20 @@ body {
     font-weight: 600;
 }
 
-.room-card,
-.room-card * {
+.home-card,
+.home-card * {
     color: var(--primary-dark) !important;
     fill: var(--primary-dark) !important;
 }
 
-.room-card .room-status,
-.room-card .room-type,
-.room-card .room-info {
+.home-card .home-status,
+.home-card .home-type,
+.home-card .home-info {
     color: var(--primary-dark) !important;
 }
 
-.room-card i,
-.room-card svg {
+.home-card i,
+.home-card svg {
     color: var(--primary-dark) !important;
     fill: var(--primary-dark) !important;
 }

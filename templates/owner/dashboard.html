@@ -1,9 +1,9 @@
 {% extends 'owner/base_owner.html' %}
 
-{% block title %}Tất cả phòng{% endblock %}
+{% block title %}Tất cả nhà{% endblock %}
 
-{% block page_title %}Tất cả phòng{% endblock %}
-{% block page_subtitle %}Quản lý tất cả phòng của bạn{% endblock %}
+{% block page_title %}Tất cả nhà{% endblock %}
+{% block page_subtitle %}Quản lý tất cả nhà của bạn{% endblock %}
 
 {% block page_css %}
 <style>
@@ -250,7 +250,7 @@
         transform: translateY(-1px);
     }
 
-    .add-room-btn {
+    .add-home-btn {
         padding: 10px 20px;
         background: #9ed649;
         color: white;
@@ -265,7 +265,7 @@
         transition: all 0.2s ease;
     }
 
-    .add-room-btn:hover {
+    .add-home-btn:hover {
         background: #8bc34a;
         transform: translateY(-1px);
     }
@@ -576,7 +576,7 @@
 <div class="filter-section">
     <div class="filter-left">
         <div class="search-box">
-            <input type="text" placeholder="Tìm kiếm phòng..." id="searchInput">
+            <input type="text" placeholder="Tìm kiếm nhà..." id="searchInput">
         </div>
         <div class="dropdown">
             <button class="sort-btn dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -656,51 +656,51 @@
             Đặt lại
         </button>
     </div>
-    <button class="add-room-btn" onclick="clearSessionAndAddRoom()">
+    <button class="add-home-btn" onclick="clearSessionAndAddHome()">
         <i class="fas fa-plus"></i>
-        Thêm phòng
+        Thêm nhà
     </button>
 </div>
 
 <!-- Homestay List -->
-{% if rooms %}
+{% if homes %}
 <div class="homestay-list">
-    {% for room in rooms %}
-    <div class="homestay-item" data-room-id="{{ room.id }}">
+    {% for home in homes %}
+    <div class="homestay-item" data-home-id="{{ home.id }}">
         <div class="homestay-status">
-            <span class="status-badge {{ 'status-active' if room.is_active else 'status-inactive' }}">
-                {{ 'Hoạt động' if room.is_active else 'Đã khóa' }}
+            <span class="status-badge {{ 'status-active' if home.is_active else 'status-inactive' }}">
+                {{ 'Hoạt động' if home.is_active else 'Đã khóa' }}
             </span>
             <span class="status-badge" style="color: #2e7d32; border-color: #2e7d32; background: #e8f5e8;">
-                {{ room.room_type }}
+                {{ home.home_type }}
             </span>
         </div>
         
         <div class="homestay-main-content">
             <div class="homestay-image">
-                {% set featured_image = room.images|selectattr('is_featured')|first %}
+                {% set featured_image = home.images|selectattr('is_featured')|first %}
                 {% if featured_image %}
-                    <img src="{{ url_for('static', filename=featured_image.image_path) }}" alt="{{ room.title }}">
-                {% elif room.images and room.images|length > 0 %}
-                    <img src="{{ url_for('static', filename=room.images[0].image_path) }}" alt="{{ room.title }}">
+                    <img src="{{ url_for('static', filename=featured_image.image_path) }}" alt="{{ home.title }}">
+                {% elif home.images and home.images|length > 0 %}
+                    <img src="{{ url_for('static', filename=home.images[0].image_path) }}" alt="{{ home.title }}">
                 {% else %}
                     <i class="fas fa-image"></i>
                 {% endif %}
             </div>
             <div class="homestay-info">
-                <h3 data-room-url="{{ url_for('owner.room_detail', room_id=room.id) }}" onclick="saveFilterStateAndNavigate(this.dataset.roomUrl)">{{ room.title }}</h3>
+                <h3 data-home-url="{{ url_for('owner.home_detail', home_id=home.id) }}" onclick="saveFilterStateAndNavigate(this.dataset.homeUrl)">{{ home.title }}</h3>
                 <div class="homestay-details">
                     <div class="homestay-detail">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span>{{ format_full_address(room.address, None, room.district, room.city) }}</span>
+                        <span>{{ format_full_address(home.address, None, home.district, home.city) }}</span>
                     </div>
                     <div class="homestay-detail">
                         <i class="fas fa-money-bill"></i>
                         <span>
-                            {% if room.price_per_hour and room.price_per_hour > 0 %}
-                                {{ "{:,.0f}".format(room.price_per_hour * 1000) }}đ /giờ
-                            {% elif room.price_per_night and room.price_per_night > 0 %}
-                                {{ "{:,.0f}".format(room.price_per_night * 1000) }}đ /đêm
+                            {% if home.price_per_hour and home.price_per_hour > 0 %}
+                                {{ "{:,.0f}".format(home.price_per_hour * 1000) }}đ /giờ
+                            {% elif home.price_per_night and home.price_per_night > 0 %}
+                                {{ "{:,.0f}".format(home.price_per_night * 1000) }}đ /đêm
                             {% else %}
                                 Chưa có giá
                             {% endif %}
@@ -709,8 +709,8 @@
                     <div class="homestay-detail">
                         <i class="fas fa-calendar"></i>
                         <span>
-                            {% if room.created_at %}
-                                Thêm vào {{ room.created_at.strftime('%d-%m-%Y') }}
+                            {% if home.created_at %}
+                                Thêm vào {{ home.created_at.strftime('%d-%m-%Y') }}
                             {% else %}
                                 Mới thêm
                             {% endif %}
@@ -719,18 +719,18 @@
                 </div>
                 
                 <div class="homestay-actions">
-                    <a href="{{ url_for('owner.toggle_room_status', room_id=room.id) }}" 
+                    <a href="{{ url_for('owner.toggle_home_status', home_id=home.id) }}" 
                        class="btn-action btn-lock" 
-                       data-action="{{ 'mở khóa' if not room.is_active else 'khóa' }}">
-                        {{ 'Mở khóa' if not room.is_active else 'Khóa phòng' }}
+                       data-action="{{ 'mở khóa' if not home.is_active else 'khóa' }}">
+                        {{ 'Mở khóa' if not home.is_active else 'Khóa nhà' }}
                     </a>
-                    <a href="{{ url_for('owner.edit_room', room_id=room.id) }}" class="btn-action btn-edit" onclick="saveFilterState()">
+                    <a href="{{ url_for('owner.edit_home', home_id=home.id) }}" class="btn-action btn-edit" onclick="saveFilterState()">
                         Sửa
                     </a>
                     <button type="button" class="btn-action btn-delete" 
-                            data-room-id="{{ room.id }}" 
-                            data-room-title="{{ room.title|e }}"
-                            onclick="openDeleteModal(this.dataset.roomId, this.dataset.roomTitle)">
+                            data-home-id="{{ home.id }}" 
+                            data-home-title="{{ home.title|e }}"
+                            onclick="openDeleteModal(this.dataset.homeId, this.dataset.homeTitle)">
                         Xóa
                     </button>
                 </div>
@@ -742,33 +742,33 @@
 {% else %}
 <div class="empty-state">
     <i class="fas fa-home"></i>
-    <h3>Chưa có phòng nào</h3>
-    <p>Bắt đầu bằng cách thêm phòng đầu tiên của bạn</p>
+    <h3>Chưa có nhà nào</h3>
+    <p>Bắt đầu bằng cách thêm nhà đầu tiên của bạn</p>
 </div>
 {% endif %}
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade delete-modal" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModalLabel" aria-hidden="true">
+<div class="modal fade delete-modal" id="deleteHomeModal" tabindex="-1" aria-labelledby="deleteHomeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteRoomModalLabel">
+                <h5 class="modal-title" id="deleteHomeModalLabel">
                     <i class="fas fa-exclamation-triangle"></i>
-                    Xác nhận xóa phòng
+                    Xác nhận xóa nhà
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-3">Bạn có chắc chắn muốn xóa phòng "<strong id="roomToDelete"></strong>" không?</p>
-                <p class="text-muted mb-3">Hành động này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan đến phòng này.</p>
+                <p class="mb-3">Bạn có chắc chắn muốn xóa nhà "<strong id="homeToDelete"></strong>" không?</p>
+                <p class="text-muted mb-3">Hành động này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan đến nhà này.</p>
                 
-                <form id="deleteRoomForm">
+                <form id="deleteHomeForm">
                     <div class="mb-3">
                         <label for="deleteReason" class="form-label">
-                            Lý do xóa phòng <span class="text-danger">*</span>
+                            Lý do xóa nhà <span class="text-danger">*</span>
                         </label>
                         <textarea class="form-control" id="deleteReason" name="delete_reason" rows="3" 
-                                  placeholder="Vui lòng nhập lý do xóa phòng (tối thiểu 10 ký tự)" 
+                                  placeholder="Vui lòng nhập lý do xóa nhà (tối thiểu 10 ký tự)" 
                                   required minlength="10"></textarea>
                         <div class="form-text">Lý do này sẽ được lưu lại để theo dõi.</div>
                     </div>
@@ -776,9 +776,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDeleteRoom()">
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDeleteHome()">
                     <i class="fas fa-trash"></i>
-                    Xóa phòng
+                    Xóa nhà
                 </button>
             </div>
         </div>
@@ -786,18 +786,18 @@
 </div>
 
 <script>
-let roomToDeleteId = null;
+let homeToDeleteId = null;
 
-// Function to clear session data and navigate to add room
-function clearSessionAndAddRoom() {
+// Function to clear session data and navigate to add home
+function clearSessionAndAddHome() {
     // Clear browser sessionStorage first
     if (typeof(Storage) !== "undefined") {
-        sessionStorage.removeItem('room_form_data');
+        sessionStorage.removeItem('home_form_data');
         console.log('✅ Cleared browser sessionStorage');
     }
     
-    // Clear any existing room preview data from server session
-    fetch('/owner/clear-room-session', {
+    // Clear any existing home preview data from server session
+    fetch('/owner/clear-home-session', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -807,33 +807,33 @@ function clearSessionAndAddRoom() {
     .then(response => response.json())
     .then(data => {
         console.log('✅ Cleared server session successfully');
-        // Navigate to add room page
-        window.location.href = '{{ url_for("owner.add_room") }}';
+        // Navigate to add home page
+        window.location.href = '{{ url_for("owner.add_home") }}';
     })
     .catch(error => {
         console.error('❌ Error clearing server session:', error);
         // Navigate anyway even if clearing server session fails
-        window.location.href = '{{ url_for("owner.add_room") }}';
+        window.location.href = '{{ url_for("owner.add_home") }}';
     });
 }
 
-function openDeleteModal(roomId, roomTitle) {
-    roomToDeleteId = roomId;
-    document.getElementById('roomToDelete').textContent = roomTitle;
+function openDeleteModal(homeId, homeTitle) {
+    homeToDeleteId = homeId;
+    document.getElementById('homeToDelete').textContent = homeTitle;
     document.getElementById('deleteReason').value = '';
     
     // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('deleteRoomModal'));
+    const modal = new bootstrap.Modal(document.getElementById('deleteHomeModal'));
     modal.show();
 }
 
-function confirmDeleteRoom() {
+function confirmDeleteHome() {
     const deleteReason = document.getElementById('deleteReason').value.trim();
     const confirmBtn = document.getElementById('confirmDeleteBtn');
     
     // Validate reason
     if (!deleteReason || deleteReason.length < 10) {
-        alert('Vui lòng nhập lý do xóa phòng (tối thiểu 10 ký tự)');
+        alert('Vui lòng nhập lý do xóa nhà (tối thiểu 10 ký tự)');
         return;
     }
     
@@ -847,7 +847,7 @@ function confirmDeleteRoom() {
     formData.append('delete_reason', deleteReason);
     
     // Send delete request
-    fetch(`/owner/delete-room/${roomToDeleteId}`, {
+    fetch(`/owner/delete-home/${homeToDeleteId}`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -859,17 +859,17 @@ function confirmDeleteRoom() {
             // Success - reload page to show updated list
             window.location.reload();
         } else {
-            throw new Error('Có lỗi xảy ra khi xóa phòng');
+            throw new Error('Có lỗi xảy ra khi xóa nhà');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Có lỗi xảy ra khi xóa phòng. Vui lòng thử lại!');
+        alert('Có lỗi xảy ra khi xóa nhà. Vui lòng thử lại!');
         
         // Reset button state
         confirmBtn.classList.remove('btn-loading');
         confirmBtn.disabled = false;
-        confirmBtn.innerHTML = '<i class="fas fa-trash"></i> Xóa phòng';
+        confirmBtn.innerHTML = '<i class="fas fa-trash"></i> Xóa nhà';
     });
 }
 
@@ -890,14 +890,14 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
     });
 });
 
-// Enhanced room status toggle with better feedback
+// Enhanced home status toggle with better feedback
 document.querySelectorAll('.btn-lock').forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.preventDefault();
         
         const action = this.dataset.action || 'thay đổi trạng thái';
         
-        if (confirm('Bạn có chắc muốn ' + action + ' phòng này?')) {
+        if (confirm('Bạn có chắc muốn ' + action + ' nhà này?')) {
             // Show loading state
             const originalText = this.innerHTML;
             this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
@@ -996,8 +996,8 @@ function restoreFilterState() {
             }
             
             // Apply the restored filters
-            sortRooms(currentSort);
-            filterRooms();
+            sortHomes(currentSort);
+            filterHomes();
             updateFilterButtonText();
             
             return true;
@@ -1035,7 +1035,7 @@ function selectSort(element, event) {
     // Apply sort immediately
     currentSort = sortValue;
     saveFilterState(); // Save state when sort changes
-    sortRooms(currentSort);
+    sortHomes(currentSort);
     
     // Close dropdown
     const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('sortDropdown'));
@@ -1072,7 +1072,7 @@ function applyFilters(event) {
     saveFilterState();
     
     // Execute filtering (sorting is handled separately now)
-    filterRooms();
+    filterHomes();
     
     // Close dropdown
     const filterDropdownElement = document.getElementById('filterDropdown');
@@ -1127,8 +1127,8 @@ function resetFilters() {
     clearFilterState();
     
     // Apply reset
-    sortRooms(currentSort);
-    filterRooms();
+    sortHomes(currentSort);
+    filterHomes();
     updateFilterButtonText();
 }
 
@@ -1232,7 +1232,7 @@ function updateFilterButtonText() {
     }
 }
 
-function sortRooms(sortType) {
+function sortHomes(sortType) {
     const homestayList = document.querySelector('.homestay-list');
     if (!homestayList) return;
     
@@ -1270,7 +1270,7 @@ function getDateFromItem(item) {
     return new Date(0); // Default to epoch if no date found
 }
 
-function filterRooms() {
+function filterHomes() {
     const homestayItems = document.querySelectorAll('.homestay-item');
     
     homestayItems.forEach(item => {
@@ -1278,8 +1278,8 @@ function filterRooms() {
         
         // Filter by type (multiple selection support)
         if (currentTypeFilter.length > 0) {
-            const roomType = item.querySelector('.status-badge:nth-child(2)').textContent.trim();
-            if (!currentTypeFilter.includes(roomType)) {
+            const homeType = item.querySelector('.status-badge:nth-child(2)').textContent.trim();
+            if (!currentTypeFilter.includes(homeType)) {
                 showItem = false;
             }
         }
