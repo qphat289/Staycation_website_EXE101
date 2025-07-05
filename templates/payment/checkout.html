@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Thanh toán đặt phòng{% endblock %}
+{% block title %}Thanh toán - {{ booking.room.title }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -35,73 +35,136 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Thanh toán đặt phòng</h4>
+<div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category in ['danger', 'error'] else category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Thông tin booking -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Thông tin đặt phòng
+                    </h4>
                 </div>
                 <div class="card-body">
-                    <!-- Booking Details -->
-                    <div class="booking-details mb-4">
-                        <h5>Thông tin đặt phòng</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Mã đặt phòng:</strong> #{{ booking.id }}</p>
-                                <p><strong>Homestay:</strong> {{ booking.homestay.title }}</p>
-                                <p><strong>Ngày check-in:</strong> {{ booking.check_in_date.strftime('%d/%m/%Y') }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Ngày check-out:</strong> {{ booking.check_out_date.strftime('%d/%m/%Y') }}</p>
-                                <p><strong>Số người:</strong> {{ booking.num_guests }}</p>
-                                <p><strong>Tổng tiền:</strong> {{ "{:,.0f}".format(booking.total_price) }} VNĐ</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>{{ booking.room.title }}</h5>
+                            <p class="text-muted">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                {{ booking.room.address }}
+                            </p>
+                            <p class="text-muted">
+                                <i class="fas fa-user me-2"></i>
+                                Chủ phòng: {{ booking.room.owner.full_name }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="booking-details">
+                                <p><strong>Ngày đặt:</strong> {{ booking.start_time.strftime('%d/%m/%Y') }}</p>
+                                <p><strong>Giờ bắt đầu:</strong> {{ booking.start_time.strftime('%H:%M') }}</p>
+                                <p><strong>Giờ kết thúc:</strong> {{ booking.end_time.strftime('%H:%M') }}</p>
+                                <p><strong>Loại đặt:</strong> 
+                                    {% if booking.booking_type == 'hourly' %}
+                                        Theo giờ ({{ booking.total_hours }} giờ)
+                                    {% else %}
+                                        Qua đêm
+                                    {% endif %}
+                                </p>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Payment Options -->
-                    <div class="payment-options">
-                        <h5>Phương thức thanh toán</h5>
+            <!-- Thông tin khách hàng -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Thông tin khách hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Họ tên:</strong> {{ current_user.full_name }}</p>
+                            <p><strong>Email:</strong> {{ current_user.email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Số điện thoại:</strong> {{ current_user.phone or 'Chưa cập nhật' }}</p>
+                            <p><strong>Địa chỉ:</strong> {{ current_user.address or 'Chưa cập nhật' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Tổng tiền và thanh toán -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calculator me-2"></i>
+                        Tổng tiền
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="price-breakdown mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Giá phòng:</span>
+                            <span>{{ "{:,.0f}".format(booking.total_price) }} VND</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Phí dịch vụ:</span>
+                            <span>0 VND</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Tổng cộng:</strong>
+                            <strong class="text-primary fs-5">{{ "{:,.0f}".format(booking.total_price) }} VND</strong>
+                        </div>
+                    </div>
+
+                    <!-- Nút thanh toán -->
+                    <form id="payment-form" method="POST" action="{{ url_for('payment.process_payment') }}">
+                        <input type="hidden" name="booking_id" value="{{ booking.id }}">
                         
-                        <!-- QR Code Payment -->
-                        <div class="payment-method">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6 class="card-title">Thanh toán qua mã QR</h6>
-                                    <p class="card-text">Quét mã QR bằng ứng dụng ngân hàng để thanh toán</p>
-                                    {% if qr_code_url %}
-                                    <div class="qr-code-container">
-                                        <img src="{{ qr_code_url }}" alt="Payment QR Code" class="img-fluid mb-3" style="max-width: 200px;">
-                                        <p class="text-muted">Mã QR sẽ hết hạn sau 15 phút</p>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Direct Payment Link -->
-                        <div class="payment-method">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6 class="card-title">Thanh toán trực tiếp</h6>
-                                    <p class="card-text">Nhấp vào nút bên dưới để chuyển đến trang thanh toán PayOS</p>
-                                    {% if payment_url %}
-                                    <div class="text-center">
-                                        <button id="payButton" class="btn btn-primary">
-                                            <i class="bi bi-credit-card"></i> Thanh toán ngay
-                                        </button>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Payment Status -->
-                    <div class="payment-status pending" id="paymentStatus">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3" id="pay-button">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Thanh toán ngay
+                        </button>
+                        
                         <div class="text-center">
-                            <i class="bi bi-clock"></i> Đang chờ thanh toán...
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Thanh toán an toàn qua PayOS
+                            </small>
+                        </div>
+                    </form>
+
+                    <!-- Thông tin bổ sung -->
+                    <div class="mt-3">
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                <strong>Lưu ý:</strong>
+                                <ul class="mb-0 mt-1">
+                                    <li>Thanh toán sẽ được xử lý qua cổng PayOS</li>
+                                    <li>Bạn sẽ được chuyển đến trang thanh toán an toàn</li>
+                                    <li>Vui lòng không đóng trình duyệt trong quá trình thanh toán</li>
+                                </ul>
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -109,71 +172,33 @@
         </div>
     </div>
 </div>
+
+<!-- Loading modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5>Đang xử lý thanh toán...</h5>
+                <p class="text-muted">Vui lòng chờ trong giây lát</p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
-{% block extra_js %}
-<!-- PayOS JavaScript SDK -->
-<script src="https://payos.vn/checkout.js"></script>
+{% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const payButton = document.getElementById('payButton');
-    const paymentStatus = document.getElementById('paymentStatus');
-    const orderId = '{{ order_id }}';
+document.getElementById('payment-form').addEventListener('submit', function(e) {
+    // Hiển thị loading modal
+    var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    loadingModal.show();
     
-    // Initialize PayOS checkout
-    const checkout = new PayOS.Checkout({
-        orderId: orderId,
-        onSuccess: function() {
-            paymentStatus.className = 'payment-status success';
-            paymentStatus.innerHTML = '<div class="text-center"><i class="bi bi-check-circle"></i> Thanh toán thành công! Đang chuyển hướng...</div>';
-            setTimeout(() => {
-                window.location.href = '/renter/booking/{{ booking.id }}';
-            }, 2000);
-        },
-        onError: function(error) {
-            paymentStatus.className = 'payment-status error';
-            paymentStatus.innerHTML = `<div class="text-center"><i class="bi bi-exclamation-circle"></i> Lỗi: ${error.message}</div>`;
-        },
-        onCancel: function() {
-            paymentStatus.className = 'payment-status pending';
-            paymentStatus.innerHTML = '<div class="text-center"><i class="bi bi-clock"></i> Đang chờ thanh toán...</div>';
-        }
-    });
-
-    // Handle payment button click
-    if (payButton) {
-        payButton.addEventListener('click', function() {
-            checkout.open();
-        });
-    }
-
-    // Check payment status periodically
-    function checkPaymentStatus() {
-        fetch('/payment/check-status/{{ booking.id }}')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'paid') {
-                    paymentStatus.className = 'payment-status success';
-                    paymentStatus.innerHTML = '<div class="text-center"><i class="bi bi-check-circle"></i> Thanh toán thành công! Đang chuyển hướng...</div>';
-                    setTimeout(() => {
-                        window.location.href = '/renter/booking/{{ booking.id }}';
-                    }, 2000);
-                } else if (data.status === 'error') {
-                    paymentStatus.className = 'payment-status error';
-                    paymentStatus.innerHTML = `<div class="text-center"><i class="bi bi-exclamation-circle"></i> Lỗi: ${data.message}</div>`;
-                } else {
-                    setTimeout(checkPaymentStatus, 5000); // Check again after 5 seconds
-                }
-            })
-            .catch(error => {
-                console.error('Error checking payment status:', error);
-                paymentStatus.className = 'payment-status error';
-                paymentStatus.innerHTML = '<div class="text-center"><i class="bi bi-exclamation-circle"></i> Lỗi kiểm tra trạng thái thanh toán</div>';
-            });
-    }
-
-    // Start checking payment status
-    checkPaymentStatus();
+    // Disable nút thanh toán
+    document.getElementById('pay-button').disabled = true;
+    document.getElementById('pay-button').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
 });
 </script>
 {% endblock %} 

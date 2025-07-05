@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_login import LoginManager
-from models import db, Admin, Owner, Renter
+from app.models.models import db, Admin, Owner, Renter
 import os
 
 login_manager = LoginManager()
@@ -49,7 +49,7 @@ def create_app():
         db.create_all()
     
     # Register blueprints
-    from routes.admin import admin_bp
+    from app.routes.admin import admin_bp
     app.register_blueprint(admin_bp)
     
     return app 

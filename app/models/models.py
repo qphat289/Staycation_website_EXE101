@@ -3,6 +3,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 import json
+from app.utils.payment_utils import encrypt_api_key, decrypt_api_key
 
 db = SQLAlchemy()
 
@@ -572,3 +573,168 @@ class RoomDeletionLog(db.Model):
     
     def __repr__(self):
         return f'<RoomDeletionLog {self.room_title} deleted by {self.owner_name}>'
+
+class PaymentConfig(db.Model):
+    __tablename__ = 'payment_config'
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Thông tin owner
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False, unique=True)
+    
+    # PayOS Configuration
+    _payos_client_id = db.Column('payos_client_id', db.String(100), nullable=False)
+    _payos_api_key = db.Column('payos_api_key', db.String(200), nullable=False)
+    _payos_checksum_key = db.Column('payos_checksum_key', db.String(200), nullable=False)
+    
+    # Trạng thái và thời gian
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship
+    owner = db.relationship('Owner', backref=db.backref('payment_config', uselist=False, lazy=True))
+    
+    @property
+    def payos_client_id(self):
+        return self._payos_client_id
+    @payos_client_id.setter
+    def payos_client_id(self, value):
+        self._payos_client_id = value
+
+    @property
+    def payos_api_key(self):
+        return decrypt_api_key(self._payos_api_key)
+    @payos_api_key.setter
+    def payos_api_key(self, value):
+        self._payos_api_key = encrypt_api_key(value)
+
+    @property
+    def payos_checksum_key(self):
+        return decrypt_api_key(self._payos_checksum_key)
+    @payos_checksum_key.setter
+    def payos_checksum_key(self, value):
+        self._payos_checksum_key = encrypt_api_key(value)
+
+    def __repr__(self):
+        return f'<PaymentConfig for Owner {self.owner_id}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'owner_id': self.owner_id,
+            'payos_client_id': self.payos_client_id,
+            'payos_api_key': self.payos_api_key,
+            'payos_checksum_key': self.payos_checksum_key,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+class Payment(db.Model):
+    __tablename__ = 'payment'
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Thông tin giao dịch
+    payment_code = db.Column(db.String(100), unique=True, nullable=False)  # Mã giao dịch PayOS
+    order_code = db.Column(db.String(100), unique=True, nullable=False)    # Mã đơn hàng nội bộ
+    amount = db.Column(db.Float, nullable=False)  # Số tiền thanh toán
+    currency = db.Column(db.String(10), default='VND')  # Loại tiền tệ
+    
+    # Thông tin giao dịch PayOS
+    payos_transaction_id = db.Column(db.String(100), nullable=True)  # Transaction ID từ PayOS
+    payos_signature = db.Column(db.String(500), nullable=True)  # Chữ ký xác thực từ PayOS
+    checkout_url = db.Column(db.String(500), nullable=True)  # Link thanh toán PayOS
+    
+    # Trạng thái giao dịch
+    status = db.Column(db.String(20), default='pending')  # pending, success, failed, cancelled
+    payment_method = db.Column(db.String(50), nullable=True)  # bank_transfer, e_wallet, etc.
+    
+    # Thông tin thời gian
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    paid_at = db.Column(db.DateTime, nullable=True)  # Thời gian thanh toán thành công
+    
+    # Thông tin bổ sung
+    description = db.Column(db.Text, nullable=True)  # Mô tả giao dịch
+    customer_name = db.Column(db.String(100), nullable=True)  # Tên khách hàng
+    customer_email = db.Column(db.String(120), nullable=True)  # Email khách hàng
+    customer_phone = db.Column(db.String(20), nullable=True)  # SĐT khách hàng
+    
+    # Foreign Keys
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
+    renter_id = db.Column(db.Integer, db.ForeignKey('renter.id'), nullable=False)
+    
+    # Relationships
+    booking = db.relationship('Booking', backref=db.backref('payments', lazy=True))
+    owner = db.relationship('Owner', backref=db.backref('payments', lazy=True))
+    renter = db.relationship('Renter', backref=db.backref('payments', lazy=True))
+    
+    def __repr__(self):
+        return f'<Payment {self.payment_code} - {self.status}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'payment_code': self.payment_code,
+            'order_code': self.order_code,
+            'amount': self.amount,
+            'currency': self.currency,
+            'payos_transaction_id': self.payos_transaction_id,
+            'status': self.status,
+            'payment_method': self.payment_method,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'paid_at': self.paid_at.isoformat() if self.paid_at else None,
+            'description': self.description,
+            'customer_name': self.customer_name,
+            'customer_email': self.customer_email,
+            'customer_phone': self.customer_phone,
+            'booking_id': self.booking_id,
+            'owner_id': self.owner_id,
+            'renter_id': self.renter_id
+        }
+    
+    @property
+    def is_successful(self):
+        """Kiểm tra xem giao dịch có thành công không"""
+        return self.status == 'success'
+    
+    @property
+    def is_pending(self):
+        """Kiểm tra xem giao dịch có đang chờ xử lý không"""
+        return self.status == 'pending'
+    
+    @property
+    def is_failed(self):
+        """Kiểm tra xem giao dịch có thất bại không"""
+        return self.status == 'failed'
+    
+    @property
+    def formatted_amount(self):
+        """Trả về số tiền đã được format"""
+        return f"{self.amount:,.0f} {self.currency}"
+    
+    def mark_as_successful(self, payos_transaction_id=None, payment_method=None):
+        """Đánh dấu giao dịch thành công"""
+        self.status = 'success'
+        self.paid_at = datetime.utcnow()
+        if payos_transaction_id:
+            self.payos_transaction_id = payos_transaction_id
+        if payment_method:
+            self.payment_method = payment_method
+        self.updated_at = datetime.utcnow()
+    
+    def mark_as_failed(self, reason=None):
+        """Đánh dấu giao dịch thất bại"""
+        self.status = 'failed'
+        if reason:
+            self.description = f"{self.description or ''} - Lý do thất bại: {reason}"
+        self.updated_at = datetime.utcnow()
+    
+    def mark_as_cancelled(self, reason=None):
+        """Đánh dấu giao dịch bị hủy"""
+        self.status = 'cancelled'
+        if reason:
+            self.description = f"{self.description or ''} - Lý do hủy: {reason}"
+        self.updated_at = datetime.utcnow()

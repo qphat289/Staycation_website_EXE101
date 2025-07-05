@@ -115,7 +115,7 @@
                         </a>
                       {% endif %}
                       
-                      {% if booking.status == 'confirmed' and booking.payment_status != 'paid' %}
+                      {% if booking.status in ['pending', 'confirmed'] and booking.payment_status != 'paid' %}
                         <a href="{{ url_for('payment.checkout', booking_id=booking.id) }}" 
                            class="action-button pay">
                           <i class="bi bi-credit-card"></i> Thanh toán

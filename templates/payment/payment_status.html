@@ -1,0 +1,863 @@
+{% extends "base.html" %}
+
+{% block title %}Trạng thái thanh toán{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="text-primary">Trạng thái thanh toán</h2>
+                <p class="text-muted">Mã giao dịch: <strong>{{ payment.payment_code }}</strong></p>
+            </div>
+
+            <div class="row">
+                <!-- Thông tin booking -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <i class="fas fa-bed"></i> Thông tin đặt phòng
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Phòng:</strong> {{ booking.room.title }}</p>
+                            <p><strong>Địa chỉ:</strong> {{ booking.room.address }}, {{ booking.room.district }}, {{ booking.room.city }}</p>
+                            <p><strong>Ngày:</strong> {{ booking.start_time.strftime('%d/%m/%Y') }}</p>
+                            <p><strong>Giờ:</strong> {{ booking.start_time.strftime('%H:%M') }} - {{ booking.end_time.strftime('%H:%M') }}</p>
+                            <p><strong>Loại đặt:</strong> {{ booking.booking_type|title }}</p>
+                            <hr>
+                            <p class="mb-0"><strong>Tổng tiền:</strong> <span class="text-primary h5">{{ "{:,.0f}".format(payment.amount) }} VND</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Customer info -->
+                    <div class="card mt-3">
+                        <div class="card-header bg-info text-white">
+                            <i class="fas fa-user"></i> Thông tin khách hàng
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Họ tên:</strong> {{ payment.customer_name or current_user.full_name }}</p>
+                            <p><strong>Email:</strong> {{ payment.customer_email or current_user.email }}</p>
+                            <p class="mb-0"><strong>Số điện thoại:</strong> {{ payment.customer_phone or current_user.phone or 'Chưa cập nhật' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment section -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <i class="fas fa-qrcode"></i> Thanh toán qua PayOS
+                        </div>
+                        <div class="card-body text-center">
+                            {% if payment.status == 'pending' %}
+                                <!-- QR Code section -->
+                                <div class="qr-section mb-3">
+                                    <h6 class="mb-3">Quét mã QR để thanh toán</h6>
+                                    
+                                    <div class="qr-container">
+                                        <div id="qr-display" class="d-flex justify-content-center my-3">
+                                            <!-- Loading state -->
+                                            <div id="qr-loading" class="text-center">
+                                                <div class="spinner-border text-primary" role="status"></div>
+                                                <p class="mt-2">Đang tải mã QR...</p>
+                                            </div>
+                                            
+                                            <!-- QR Image Display (Direct from API) -->
+                                            <div id="qr-image-container" style="display: none;" class="text-center">
+                                                <img id="qr-image" src="" alt="VietQR Code" 
+                                                     style="max-width: 250px; max-height: 250px; border: 2px solid #28a745; border-radius: 8px; background: white; padding: 10px;">
+                                                <div class="mt-2">
+                                                    <small class="text-success">
+                                                        <i class="fas fa-check-circle"></i> VietQR Banking sẵn sàng quét
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- SVG QR Display (Alternative) -->
+                                            <div id="qr-svg-container" style="display: none;" class="text-center">
+                                                <div id="qr-svg-content" style="border: 2px solid #28a745; border-radius: 8px; background: white; padding: 10px; display: inline-block;">
+                                                    <!-- SVG QR will be inserted here -->
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-success">
+                                                        <i class="fas fa-check-circle"></i> VietQR Banking Code
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Error display -->
+                                        <div id="qr-error" style="display: none;" class="alert alert-warning">
+                                            <p class="mb-0">Không thể tải mã QR. Vui lòng sử dụng thông tin chuyển khoản hoặc link PayOS bên dưới.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Bank info -->
+                                    <div id="bank-info" class="bank-info mt-3 p-3 bg-light rounded border-left-success" style="display: none;">
+                                        <h6 class="text-success mb-2"><i class="fas fa-university"></i> Thông tin chuyển khoản</h6>
+                                        <div id="bank-details" class="row text-left">
+                                            <!-- Will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- PayOS link button -->
+                                {% if payment.checkout_url %}
+                                <div class="mb-3">
+                                    <a href="{{ payment.checkout_url }}" 
+                                       target="_blank" 
+                                       class="btn btn-success btn-lg btn-block">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        Mở trang PayOS
+                                    </a>
+                                    <small class="text-muted">Nhấn vào đây để thanh toán trên trang PayOS</small>
+                                </div>
+                                {% endif %}
+
+                                <!-- Waiting status -->
+                                <div class="waiting-section mt-3">
+                                    <div class="spinner-border text-warning" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                    <p class="mt-2"><strong>Đang chờ thanh toán...</strong></p>
+                                    <p class="text-muted">
+                                        <i class="fas fa-sync-alt"></i> Hệ thống đang tự động kiểm tra trạng thái mỗi 5 giây<br>
+                                        <small>Bạn có thể thanh toán và đợi, hoặc click "Mở trang PayOS" để thanh toán trực tiếp</small>
+                                    </p>
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
+                                             role="progressbar" style="width: 100%"></div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-info">
+                                            <i class="fas fa-clock"></i> Thời gian chờ tối đa: 5 phút
+                                        </small>
+                                    </div>
+                                </div>
+
+                            {% elif payment.status == 'success' %}
+                                <!-- Success -->
+                                <div class="success-section">
+                                    <div class="check-animation">
+                                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                                    </div>
+                                    <h4 class="text-success mt-3">Thanh toán thành công!</h4>
+                                    <p class="text-muted">Cảm ơn bạn đã đặt phòng. Chúng tôi sẽ liên hệ sớm nhất.</p>
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-info-circle"></i>
+                                        Booking của bạn đã được xác nhận và thanh toán thành công.
+                                    </div>
+                                </div>
+
+                            {% elif payment.status in ['failed', 'cancelled'] %}
+                                <!-- Failed -->
+                                <div class="failed-section">
+                                    <i class="fas fa-times-circle text-danger" style="font-size: 4rem;"></i>
+                                    <h4 class="text-danger mt-3">
+                                        {% if payment.status == 'cancelled' %}
+                                            Thanh toán đã bị hủy
+                                        {% else %}
+                                            Thanh toán thất bại
+                                        {% endif %}
+                                    </h4>
+                                    <p class="text-muted">
+                                        {% if payment.status == 'cancelled' %}
+                                            Giao dịch đã bị hủy bởi người dùng hoặc hệ thống.
+                                        {% else %}
+                                            Có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại.
+                                        {% endif %}
+                                    </p>
+                                    <a href="{{ url_for('payment.retry_payment', payment_id=payment.id) }}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-redo"></i> Thử lại thanh toán
+                                    </a>
+                                </div>
+
+                            {% else %}
+                                <!-- Other status -->
+                                <div class="other-section">
+                                    <i class="fas fa-info-circle text-info" style="font-size: 3rem;"></i>
+                                    <h4 class="text-info mt-3">{{ payment.status|title }}</h4>
+                                    <p class="text-muted">Trạng thái thanh toán: {{ payment.status }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="fas fa-info-circle"></i> Hướng dẫn thanh toán:</h6>
+                        <ul class="mb-0 text-left" style="padding-left: 20px;">
+                            <li>Mở app ngân hàng trên điện thoại</li>
+                            <li>Chọn "Quét mã QR" hoặc "Chuyển khoản"</li>
+                            <li>Quét mã QR bên trên hoặc nhập thông tin TK</li>
+                            <li>Xác nhận thanh toán</li>
+                            <li>Đợi hệ thống xử lý (tự động cập nhật)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="text-center mt-4">
+                <a href="{{ url_for('renter.booking_details', booking_id=booking.id) }}" 
+                   class="btn btn-secondary mr-2">
+                    <i class="fas fa-arrow-left"></i> Quay lại booking
+                </a>
+                {% if payment.status == 'pending' %}
+                <a href="{{ url_for('payment.cancel_payment', payment_id=payment.id) }}" 
+                   class="btn btn-outline-danger"
+                   onclick="return confirm('Bạn có chắc muốn hủy thanh toán này?')">
+                    <i class="fas fa-times"></i> Hủy thanh toán
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Direct QR Display Script - NO External Libraries -->
+<script>
+// Payment Status Script - Direct QR from API
+var refreshInterval = null;
+var refreshCount = 0;
+var maxRefresh = 60;
+
+var PAYMENT_DATA = {
+    id: parseInt('{{ payment.id }}'),
+    status: '{{ payment.status }}',
+            checkStatusUrl: '{{ url_for("payment.refresh_payment_status", payment_id=payment.id) }}',
+    getQrUrl: '{{ url_for("payment.get_qr_direct", payment_id=payment.id) }}',
+    successUrl: '{{ url_for("payment.payment_success", payment_id=payment.id) }}',
+    failedUrl: '{{ url_for("payment.payment_failed", payment_id=payment.id) }}',
+    cancelledUrl: '{{ url_for("payment.payment_cancelled", payment_id=payment.id) }}'
+};
+
+console.log('🟢 Direct QR Payment Status Script');
+console.log('📊 Payment Data:', PAYMENT_DATA);
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🟢 DOM Ready - Direct QR Version');
+    
+    try {
+        if (PAYMENT_DATA.status === 'pending') {
+            initPendingPayment();
+        } else if (PAYMENT_DATA.status === 'success') {
+            showSuccessAnimation();
+        } else if (PAYMENT_DATA.status === 'failed' || PAYMENT_DATA.status === 'cancelled') {
+            showFailedState();
+        }
+    } catch (error) {
+        console.error('❌ Initialization error:', error);
+        showError('Initialization error: ' + error.message);
+    }
+});
+
+function initPendingPayment() {
+    console.log('🔄 Initializing pending payment with Direct QR...');
+    
+    // Load QR directly from API
+    loadDirectQR();
+    startAutoRefresh();
+    startProgressAnimation();
+}
+
+function loadDirectQR() {
+    console.log('🔄 Loading Direct QR from API...');
+    showLoadingState();
+    
+    fetch(PAYMENT_DATA.getQrUrl)
+    .then(function(response) {
+        console.log('📡 Response status:', response.status);
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+    })
+    .then(function(data) {
+        console.log('📊 QR API response:', data);
+        
+        if (data.success && data.qr_code) {
+            console.log('✅ QR data received, length:', data.qr_code.length);
+            
+            // Try multiple QR display methods
+            tryDisplayQR(data.qr_code, data);
+            showBankInfo(data);
+            hideLoadingState();
+        } else {
+            throw new Error(data.error || 'No QR data received');
+        }
+    })
+    .catch(function(error) {
+        console.error('❌ QR API Error:', error);
+        showError('Lỗi tải QR: ' + error.message);
+        hideLoadingState();
+        
+        // Still try to show bank info
+        loadBankInfoOnly();
+    });
+}
+
+function tryDisplayQR(qrData, paymentData) {
+    console.log('🎯 Trying to display QR with multiple methods...');
+    
+    // Method 1: Try to generate QR as Data URL using online service
+    tryOnlineQRGeneration(qrData, paymentData);
+}
+
+function tryOnlineQRGeneration(qrData, paymentData) {
+    console.log('🌐 Trying online QR generation...');
+    
+    // Use Google Charts API to generate QR (fallback service)
+    var qrImageUrl = 'https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=' + encodeURIComponent(qrData);
+    
+    var qrImage = document.getElementById('qr-image');
+    var qrImageContainer = document.getElementById('qr-image-container');
+    
+    if (qrImage && qrImageContainer) {
+        qrImage.onload = function() {
+            console.log('✅ QR image loaded successfully');
+            qrImageContainer.style.display = 'block';
+            
+            // Add validation info
+            addQRValidationInfo(qrData);
+        };
+        
+        qrImage.onerror = function() {
+            console.log('❌ QR image failed, trying SVG method...');
+            trySVGQRGeneration(qrData, paymentData);
+        };
+        
+        qrImage.src = qrImageUrl;
+    } else {
+        trySVGQRGeneration(qrData, paymentData);
+    }
+}
+
+function trySVGQRGeneration(qrData, paymentData) {
+    console.log('🎨 Trying SVG QR generation...');
+    
+    // Use QR Server API (alternative)
+    var qrSvgUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(qrData);
+    
+    var qrSvgContainer = document.getElementById('qr-svg-container');
+    var qrSvgContent = document.getElementById('qr-svg-content');
+    
+    if (qrSvgContainer && qrSvgContent) {
+        var img = document.createElement('img');
+        img.style.maxWidth = '250px';
+        img.style.maxHeight = '250px';
+        
+        img.onload = function() {
+            console.log('✅ SVG QR loaded successfully');
+            qrSvgContent.appendChild(img);
+            qrSvgContainer.style.display = 'block';
+            
+            // Add validation info
+            addQRValidationInfo(qrData);
+        };
+        
+        img.onerror = function() {
+            console.log('❌ SVG QR failed, showing text only...');
+            showTextOnlyPayment();
+        };
+        
+        img.src = qrSvgUrl;
+    } else {
+        showTextOnlyPayment();
+    }
+}
+
+function addQRValidationInfo(qrData) {
+    console.log('ℹ️ Adding QR validation info');
+    
+    var qrContainer = document.querySelector('.qr-container');
+    if (qrContainer) {
+        var infoDiv = document.createElement('div');
+        infoDiv.className = 'qr-validation-info mt-2 p-2';
+        infoDiv.style.background = 'rgba(40, 167, 69, 0.1)';
+        infoDiv.style.borderRadius = '8px';
+        infoDiv.innerHTML = 
+            '<small class="text-success d-block">' +
+            '<i class="fas fa-check-circle"></i> VietQR Banking Code - ' + qrData.length + ' ký tự' +
+            '</small>' +
+            '<small class="text-muted d-block">' +
+            'Định dạng: ' + (qrData.startsWith('00020101') ? 'VietQR Standard' : 'Custom Format') +
+            '</small>';
+        
+        qrContainer.appendChild(infoDiv);
+    }
+}
+
+function showTextOnlyPayment() {
+    console.log('📝 Showing text-only payment info...');
+    
+    var qrContainer = document.querySelector('.qr-container');
+    if (qrContainer) {
+        qrContainer.innerHTML = 
+            '<div class="alert alert-info text-center">' +
+            '<i class="fas fa-info-circle fa-2x mb-2"></i><br>' +
+            '<strong>QR Code không khả dụng</strong><br>' +
+            '<small>Vui lòng sử dụng thông tin chuyển khoản bên dưới<br>' +
+            'hoặc nút "Mở trang PayOS"</small>' +
+            '</div>';
+    }
+    
+    // Load bank info anyway
+    loadBankInfoOnly();
+}
+
+function loadBankInfoOnly() {
+    console.log('🏦 Loading bank info only...');
+    
+    fetch(PAYMENT_DATA.getQrUrl)
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        if (data.success) {
+            showBankInfo(data);
+        }
+    })
+    .catch(function(error) {
+        console.error('Bank info error:', error);
+    });
+}
+
+function showBankInfo(data) {
+    console.log('🏦 Displaying bank info...');
+    
+    var bankInfo = document.getElementById('bank-info');
+    var bankDetails = document.getElementById('bank-details');
+    
+    if (bankInfo && bankDetails && data.account_number) {
+        bankDetails.innerHTML = 
+            '<div class="col-6"><strong>Ngân hàng:</strong></div>' +
+            '<div class="col-6">' + (data.bank_name || 'Ngân hàng TMCP Quân đội') + '</div>' +
+            '<div class="col-6"><strong>Số TK:</strong></div>' +
+            '<div class="col-6">' +
+                '<span class="text-primary font-weight-bold" id="account-number">' + data.account_number + '</span>' +
+                '<button class="btn btn-sm btn-outline-primary ml-2" onclick="copyToClipboard(\'' + data.account_number + '\', this)">' +
+                    '<i class="fas fa-copy"></i>' +
+                '</button>' +
+            '</div>' +
+            '<div class="col-6"><strong>Chủ TK:</strong></div>' +
+            '<div class="col-6">' + (data.account_name || 'N/A') + '</div>' +
+            '<div class="col-6"><strong>Số tiền:</strong></div>' +
+            '<div class="col-6"><span class="text-danger font-weight-bold">' + (data.amount || 0).toLocaleString() + ' VND</span></div>' +
+            '<div class="col-6"><strong>Nội dung:</strong></div>' +
+            '<div class="col-6">' +
+                '<code id="payment-content">' + (data.description || 'Thanh toán đặt phòng') + '</code>' +
+                '<button class="btn btn-sm btn-outline-secondary ml-2" onclick="copyToClipboard(\'' + (data.description || 'Thanh toán đặt phòng') + '\', this)">' +
+                    '<i class="fas fa-copy"></i>' +
+                '</button>' +
+            '</div>';
+        
+        bankInfo.style.display = 'block';
+        console.log('✅ Bank info displayed');
+    }
+}
+
+function copyToClipboard(text, button) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function() {
+            var icon = button.querySelector('i');
+            icon.className = 'fas fa-check text-success';
+            setTimeout(function() {
+                icon.className = 'fas fa-copy';
+            }, 1000);
+        });
+    } else {
+        // Fallback for older browsers
+        var textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        var icon = button.querySelector('i');
+        icon.className = 'fas fa-check text-success';
+        setTimeout(function() {
+            icon.className = 'fas fa-copy';
+        }, 1000);
+    }
+}
+
+function startAutoRefresh() {
+    console.log('🔄 Starting auto-refresh...');
+    
+    if (refreshInterval) clearInterval(refreshInterval);
+    
+    refreshInterval = setInterval(function() {
+        refreshCount++;
+        console.log('📡 Refresh attempt ' + refreshCount + '/' + maxRefresh);
+        
+        if (refreshCount >= maxRefresh) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+            showTimeoutMessage();
+            return;
+        }
+        
+        checkPaymentStatus();
+    }, 5000); // Giảm từ 10s xuống 5s để phản hồi nhanh hơn
+}
+
+function checkPaymentStatus() {
+    fetch(PAYMENT_DATA.checkStatusUrl)
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        console.log('📊 Status check result:', data);
+        
+        if (data.status === 'success') {
+            console.log('🎉 Payment successful! Redirecting...');
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+            showSuccessMessage();
+            setTimeout(function() {
+                // Sử dụng redirect URL từ API nếu có, không thì dùng default
+                const redirectUrl = data.redirect || PAYMENT_DATA.successUrl;
+                window.location.href = redirectUrl;
+            }, 1500);
+        } else if (data.status === 'failed') {
+            console.log('❌ Payment failed! Redirecting...');
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+            showFailedMessage();
+            setTimeout(function() {
+                const redirectUrl = data.redirect || PAYMENT_DATA.failedUrl;
+                window.location.href = redirectUrl;
+            }, 2000);
+        } else if (data.status === 'cancelled') {
+            console.log('❌ Payment cancelled! Redirecting...');
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+            showFailedMessage();
+            setTimeout(function() {
+                const redirectUrl = data.redirect || PAYMENT_DATA.cancelledUrl;
+                window.location.href = redirectUrl;
+            }, 2000);
+        } else if (data.status === 'pending') {
+            console.log('⏳ Payment still pending...');
+            // Tiếp tục chờ, không làm gì cả
+        } else {
+            console.log('❓ Unknown status:', data.status);
+        }
+    })
+    .catch(function(error) {
+        console.error('🚨 Status check error:', error);
+        // Không dừng polling khi có lỗi, tiếp tục thử
+    });
+}
+
+function startProgressAnimation() {
+    var progressWidth = 0;
+    var progressBar = document.querySelector('.progress-bar');
+    
+    if (progressBar) {
+        var progressInterval = setInterval(function() {
+            progressWidth += 2;
+            if (progressWidth > 100) progressWidth = 0;
+            progressBar.style.width = progressWidth + '%';
+            
+            if (refreshCount >= maxRefresh) {
+                clearInterval(progressInterval);
+            }
+        }, 200);
+    }
+}
+
+function showLoadingState() {
+    var loading = document.getElementById('qr-loading');
+    if (loading) {
+        loading.innerHTML = 
+            '<div class="text-center">' +
+            '<div class="spinner-border text-primary" role="status"></div>' +
+            '<p class="mt-2">Đang tạo VietQR...</p>' +
+            '</div>';
+        loading.style.display = 'block';
+    }
+}
+
+function hideLoadingState() {
+    var loading = document.getElementById('qr-loading');
+    if (loading) loading.style.display = 'none';
+}
+
+function showError(message) {
+    console.error('🚨 Showing error:', message);
+    hideLoadingState();
+    
+    var errorDiv = document.getElementById('qr-error');
+    if (errorDiv) {
+        errorDiv.innerHTML = 
+            '<div class="alert alert-warning">' +
+            '<i class="fas fa-exclamation-triangle"></i> ' +
+            '<strong>Lỗi:</strong> ' + message + '<br>' +
+            '<small>Vui lòng sử dụng nút "Mở trang PayOS" để thanh toán.</small>' +
+            '</div>';
+        errorDiv.style.display = 'block';
+    }
+}
+
+function showSuccessMessage() {
+    var waitingSection = document.querySelector('.waiting-section');
+    if (waitingSection) {
+        waitingSection.innerHTML = 
+            '<div class="alert alert-success text-center">' +
+            '<i class="fas fa-check-circle fa-2x text-success mb-2"></i><br>' +
+            '<strong>Thanh toán thành công!</strong><br>' +
+            '<small><i class="fas fa-magic"></i> Hệ thống đã tự động phát hiện thanh toán</small><br>' +
+            '<small>Đang chuyển hướng...</small>' +
+            '</div>';
+    }
+}
+
+function showFailedMessage() {
+    var waitingSection = document.querySelector('.waiting-section');
+    if (waitingSection) {
+        waitingSection.innerHTML = 
+            '<div class="alert alert-danger text-center">' +
+            '<i class="fas fa-times-circle fa-2x text-danger mb-2"></i><br>' +
+            '<strong>Thanh toán thất bại!</strong><br>' +
+            '<small><i class="fas fa-exclamation-triangle"></i> Hệ thống đã phát hiện thanh toán thất bại</small><br>' +
+            '<small>Đang chuyển hướng...</small>' +
+            '</div>';
+    }
+}
+
+function showTimeoutMessage() {
+    var waitingSection = document.querySelector('.waiting-section');
+    if (waitingSection) {
+        waitingSection.innerHTML = 
+            '<div class="alert alert-warning text-center">' +
+            '<i class="fas fa-clock fa-2x text-warning mb-2"></i><br>' +
+            '<strong>Hết thời gian chờ</strong><br>' +
+            '<small>Vui lòng kiểm tra lại trạng thái thanh toán</small><br>' +
+            '<a href="/payment/status/' + PAYMENT_DATA.id + '" class="btn btn-primary btn-sm mt-2">' +
+            '<i class="fas fa-refresh"></i> Tải lại' +
+            '</a>' +
+            '</div>';
+    }
+}
+
+function showSuccessAnimation() {
+    console.log('🎉 Showing success animation');
+}
+
+function showFailedState() {
+    console.log('❌ Showing failed state');
+}
+
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        console.log('👁️ Page hidden - pausing refresh');
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    } else {
+        console.log('👁️ Page visible - resuming refresh');
+        if (PAYMENT_DATA.status === 'pending' && refreshCount < maxRefresh && !refreshInterval) {
+            startAutoRefresh();
+        }
+    }
+});
+
+console.log('🟢 Direct QR Payment Status Template loaded');
+</script>
+
+<style>
+.card {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.qr-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 15px 0;
+    border: 2px dashed #28a745;
+}
+
+.qr-container {
+    position: relative;
+}
+
+.bank-info {
+    font-size: 14px;
+    background: #f8f9fa !important;
+    border: 1px solid #e9ecef;
+    border-left: 4px solid #28a745 !important;
+}
+
+.waiting-section {
+    animation: pulse 2s infinite;
+}
+
+.check-animation i {
+    animation: bounceIn 1s ease-out;
+}
+
+.failed-section i {
+    animation: shake 0.5s ease-in-out;
+}
+
+.success-section {
+    padding: 20px;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-radius: 15px;
+    margin: 10px 0;
+}
+
+.failed-section {
+    padding: 20px;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border-radius: 15px;
+    margin: 10px 0;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+/* Button styles */
+.btn-success {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border: none;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Progress bar animation */
+.progress-bar-animated {
+    animation: progress-bar-stripes 1s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 10px;
+    }
+    
+    #qr-image, #qr-svg-content img {
+        max-width: 200px !important;
+        max-height: 200px !important;
+    }
+    
+    .bank-info {
+        font-size: 12px;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .btn-lg {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+/* QR Image styling */
+#qr-image, #qr-svg-content img {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+#qr-image:hover, #qr-svg-content img:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    transform: scale(1.02);
+}
+
+/* Copy button animations */
+.btn-sm {
+    transition: all 0.2s ease;
+}
+
+.btn-sm:hover {
+    transform: scale(1.1);
+}
+
+/* QR validation info styling */
+.qr-validation-info {
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 8px;
+    padding: 8px;
+    margin-top: 10px;
+}
+
+/* Loading animations */
+.spinner-border {
+    animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Code styling */
+code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 90%;
+}
+
+/* Border left success helper */
+.border-left-success {
+    border-left: 4px solid #28a745 !important;
+}
+</style>
+{% endblock %}

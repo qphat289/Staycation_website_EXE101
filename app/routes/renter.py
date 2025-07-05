@@ -245,6 +245,11 @@ def book_room(room_id):
             flash("Minimum duration is 1 night.", "warning")
             return redirect(url_for('renter.book_room', room_id=room.id))
         
+        # Check if room has price_per_night
+        if not room.price_per_night:
+            flash("This room does not have nightly pricing available.", "danger")
+            return redirect(url_for('renter.book_room', room_id=room.id))
+        
         start_str = f"{start_date} {start_time}"
         try:
             start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
@@ -255,9 +260,14 @@ def book_room(room_id):
         end_datetime = start_datetime + timedelta(days=duration)
         # Calculate total price using the room's price per night
         total_price = room.price_per_night * duration
+        # Calculate total hours (24 hours per day for nightly bookings)
+        total_hours = duration * 24
         
-        # Check for overlapping bookings for this room
-        existing_bookings = Booking.query.filter_by(room_id=room.id).all()
+        # Check for overlapping bookings for this room (chỉ check với booking chưa bị hủy)
+        existing_bookings = Booking.query.filter(
+            Booking.room_id == room.id,
+            Booking.status.in_(['pending', 'confirmed', 'active'])
+        ).all()
         for booking in existing_bookings:
             if start_datetime < booking.end_time and end_datetime > booking.start_time:
                 flash('This room is not available during the selected time period.', 'danger')
@@ -268,16 +278,18 @@ def book_room(room_id):
             renter_id=current_user.id,
             start_time=start_datetime,
             end_time=end_datetime,
+            total_hours=total_hours,
             total_price=total_price,
-            status='pending'
+            status='confirmed',
+            booking_type='nightly'  # Set booking type to nightly for room bookings
         )
         
         db.session.add(new_booking)
-        current_user.experience_points += total_price * 10  # Update user XP based on total price
+        # current_user.experience_points += total_price * 10  # Update user XP based on total price
         db.session.commit()
 
         flash('Booking request submitted successfully!', 'success')
-        return redirect(url_for('renter.dashboard'))
+        return redirect(url_for('payment.checkout', booking_id=new_booking.id))
 
     return render_template('renter/book_room.html', room=room)
   
