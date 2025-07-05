@@ -79,7 +79,294 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Auto-adjust navbar text color based on background brightness
     adjustNavbarTextColor();
+    
+    // Initialize global search components
+    initializeGlobalSearch();
 });
+
+// Function to initialize the global search components
+function initializeGlobalSearch() {
+    // Setup global search tabs
+    const hourlyTab = document.getElementById('hourly-tab');
+    const dailyTab = document.getElementById('daily-tab');
+    
+    if (hourlyTab && dailyTab) {
+        // Initialize date/time placeholders
+        initializeDateTimePlaceholders();
+        
+        // Initialize guest selectors
+        initializeGuestSelectors();
+        
+        // Initialize location search
+        initializeLocationSearch();
+    }
+}
+
+// Function to switch between global search tabs (hourly and daily)
+function switchTabGlobal(tabType) {
+    // Remove active class from all tabs and forms
+    document.querySelectorAll('.search-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.search-form').forEach(form => {
+        form.classList.remove('active');
+    });
+    
+    // Add active class to selected tab and form
+    document.querySelector(`[data-tab="${tabType}"]`).classList.add('active');
+    
+    if (tabType === 'hourly') {
+        document.getElementById('global-hourly-form').classList.add('active');
+    } else {
+        document.getElementById('global-daily-form').classList.add('active');
+    }
+}
+
+// Function to initialize date/time placeholders
+function initializeDateTimePlaceholders() {
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    const timeInputs = document.querySelectorAll('input[type="time"]');
+    
+    dateInputs.forEach(input => {
+        // Always ensure text is visible
+        input.style.color = '#212529';
+        
+        input.addEventListener('change', function() {
+            toggleCustomPlaceholder(this);
+            console.log(`Date input ${this.id} changed to ${this.value}`);
+            // Force text to be visible after change
+            this.style.color = '#212529';
+        });
+        
+        input.addEventListener('focus', function() {
+            this.style.color = '#212529';
+        });
+        
+        input.addEventListener('blur', function() {
+            // Ensure text stays visible even after losing focus
+            this.style.color = '#212529';
+        });
+        
+        // Initial check
+        toggleCustomPlaceholder(input);
+    });
+    
+    timeInputs.forEach(input => {
+        // Always ensure text is visible
+        input.style.color = '#212529';
+        
+        input.addEventListener('change', function() {
+            toggleCustomPlaceholder(this);
+            console.log(`Time input ${this.id} changed to ${this.value}`);
+            // Force text to be visible after change
+            this.style.color = '#212529';
+        });
+        
+        input.addEventListener('focus', function() {
+            this.style.color = '#212529';
+        });
+        
+        input.addEventListener('blur', function() {
+            // Ensure text stays visible even after losing focus
+            this.style.color = '#212529';
+        });
+        
+        // Initial check
+        toggleCustomPlaceholder(input);
+    });
+    
+    // Fix for booking form inputs which might not have custom placeholders
+    const bookingFormDateInputs = document.querySelectorAll('#booking-form input[type="date"], #booking-form input[type="time"]');
+    bookingFormDateInputs.forEach(input => {
+        input.style.color = '#212529';
+    });
+}
+
+// Function to toggle custom placeholder visibility
+function toggleCustomPlaceholder(input) {
+    const placeholder = document.querySelector(`.custom-placeholder[data-for="${input.id}"]`);
+    if (placeholder) {
+        if (input.value) {
+            placeholder.classList.add('hidden');
+            input.style.color = '#212529';
+            input.setAttribute('data-has-value', 'true');
+            console.log(`${input.id}: Value set, showing actual value`);
+        } else {
+            placeholder.classList.remove('hidden');
+            // Don't set color to transparent anymore - always show text
+            input.style.color = '#212529';
+            input.setAttribute('data-has-value', 'false');
+            console.log(`${input.id}: No value, showing placeholder`);
+        }
+    }
+}
+
+// Function to initialize guest selectors for global search
+function initializeGuestSelectors() {
+    // Guest displays
+    const guestDisplays = document.querySelectorAll('.guest-display');
+    guestDisplays.forEach(display => {
+        display.addEventListener('click', function() {
+            const dropdownId = this.id.replace('guests-rooms', 'guest-dropdown');
+            document.getElementById(dropdownId).classList.toggle('show');
+        });
+    });
+    
+    // Guest count buttons
+    const decreaseButtons = document.querySelectorAll('.btn-decrease');
+    const increaseButtons = document.querySelectorAll('.btn-increase');
+    
+    decreaseButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            const formType = this.getAttribute('data-form');
+            updateGuestCount(formType, target, 'decrease');
+        });
+    });
+    
+    increaseButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            const formType = this.getAttribute('data-form');
+            updateGuestCount(formType, target, 'increase');
+        });
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.guest-selector') && !event.target.matches('.guest-display')) {
+            document.querySelectorAll('.guest-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        }
+    });
+}
+
+// Function to update guest counts
+function updateGuestCount(formType, target, action) {
+    const countElement = document.getElementById(`${formType}-${target}-count-${formType}`);
+    const inputElement = document.getElementById(`${formType}-${target}-input-${formType}`);
+    
+    if (!countElement || !inputElement) return;
+    
+    let count = parseInt(countElement.textContent);
+    
+    if (action === 'increase') {
+        count += 1;
+    } else if (action === 'decrease') {
+        if (target === 'adults' && count <= 1) {
+            return; // Don't allow less than 1 adult
+        }
+        if (count > 0) count -= 1;
+    }
+    
+    // Update the display and input value
+    countElement.textContent = count;
+    inputElement.value = count;
+    
+    // Update the guest display text
+    updateGuestDisplay(formType);
+    
+    // Enable/disable decrease buttons based on count
+    const decreaseButton = countElement.closest('.guest-controls').querySelector('.btn-decrease');
+    if (decreaseButton) {
+        if (target === 'adults') {
+            decreaseButton.disabled = count <= 1;
+        } else {
+            decreaseButton.disabled = count <= 0;
+        }
+    }
+}
+
+// Function to update the guest display text
+function updateGuestDisplay(formType) {
+    const adultsCount = parseInt(document.getElementById(`${formType}-adults-count-${formType}`).textContent);
+    const childrenCount = parseInt(document.getElementById(`${formType}-children-count-${formType}`).textContent);
+    
+    document.getElementById(`${formType}-guests-rooms-${formType}`).value = 
+        `${adultsCount} người lớn, ${childrenCount} Trẻ em`;
+}
+
+// Function to initialize location search
+function initializeLocationSearch() {
+    const locationInputs = document.querySelectorAll('.location-input');
+    
+    locationInputs.forEach(input => {
+        const dropdownId = input.id.replace('location', 'location-dropdown');
+        const dropdown = document.getElementById(dropdownId);
+        
+        if (!dropdown) return;
+        
+        input.addEventListener('focus', function() {
+            fetchLocations(this.value, dropdown);
+            dropdown.classList.add('show');
+        });
+        
+        input.addEventListener('input', function() {
+            fetchLocations(this.value, dropdown);
+            dropdown.classList.add('show');
+        });
+        
+        // Close when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.location-selector') && !event.target.matches(input.id)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    });
+}
+
+// Function to fetch locations from API
+function fetchLocations(query, dropdownElement) {
+    // Clear current options
+    dropdownElement.innerHTML = '';
+    
+    if (query.trim().length < 2) {
+        // Add default locations
+        const defaultLocations = ['Hà Nội', 'TP. Hồ Chí Minh', 'Đà Nẵng', 'Nha Trang', 'Đà Lạt', 'Phú Quốc'];
+        defaultLocations.forEach(location => {
+            addLocationOption(location, dropdownElement);
+        });
+        return;
+    }
+    
+    // In a real application, you would fetch from API
+    // For demonstration, we'll use some mock data
+    const mockData = [
+        'Hà Nội', 'Hà Giang', 'Hà Tĩnh', 'Hà Nam',
+        'TP. Hồ Chí Minh', 'Hồ Tây', 'Hồ Xuân Hương',
+        'Đà Nẵng', 'Đà Lạt', 'Đắk Lắk', 'Đắk Nông',
+        'Nha Trang', 'Ninh Bình', 'Ninh Thuận',
+        'Phú Quốc', 'Phú Thọ', 'Phú Yên'
+    ];
+    
+    const filteredLocations = mockData.filter(location => 
+        location.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    filteredLocations.forEach(location => {
+        addLocationOption(location, dropdownElement);
+    });
+}
+
+// Function to add a location option to the dropdown
+function addLocationOption(location, dropdownElement) {
+    const option = document.createElement('div');
+    option.className = 'location-option';
+    option.textContent = location;
+    
+    option.addEventListener('click', function() {
+        const inputId = dropdownElement.id.replace('dropdown', 'input');
+        const input = document.getElementById(inputId.replace('-dropdown', ''));
+        if (input) {
+            input.value = location;
+            dropdownElement.classList.remove('show');
+        }
+    });
+    
+    dropdownElement.appendChild(option);
+}
 
 // Function to preview image before upload
 function previewImage(input, previewElement) {
