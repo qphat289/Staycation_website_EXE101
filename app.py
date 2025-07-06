@@ -60,9 +60,12 @@ def from_json_filter(value):
 def property_type_vn_filter(value):
     """Chuyển đổi property type sang tiếng Việt"""
     property_type_map = {
-        'house': 'Nhà',
-        'apartment': 'Căn hộ', 
-        'hotel': 'Khách sạn'
+        'townhouse': 'Nhà phố',
+        'apartment': 'Chung cư', 
+        'villa': 'Villa',
+        'penthouse': 'Penthouse',
+        'farmstay': 'Farmstay',
+        'resort': 'Resort'
     }
     return property_type_map.get(value, value)
 

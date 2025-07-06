@@ -179,8 +179,14 @@ body.add-home-no-scroll, html.add-home-no-scroll {
 
 .property-type-selection {
     display: flex;
-    gap: 15px;
     flex-wrap: wrap;
+    gap: 12px;
+    justify-content: flex-start;
+}
+
+.property-type-selection .property-option {
+    flex: 0 0 calc(25% - 9px);
+    max-width: calc(25% - 9px);
 }
 
 .property-option {
@@ -196,12 +202,13 @@ body.add-home-no-scroll, html.add-home-no-scroll {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    padding: 15px 8px;
     border: 2px solid #e5e5e5;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
     background: white;
+    min-height: 70px;
 }
 
 .property-radio:checked + .property-label {
@@ -210,9 +217,9 @@ body.add-home-no-scroll, html.add-home-no-scroll {
 }
 
 .property-icon {
-    font-size: 24px;
+    font-size: 20px;
     color: #666;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .property-radio:checked + .property-label .property-icon {
@@ -220,9 +227,62 @@ body.add-home-no-scroll, html.add-home-no-scroll {
 }
 
 .property-text {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     color: #333;
+}
+
+/* Accommodation Type Selection Styles */
+.accommodation-type-selection {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    max-width: 400px;
+}
+
+.accommodation-option {
+    flex: 1;
+    min-width: 100px;
+    max-width: 140px;
+}
+
+.accommodation-radio {
+    display: none;
+}
+
+.accommodation-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 10px;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    min-height: 70px;
+}
+
+.accommodation-radio:checked + .accommodation-label {
+    border-color: #9ed649;
+    background: rgba(158, 214, 73, 0.1);
+}
+
+.accommodation-icon {
+    font-size: 20px;
+    color: #666;
+    margin-bottom: 6px;
+}
+
+.accommodation-radio:checked + .accommodation-label .accommodation-icon {
+    color: #9ed649;
+}
+
+.accommodation-text {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
 }
 
 .location-inputs {

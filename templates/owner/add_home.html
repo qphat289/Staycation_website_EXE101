@@ -55,16 +55,42 @@
                 </div>
 
                 <div class="form-section">
+                    <h3>Hình thức lưu trú</h3>
+                    <div class="form-content">
+                        <div class="accommodation-type-selection">
+                            <div class="accommodation-option">
+                                <input type="radio" id="entire_home" name="accommodation_type" value="entire_home" class="accommodation-radio" {% if home_data.accommodation_type == 'entire_home' or not home_data.accommodation_type %}checked{% endif %}>
+                                <label for="entire_home" class="accommodation-label">
+                                    <div class="accommodation-icon">
+                                        <i class="bi bi-house-fill"></i>
+                                    </div>
+                                    <div class="accommodation-text">Toàn bộ nhà</div>
+                                </label>
+                            </div>
+                            <div class="accommodation-option">
+                                <input type="radio" id="private_room" name="accommodation_type" value="private_room" class="accommodation-radio" {% if home_data.accommodation_type == 'private_room' %}checked{% endif %}>
+                                <label for="private_room" class="accommodation-label">
+                                    <div class="accommodation-icon">
+                                        <i class="bi bi-door-open-fill"></i>
+                                    </div>
+                                    <div class="accommodation-text">Phòng riêng</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
                     <h3>Mô hình Homestay</h3>
                     <div class="form-content">
                         <div class="property-type-selection">
                             <div class="property-option">
-                                <input type="radio" id="house" name="property_type" value="house" class="property-radio" {% if home_data.property_type == 'house' %}checked{% endif %}>
-                                <label for="house" class="property-label">
+                                <input type="radio" id="townhouse" name="property_type" value="townhouse" class="property-radio" {% if home_data.property_type == 'townhouse' %}checked{% endif %}>
+                                <label for="townhouse" class="property-label">
                                     <div class="property-icon">
                                         <i class="bi bi-house-door"></i>
                                     </div>
-                                    <div class="property-text">Nhà</div>
+                                    <div class="property-text">Nhà phố</div>
                                 </label>
                             </div>
                             <div class="property-option">
@@ -73,16 +99,43 @@
                                     <div class="property-icon">
                                         <i class="bi bi-building"></i>
                                     </div>
-                                    <div class="property-text">Căn hộ</div>
+                                    <div class="property-text">Chung cư</div>
                                 </label>
                             </div>
                             <div class="property-option">
-                                <input type="radio" id="hotel" name="property_type" value="hotel" class="property-radio" {% if home_data.property_type == 'hotel' %}checked{% endif %}>
-                                <label for="hotel" class="property-label">
+                                <input type="radio" id="villa" name="property_type" value="villa" class="property-radio" {% if home_data.property_type == 'villa' %}checked{% endif %}>
+                                <label for="villa" class="property-label">
                                     <div class="property-icon">
-                                        <i class="bi bi-building-fill"></i>
+                                        <i class="bi bi-house-fill"></i>
                                     </div>
-                                    <div class="property-text">Khách sạn</div>
+                                    <div class="property-text">Villa</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="penthouse" name="property_type" value="penthouse" class="property-radio" {% if home_data.property_type == 'penthouse' %}checked{% endif %}>
+                                <label for="penthouse" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-building-up"></i>
+                                    </div>
+                                    <div class="property-text">Penthouse</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="farmstay" name="property_type" value="farmstay" class="property-radio" {% if home_data.property_type == 'farmstay' %}checked{% endif %}>
+                                <label for="farmstay" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-tree"></i>
+                                    </div>
+                                    <div class="property-text">Farmstay</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="resort" name="property_type" value="resort" class="property-radio" {% if home_data.property_type == 'resort' %}checked{% endif %}>
+                                <label for="resort" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-water"></i>
+                                    </div>
+                                    <div class="property-text">Resort</div>
                                 </label>
                             </div>
                         </div>
@@ -4945,7 +4998,6 @@ function loadRulesAndAmenities(homeData) {
     updateSelectedRulesDisplay();
     updateSelectedAmenitiesDisplay();
 }
-
 
 </script>
 

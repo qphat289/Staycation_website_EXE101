@@ -1009,15 +1009,35 @@ window.backendImages = [
                 </div>
                 <div class="form-row">
                     <div>
+                        <label class="form-label">Hình thức lưu trú</label>
+                        <select class="form-select" disabled>
+                            <option>
+                                {% if home_data.accommodation_type == 'entire_home' %}
+                                    Toàn bộ nhà
+                                {% elif home_data.accommodation_type == 'private_room' %}
+                                    Phòng riêng
+                                {% else %}
+                                    Toàn bộ nhà
+                                {% endif %}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="form-label">Mô hình</label>
                         <select class="form-select" disabled>
                             <option>
-                                {% if home_data.property_type == 'house' %}
-                                    Nhà
+                                {% if home_data.property_type == 'townhouse' %}
+                                    Nhà phố
                                 {% elif home_data.property_type == 'apartment' %}
-                                    Căn hộ
-                                {% elif home_data.property_type == 'hotel' %}
-                                    Khách sạn
+                                    Chung cư
+                                {% elif home_data.property_type == 'villa' %}
+                                    Villa
+                                {% elif home_data.property_type == 'penthouse' %}
+                                    Penthouse
+                                {% elif home_data.property_type == 'farmstay' %}
+                                    Farmstay
+                                {% elif home_data.property_type == 'resort' %}
+                                    Resort
                                 {% else %}
                                     Chưa chọn
                                 {% endif %}

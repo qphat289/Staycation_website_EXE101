@@ -304,6 +304,7 @@ class Home(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     home_type = db.Column(db.String(50), nullable=False)  # Loại nhà: Standard, Deluxe, Suite, etc.
+    accommodation_type = db.Column(db.String(50), nullable=False, default='entire_home')  # 'entire_home' hoặc 'private_room'
     
     # Thông tin địa chỉ
     address = db.Column(db.String(200), nullable=False)
@@ -372,6 +373,7 @@ class Home(db.Model):
             'id': self.id,
             'title': self.title,
             'home_type': self.home_type,
+            'accommodation_type': self.accommodation_type,
             'address': self.address,
             'city': self.city,
             'district': self.district,

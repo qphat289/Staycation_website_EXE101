@@ -215,10 +215,16 @@
     }
 
     .property-type-selection {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: flex-start;
         margin-bottom: 20px;
+    }
+
+    .property-type-selection .property-option {
+        flex: 0 0 calc(25% - 9px);
+        max-width: calc(25% - 9px);
     }
 
     .property-option {
@@ -271,6 +277,69 @@
 
     .property-text {
         font-size: 14px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    /* Accommodation Type Selection Styles */
+    .accommodation-type-selection {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+        max-width: 400px;
+    }
+
+    .accommodation-option {
+        position: relative;
+    }
+
+    .accommodation-radio {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .accommodation-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 8px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 70px;
+        text-align: center;
+    }
+
+    .accommodation-label:hover {
+        border-color: #9ed649;
+        background-color: #f8fff0;
+    }
+
+    .accommodation-radio:checked + .accommodation-label {
+        border-color: #9ed649;
+        background-color: #f0f9e8;
+        box-shadow: 0 2px 8px rgba(158, 214, 73, 0.3);
+    }
+
+    .accommodation-icon {
+        margin-bottom: 6px;
+        font-size: 20px;
+        color: #666;
+        transition: color 0.3s ease;
+    }
+
+    .accommodation-radio:checked + .accommodation-label .accommodation-icon {
+        color: #9ed649;
+    }
+
+    .accommodation-text {
+        font-size: 12px;
         font-weight: 500;
         color: #333;
     }
@@ -884,36 +953,92 @@
                     </div>
                     
                     <div class="form-group">
+                        <label class="form-label">Hình thức lưu trú</label>
+                        <div class="accommodation-type-selection">
+                            <div class="accommodation-option">
+                                <input type="radio" id="entire_home_edit" name="accommodation_type" value="entire_home" class="accommodation-radio" 
+                                       {% if home.accommodation_type == 'entire_home' or not home.accommodation_type %}checked{% endif %}>
+                                <label for="entire_home_edit" class="accommodation-label">
+                                    <div class="accommodation-icon">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    <div class="accommodation-text">Toàn bộ nhà</div>
+                                </label>
+                            </div>
+                            <div class="accommodation-option">
+                                <input type="radio" id="private_room_edit" name="accommodation_type" value="private_room" class="accommodation-radio"
+                                       {% if home.accommodation_type == 'private_room' %}checked{% endif %}>
+                                <label for="private_room_edit" class="accommodation-label">
+                                    <div class="accommodation-icon">
+                                        <i class="fas fa-door-open"></i>
+                                    </div>
+                                    <div class="accommodation-text">Phòng riêng</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
                         <label class="form-label">Loại hình nhà</label>
                         <div class="property-type-selection">
                             <div class="property-option">
-                                <input type="radio" id="house" name="property_type" value="house" class="property-radio" 
-                                       {% if home.property_type == 'house' %}checked{% endif %}>
-                                <label for="house" class="property-label">
+                                <input type="radio" id="townhouse_edit" name="property_type" value="townhouse" class="property-radio" 
+                                       {% if home.property_type == 'townhouse' %}checked{% endif %}>
+                                <label for="townhouse_edit" class="property-label">
                                     <div class="property-icon">
                                         <i class="fas fa-home"></i>
                                     </div>
-                                    <div class="property-text">Nhà</div>
+                                    <div class="property-text">Nhà phố</div>
                                 </label>
                             </div>
                             <div class="property-option">
-                                <input type="radio" id="apartment" name="property_type" value="apartment" class="property-radio"
+                                <input type="radio" id="apartment_edit" name="property_type" value="apartment" class="property-radio"
                                        {% if home.property_type == 'apartment' %}checked{% endif %}>
-                                <label for="apartment" class="property-label">
+                                <label for="apartment_edit" class="property-label">
                                     <div class="property-icon">
                                         <i class="fas fa-building"></i>
                                     </div>
-                                    <div class="property-text">Căn hộ</div>
+                                    <div class="property-text">Chung cư</div>
                                 </label>
                             </div>
                             <div class="property-option">
-                                <input type="radio" id="hotel" name="property_type" value="hotel" class="property-radio"
-                                       {% if home.property_type == 'hotel' %}checked{% endif %}>
-                                <label for="hotel" class="property-label">
+                                <input type="radio" id="villa_edit" name="property_type" value="villa" class="property-radio"
+                                       {% if home.property_type == 'villa' %}checked{% endif %}>
+                                <label for="villa_edit" class="property-label">
                                     <div class="property-icon">
-                                        <i class="fas fa-hotel"></i>
+                                        <i class="fas fa-house-user"></i>
                                     </div>
-                                    <div class="property-text">Khách sạn</div>
+                                    <div class="property-text">Villa</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="penthouse_edit" name="property_type" value="penthouse" class="property-radio"
+                                       {% if home.property_type == 'penthouse' %}checked{% endif %}>
+                                <label for="penthouse_edit" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="fas fa-city"></i>
+                                    </div>
+                                    <div class="property-text">Penthouse</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="farmstay_edit" name="property_type" value="farmstay" class="property-radio"
+                                       {% if home.property_type == 'farmstay' %}checked{% endif %}>
+                                <label for="farmstay_edit" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="fas fa-tree"></i>
+                                    </div>
+                                    <div class="property-text">Farmstay</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="resort_edit" name="property_type" value="resort" class="property-radio"
+                                       {% if home.property_type == 'resort' %}checked{% endif %}>
+                                <label for="resort_edit" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="fas fa-water"></i>
+                                    </div>
+                                    <div class="property-text">Resort</div>
                                 </label>
                             </div>
                         </div>

@@ -21,9 +21,12 @@ owner_bp = Blueprint('owner', __name__, url_prefix='/owner')
 
 # Create a constant for property type mapping at module level
 PROPERTY_TYPE_MAP = {
-    'house': 'Nhà',
-    'apartment': 'Căn hộ', 
-    'hotel': 'Khách sạn'
+    'townhouse': 'Nhà phố',
+    'apartment': 'Chung cư', 
+    'villa': 'Villa',
+    'penthouse': 'Penthouse',
+    'farmstay': 'Farmstay',
+    'resort': 'Resort'
 }
 
 PROPERTY_TYPE_REVERSE_MAP = {v: k for k, v in PROPERTY_TYPE_MAP.items()}
@@ -184,6 +187,7 @@ def add_home(home_id=None):
             home_data = {
                 'home_title': request.form.get('home_title'),
                 'home_description': request.form.get('home_description'),
+                'accommodation_type': request.form.get('accommodation_type', 'entire_home'),
                 'property_type': request.form.get('property_type'),
                 'province': request.form.get('province'),
                 'district': request.form.get('district'),
@@ -390,13 +394,17 @@ def confirm_home():
         # Map property_type từ English sang Vietnamese using constant
         property_type_vn = PROPERTY_TYPE_MAP.get(home_data.get('property_type'), 'Mô hình chuẩn')
         
+        # Get location names from database
+        location_names = get_location_names(home_data)
+        
         # Tạo home mới
         new_home = Home(
             title=home_data['home_title'],
             home_type=property_type_vn,  # Lưu giá trị tiếng Việt
-            address=f"{home_data['street']}, {home_data['ward']}" if home_data['street'] and home_data['ward'] else "Chưa cập nhật",
-            city=home_data['province'] if home_data['province'] else "Chưa cập nhật",
-            district=home_data['district'] if home_data['district'] else "Chưa cập nhật",
+            accommodation_type=home_data.get('accommodation_type', 'entire_home'),
+            address=f"{home_data['street']}, {location_names['ward_name']}" if home_data['street'] and location_names['ward_name'] != 'Chưa chọn' else "Chưa cập nhật",
+            city=location_names['province_name'] if location_names['province_name'] != 'Chưa chọn' else "Chưa cập nhật",
+            district=location_names['district_name'] if location_names['district_name'] != 'Chưa chọn' else "Chưa cập nhật",
             home_number=home_data['home_title'],  # Sử dụng title làm home number
             bed_count=home_data['bed_count'],
             bathroom_count=home_data['bathroom_count'],
@@ -542,19 +550,48 @@ def edit_home(home_id):
             )
             home.home_type = property_type_vn
             
-            # Update location with fallback to existing values
-            home.city = request.form.get('province') or home.city
-            home.district = request.form.get('district') or home.district
+            # Cập nhật accommodation_type
+            home.accommodation_type = request.form.get('accommodation_type', 'entire_home')
+            
+            # Update location with proper name lookup
+            province_code = request.form.get('province')
+            district_code = request.form.get('district')
+            
+            if province_code:
+                # Get province name from database
+                from app.models.models import Province, District
+                province = Province.query.filter_by(code=province_code).first()
+                if province:
+                    home.city = province.name
+                    
+                    if district_code:
+                        district = District.query.filter_by(code=district_code, province_id=province.id).first()
+                        if district:
+                            home.district = district.name
 
-            # Cập nhật địa chỉ - improved logic
-            ward = request.form.get('ward', '').strip()
+            # Cập nhật địa chỉ - improved logic with ward name lookup
+            ward_input = request.form.get('ward', '').strip()
             street = request.form.get('street', '').strip()
-            if street and ward:
-                home.address = f"{street}, {ward}"
+            
+            # Try to get ward name from database if ward_input is a code
+            ward_name = ward_input
+            if ward_input and district_code and province_code:
+                from app.models.models import Ward
+                # Find ward by name or code
+                ward = Ward.query.join(District).join(Province).filter(
+                    Province.code == province_code,
+                    District.code == district_code,
+                    (Ward.name == ward_input) | (Ward.code == ward_input)
+                ).first()
+                if ward:
+                    ward_name = ward.name
+            
+            if street and ward_name:
+                home.address = f"{street}, {ward_name}"
             elif street:
                 home.address = street
-            elif ward:
-                home.address = ward
+            elif ward_name:
+                home.address = ward_name
             # If both empty, keep existing address
             
             # Cập nhật thông tin nhà với validation
@@ -712,6 +749,7 @@ def edit_home(home_id):
         'id': home.id,
         'title': home.title,
         'description': home.description,
+        'accommodation_type': home.accommodation_type,
         'property_type': get_property_type_en(home.home_type),
         'province': home.city,
         'district': home.district,
@@ -810,8 +848,8 @@ def calendar():
     for home in homes:
         all_bookings.extend(home.bookings)
     
-    # Sort bookings by start_time
-    all_bookings.sort(key=lambda x: x.start_time)
+    # Sort bookings by start_time (handle None values)
+    all_bookings.sort(key=lambda x: x.start_time or datetime.min)
     
     # Convert bookings to JSON-serializable format
     bookings_data = []
