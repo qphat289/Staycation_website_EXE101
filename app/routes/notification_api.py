@@ -75,7 +75,7 @@ def get_user_notifications(user_id):
                 'timestamp': payment.paid_at.isoformat() if payment.paid_at else None,
                 'message': f'Thanh toán thành công: {payment.payment_code} - {payment.amount:,.0f} VND',
                 'booking_info': {
-                    'room_title': payment.booking.room.title if payment.booking else None,
+                    'room_title': payment.booking.home.title if payment.booking else None,
                     'start_time': payment.booking.start_time.isoformat() if payment.booking else None,
                     'end_time': payment.booking.end_time.isoformat() if payment.booking else None
                 }
@@ -128,7 +128,7 @@ def get_owner_notifications(owner_id):
                     'phone': payment.customer_phone
                 },
                 'booking_info': {
-                    'room_title': payment.booking.room.title if payment.booking else None,
+                    'room_title': payment.booking.home.title if payment.booking else None,
                     'start_time': payment.booking.start_time.isoformat() if payment.booking else None,
                     'end_time': payment.booking.end_time.isoformat() if payment.booking else None
                 }

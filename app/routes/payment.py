@@ -57,7 +57,7 @@ def process_payment():
         return redirect(url_for('renter.booking_details', booking_id=booking_id))
     
     if booking.status == 'cancelled':
-        flash('Đơn đặt phòng này đã bị hủy.', 'warning')
+        flash('Đơn đặt nhà này đã bị hủy.', 'warning')
         return redirect(url_for('renter.dashboard'))
     
     try:

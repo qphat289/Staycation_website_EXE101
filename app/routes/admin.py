@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from app.models.models import db, Admin, Owner, Renter, Home, Booking, Statistics, Review
+from app.utils.utils import allowed_file
 from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
@@ -12,10 +13,7 @@ from sqlalchemy import func, distinct
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-def allowed_file(filename):
-    """Check if the file extension is allowed"""
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @admin_bp.route('/dashboard')
 @login_required
@@ -165,9 +163,25 @@ def dashboard():
         today = datetime.now().date()
         stats = Statistics.query.filter_by(date=today).first()
 
-        # Bước 1: Nếu chưa có thống kê cho hôm nay, tạo một đối tượng rỗng
+        # Bước 1: Nếu chưa có thống kê cho hôm nay, tạo một đối tượng rỗng với giá trị mặc định
         if not stats:
-            stats = Statistics(date=today)
+            stats = Statistics(
+                date=today,
+                total_users=0,
+                total_owners=0,
+                total_renters=0,
+                total_homes=0,
+                total_bookings=0,
+                hourly_bookings=0,
+                overnight_bookings=0,
+                total_hours=0,
+                booking_rate=0.0,
+                common_type="N/A",
+                average_rating=0.0,
+                hourly_stats=json.dumps({'labels': [], 'data': []}),
+                overnight_stats=json.dumps({'labels': [], 'data': []}),
+                top_homes=json.dumps([])
+            )
             db.session.add(stats)
 
         # Bước 2: Luôn tính toán và gán lại dữ liệu THẬT
@@ -208,17 +222,17 @@ def dashboard():
         # Calculate new records added this month
         new_owners_this_month = Owner.query.filter(Owner.created_at >= month_start_datetime).count()
         new_renters_this_month = Renter.query.filter(Renter.created_at >= month_start_datetime).count()
-        new_rooms_this_month = Room.query.filter(Room.created_at >= month_start_datetime).count()
+        new_homes_this_month = Home.query.filter(Home.created_at >= month_start_datetime).count()
         new_bookings_this_month = Booking.query.filter(Booking.created_at >= month_start_datetime).count()
 
         # Calculate most popular rental type based on homestay count (not booking count)
-        all_active_rooms = Room.query.filter_by(is_active=True).all()
+        all_active_homes = Home.query.filter_by(is_active=True).all()
         hourly_homestays_count = 0
         nightly_homestays_count = 0
         
-        for room in all_active_rooms:
+        for home in all_active_homes:
             # Use same logic as owner.py line 612 to determine rental type
-            if room.price_per_night and room.price_per_night > 0:
+            if home.price_per_night and home.price_per_night > 0:
                 nightly_homestays_count += 1
             else:
                 hourly_homestays_count += 1
@@ -300,8 +314,24 @@ def dashboard():
     except Exception as e:
         db.session.rollback()
         print(f"CRITICAL ERROR in statistics calculation: {e}")
-        # Create an empty stats object to prevent page crash
-        stats = Statistics(date=datetime.now().date())
+        # Create an empty stats object to prevent page crash with proper initialization
+        stats = Statistics(
+            date=datetime.now().date(),
+            total_users=0,
+            total_owners=0,
+            total_renters=0,
+            total_homes=0,
+            total_bookings=0,
+            hourly_bookings=0,
+            overnight_bookings=0,
+            total_hours=0,
+            booking_rate=0.0,
+            common_type="N/A",
+            average_rating=0.0,
+            hourly_stats=json.dumps({'labels': [], 'data': []}),
+            overnight_stats=json.dumps({'labels': [], 'data': []}),
+            top_homes=json.dumps([])
+        )
         admin_commission = 0  # Default admin commission when error occurs
         # Create default empty data for charts when error occurs
         user_growth_data = {
@@ -470,7 +500,7 @@ def profile():
 
     # Calculate statistics for dashboard
     total_users = (Admin.query.count() or 0) + (Owner.query.count() or 0) + (Renter.query.count() or 0)
-    total_homestays = Room.query.count() or 0
+    total_homestays = Home.query.count() or 0
     
     return render_template("user/profile.html", 
                           total_users=total_users,
@@ -549,7 +579,7 @@ def homestay_details(homestay_id):
         flash("Bạn không có quyền truy cập!", "danger")
         return redirect(url_for('auth.login'))
     
-    homestay = Room.query.get_or_404(homestay_id)
+    homestay = Home.query.get_or_404(homestay_id)
     return render_template('admin/homestay_details.html', homestay=homestay)
 
 @admin_bp.route('/homestay/<int:homestay_id>/toggle-status', methods=['POST'])
@@ -559,7 +589,7 @@ def toggle_homestay_status(homestay_id):
         flash("Bạn không có quyền thực hiện thao tác này!", "danger")
         return redirect(url_for('auth.login'))
     
-    homestay = Room.query.get_or_404(homestay_id)
+    homestay = Home.query.get_or_404(homestay_id)
     
     # Đảo ngược trạng thái hoạt động
     homestay.is_active = not homestay.is_active
@@ -998,7 +1028,7 @@ def weekly_statistics():
         # Calculate new records added this week
         new_owners_this_week = Owner.query.filter(Owner.created_at >= week_start_datetime).count()
         new_renters_this_week = Renter.query.filter(Renter.created_at >= week_start_datetime).count()
-        new_rooms_this_week = Room.query.filter(Room.created_at >= week_start_datetime).count()
+        new_homes_this_week = Home.query.filter(Home.created_at >= week_start_datetime).count()
         new_bookings_this_week = Booking.query.filter(Booking.created_at >= week_start_datetime).count()
         
         # Get total counts for growth rate calculation
@@ -1013,7 +1043,7 @@ def weekly_statistics():
         response_data = {
             'new_owners': new_owners_this_week,
             'new_renters': new_renters_this_week,
-            'new_rooms': new_rooms_this_week,
+            'new_homes': new_homes_this_week,
             'new_bookings': new_bookings_this_week,
             'booking_growth_rate': booking_growth_rate
         }        
@@ -1156,7 +1186,7 @@ def get_user_growth_data(period):
         print(f"Error getting user growth data: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# --- API THỐNG KÊ LƯỢT ĐẶT PHÒNG THEO LOẠI ---
+    # --- API THỐNG KÊ LƯỢT ĐẶT NHÀ THEO LOẠI ---
 @admin_bp.route('/api/booking-stats-data/<period>')
 @login_required
 def get_booking_stats_data(period):
@@ -1195,21 +1225,21 @@ def get_booking_stats_data(period):
                 start_datetime = datetime.combine(current_date, datetime.min.time())
                 end_datetime = datetime.combine(current_date, datetime.max.time())
                 
-                # Count hourly bookings (rooms with hourly pricing)
-                hourly_bookings = db.session.query(Booking).join(Room).filter(
+                # Count hourly bookings (homes with hourly pricing)
+                hourly_bookings = db.session.query(Booking).join(Home).filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Room.price_per_hour.isnot(None),
-                    Room.price_per_hour > 0,
+                    Home.price_per_hour.isnot(None),
+                    Home.price_per_hour > 0,
                     Booking.status == 'completed'
                 ).count()
                 
-                # Count nightly bookings (rooms with nightly pricing)
-                nightly_bookings = db.session.query(Booking).join(Room).filter(
+                # Count nightly bookings (homes with nightly pricing)
+                nightly_bookings = db.session.query(Booking).join(Home).filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Room.price_per_night.isnot(None),
-                    Room.price_per_night > 0,
+                    Home.price_per_night.isnot(None),
+                    Home.price_per_night > 0,
                     Booking.status == 'completed'
                 ).count()
                 
@@ -1222,20 +1252,20 @@ def get_booking_stats_data(period):
                 end_datetime = datetime.combine(current_date, datetime.max.time())
                 
                 # Count hourly bookings
-                hourly_bookings = db.session.query(Booking).join(Room).filter(
+                hourly_bookings = db.session.query(Booking).join(Home).filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Room.price_per_hour.isnot(None),
-                    Room.price_per_hour > 0,
+                    Home.price_per_hour.isnot(None),
+                    Home.price_per_hour > 0,
                     Booking.status == 'completed'
                 ).count()
                 
                 # Count nightly bookings
-                nightly_bookings = db.session.query(Booking).join(Room).filter(
+                nightly_bookings = db.session.query(Booking).join(Home).filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Room.price_per_night.isnot(None),
-                    Room.price_per_night > 0,
+                    Home.price_per_night.isnot(None),
+                    Home.price_per_night > 0,
                     Booking.status == 'completed'
                 ).count()
                 
@@ -1254,20 +1284,20 @@ def get_booking_stats_data(period):
                 end_datetime = datetime.combine(week_end, datetime.max.time())
                 
                 # Count hourly bookings for the week
-                hourly_bookings = db.session.query(Booking).join(Room).filter(
+                hourly_bookings = db.session.query(Booking).join(Home).filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Room.price_per_hour.isnot(None),
-                    Room.price_per_hour > 0,
+                    Home.price_per_hour.isnot(None),
+                    Home.price_per_hour > 0,
                     Booking.status == 'completed'
                 ).count()
                 
                 # Count nightly bookings for the week
-                nightly_bookings = db.session.query(Booking).join(Room).filter(
+                nightly_bookings = db.session.query(Booking).join(Home).filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Room.price_per_night.isnot(None),
-                    Room.price_per_night > 0,
+                    Home.price_per_night.isnot(None),
+                    Home.price_per_night > 0,
                     Booking.status == 'completed'
                 ).count()
                 
@@ -1349,22 +1379,22 @@ def get_revenue_stats_data(year):
             # Calculate revenue for hourly bookings in this month
             hourly_revenue = db.session.query(
                 func.sum(Booking.total_price * 0.1)  # 10% commission
-            ).join(Room).filter(
+            ).join(Home).filter(
                 extract('year', Booking.created_at) == year,
                 extract('month', Booking.created_at) == month,
-                Room.price_per_hour.isnot(None),
-                Room.price_per_hour > 0,
+                Home.price_per_hour.isnot(None),
+                Home.price_per_hour > 0,
                 Booking.status == 'completed'
             ).scalar() or 0
             
             # Calculate revenue for nightly bookings in this month
             nightly_revenue = db.session.query(
                 func.sum(Booking.total_price * 0.1)  # 10% commission
-            ).join(Room).filter(
+            ).join(Home).filter(
                 extract('year', Booking.created_at) == year,
                 extract('month', Booking.created_at) == month,
-                Room.price_per_night.isnot(None),
-                Room.price_per_night > 0,
+                Home.price_per_night.isnot(None),
+                Home.price_per_night > 0,
                 Booking.status == 'completed'
             ).scalar() or 0
             
@@ -1498,7 +1528,7 @@ def delete_user(user_id):
             model_name = 'Owner'
             # Check if owner has active bookings or rooms
             if user.rooms.count() > 0:
-                return jsonify({'error': 'Không thể xóa Owner có phòng đang hoạt động'}), 400
+                return jsonify({'error': 'Không thể xóa Owner có nhà đang hoạt động'}), 400
         elif user_type == 'renter':
             user = Renter.query.get_or_404(user_id)
             model_name = 'Renter'

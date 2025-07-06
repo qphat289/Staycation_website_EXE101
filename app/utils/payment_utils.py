@@ -28,12 +28,12 @@ def create_payment_from_booking(booking, payment_method = None):
         currency='VND',
         status='pending',
         payment_method=payment_method,
-        description=f"Thanh toán cho booking phòng {booking.room.title}",
+        description=f"Thanh toán cho booking nhà {booking.home.title}",
         customer_name=booking.renter.full_name,
         customer_email=booking.renter.email,
         customer_phone=booking.renter.phone,
         booking_id=booking.id,
-        owner_id=booking.room.owner_id,
+        owner_id=booking.home.owner_id,
         renter_id=booking.renter_id
     )
     return payment

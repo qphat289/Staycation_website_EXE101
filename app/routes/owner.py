@@ -11,7 +11,7 @@ from PIL import Image
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
-from app.utils.utils import get_rank_info, get_location_name, get_user_upload_path, save_user_image, delete_user_image, generate_unique_filename, fix_image_orientation
+from app.utils.utils import get_rank_info, get_location_name, get_user_upload_path, save_user_image, delete_user_image, generate_unique_filename, fix_image_orientation, allowed_file
 from app.utils.email_validator import process_email
 import json
 from urllib.parse import quote
@@ -110,10 +110,7 @@ def get_rules_and_amenities(home_data):
         print(f"❌ Error in get_rules_and_amenities: {e}")
         return {'rules': [], 'amenities': []}
 
-def allowed_file(filename):
-    """Check if the file extension is allowed"""
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def validate_uploaded_file(file, max_size_mb=5):
     """Validate uploaded file for security and size"""
@@ -167,9 +164,9 @@ def dashboard():
 
 
 @owner_bp.route('/add-home', methods=['GET', 'POST'])
-@owner_bp.route('/add-home/<int:homestay_id>', methods=['GET', 'POST'])
+@owner_bp.route('/add-home/<int:home_id>', methods=['GET', 'POST'])
 @login_required
-def add_home(homestay_id=None):
+def add_home(home_id=None):
     # Determine if this is a fresh request or coming back from preview
     is_fresh_request = request.method == 'GET' and not request.args.get('from_preview')
     
@@ -1201,7 +1198,7 @@ def home_detail(home_id):
 def booking_details(booking_id):
     booking = Booking.query.get_or_404(booking_id)
     
-    # Ensure this booking belongs to one of the current owner's homestays
+    # Ensure this booking belongs to one of the current owner's homes
     if booking.home.owner_id != current_user.id:
         flash('Bạn không có quyền xem thông tin đặt nhà này.', 'danger')
         return redirect(url_for('owner.dashboard'))
@@ -1385,8 +1382,8 @@ def profile():
 @owner_bp.route('/book-home', methods=['GET', 'POST'])
 @owner_required
 def book_home(home_id=None):
-    # If homestay_id is provided in URL params, use it (though we don't really need it since homestay = owner)
-    homestay_id = request.args.get('homestay_id', type=int)
+    # If home_id is provided in URL params, use it (though we don't really need it since home = owner)
+    home_id_param = request.args.get('home_id', type=int)
     
     if home_id:
         # Original functionality - book a specific home
@@ -1448,13 +1445,13 @@ def book_home(home_id=None):
         flash('Booking request submitted successfully!', 'success')
         return redirect(url_for('owner.dashboard'))
 
-    # Create homestay object (which is the owner)
-    homestay = current_user
+    # Create owner object for display
+    owner_display = current_user
     # Add title property if not exists
-    if not hasattr(homestay, 'title'):
-        homestay.title = homestay.full_name or homestay.username or "My Homestay"
+    if not hasattr(owner_display, 'title'):
+        owner_display.title = owner_display.full_name or owner_display.username or "My Home Business"
 
-    return render_template('owner/book_home.html', home=home, homestay=homestay)
+    return render_template('owner/book_home.html', home=home, owner=owner_display)
 
 @owner_bp.route('/check-username', methods=['POST'])
 @login_required

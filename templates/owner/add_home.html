@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}<span data-translate="add-home">Thêm nhà mới</span>{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/add-home.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="add-home-wizard">
@@ -195,6 +199,8 @@
                         </div>
                         <!-- Hidden inputs cho selected amenities -->
                         <div id="amenityInputs"></div>
+                        <!-- Hidden inputs cho selected rules -->
+                        <div id="ruleInputs"></div>
                     </div>
   </div>
 
@@ -946,6 +952,26 @@ body.add-home-no-scroll, html.add-home-no-scroll {
 .upload-item:hover {
     border-color: #9ed649;
     background-color: #f8fff0;
+}
+
+.upload-grid.drag-over {
+    border: 2px dashed #9ed649 !important;
+    background-color: #f8fff0 !important;
+}
+
+.upload-grid.drag-over .upload-item {
+    border-color: #9ed649;
+    background-color: rgba(158, 214, 73, 0.1);
+}
+
+.upload-item.has-image {
+    border-style: solid;
+    border-color: #9ed649;
+}
+
+.upload-item .remove-btn:hover {
+    background: rgba(220, 53, 69, 1) !important;
+    transform: scale(1.1);
 }
 
 .pricing-section {
@@ -2518,20 +2544,22 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Count uploaded images (both file inputs and session storage)
+// Enhanced count uploaded images with better accuracy
 function countUploadedImages() {
     let count = 0;
     
-    // Count images in file inputs
+    // Count images in file inputs and visible previews
     const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
-    uploadItems.forEach(item => {
+    uploadItems.forEach((item, index) => {
         const fileInput = item.querySelector('input[type="file"]');
-        const hasImage = item.querySelector('img'); // Visual indicator
+        const hasVisibleImage = item.querySelector('img'); // Visual indicator
+        const placeholder = item.querySelector('.upload-placeholder');
         
+        // Count if there's a file in input OR a visible image preview
         if (fileInput && fileInput.files && fileInput.files.length > 0) {
             count++;
-        } else if (hasImage) {
-            // Count images that are displayed but might be in sessionStorage
+        } else if (hasVisibleImage && placeholder && placeholder.style.display === 'none') {
+            // Count images that are displayed (placeholder is hidden)
             count++;
         }
     });
@@ -2639,53 +2667,104 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Convert ảnh từ sessionStorage thành file inputs để gửi lên server
+// Enhanced convert images from sessionStorage to file inputs with better error handling
 function convertSessionStorageImagesToFiles() {
     const sessionData = loadFormDataFromSession();
-    if (!sessionData || !sessionData.uploadedImages) return;
+    if (!sessionData || !sessionData.uploadedImages || sessionData.uploadedImages.length === 0) {
+        console.log('ℹ️ No images in sessionStorage to convert');
+        return;
+    }
     
-    console.log('🔄 Converting sessionStorage images to file inputs...');
+    console.log('🔄 Converting sessionStorage images to file inputs...', sessionData.uploadedImages.length, 'images');
+    
+    let convertedCount = 0;
+    let errorCount = 0;
     
     sessionData.uploadedImages.forEach((imageData, index) => {
-        // Tìm upload item tương ứng
-        const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
-        if (index < uploadItems.length) {
+        try {
+            // Validate image data
+            if (!imageData || !imageData.src || !imageData.src.startsWith('data:image/')) {
+                console.warn(`⚠️ Invalid image data at index ${index}`);
+                errorCount++;
+                return;
+            }
+            
+            // Tìm upload item tương ứng
+            const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+            if (index >= uploadItems.length) {
+                console.warn(`⚠️ No upload item found for image at index ${index}`);
+                errorCount++;
+                return;
+            }
+            
             const uploadItem = uploadItems[index];
             const fileInput = uploadItem.querySelector('input[type="file"]');
             const img = uploadItem.querySelector('img');
             
             // Chỉ convert nếu có ảnh hiển thị nhưng file input trống
             if (img && fileInput && (!fileInput.files || fileInput.files.length === 0)) {
-                try {
-                    // Convert base64 to blob
-                    const base64Data = imageData.src.split(',')[1];
-                    const byteCharacters = atob(base64Data);
-                    const byteNumbers = new Array(byteCharacters.length);
-                    
-                    for (let i = 0; i < byteCharacters.length; i++) {
-                        byteNumbers[i] = byteCharacters.charCodeAt(i);
-                    }
-                    
-                    const byteArray = new Uint8Array(byteNumbers);
-                    const blob = new Blob([byteArray], { type: 'image/jpeg' });
-                    
-                    // Create file object
-                    const file = new File([blob], imageData.fileName || `image_${index}.jpg`, {
-                        type: 'image/jpeg'
-                    });
-                    
-                    // Assign to file input
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(file);
-                    fileInput.files = dataTransfer.files;
-                    
-                    console.log('✅ Converted image to file:', imageData.fileName);
-                } catch (error) {
-                    console.error('❌ Error converting image:', error);
+                // Convert base64 to blob
+                const base64Data = imageData.src.split(',')[1];
+                if (!base64Data) {
+                    console.warn(`⚠️ Invalid base64 data at index ${index}`);
+                    errorCount++;
+                    return;
                 }
+                
+                const byteCharacters = atob(base64Data);
+                const byteNumbers = new Array(byteCharacters.length);
+                
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                
+                const byteArray = new Uint8Array(byteNumbers);
+                
+                // Determine correct MIME type from base64 header
+                let mimeType = 'image/jpeg'; // default
+                if (imageData.src.includes('data:image/png')) mimeType = 'image/png';
+                else if (imageData.src.includes('data:image/gif')) mimeType = 'image/gif';
+                else if (imageData.src.includes('data:image/webp')) mimeType = 'image/webp';
+                
+                const blob = new Blob([byteArray], { type: mimeType });
+                
+                // Create file object with proper extension
+                const extension = mimeType.split('/')[1];
+                const fileName = imageData.fileName || `restored_image_${index}.${extension}`;
+                
+                const file = new File([blob], fileName, {
+                    type: mimeType,
+                    lastModified: Date.now()
+                });
+                
+                // Validate converted file
+                if (file.size === 0) {
+                    console.warn(`⚠️ Converted file is empty at index ${index}`);
+                    errorCount++;
+                    return;
+                }
+                
+                // Assign to file input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                console.log('✅ Converted image to file:', fileName, `(${(file.size / 1024).toFixed(1)}KB)`);
+                convertedCount++;
             }
+        } catch (error) {
+            console.error(`❌ Error converting image at index ${index}:`, error);
+            errorCount++;
         }
     });
+    
+    console.log(`🎯 Conversion complete: ${convertedCount} success, ${errorCount} errors`);
+    
+    if (errorCount > 0) {
+        showToast(`Đã khôi phục ${convertedCount} ảnh, ${errorCount} ảnh lỗi`, 'warning');
+    } else if (convertedCount > 0) {
+        showToast(`Đã khôi phục ${convertedCount} ảnh thành công`, 'success');
+    }
 }
 
 function showAmenityModal() {
@@ -3112,6 +3191,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Setup upload functionality
     setupUploadHandlers();
+    setupDragAndDrop();
 });
 
 // Setup upload click handlers
@@ -3141,6 +3221,15 @@ function setupUploadHandlers() {
                 e.preventDefault();
                 e.stopPropagation();
                 
+                // Check current image count before allowing more uploads
+                const currentImageCount = countUploadedImages();
+                const maxImages = 10;
+                
+                if (currentImageCount >= maxImages) {
+                    showToast(`Đã đạt giới hạn tối đa ${maxImages} ảnh`, 'warning');
+                    return;
+                }
+                
                 // Create temporary file input
                 const tempInput = document.createElement('input');
                 tempInput.type = 'file';
@@ -3150,10 +3239,36 @@ function setupUploadHandlers() {
                 
                 tempInput.addEventListener('change', function() {
                     if (this.files && this.files.length > 0) {
+                        const files = Array.from(this.files);
+                        let successCount = 0;
+                        let errorCount = 0;
+                        
+                        // Check if adding all files would exceed limit
+                        const remainingSlots = maxImages - currentImageCount;
+                        const filesToProcess = files.slice(0, remainingSlots);
+                        
+                        if (files.length > remainingSlots) {
+                            showToast(`Chỉ có thể thêm ${remainingSlots} ảnh nữa (${files.length - remainingSlots} ảnh bị bỏ qua)`, 'warning');
+                        }
+                        
                         // Add files to existing upload items or create new ones
-                        Array.from(this.files).forEach((file, index) => {
-                            addImageToUploadGrid(file);
+                        filesToProcess.forEach((file, index) => {
+                            const success = addImageToUploadGrid(file);
+                            if (success) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
                         });
+                        
+                        // Show summary message
+                        if (successCount > 0 && errorCount === 0) {
+                            showToast(`Đã thêm ${successCount} ảnh thành công`, 'success');
+                        } else if (successCount > 0 && errorCount > 0) {
+                            showToast(`Đã thêm ${successCount} ảnh, ${errorCount} ảnh lỗi`, 'warning');
+                        } else if (errorCount > 0) {
+                            showToast(`Không thể thêm ảnh (${errorCount} ảnh lỗi)`, 'error');
+                        }
                     }
                     // Remove temporary input
                     tempInput.remove();
@@ -3174,9 +3289,22 @@ function handleFilePreview(input, uploadItem) {
     
     // Handle the first file for the current upload item
     const firstFile = files[0];
+    
+    // Validate file before processing
+    if (!validateImageFile(firstFile)) {
+        input.value = ''; // Clear invalid file
+        return;
+    }
+    
     if (firstFile && firstFile.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = function(e) {
+            // Remove any existing preview first
+            const existingImg = uploadItem.querySelector('img');
+            const existingBtn = uploadItem.querySelector('button[type="button"]');
+            if (existingImg) existingImg.remove();
+            if (existingBtn) existingBtn.remove();
+            
             // Create preview image
             const img = document.createElement('img');
             img.src = e.target.result;
@@ -3188,42 +3316,65 @@ function handleFilePreview(input, uploadItem) {
                 top: 0;
                 left: 0;
                 z-index: 1;
+                border-radius: 8px;
             `;
             
             // Add remove button
             const removeBtn = document.createElement('button');
             removeBtn.innerHTML = '×';
             removeBtn.type = 'button';
+            removeBtn.title = 'Xóa ảnh này';
             removeBtn.style.cssText = `
                 position: absolute;
                 top: 5px;
                 right: 5px;
-                width: 20px;
-                height: 20px;
+                width: 24px;
+                height: 24px;
                 border: none;
-                background: rgba(220, 53, 69, 0.8);
+                background: rgba(220, 53, 69, 0.9);
                 color: white;
                 border-radius: 50%;
                 cursor: pointer;
-                font-size: 12px;
+                font-size: 14px;
+                font-weight: bold;
                 z-index: 15;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             `;
+            
+            // Add hover effects for remove button
+            removeBtn.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(220, 53, 69, 1)';
+                this.style.transform = 'scale(1.1)';
+            });
+            
+            removeBtn.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(220, 53, 69, 0.9)';
+                this.style.transform = 'scale(1)';
+            });
             
             removeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                // Clear the input
-                input.value = '';
-                // Remove preview elements
-                img.remove();
-                removeBtn.remove();
-                // Show placeholder again
-                uploadItem.querySelector('.upload-placeholder').style.display = 'flex';
-                // Auto-save after removing image
-                saveFormDataToSession();
+                
+                // Show confirmation for image removal
+                if (confirm('Bạn có chắc muốn xóa ảnh này không?')) {
+                    // Clear the input
+                    input.value = '';
+                    // Remove preview elements
+                    img.remove();
+                    removeBtn.remove();
+                    // Show placeholder again
+                    uploadItem.querySelector('.upload-placeholder').style.display = 'flex';
+                    // Auto-save after removing image
+                    saveFormDataToSession();
+                    
+                    // Show success message
+                    showToast('Đã xóa ảnh thành công', 'success');
+                }
             });
             
             // Hide placeholder and add preview
@@ -3233,7 +3384,16 @@ function handleFilePreview(input, uploadItem) {
             
             // Auto-save after adding image
             saveFormDataToSession();
+            
+            // Show success message
+            showToast('Đã thêm ảnh thành công', 'success');
         };
+        
+        reader.onerror = function() {
+            showToast('Lỗi khi đọc file ảnh', 'error');
+            input.value = ''; // Clear the problematic file
+        };
+        
         reader.readAsDataURL(firstFile);
     }
     
@@ -3241,11 +3401,148 @@ function handleFilePreview(input, uploadItem) {
     if (files.length > 1) {
         for (let i = 1; i < files.length; i++) {
             const additionalFile = files[i];
-            if (additionalFile.type.startsWith('image/')) {
+            if (validateImageFile(additionalFile) && additionalFile.type.startsWith('image/')) {
                 addImageToUploadGrid(additionalFile);
             }
         }
     }
+}
+
+// Enhanced file validation function
+function validateImageFile(file) {
+    // Check if file exists
+    if (!file) {
+        showToast('Không có file được chọn', 'error');
+        return false;
+    }
+    
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const fileType = file.type.toLowerCase();
+    
+    if (!allowedTypes.includes(fileType)) {
+        showToast('Chỉ cho phép upload file ảnh (JPG, PNG, GIF, WebP)', 'error');
+        return false;
+    }
+    
+    // Check file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        showToast(`Kích thước file (${fileSizeMB}MB) vượt quá giới hạn 10MB`, 'error');
+        return false;
+    }
+    
+    // Check minimum file size (avoid corrupted files)
+    const minSize = 1024; // 1KB
+    if (file.size < minSize) {
+        showToast('File ảnh quá nhỏ, có thể bị lỗi', 'error');
+        return false;
+    }
+    
+    // Check file name
+    if (file.name.length > 255) {
+        showToast('Tên file quá dài, vui lòng đổi tên file', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+// Enhanced toast notification system
+function showToast(message, type = 'info', duration = 3000) {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll('.custom-toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = 'custom-toast';
+    
+    const colors = {
+        success: { bg: '#d4edda', border: '#c3e6cb', text: '#155724', icon: 'bi-check-circle-fill' },
+        error: { bg: '#f8d7da', border: '#f5c6cb', text: '#721c24', icon: 'bi-exclamation-triangle-fill' },
+        warning: { bg: '#fff3cd', border: '#ffeaa7', text: '#856404', icon: 'bi-exclamation-triangle-fill' },
+        info: { bg: '#d1ecf1', border: '#bee5eb', text: '#0c5460', icon: 'bi-info-circle-fill' }
+    };
+    
+    const color = colors[type] || colors.info;
+    
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${color.bg};
+        border: 1px solid ${color.border};
+        color: ${color.text};
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 500;
+        max-width: 300px;
+        word-wrap: break-word;
+        animation: slideInRight 0.3s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    `;
+    
+    toast.innerHTML = `
+        <i class="bi ${color.icon}"></i>
+        <span>${message}</span>
+    `;
+    
+    // Add animation CSS if not exists
+    if (!document.getElementById('toast-animations')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animations';
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after duration
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 300);
+    }, duration);
+    
+    // Click to dismiss
+    toast.addEventListener('click', () => {
+        toast.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 300);
+    });
 }
 
 // Restore image to upload item from sessionStorage
@@ -3317,8 +3614,22 @@ function restoreImageToUploadItem(imageData) {
     }
 }
 
-// Add image to upload grid
+// Enhanced add image to upload grid with better error handling
 function addImageToUploadGrid(file) {
+    // Validate file first
+    if (!validateImageFile(file)) {
+        return false;
+    }
+    
+    // Check maximum images limit (10 images max)
+    const currentImageCount = countUploadedImages();
+    const maxImages = 10;
+    
+    if (currentImageCount >= maxImages) {
+        showToast(`Chỉ được phép upload tối đa ${maxImages} ảnh`, 'warning');
+        return false;
+    }
+    
     // Find first empty upload slot (not including the "add-more" button)
     const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
     let emptySlot = null;
@@ -3343,15 +3654,21 @@ function addImageToUploadGrid(file) {
         
         // Trigger preview
         handleFilePreview(fileInput, emptySlot);
+        return true;
     } else {
-        // Create new upload item if no empty slots
+        // Create new upload item if no empty slots and under limit
         const uploadGrid = document.querySelector('.upload-grid');
         const addMoreButton = uploadGrid.querySelector('.add-more');
+        
+        if (!uploadGrid || !addMoreButton) {
+            showToast('Lỗi: Không tìm thấy khu vực upload', 'error');
+            return false;
+        }
         
         const newUploadItem = document.createElement('div');
         newUploadItem.className = 'upload-item';
         newUploadItem.innerHTML = `
-            <input type="file" name="images[]" accept="image/*" multiple>
+            <input type="file" name="images[]" accept="image/*">
             <div class="upload-placeholder">
                 <i class="bi bi-camera"></i>
             </div>
@@ -3362,18 +3679,25 @@ function addImageToUploadGrid(file) {
         
         // Set up the file for the new item
         const fileInput = newUploadItem.querySelector('input[type="file"]');
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        fileInput.files = dataTransfer.files;
-        
-        // Trigger preview
-        handleFilePreview(fileInput, newUploadItem);
-        
-        // Setup handlers for the new item
-        setupUploadHandlersForItem(newUploadItem);
-        
-        // Auto-save after adding new image
-        saveFormDataToSession();
+        if (fileInput) {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            
+            // Trigger preview
+            handleFilePreview(fileInput, newUploadItem);
+            
+            // Setup handlers for the new item
+            setupUploadHandlersForItem(newUploadItem);
+            
+            // Auto-save after adding new image
+            saveFormDataToSession();
+            
+            return true;
+        } else {
+            showToast('Lỗi: Không thể tạo input file mới', 'error');
+            return false;
+        }
     }
 }
 
@@ -3394,6 +3718,101 @@ function setupUploadHandlersForItem(item) {
                 handleFilePreview(this, item);
             }
         });
+    }
+}
+
+// Setup drag and drop functionality
+function setupDragAndDrop() {
+    const uploadGrid = document.querySelector('.upload-grid');
+    if (!uploadGrid) return;
+    
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadGrid.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadGrid.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadGrid.addEventListener(eventName, unhighlight, false);
+    });
+    
+    // Handle dropped files
+    uploadGrid.addEventListener('drop', handleDrop, false);
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    function highlight(e) {
+        uploadGrid.classList.add('drag-over');
+        uploadGrid.style.borderColor = '#9ed649';
+        uploadGrid.style.backgroundColor = '#f8fff0';
+    }
+    
+    function unhighlight(e) {
+        uploadGrid.classList.remove('drag-over');
+        uploadGrid.style.borderColor = '';
+        uploadGrid.style.backgroundColor = '';
+    }
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length === 0) return;
+        
+        // Check current image count
+        const currentImageCount = countUploadedImages();
+        const maxImages = 10;
+        const remainingSlots = maxImages - currentImageCount;
+        
+        if (currentImageCount >= maxImages) {
+            showToast(`Đã đạt giới hạn tối đa ${maxImages} ảnh`, 'warning');
+            return;
+        }
+        
+        const fileArray = Array.from(files);
+        const imagesToProcess = fileArray.filter(file => file.type.startsWith('image/'));
+        
+        if (imagesToProcess.length === 0) {
+            showToast('Không có file ảnh hợp lệ trong các file được kéo thả', 'warning');
+            return;
+        }
+        
+        // Limit files to remaining slots
+        const filesToUpload = imagesToProcess.slice(0, remainingSlots);
+        
+        if (imagesToProcess.length > remainingSlots) {
+            showToast(`Chỉ có thể thêm ${remainingSlots} ảnh nữa (${imagesToProcess.length - remainingSlots} ảnh bị bỏ qua)`, 'warning');
+        }
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        // Process each file
+        filesToUpload.forEach(file => {
+            const success = addImageToUploadGrid(file);
+            if (success) {
+                successCount++;
+            } else {
+                errorCount++;
+            }
+        });
+        
+        // Show result message
+        if (successCount > 0 && errorCount === 0) {
+            showToast(`Đã thêm ${successCount} ảnh thành công bằng kéo thả`, 'success');
+        } else if (successCount > 0 && errorCount > 0) {
+            showToast(`Đã thêm ${successCount} ảnh, ${errorCount} ảnh lỗi`, 'warning');
+        } else if (errorCount > 0) {
+            showToast(`Không thể thêm ảnh (${errorCount} ảnh lỗi)`, 'error');
+        }
     }
 }
 
@@ -4530,4 +4949,8 @@ function loadRulesAndAmenities(homeData) {
 
 </script>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/add-home.js') }}"></script>
 {% endblock %}

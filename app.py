@@ -171,7 +171,7 @@ from app.routes.payment_api import payment_api
 from app.routes.webhook_handler import webhook_bp
 from app.routes.notification_api import notification_api
 from app.routes.api import api_bp
-from app.routes.test_map import test_map_bp
+
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(owner_bp)
@@ -182,7 +182,7 @@ app.register_blueprint(payment_api)
 app.register_blueprint(webhook_bp)
 app.register_blueprint(notification_api)
 app.register_blueprint(api_bp)
-app.register_blueprint(test_map_bp)
+
 
 # Home route
 @app.route('/')
@@ -193,13 +193,13 @@ def home():
     # If user is logged in and is admin, redirect to their dashboard instead of showing home page
     if current_user.is_authenticated and isinstance(current_user, Admin):
         return redirect(url_for('admin.dashboard'))
-    # Retrieve featured homestays to display on the homepage
+    # Retrieve featured homes to display on the homepage
     from sqlalchemy.orm import joinedload
-    homestays = Home.query.options(
+    featured_homes = Home.query.options(
         joinedload(Home.images),
         joinedload(Home.reviews)
     ).filter_by(is_active=True).limit(6).all()
-    return render_template('home.html', homestays=homestays)
+    return render_template('home.html', homestays=featured_homes)
 
 # Route to handle image uploads (legacy)
 @app.route('/static/uploads/<filename>')

@@ -537,7 +537,7 @@ class Statistics(db.Model):
     total_renters = db.Column(db.Integer, default=0)
     total_homes = db.Column(db.Integer, default=0)
     
-    # Thống kê đặt phòng
+    # Thống kê đặt nhà
     total_bookings = db.Column(db.Integer, default=0)
     hourly_bookings = db.Column(db.Integer, default=0)
     overnight_bookings = db.Column(db.Integer, default=0)

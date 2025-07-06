@@ -7,7 +7,7 @@ import io
 import os
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
-from app.utils.utils import get_rank_info, get_location_name, save_user_image, delete_user_image, fix_image_orientation
+from app.utils.utils import get_rank_info, get_location_name, save_user_image, delete_user_image, fix_image_orientation, allowed_file
 from app.utils.email_validator import process_email
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
@@ -21,9 +21,9 @@ def renter_required(f):
             return redirect(url_for('home'))
         
         # Kiểm tra nếu là owner đang dùng chế độ xem renter
-        # Chỉ ngăn chặn các chức năng booking/đặt phòng
-        if current_user.__class__.__name__ == 'Owner' and current_user.is_renter() and request.endpoint in ['renter.book_room', 'renter.cancel_booking']:
-            flash('Bạn đang ở chế độ xem, không thể thực hiện đặt phòng', 'warning')
+        # Chỉ ngăn chặn các chức năng booking/đặt nhà
+        if current_user.__class__.__name__ == 'Owner' and current_user.is_renter() and request.endpoint in ['renter.book_home', 'renter.cancel_booking']:
+            flash('Bạn đang ở chế độ xem, không thể thực hiện đặt nhà', 'warning')
             return redirect(url_for('home'))
             
         return f(*args, **kwargs)
@@ -325,9 +325,7 @@ def cancel_booking(id):
     flash('Booking cancelled successfully', 'success')
     return redirect(url_for('renter.dashboard'))
 
-def allowed_file(filename):
-    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
 
 @renter_bp.route('/profile', methods=['GET', 'POST'])
 @login_required  
@@ -447,16 +445,16 @@ def check_email():
         'available': not bool(existing_owner or existing_admin or existing_renter)
     })
 
-@renter_bp.route('/homestay/<int:homestay_id>/review', methods=['GET', 'POST'])
+@renter_bp.route('/home/<int:home_id>/review', methods=['GET', 'POST'])
 @login_required
-def add_review(homestay_id):
-    homestay = Homestay.query.get_or_404(homestay_id)
-
-    # Check if the user has already left a review for this homestay
-    existing_review = Review.query.filter_by(homestay_id=homestay.id, renter_id=current_user.id).first()
+def add_review(home_id):
+    home = Home.query.get_or_404(home_id)
+    
+    # Check if the user has already left a review for this home
+    existing_review = Review.query.filter_by(home_id=home.id, renter_id=current_user.id).first()
     if existing_review:
-        flash('You have already left a review for this homestay.', 'danger')
-        return redirect(url_for('renter.view_room', id=homestay.id))
+        flash('You have already left a review for this home.', 'danger')
+        return redirect(url_for('renter.view_home_detail', home_id=home.id))
 
     if request.method == 'POST':
         rating = int(request.form.get('rating', 5))
@@ -465,15 +463,15 @@ def add_review(homestay_id):
         review = Review(
             rating=rating,
             content=content,
-            homestay_id=homestay.id,
+            home_id=home.id,
             renter_id=current_user.id  # CHỖ NÀY ĐÃ ĐỔI user_id -> renter_id
         )
         db.session.add(review)
         db.session.commit()
         flash('Review submitted!', 'success')
-        return redirect(url_for('renter.view_room', id=homestay.id))
+        return redirect(url_for('renter.view_home_detail', home_id=home.id))
 
-    return render_template('renter/add_review.html', homestay=homestay)
+    return render_template('renter/add_review.html', home=home)
 
 @renter_bp.route('/booking-history')
 @renter_required
@@ -529,7 +527,7 @@ def review_booking(booking_id):
 
     # Check if there's already a review
     existing_review = Review.query.filter_by(
-        homestay_id=booking.homestay_id,
+        home_id=booking.home_id,
         renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
     ).first()
 
@@ -545,7 +543,7 @@ def review_booking(booking_id):
             new_review = Review(
                 rating=rating,
                 content=content,
-                homestay_id=booking.homestay_id,
+                home_id=booking.home_id,
                 renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
             )
             db.session.add(new_review)
@@ -556,21 +554,21 @@ def review_booking(booking_id):
     
     return render_template('renter/review_booking.html', booking=booking, existing_review=existing_review)
 
-@renter_bp.route('/reviews/<int:homestay_id>', methods=['GET', 'POST'])
-def view_reviews(homestay_id):
+@renter_bp.route('/reviews/<int:home_id>', methods=['GET', 'POST'])
+def view_reviews(home_id):
     """
-    Displays reviews for homestay, optionally letting the user post a review if they have a completed booking.
+    Displays reviews for home, optionally letting the user post a review if they have a completed booking.
     """
-    homestay = Homestay.query.get_or_404(homestay_id)
+    home = Home.query.get_or_404(home_id)
     
     # Get existing reviews
-    reviews = Review.query.filter_by(homestay_id=homestay.id).order_by(Review.created_at.desc()).all()
+    reviews = Review.query.filter_by(home_id=home.id).order_by(Review.created_at.desc()).all()
     
     # Determine if user can post (i.e., they have a completed booking)
     can_post = False
     if current_user.is_authenticated and current_user.is_renter():
         completed_booking = Booking.query.filter_by(
-            homestay_id=homestay.id,
+            home_id=home.id,
             renter_id=current_user.id,
             status='completed'
         ).first()
@@ -581,13 +579,13 @@ def view_reviews(homestay_id):
     if request.method == 'POST':
         if not can_post:
             flash("You can only post a review if you have a completed booking.", "danger")
-            return redirect(url_for('renter.view_reviews', homestay_id=homestay.id))
+            return redirect(url_for('renter.view_reviews', home_id=home.id))
         
         rating = int(request.form.get('rating', 5))
         content = request.form.get('content', '')
         
         existing_review = Review.query.filter_by(
-            homestay_id=homestay.id,
+            home_id=home.id,
             renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
         ).first()
         if existing_review:
@@ -598,13 +596,13 @@ def view_reviews(homestay_id):
             new_review = Review(
                 rating=rating,
                 content=content,
-                homestay_id=homestay.id,
+                home_id=home.id,
                 renter_id=current_user.id  # ĐÃ ĐỔI user_id -> renter_id
             )
             db.session.add(new_review)
             flash("Review submitted!", "success")
         db.session.commit()
-        return redirect(url_for('renter.view_reviews', homestay_id=homestay.id))
+        return redirect(url_for('renter.view_reviews', home_id=home.id))
     
     write_mode = request.args.get('write')
     
@@ -613,7 +611,7 @@ def view_reviews(homestay_id):
     
     return render_template(
         'renter/view_reviews.html',
-        homestay=homestay,
+        home=home,
         reviews=reviews,
         can_post=can_post,
         write_mode=write_mode
@@ -677,20 +675,20 @@ def delete_account():
     flash('Tài khoản của bạn đã được xóa', 'success')
     return redirect(url_for('home'))
 
-@renter_bp.route('/debug_rooms')
-def debug_rooms():
-    """Temporary route to debug room data"""
-    rooms = Room.query.all()
+@renter_bp.route('/debug_homes')
+def debug_homes():
+    """Temporary route to debug home data"""
+    homes = Home.query.all()
     result = []
-    for room in rooms:
+    for home in homes:
         result.append({
-            'title': room.title,
-            'city': room.city,
-            'district': room.district,
-            'max_guests': room.max_guests,
-            'price_per_hour': room.price_per_hour,
-            'price_per_night': room.price_per_night,
-            'is_active': room.is_active,
-            'room_type': room.room_type
+            'title': home.title,
+            'city': home.city,
+            'district': home.district,
+            'max_guests': home.max_guests,
+            'price_per_hour': home.price_per_hour,
+            'price_per_night': home.price_per_night,
+            'is_active': home.is_active,
+            'home_type': home.home_type
         })
     return jsonify(result)

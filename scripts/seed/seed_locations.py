@@ -3,7 +3,10 @@
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+# Add the project root to the Python path
+project_root = os.path.join(os.path.dirname(__file__), '..', '..')
+sys.path.insert(0, project_root)
 
 from app.models.models import db, Province, District, Ward
 from flask import Flask

@@ -94,22 +94,22 @@ def get_location_name(location_code, location_type='city'):
     
     return location_code
 
-def get_user_upload_path(user_type, user_id, room_id=None):
+def get_user_upload_path(user_type, user_id, home_id=None):
     """
     Generate upload path for user files
-    Structure: static/data/{user_type}/{user_id}/ or static/data/owner/{user_id}/{room_id}/
+    Structure: static/data/{user_type}/{user_id}/ or static/data/owner/{user_id}/{home_id}/
     
     Args:
         user_type: 'owner', 'renter', or 'admin'
         user_id: ID of the user
-        room_id: ID of the room (only for owner room images)
+        home_id: ID of the home (only for owner home images)
     
     Returns:
         tuple: (relative_path, absolute_path)
     """
-    if user_type == 'owner' and room_id:
-        # For owner room images: data/owner/{owner_id}/{room_id}/
-        relative_path = f"data/owner/{user_id}/{room_id}"
+    if user_type == 'owner' and home_id:
+        # For owner home images: data/owner/{owner_id}/{home_id}/
+        relative_path = f"data/owner/{user_id}/{home_id}"
     elif user_type == 'owner':
         # For owner profile images: data/owner/{owner_id}/
         relative_path = f"data/owner/{user_id}"
@@ -192,7 +192,7 @@ def fix_image_orientation(image_path):
         print(f"Error fixing image orientation: {e}")
         return False
 
-def save_user_image(file, user_type, user_id, room_id=None, prefix=""):
+def save_user_image(file, user_type, user_id, home_id=None, prefix=""):
     """
     Save user uploaded image to the organized folder structure
     
@@ -200,8 +200,8 @@ def save_user_image(file, user_type, user_id, room_id=None, prefix=""):
         file: Uploaded file object
         user_type: 'owner', 'renter', or 'admin'
         user_id: ID of the user
-        room_id: ID of the room (only for owner room images)
-        prefix: Optional prefix for filename (e.g., 'avatar', 'main', 'room')
+        home_id: ID of the home (only for owner home images)
+        prefix: Optional prefix for filename (e.g., 'avatar', 'main', 'home')
     
     Returns:
         str: Relative path to saved image
@@ -210,7 +210,7 @@ def save_user_image(file, user_type, user_id, room_id=None, prefix=""):
         return None
     
     # Get upload path
-    relative_path, absolute_path = get_user_upload_path(user_type, user_id, room_id)
+    relative_path, absolute_path = get_user_upload_path(user_type, user_id, home_id)
     
     # Generate unique filename
     filename = generate_unique_filename(file.filename, prefix)
@@ -358,3 +358,22 @@ def migrate_old_images():
     except Exception as e:
         print(f"Error during image migration: {e}")
         db.session.rollback()
+
+def allowed_file(filename):
+    """
+    Check if the uploaded file has an allowed extension
+    
+    Args:
+        filename: Name of the uploaded file
+    
+    Returns:
+        bool: True if file extension is allowed, False otherwise
+    """
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    
+    if not filename:
+        return False
+    
+    # Get file extension and check if it's allowed
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

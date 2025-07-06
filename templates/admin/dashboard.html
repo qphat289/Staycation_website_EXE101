@@ -1890,8 +1890,8 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng tài khoản</h6>
-                                <h5 class="mb-1">{{ (stats.total_owners + stats.total_renters) if stats else 0 }}</h5>
-                                <small class="text-muted">+{{ (weekly_stats.new_owners_month + weekly_stats.new_renters_month) if weekly_stats else 0 }} trong tháng này</small>
+                                <h5 class="mb-1">{{ (stats.total_owners|default(0) + stats.total_renters|default(0)) if stats else 0 }}</h5>
+                                <small class="text-muted">+{{ (weekly_stats.new_owners_month|default(0) + weekly_stats.new_renters_month|default(0)) if weekly_stats else 0 }} trong tháng này</small>
                             </div>
                         </div>
                         
@@ -1899,7 +1899,7 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng Owner</h6>
-                                <h5 class="mb-1">{{ stats.total_owners if stats else 0 }}</h5>
+                                <h5 class="mb-1">{{ stats.total_owners|default(0) if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_owners_month if weekly_stats else 0 }} trong tháng này</small>
                             </div>
                         </div>
@@ -1908,7 +1908,7 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng Renter</h6>
-                                <h5 class="mb-1">{{ stats.total_renters if stats else 0 }}</h5>
+                                <h5 class="mb-1">{{ stats.total_renters|default(0) if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_renters_month if weekly_stats else 0 }} trong tháng này</small>
                             </div>
                         </div>
@@ -1917,9 +1917,9 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tài khoản thêm trong tuần</h6>
-                                <h5 class="mb-1">{{ (weekly_stats.new_owners + weekly_stats.new_renters) if weekly_stats else 0 }}</h5>                                <small class="text-success">
-                                    {% if stats and (stats.total_owners + stats.total_renters) > 0 %}
-                                        +{{ (((weekly_stats.new_owners + weekly_stats.new_renters) / (stats.total_owners + stats.total_renters)) * 100)|round(1) if weekly_stats else 0 }}% so với tuần trước
+                                <h5 class="mb-1">{{ (weekly_stats.new_owners|default(0) + weekly_stats.new_renters|default(0)) if weekly_stats else 0 }}</h5>                                <small class="text-success">
+                                    {% if stats and (stats.total_owners|default(0) + stats.total_renters|default(0)) > 0 %}
+                                        +{{ (((weekly_stats.new_owners|default(0) + weekly_stats.new_renters|default(0)) / (stats.total_owners|default(0) + stats.total_renters|default(0))) * 100)|round(1) if weekly_stats else 0 }}% so với tuần trước
                                     {% else %}
                                         +0% so với tuần trước
                                     {% endif %}
@@ -1932,8 +1932,8 @@ nav[aria-label="Page navigation"] {
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Renter thêm trong tháng</h6>
                                 <h5 class="mb-1">{{ weekly_stats.new_renters_month if weekly_stats else 0 }}</h5>                                <small class="text-success">
-                                    {% if stats and stats.total_renters > 0 %}
-                                        +{{ ((weekly_stats.new_renters_month / stats.total_renters) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
+                                    {% if stats and stats.total_renters|default(0) > 0 %}
+                                        +{{ ((weekly_stats.new_renters_month|default(0) / stats.total_renters|default(1)) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
                                     {% else %}
                                         +0% so với tháng trước
                                     {% endif %}
@@ -1946,8 +1946,8 @@ nav[aria-label="Page navigation"] {
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Owner thêm trong tháng</h6>
                                 <h5 class="mb-1">{{ weekly_stats.new_owners_month if weekly_stats else 0 }}</h5>                                <small class="text-success">
-                                    {% if stats and stats.total_owners > 0 %}
-                                        +{{ ((weekly_stats.new_owners_month / stats.total_owners) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
+                                    {% if stats and stats.total_owners|default(0) > 0 %}
+                                        +{{ ((weekly_stats.new_owners_month|default(0) / stats.total_owners|default(1)) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
                                     {% else %}
                                         +0% so với tháng trước
                                     {% endif %}
@@ -2158,14 +2158,14 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng số chủ nhà</h6>
-                                <h5 class="mb-1">{{ stats.total_owners }}</h5>
+                                <h5 class="mb-1">{{ stats.total_owners|default(0) if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_owners if weekly_stats.new_owners else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng người thuê</h6>
-                                <h5 class="mb-1">{{ stats.total_renters }}</h5>
+                                <h5 class="mb-1">{{ stats.total_renters|default(0) if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_renters if weekly_stats.new_renters else 0 }} trong tuần</small>
                             </div>
                         </div>

@@ -1,19 +1,21 @@
 import sys
 import os
-import importlib.util
 from datetime import datetime
 
-# Đảm bảo đường dẫn project root
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Add the project root to the Python path
+project_root = os.path.join(os.path.dirname(__file__), '..')
+sys.path.insert(0, project_root)
 
-# Import app và db từ app.py bằng importlib
-app_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'app.py'))
-spec = importlib.util.spec_from_file_location('app', app_path)
-app_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(app_module)
-app = app_module.app
-db = app_module.db
-from app.models.models import Booking
+from flask import Flask
+from config.config import Config
+from app.models.models import db, Booking
+
+# Create Flask app
+app = Flask(__name__)
+app.config.from_object(Config)
+
+# Initialize database
+db.init_app(app)
 
 with app.app_context():
     bookings = [

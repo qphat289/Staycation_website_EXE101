@@ -29,13 +29,13 @@ class NotificationService:
                 self.logger.warning(f"Không có email khách hàng cho payment {payment.id}")
                 return False
             
-            # Lấy thông tin booking và room
+            # Lấy thông tin booking và home
             booking = payment.booking
-            room = booking.room
-            owner = room.owner
+            home = booking.home
+            owner = home.owner
             
             # Tạo nội dung email
-            subject = EmailConfig.EMAIL_TEMPLATES['payment_success']['subject'].format(room_title=room.title)
+            subject = EmailConfig.EMAIL_TEMPLATES['payment_success']['subject'].format(room_title=home.title)
             
             # Template email
             email_template = """
@@ -71,9 +71,9 @@ class NotificationService:
                         <p>Giao dịch thanh toán của bạn đã được xử lý thành công. Dưới đây là thông tin chi tiết:</p>
                         
                         <div class="payment-details">
-                            <h3>Thông tin đặt phòng</h3>
+                            <h3>Thông tin đặt nhà</h3>
                             <div class="detail-row">
-                                <span class="label">Phòng:</span>
+                                <span class="label">Nhà:</span>
                                 <span class="value">{{ room_title }}</span>
                             </div>
                             <div class="detail-row">
@@ -117,7 +117,7 @@ class NotificationService:
                         <div class="payment-details">
                             <h3>Thông tin liên hệ</h3>
                             <div class="detail-row">
-                                <span class="label">Chủ phòng:</span>
+                                <span class="label">Chủ nhà:</span>
                                 <span class="value">{{ owner_name }}</span>
                             </div>
                             <div class="detail-row">
@@ -130,8 +130,8 @@ class NotificationService:
                         <ul>
                             <li>Vui lòng đến đúng thời gian đã đặt</li>
                             <li>Mang theo giấy tờ tùy thân khi check-in</li>
-                            <li>Liên hệ chủ phòng nếu có thay đổi</li>
-                            <li>Bạn có thể xem chi tiết đặt phòng trong tài khoản</li>
+                            <li>Liên hệ chủ nhà nếu có thay đổi</li>
+                            <li>Bạn có thể xem chi tiết đặt nhà trong tài khoản</li>
                         </ul>
                         
                         <div class="footer">
@@ -147,8 +147,8 @@ class NotificationService:
             # Chuẩn bị dữ liệu cho template
             template_data = {
                 'customer_name': payment.customer_name or 'Khách hàng',
-                'room_title': room.title,
-                'room_address': f"{room.address}, {room.district}, {room.city}",
+                'room_title': home.title,
+                'room_address': f"{home.address}, {home.district}, {home.city}",
                 'booking_date': booking.start_time.strftime('%d/%m/%Y'),
                 'booking_time': f"{booking.start_time.strftime('%H:%M')} - {booking.end_time.strftime('%H:%M')}",
                 'booking_type': 'Theo giờ' if booking.booking_type == 'hourly' else 'Theo đêm',
@@ -192,10 +192,10 @@ class NotificationService:
                 return False
             
             booking = payment.booking
-            room = booking.room
-            owner = room.owner
+            home = booking.home
+            owner = home.owner
             
-            subject = EmailConfig.EMAIL_TEMPLATES['payment_success_owner']['subject'].format(room_title=room.title)
+            subject = EmailConfig.EMAIL_TEMPLATES['payment_success_owner']['subject'].format(room_title=home.title)
             
             email_template = """
             <!DOCTYPE html>
@@ -226,7 +226,7 @@ class NotificationService:
                     
                     <div class="content">
                         <h2>Xin chào {{ owner_name }},</h2>
-                        <p>Phòng <strong>{{ room_title }}</strong> của bạn vừa có thanh toán thành công.</p>
+                        <p>Nhà <strong>{{ room_title }}</strong> của bạn vừa có thanh toán thành công.</p>
                         
                         <div class="booking-details">
                             <h3>Thông tin khách hàng</h3>
@@ -245,7 +245,7 @@ class NotificationService:
                         </div>
                         
                         <div class="booking-details">
-                            <h3>Thông tin đặt phòng</h3>
+                            <h3>Thông tin đặt nhà</h3>
                             <div class="detail-row">
                                 <span class="label">Ngày đặt:</span>
                                 <span class="value">{{ booking_date }}</span>
@@ -282,10 +282,10 @@ class NotificationService:
                         
                         <p><strong>Hành động cần thiết:</strong></p>
                         <ul>
-                            <li>Chuẩn bị phòng sạch sẽ</li>
+                            <li>Chuẩn bị nhà sạch sẽ</li>
                             <li>Kiểm tra các tiện nghi</li>
                             <li>Liên hệ khách hàng để xác nhận thời gian check-in</li>
-                            <li>Cập nhật trạng thái phòng trong hệ thống</li>
+                            <li>Cập nhật trạng thái nhà trong hệ thống</li>
                         </ul>
                     </div>
                 </div>
@@ -295,7 +295,7 @@ class NotificationService:
             
             template_data = {
                 'owner_name': owner.full_name or owner.username,
-                'room_title': room.title,
+                'room_title': home.title,
                 'customer_name': payment.customer_name or 'Khách hàng',
                 'customer_email': payment.customer_email or 'Chưa cập nhật',
                 'customer_phone': payment.customer_phone,
