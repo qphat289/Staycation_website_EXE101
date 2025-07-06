@@ -3,7 +3,10 @@
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+# Add the project root to Python path
+project_root = os.path.join(os.path.dirname(__file__), '..', '..')
+sys.path.insert(0, project_root)
 
 from app.models.models import db, Province, District, Ward
 from flask import Flask
@@ -90,28 +93,6 @@ LOCATION_DATA = {
                 'wards': ['Phường Tân Sơn Nhì', 'Phường Tây Thạnh', 'Phường Sơn Kỳ', 'Phường Tân Quý', 'Phường Tân Thành', 'Phường Phú Thọ Hòa', 'Phường Phú Thạnh', 'Phường Phú Trung', 'Phường Hòa Thạnh', 'Phường Hiệp Tân', 'Phường Tân Thới Hòa']
             },
             
-            # Thành phố Thủ Đức (đơn vị hành chính cấp quận)
-            'thuduc': {
-                'name': 'Thành phố Thủ Đức',
-                'wards': [
-                    # Khu vực cũ thuộc Quận 2
-                    'Phường Thảo Điền', 'Phường An Phú', 'Phường An Khánh', 'Phường Bình An', 
-                    'Phường Bình Khanh', 'Phường Bình Trưng Đông', 'Phường Bình Trưng Tây', 
-                    'Phường Cát Lái', 'Phường Thạnh Mỹ Lợi', 'Phường An Lợi Đông', 'Phường Thủ Thiêm',
-                    
-                    # Khu vực cũ thuộc Quận 9  
-                    'Phường Long Bình', 'Phường Long Thạnh Mỹ', 'Phường Tân Phú', 'Phường Hiệp Phú', 
-                    'Phường Tăng Nhơn Phú A', 'Phường Tăng Nhơn Phú B', 'Phường Phước Long A', 
-                    'Phường Phước Long B', 'Phường Trường Thạnh', 'Phường Long Phước', 
-                    'Phường Long Trường', 'Phường Phước Bình', 'Phường Phú Hữu',
-                    
-                    # Khu vực cũ thuộc Quận Thủ Đức
-                    'Phường Linh Xuân', 'Phường Bình Chiểu', 'Phường Linh Trung', 'Phường Tam Bình', 
-                    'Phường Tam Phú', 'Phường Hiệp Bình Phước', 'Phường Hiệp Bình Chánh', 
-                    'Phường Linh Chiểu', 'Phường Linh Đông', 'Phường Bình Thọ', 'Phường Trường Thọ'
-                ]
-            },
-            
             # 5 Huyện ngoại thành
             'huyenbinhchanh': {
                 'name': 'Huyện Bình Chánh',
@@ -152,6 +133,28 @@ LOCATION_DATA = {
                 'wards': [
                     'Thị trấn Nhà Bè', 'Xã Phước Kiển', 'Xã Phước Lộc', 'Xã Nhơn Đức', 
                     'Xã Phú Xuân', 'Xã Long Thới', 'Xã Hiệp Phước'
+                ]
+            },
+            
+            # Thành phố Thủ Đức (đặt cuối cùng sau tất cả Huyện)
+            'thuduc': {
+                'name': 'Thành phố Thủ Đức',
+                'wards': [
+                    # Khu vực cũ thuộc Quận 2
+                    'Phường Thảo Điền', 'Phường An Phú', 'Phường An Khánh', 'Phường Bình An', 
+                    'Phường Bình Khanh', 'Phường Bình Trưng Đông', 'Phường Bình Trưng Tây', 
+                    'Phường Cát Lái', 'Phường Thạnh Mỹ Lợi', 'Phường An Lợi Đông', 'Phường Thủ Thiêm',
+                    
+                    # Khu vực cũ thuộc Quận 9  
+                    'Phường Long Bình', 'Phường Long Thạnh Mỹ', 'Phường Tân Phú', 'Phường Hiệp Phú', 
+                    'Phường Tăng Nhơn Phú A', 'Phường Tăng Nhơn Phú B', 'Phường Phước Long A', 
+                    'Phường Phước Long B', 'Phường Trường Thạnh', 'Phường Long Phước', 
+                    'Phường Long Trường', 'Phường Phước Bình', 'Phường Phú Hữu',
+                    
+                    # Khu vực cũ thuộc Quận Thủ Đức
+                    'Phường Linh Xuân', 'Phường Bình Chiểu', 'Phường Linh Trung', 'Phường Tam Bình', 
+                    'Phường Tam Phú', 'Phường Hiệp Bình Phước', 'Phường Hiệp Bình Chánh', 
+                    'Phường Linh Chiểu', 'Phường Linh Đông', 'Phường Bình Thọ', 'Phường Trường Thọ'
                 ]
             }
         }
@@ -288,12 +291,32 @@ def normalize_string(s):
     import re
     import unicodedata
     
-    # Loại bỏ dấu tiếng Việt
-    s = unicodedata.normalize('NFD', s)
-    s = ''.join(char for char in s if unicodedata.category(char) != 'Mn')
+    # Bản đồ chuyển đổi dấu tiếng Việt để tránh trùng lặp
+    vietnamese_map = {
+        'á': 'a1', 'à': 'a2', 'ả': 'a3', 'ã': 'a4', 'ạ': 'a5',
+        'ă': 'a6', 'ắ': 'a7', 'ằ': 'a8', 'ẳ': 'a9', 'ẵ': 'a10', 'ặ': 'a11',
+        'â': 'a12', 'ấ': 'a13', 'ầ': 'a14', 'ẩ': 'a15', 'ẫ': 'a16', 'ậ': 'a17',
+        'é': 'e1', 'è': 'e2', 'ẻ': 'e3', 'ẽ': 'e4', 'ẹ': 'e5',
+        'ê': 'e6', 'ế': 'e7', 'ề': 'e8', 'ể': 'e9', 'ễ': 'e10', 'ệ': 'e11',
+        'í': 'i1', 'ì': 'i2', 'ỉ': 'i3', 'ĩ': 'i4', 'ị': 'i5',
+        'ó': 'o1', 'ò': 'o2', 'ỏ': 'o3', 'õ': 'o4', 'ọ': 'o5',
+        'ô': 'o6', 'ố': 'o7', 'ồ': 'o8', 'ổ': 'o9', 'ỗ': 'o10', 'ộ': 'o11',
+        'ơ': 'o12', 'ớ': 'o13', 'ờ': 'o14', 'ở': 'o15', 'ỡ': 'o16', 'ợ': 'o17',
+        'ú': 'u1', 'ù': 'u2', 'ủ': 'u3', 'ũ': 'u4', 'ụ': 'u5',
+        'ư': 'u6', 'ứ': 'u7', 'ừ': 'u8', 'ử': 'u9', 'ữ': 'u10', 'ự': 'u11',
+        'ý': 'y1', 'ỳ': 'y2', 'ỷ': 'y3', 'ỹ': 'y4', 'ỵ': 'y5',
+        'đ': 'd1'
+    }
     
-    # Chuyển thành lowercase và thay thế khoảng trắng, ký tự đặc biệt
-    s = re.sub(r'[^\w\s]', '', s.lower())
+    # Chuyển thành lowercase
+    s = s.lower()
+    
+    # Thay thế các ký tự có dấu bằng mã unique
+    for viet_char, code in vietnamese_map.items():
+        s = s.replace(viet_char, code)
+    
+    # Loại bỏ các ký tự đặc biệt còn lại và thay khoảng trắng bằng underscore
+    s = re.sub(r'[^\w\s]', '', s)
     s = re.sub(r'\s+', '_', s)
     
     return s
