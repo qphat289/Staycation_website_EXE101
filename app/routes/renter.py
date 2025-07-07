@@ -145,14 +145,14 @@ def search():
         # Ensure home has hourly price and it's not zero
         query = query.filter(Home.price_per_hour.isnot(None))
         query = query.filter(Home.price_per_hour > 0)
-    else:  # daily/nightly
+    else:  # daily/daily
         if min_price is not None:
             query = query.filter(Home.price_per_night >= min_price)
-            print(f"🔍 Min nightly price filter: {min_price}")
+            print(f"🔍 Min daily price filter: {min_price}")
         if max_price is not None:
             query = query.filter(Home.price_per_night <= max_price)
-            print(f"🔍 Max nightly price filter: {max_price}")
-        # Ensure home has nightly price and it's not zero
+            print(f"🔍 Max daily price filter: {max_price}")
+        # Ensure home has daily price and it's not zero
         query = query.filter(Home.price_per_night.isnot(None))
         query = query.filter(Home.price_per_night > 0)
     
@@ -250,7 +250,7 @@ def book_home(home_id):
         
         # Check if home has price_per_night
         if not home.price_per_night:
-            flash("This home does not have nightly pricing available.", "danger")
+            flash("This home does not have daily pricing available.", "danger")
             return redirect(url_for('renter.book_home', home_id=home.id))
         
         # For home bookings, check-in is typically at 3 PM
@@ -264,7 +264,7 @@ def book_home(home_id):
         end_datetime = start_datetime + timedelta(days=duration)
         # Calculate total price using the home's price per night
         total_price = home.price_per_night * duration
-        # Calculate total hours (24 hours per day for nightly bookings)
+        # Calculate total hours (24 hours per day for daily bookings)
         total_hours = duration * 24
         
         # Check for overlapping bookings for this home (chỉ check với booking chưa bị hủy)
@@ -286,7 +286,7 @@ def book_home(home_id):
             total_price=total_price,
             status='confirmed',
             payment_status='pending',
-            booking_type='nightly'  # Set booking type to nightly for home bookings
+            booking_type='daily'  # Set booking type to daily for home bookings
         )
         
         db.session.add(new_booking)

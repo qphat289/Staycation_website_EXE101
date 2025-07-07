@@ -519,15 +519,15 @@
                 
                 <div class="master-filter-right">
                     <div class="chart-type-toggle">
-                        <button class="chart-type-btn active" data-chart="hourly">
+                        <button class="chart-type-btn" data-chart="hourly">
                             <i class="fas fa-clock"></i>
                             Theo giờ
                         </button>
-                        <button class="chart-type-btn" data-chart="nightly">
+                        <button class="chart-type-btn" data-chart="daily">
                             <i class="fas fa-moon"></i>
                             Theo ngày
                         </button>
-                        <button class="chart-type-btn" data-chart="both">
+                        <button class="chart-type-btn active" data-chart="both">
                             <i class="fas fa-chart-line"></i>
                             Cả hai
                         </button>
@@ -639,7 +639,7 @@
         <div class="chart-container">
             <div class="chart-title" id="chartTitle">
                 <i class="fas fa-chart-line" style="color: #E0EC9B;"></i>
-                Doanh thu thuê theo giờ
+                So sánh doanh thu theo giờ và theo ngày
             </div>
             <div id="d3Chart" class="d3-chart"></div>
         </div>
@@ -687,7 +687,7 @@
 let chartDataCache = {};
 let statsDataCache = {};
 let currentPeriod = 'total';
-let currentChart = 'hourly';
+let currentChart = 'both';
 let d3Chart = null;
 let tooltip = null;
 
@@ -979,7 +979,7 @@ function updateSingleBarChartWithData(data, chartType, g, width, height, isPlace
 // Update stacked bar chart
 function updateStackedBarChart(chartData, g, width, height) {
     const hourlyData = chartData.hourly || [];
-    const nightlyData = chartData.nightly || [];
+    const nightlyData = chartData.daily || [];
     
     if (hourlyData.length === 0 && nightlyData.length === 0) {
         // Show empty state with background
@@ -1011,16 +1011,27 @@ function updateStackedBarChart(chartData, g, width, height) {
         return;
     }
     
-    // Prepare stacked data
+    // Prepare stacked data with correct bottom-to-top ordering
     const dates = [...new Set([...hourlyData.map(d => d.date), ...nightlyData.map(d => d.date)])];
     const stackedData = dates.map(date => {
         const hourly = hourlyData.find(d => d.date === date)?.revenue || 0;
         const nightly = nightlyData.find(d => d.date === date)?.revenue || 0;
+        
+        // Determine which value should be at bottom (smaller) and top (larger)
+        const bottomValue = Math.min(hourly, nightly);
+        const topValue = Math.max(hourly, nightly);
+        const bottomType = hourly <= nightly ? 'hourly' : 'nightly';
+        const topType = hourly > nightly ? 'hourly' : 'nightly';
+        
         return {
             date: date,
             hourly: hourly,
             nightly: nightly,
-            total: hourly + nightly
+            total: hourly + nightly,
+            bottomValue: bottomValue,
+            topValue: topValue,
+            bottomType: bottomType,
+            topType: topType
         };
     });
     
@@ -1113,17 +1124,17 @@ function updateStackedBarChart(chartData, g, width, height) {
         .style('font-size', '11px')
         .style('fill', '#7C7C7C');
     
-    // Create nightly bars (bottom)
-    g.selectAll('.bar-nightly')
+    // Create bottom bars (smaller value)
+    g.selectAll('.bar-bottom')
         .data(stackedData)
         .enter()
         .append('rect')
-        .attr('class', 'bar bar-nightly')
+        .attr('class', 'bar bar-bottom')
         .attr('x', d => xScale(d.date))
         .attr('width', xScale.bandwidth())
         .attr('y', height)
         .attr('height', 0)
-        .attr('fill', '#A8D5BA')
+        .attr('fill', d => d.bottomType === 'hourly' ? '#E0EC9B' : '#A8D5BA')
         .attr('stroke', 'rgba(16, 25, 23, 0.1)')
         .attr('stroke-width', 1)
         .attr('rx', 3)
@@ -1142,20 +1153,20 @@ function updateStackedBarChart(chartData, g, width, height) {
         .transition()
         .duration(800)
         .ease(d3.easeElastic)
-        .attr('y', d => yScale(d.nightly))
-        .attr('height', d => height - yScale(d.nightly));
+        .attr('y', d => yScale(d.bottomValue))
+        .attr('height', d => height - yScale(d.bottomValue));
     
-    // Create hourly bars (top)
-    g.selectAll('.bar-hourly')
+    // Create top bars (larger value)
+    g.selectAll('.bar-top')
         .data(stackedData)
         .enter()
         .append('rect')
-        .attr('class', 'bar bar-hourly')
+        .attr('class', 'bar bar-top')
         .attr('x', d => xScale(d.date))
         .attr('width', xScale.bandwidth())
-        .attr('y', d => yScale(d.nightly))
+        .attr('y', d => yScale(d.bottomValue))
         .attr('height', 0)
-        .attr('fill', '#E0EC9B')
+        .attr('fill', d => d.topType === 'hourly' ? '#E0EC9B' : '#A8D5BA')
         .attr('stroke', 'rgba(16, 25, 23, 0.1)')
         .attr('stroke-width', 1)
         .attr('rx', 3)
@@ -1176,39 +1187,73 @@ function updateStackedBarChart(chartData, g, width, height) {
         .ease(d3.easeElastic)
         .delay(200)
         .attr('y', d => yScale(d.total))
-        .attr('height', d => yScale(d.nightly) - yScale(d.total));
+        .attr('height', d => yScale(d.bottomValue) - yScale(d.total));
     
-    // Add legend
-    const legend = g.append('g')
-        .attr('class', 'legend')
-        .attr('transform', `translate(${width - 200}, 20)`);
+    // Create legend on the title bar (outside chart area)
+    createTitleBarLegend();
+}
+
+// Create legend on title bar
+function createTitleBarLegend() {
+    // Remove existing legend if any
+    d3.select('.chart-title-legend').remove();
     
+    // Get title container
+    const titleContainer = document.querySelector('.chart-title');
+    if (!titleContainer) return;
+    
+    // Create legend container
+    const legendDiv = document.createElement('div');
+    legendDiv.className = 'chart-title-legend';
+    legendDiv.style.cssText = `
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        z-index: 10;
+    `;
+    
+    // Legend data
     const legendData = [
         { label: 'Theo giờ', color: '#E0EC9B' },
         { label: 'Theo ngày', color: '#A8D5BA' }
     ];
     
-    const legendItems = legend.selectAll('.legend-item')
-        .data(legendData)
-        .enter()
-        .append('g')
-        .attr('class', 'legend-item')
-        .attr('transform', (d, i) => `translate(0, ${i * 20})`);
+    // Create legend items
+    legendData.forEach(item => {
+        const legendItem = document.createElement('div');
+        legendItem.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #101917;
+        `;
+        
+        const colorBox = document.createElement('div');
+        colorBox.style.cssText = `
+            width: 12px;
+            height: 12px;
+            background-color: ${item.color};
+            border-radius: 2px;
+            border: 1px solid rgba(16, 25, 23, 0.1);
+        `;
+        
+        const label = document.createElement('span');
+        label.textContent = item.label;
+        
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(label);
+        legendDiv.appendChild(legendItem);
+    });
     
-    legendItems.append('rect')
-        .attr('width', 12)
-        .attr('height', 12)
-        .attr('fill', d => d.color)
-        .attr('rx', 2);
-    
-    legendItems.append('text')
-        .attr('x', 18)
-        .attr('y', 9)
-        .attr('dy', '0.35em')
-        .style('font-size', '12px')
-        .style('font-weight', '500')
-        .style('fill', '#101917')
-        .text(d => d.label);
+    // Make title container relative positioned
+    titleContainer.style.position = 'relative';
+    titleContainer.appendChild(legendDiv);
 }
 
 // Setup chart type filters
@@ -1228,7 +1273,7 @@ function setupChartTypeFilters() {
             // Update chart title
             const titles = {
                 'hourly': 'Doanh thu thuê theo giờ',
-                'nightly': 'Doanh thu thuê theo ngày',
+                'daily': 'Doanh thu thuê theo ngày',
                 'both': 'Doanh thu thuê (Tổng hợp)'
             };
             document.getElementById('chartTitle').innerHTML = `
@@ -1310,7 +1355,7 @@ function setupMasterFilters() {
             
             if (chartType === 'hourly') {
                 chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo giờ';
-            } else if (chartType === 'nightly') {
+            } else if (chartType === 'daily') {
                 chartTitle.innerHTML = '<i class="fas fa-chart-bar" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo ngày';
             } else if (chartType === 'both') {
                 chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>So sánh doanh thu theo giờ và theo ngày';

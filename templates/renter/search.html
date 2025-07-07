@@ -71,7 +71,7 @@
     <div class="col-md-9">
         <h2 class="mb-4">
             {% if search_params.booking_type == 'daily' %}
-                Nhà cho thuê theo đêm
+                Nhà cho thuê theo ngày
             {% else %}
                 Nhà cho thuê theo giờ
             {% endif %}
@@ -114,7 +114,7 @@
                             </p>
                             <p class="card-text fw-bold">
                                 {% if search_params.booking_type == 'daily' %}
-                                    {{ "{:,.0f}".format(home.display_price_per_night) }}đ /đêm
+                                    {{ "{:,.0f}".format(home.display_price_per_night) }}đ /ngày
                                 {% else %}
                                     {{ "{:,.0f}".format(home.display_price) }}đ /giờ
                                 {% endif %}

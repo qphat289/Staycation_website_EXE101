@@ -27,16 +27,49 @@ def calculate_total_hours(start_time, end_time):
     return int((end_time - start_time).total_seconds() / 3600)
 
 def calculate_price(home, booking_type, total_hours, start_time):
-    """Calculate booking price based on home, type, and duration"""
-    base_price = 0
+    """Calculate booking price based on home's enhanced pricing structure"""
+    total_price = 0
+    
+    # Ensure we have valid inputs
+    if total_hours <= 0:
+        return 0
     
     if booking_type == 'hourly':
-        base_price = home.price_per_hour or 50000  # Default hourly price
-        total_price = base_price * total_hours
-    else:  # nightly
-        base_price = home.price_per_night or home.price_per_hour * 24 if home.price_per_hour else 500000
-        nights = max(1, total_hours // 24)
-        total_price = base_price * nights
+        # Use enhanced hourly pricing structure
+        if total_hours <= 2 and home.price_first_2_hours:
+            total_price = home.price_first_2_hours
+        elif home.price_first_2_hours and home.price_per_additional_hour:
+            # First 2 hours + additional hours
+            total_price = home.price_first_2_hours
+            additional_hours = total_hours - 2
+            if additional_hours > 0:
+                total_price += home.price_per_additional_hour * additional_hours
+        elif home.price_per_additional_hour:
+            # Fallback to per additional hour rate for all hours
+            total_price = home.price_per_additional_hour * total_hours
+        else:
+            # Fallback default price
+            total_price = 50000 * total_hours
+        
+        # Check for special time-based pricing
+        hour = start_time.hour
+        if 21 <= hour or hour <= 8:  # Overnight (9 PM to 8 AM)
+            if home.price_overnight:
+                total_price = max(total_price, home.price_overnight)
+        elif 9 <= hour <= 20:  # Daytime (9 AM to 8 PM) 
+            if home.price_daytime and total_hours >= 8:  # Full day booking
+                total_price = max(total_price, home.price_daytime)
+                
+    else:  # daily/nightly booking
+        if home.price_per_day:
+            nights = max(1, total_hours // 24)
+            total_price = home.price_per_day * nights
+        elif home.price_first_2_hours:
+            # Fallback: estimate daily price from hourly
+            total_price = home.price_first_2_hours * 12  # Rough daily estimate
+        else:
+            # Default daily price
+            total_price = 500000 * max(1, total_hours // 24)
     
     # Apply seasonal/weekend pricing
     if start_time.weekday() >= 5:  # Weekend (Saturday, Sunday)
@@ -47,6 +80,67 @@ def calculate_price(home, booking_type, total_hours, start_time):
         total_price *= 1.15  # 15% holiday surcharge
     
     return int(total_price)
+
+def create_sample_renters():
+    """Create sample renters if none exist in database"""
+    try:
+        sample_renters = []
+        
+        # Create 5 sample renters with realistic Vietnamese data
+        renter_data = [
+            {
+                'username': 'nguyen_van_a',
+                'email': 'nguyenvana@email.com',
+                'full_name': 'Nguyễn Văn A',
+                'phone': '0901234567'
+            },
+            {
+                'username': 'tran_thi_b',
+                'email': 'tranthib@email.com', 
+                'full_name': 'Trần Thị B',
+                'phone': '0987654321'
+            },
+            {
+                'username': 'le_van_c',
+                'email': 'levanc@email.com',
+                'full_name': 'Lê Văn C', 
+                'phone': '0912345678'
+            },
+            {
+                'username': 'pham_thi_d',
+                'email': 'phamthid@email.com',
+                'full_name': 'Phạm Thị D',
+                'phone': '0923456789'
+            },
+            {
+                'username': 'hoang_van_e',
+                'email': 'hoangvane@email.com',
+                'full_name': 'Hoàng Văn E',
+                'phone': '0934567890'
+            }
+        ]
+        
+        for data in renter_data:
+            renter = Renter(
+                username=data['username'],
+                email=data['email'],
+                full_name=data['full_name'],
+                phone=data['phone']
+            )
+            renter.set_password('password123')  # Default password
+            sample_renters.append(renter)
+        
+        # Save to database
+        db.session.bulk_save_objects(sample_renters)
+        db.session.commit()
+        
+        print(f"Created {len(sample_renters)} sample renters")
+        return Renter.query.all()  # Return fresh list from database
+        
+    except Exception as e:
+        print(f"Error creating sample renters: {e}")
+        db.session.rollback()
+        return None
 
 def generate_payment_reference(payment_method, booking_id):
     """Generate realistic payment reference based on method"""
@@ -70,11 +164,40 @@ def create_enhanced_booking_data():
     homes = Home.query.all()
     renters = Renter.query.all()
     
-    if not homes or not renters:
-        print("Error: No homes or renters found in database. Please seed homes and renters first.")
+    if not homes:
+        print("Error: No homes found in database. Please seed homes first.")
         return
     
+    # Create sample renters if none exist
+    if not renters:
+        print("No renters found. Creating sample renters...")
+        renters = create_sample_renters()
+        if not renters:
+            print("Failed to create sample renters.")
+            return
+    
     print(f"Found {len(homes)} homes and {len(renters)} renters")
+    
+    # Filter homes that have valid pricing data
+    valid_homes = []
+    for home in homes:
+        has_pricing = (
+            (home.price_first_2_hours and home.price_first_2_hours > 0) or
+            (home.price_per_additional_hour and home.price_per_additional_hour > 0) or
+            (home.price_overnight and home.price_overnight > 0) or
+            (home.price_daytime and home.price_daytime > 0) or
+            (home.price_per_day and home.price_per_day > 0)
+        )
+        if has_pricing:
+            valid_homes.append(home)
+    
+    if not valid_homes:
+        print("Warning: No homes with valid pricing found. Using all homes with default pricing.")
+        valid_homes = homes
+    else:
+        print(f"Found {len(valid_homes)} homes with valid pricing data")
+    
+    homes = valid_homes
     
     # Booking status options with realistic distribution
     status_options = [
@@ -107,7 +230,7 @@ def create_enhanced_booking_data():
     
     # Booking types with seasonal patterns
     booking_types = [
-        ('nightly', 0.7),       # 70% nightly bookings
+        ('daily', 0.7),         # 70% daily bookings  
         ('hourly', 0.3)         # 30% hourly bookings
     ]
     
@@ -128,11 +251,33 @@ def create_enhanced_booking_data():
         # Generate booking date within range
         booking_date = fake.date_time_between(start_date=start_date, end_date=end_date)
         
-        # Choose booking type based on distribution
-        booking_type = random.choices(
-            [bt[0] for bt in booking_types],
-            weights=[bt[1] for bt in booking_types]
-        )[0]
+        # Choose booking type based on home's available pricing and distribution
+        available_types = []
+        type_weights = []
+        
+        # Check if home supports hourly booking
+        if (home.price_first_2_hours and home.price_first_2_hours > 0) or \
+           (home.price_per_additional_hour and home.price_per_additional_hour > 0) or \
+           (home.price_overnight and home.price_overnight > 0) or \
+           (home.price_daytime and home.price_daytime > 0):
+            available_types.append('hourly')
+            type_weights.append(0.3)
+        
+        # Check if home supports daily booking
+        if home.price_per_day and home.price_per_day > 0:
+            available_types.append('daily')
+            type_weights.append(0.7)
+        
+        # Fallback if no pricing is available
+        if not available_types:
+            available_types = ['hourly', 'daily']
+            type_weights = [0.3, 0.7]
+        
+        # Normalize weights
+        total_weight = sum(type_weights)
+        type_weights = [w/total_weight for w in type_weights]
+        
+        booking_type = random.choices(available_types, weights=type_weights)[0]
         
         # Generate booking duration based on type
         if booking_type == 'hourly':
@@ -145,8 +290,8 @@ def create_enhanced_booking_data():
                 hour=random.randint(8, 20),  # 8 AM to 8 PM
                 minute=random.choice([0, 30])  # On the hour or half hour
             )
-        else:  # nightly
-            # Nightly bookings: 1-14 nights
+        else:  # daily
+            # Daily bookings: 1-14 days
             duration_days = random.choices(
                 [1, 2, 3, 4, 5, 7, 10, 14],
                 weights=[0.3, 0.25, 0.15, 0.1, 0.08, 0.07, 0.03, 0.02]
@@ -162,6 +307,10 @@ def create_enhanced_booking_data():
         # Calculate total hours and price
         total_hours = calculate_total_hours(start_time, end_time)
         total_price = calculate_price(home, booking_type, total_hours, start_time)
+        
+        # Ensure minimum price
+        if total_price < 10000:  # Minimum 10,000 VND
+            total_price = 10000
         
         # Choose status based on booking date
         if booking_date < datetime.now() - timedelta(days=7):
@@ -242,7 +391,7 @@ def create_special_scenario_bookings(homes, renters):
     start_time = datetime.now() - timedelta(days=45)
     end_time = start_time + timedelta(days=30)
     total_hours = calculate_total_hours(start_time, end_time)
-    total_price = calculate_price(home, 'nightly', total_hours, start_time)
+    total_price = calculate_price(home, 'daily', total_hours, start_time)
     
     special_bookings.append(Booking(
         start_time=start_time,
@@ -256,7 +405,7 @@ def create_special_scenario_bookings(homes, renters):
         payment_date=start_time - timedelta(days=2),
         payment_method='bank_transfer',
         payment_reference='BANK_LONGTERM_001',
-        booking_type='nightly',
+        booking_type='daily',
         created_at=start_time - timedelta(days=7)
     ))
     
@@ -292,7 +441,7 @@ def create_special_scenario_bookings(homes, renters):
     start_time = next_saturday.replace(hour=15, minute=0, second=0, microsecond=0)
     end_time = start_time + timedelta(days=2)
     total_hours = calculate_total_hours(start_time, end_time)
-    total_price = calculate_price(home, 'nightly', total_hours, start_time)
+    total_price = calculate_price(home, 'daily', total_hours, start_time)
     
     special_bookings.append(Booking(
         start_time=start_time,
@@ -306,7 +455,7 @@ def create_special_scenario_bookings(homes, renters):
         payment_date=datetime.now() - timedelta(days=3),
         payment_method='credit_card',
         payment_reference='CC_WEEKEND_001',
-        booking_type='nightly',
+        booking_type='daily',
         created_at=datetime.now() - timedelta(days=5)
     ))
     
@@ -316,7 +465,7 @@ def create_special_scenario_bookings(homes, renters):
     start_time = datetime.now() + timedelta(days=10)
     end_time = start_time + timedelta(days=3)
     total_hours = calculate_total_hours(start_time, end_time)
-    total_price = calculate_price(home, 'nightly', total_hours, start_time)
+    total_price = calculate_price(home, 'daily', total_hours, start_time)
     
     special_bookings.append(Booking(
         start_time=start_time,
@@ -330,7 +479,7 @@ def create_special_scenario_bookings(homes, renters):
         payment_date=datetime.now() - timedelta(days=2),
         payment_method='payos',
         payment_reference='PAYOS_CANCELLED_001',
-        booking_type='nightly',
+        booking_type='daily',
         created_at=datetime.now() - timedelta(days=7)
     ))
     
@@ -359,6 +508,43 @@ def create_special_scenario_bookings(homes, renters):
     ))
     
     return special_bookings
+
+def print_pricing_debug_info(homes):
+    """Print pricing information for homes to help debug"""
+    print(f"\n=== HOME PRICING DEBUG INFO ===")
+    
+    homes_with_hourly = 0
+    homes_with_daily = 0
+    homes_with_both = 0
+    homes_with_none = 0
+    
+    for home in homes[:5]:  # Show first 5 homes
+        print(f"\nHome ID {home.id}: {home.title[:30]}...")
+        print(f"  First 2 hours: {home.price_first_2_hours or 'Not set'}")
+        print(f"  Additional hour: {home.price_per_additional_hour or 'Not set'}")
+        print(f"  Overnight: {home.price_overnight or 'Not set'}")
+        print(f"  Daytime: {home.price_daytime or 'Not set'}")
+        print(f"  Per day: {home.price_per_day or 'Not set'}")
+        
+        has_hourly = any([home.price_first_2_hours, home.price_per_additional_hour, 
+                         home.price_overnight, home.price_daytime])
+        has_daily = bool(home.price_per_day)
+        
+        if has_hourly and has_daily:
+            homes_with_both += 1
+        elif has_hourly:
+            homes_with_hourly += 1
+        elif has_daily:
+            homes_with_daily += 1
+        else:
+            homes_with_none += 1
+    
+    total_homes = len(homes)
+    print(f"\n=== PRICING SUMMARY (Total: {total_homes} homes) ===")
+    print(f"Homes with hourly pricing only: {homes_with_hourly}")
+    print(f"Homes with daily pricing only: {homes_with_daily}")
+    print(f"Homes with both pricing types: {homes_with_both}")
+    print(f"Homes with no pricing: {homes_with_none}")
 
 def print_booking_statistics(bookings):
     """Print statistics about generated bookings"""
@@ -422,6 +608,11 @@ if __name__ == "__main__":
             print("Clearing existing bookings...")
             Booking.query.delete()
             db.session.commit()
+            
+            # Show pricing debug info
+            homes = Home.query.all()
+            if homes:
+                print_pricing_debug_info(homes)
             
             # Generate new bookings
             print("Generating enhanced booking data...")

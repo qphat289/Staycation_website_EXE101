@@ -410,6 +410,7 @@ body.add-home-no-scroll, html.add-home-no-scroll {
 .rental-type-selection {
     display: flex;
     gap: 20px;
+    flex-wrap: wrap;
 }
 
 .rental-option {
@@ -578,10 +579,37 @@ body.add-home-no-scroll, html.add-home-no-scroll {
     font-size: 16px;
 }
 
+.pricing-option h5 {
+    margin-bottom: 12px;
+    color: #555;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Enhanced pricing layouts */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.price-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.price-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 4px;
+}
+
 .price-input {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0;
 }
 
 .currency {
@@ -591,6 +619,7 @@ body.add-home-no-scroll, html.add-home-no-scroll {
     border-radius: 6px 0 0 6px;
     font-weight: 500;
     color: #666;
+    white-space: nowrap;
 }
 
 .price-field {
@@ -600,6 +629,58 @@ body.add-home-no-scroll, html.add-home-no-scroll {
     border-left: none;
     border-radius: 0 6px 6px 0;
     font-size: 14px;
+}
+
+/* Both pricing sections */
+.pricing-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pricing-section-item {
+    padding: 15px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    background: #fafafa;
+}
+
+.pricing-section-item h5 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Responsive adjustments for pricing */
+@media (max-width: 768px) {
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .pricing-sections {
+        gap: 15px;
+    }
+    
+    .pricing-section-item {
+        padding: 12px;
+    }
+    
+    .price-label {
+        font-size: 12px;
+    }
+    
+    .currency {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .price-field {
+        padding: 10px;
+        font-size: 13px;
+    }
 }
 
 .no-rental-type-selected {

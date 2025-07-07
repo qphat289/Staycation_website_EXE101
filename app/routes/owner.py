@@ -70,6 +70,38 @@ def get_location_names(home_data):
             'ward_name': 'Chưa chọn'
         }
 
+def get_location_codes_from_names(city_name, district_name, ward_name=None):
+    """Lấy mã địa chỉ từ tên để hiển thị trong form edit"""
+    try:
+        result = {
+            'province_code': None,
+            'district_code': None,
+            'ward_name': ward_name  # Ward sẽ giữ nguyên tên
+        }
+        
+        if city_name:
+            # Tìm province theo tên
+            province = Province.query.filter_by(name=city_name).first()
+            if province:
+                result['province_code'] = province.code
+                
+                if district_name:
+                    # Tìm district theo tên và province_id
+                    district = District.query.filter_by(name=district_name, province_id=province.id).first()
+                    if district:
+                        result['district_code'] = district.code
+        
+        print(f"✅ Location codes lookup: {result}")
+        return result
+        
+    except Exception as e:
+        print(f"❌ Error in get_location_codes_from_names: {e}")
+        return {
+            'province_code': None,
+            'district_code': None,
+            'ward_name': ward_name
+        }
+
 def get_rules_and_amenities(home_data):
     """Lấy thông tin rules và amenities từ database"""
     try:
@@ -197,8 +229,18 @@ def add_home(home_id=None):
                 'bed_count': int(request.form.get('bed_count', 1)),
                 'guest_count': int(request.form.get('guest_count', 1)),
                 'selected_rental_type': request.form.get('selected_rental_type'),
+                
+                # Enhanced pricing structure
+                'price_first_2_hours': request.form.get('price_first_2_hours') or request.form.get('price_first_2_hours_both'),
+                'price_per_additional_hour': request.form.get('price_per_additional_hour') or request.form.get('price_per_additional_hour_both'),
+                'price_overnight': request.form.get('price_overnight') or request.form.get('price_overnight_both'),
+                'price_daytime': request.form.get('price_daytime') or request.form.get('price_daytime_both'),
+                'price_per_day': request.form.get('price_per_day') or request.form.get('price_per_day_both'),
+                
+                # Legacy pricing for backward compatibility
                 'hourly_price': request.form.get('hourly_price'),
-                'nightly_price': request.form.get('nightly_price'),
+                'daily_price': request.form.get('daily_price'),
+                
                 'rules': request.form.getlist('rules[]'),
                 'amenities': request.form.getlist('amenities[]')
             }
@@ -382,14 +424,60 @@ def confirm_home():
     
     try:
         # Xử lý giá dựa theo rental type được chọn
-        # Đặt giá trị mặc định để tránh NOT NULL constraint
+        # Initialize all pricing fields to 0.0 (or None for nullable fields)
         price_per_hour = 0.0
         price_per_night = 0.0
+        price_first_2_hours = None
+        price_per_additional_hour = None
+        price_overnight = None
+        price_daytime = None
+        price_per_day = None
         
-        if home_data['selected_rental_type'] == 'hourly' and home_data.get('hourly_price'):
-            price_per_hour = float(home_data['hourly_price']) / 1000
-        elif home_data['selected_rental_type'] == 'nightly' and home_data.get('nightly_price'):
-            price_per_night = float(home_data['nightly_price']) / 1000
+        selected_rental_type = home_data.get('selected_rental_type')
+        
+        # Helper function to safely convert price string to float
+        def safe_price_convert(price_str):
+            if not price_str:
+                return None
+            try:
+                # Remove any formatting and convert
+                clean_price = str(price_str).replace(',', '').replace('.', '')
+                return float(clean_price) / 1000 if clean_price else None
+            except (ValueError, TypeError):
+                return None
+        
+        if selected_rental_type == 'hourly':
+            # Enhanced hourly pricing
+            price_first_2_hours = safe_price_convert(home_data.get('price_first_2_hours'))
+            price_per_additional_hour = safe_price_convert(home_data.get('price_per_additional_hour'))
+            price_overnight = safe_price_convert(home_data.get('price_overnight'))
+            price_daytime = safe_price_convert(home_data.get('price_daytime'))
+            
+            # Legacy support: if hourly_price exists, use it for price_per_hour
+            if home_data.get('hourly_price'):
+                price_per_hour = safe_price_convert(home_data.get('hourly_price')) or 0.0
+                
+        elif selected_rental_type == 'daily':
+            # Daily pricing
+            price_per_day = safe_price_convert(home_data.get('price_per_day'))
+            
+            # Legacy support: if daily_price exists, use it for price_per_night
+            if home_data.get('daily_price'):
+                price_per_night = safe_price_convert(home_data.get('daily_price')) or 0.0
+                
+        elif selected_rental_type == 'both':
+            # Both hourly and daily pricing
+            price_first_2_hours = safe_price_convert(home_data.get('price_first_2_hours'))
+            price_per_additional_hour = safe_price_convert(home_data.get('price_per_additional_hour'))
+            price_overnight = safe_price_convert(home_data.get('price_overnight'))
+            price_daytime = safe_price_convert(home_data.get('price_daytime'))
+            price_per_day = safe_price_convert(home_data.get('price_per_day'))
+            
+            # Set basic prices for legacy compatibility
+            if price_first_2_hours:
+                price_per_hour = price_first_2_hours
+            if price_per_day:
+                price_per_night = price_per_day
         
         # Map property_type từ English sang Vietnamese using constant
         property_type_vn = PROPERTY_TYPE_MAP.get(home_data.get('property_type'), 'Mô hình chuẩn')
@@ -409,8 +497,18 @@ def confirm_home():
             bed_count=home_data['bed_count'],
             bathroom_count=home_data['bathroom_count'],
             max_guests=home_data['guest_count'],
+            
+            # Legacy pricing fields
             price_per_hour=price_per_hour,
             price_per_night=price_per_night,
+            
+            # Enhanced pricing fields
+            price_first_2_hours=price_first_2_hours,
+            price_per_additional_hour=price_per_additional_hour,
+            price_overnight=price_overnight,
+            price_daytime=price_daytime,
+            price_per_day=price_per_day,
+            
             description=home_data['home_description'],
             floor_number=1,  # Mặc định
             owner_id=current_user.id
@@ -603,30 +701,164 @@ def edit_home(home_id):
                 flash('Thông tin số lượng không hợp lệ!', 'danger')
                 return redirect(url_for('owner.edit_home', home_id=home_id))
             
-            # Cập nhật giá dựa theo rental type
-            rental_type = request.form.get('selected_rental_type')
-            home.price_per_hour = 0.0
-            home.price_per_night = 0.0
+            # Cập nhật giá dựa theo rental type với enhanced pricing structure
+            rental_type = request.form.get('selected_rental_type') or request.form.get('rental_type')
+            
+            # If no rental type is specified, determine it from existing pricing
+            if not rental_type:
+                if home.price_per_day and home.price_per_day > 0:
+                    if ((home.price_first_2_hours and home.price_first_2_hours > 0) or 
+                        (home.price_per_additional_hour and home.price_per_additional_hour > 0) or
+                        (home.price_overnight and home.price_overnight > 0) or 
+                        (home.price_daytime and home.price_daytime > 0)):
+                        rental_type = 'both'
+                    else:
+                        rental_type = 'daily'
+                elif ((home.price_first_2_hours and home.price_first_2_hours > 0) or 
+                      (home.price_per_additional_hour and home.price_per_additional_hour > 0) or
+                      (home.price_overnight and home.price_overnight > 0) or 
+                      (home.price_daytime and home.price_daytime > 0)):
+                    rental_type = 'hourly'
+                else:
+                    rental_type = 'hourly'  # default fallback
+            
+            # Preserve existing pricing to avoid data loss if user doesn't modify prices
+            existing_pricing = {
+                'price_per_hour': home.price_per_hour,
+                'price_per_night': home.price_per_night,
+                'price_first_2_hours': home.price_first_2_hours,
+                'price_per_additional_hour': home.price_per_additional_hour,
+                'price_overnight': home.price_overnight,
+                'price_daytime': home.price_daytime,
+                'price_per_day': home.price_per_day
+            }
+            
+            # Helper function to safely convert price
+            def safe_price_convert(price_str):
+                if not price_str:
+                    return None
+                try:
+                    clean_price = str(price_str).replace(',', '').replace('.', '')
+                    return float(clean_price) / 1000 if clean_price else None
+                except (ValueError, TypeError):
+                    return None
             
             try:
                 if rental_type == 'hourly':
+                    # Enhanced hourly pricing - only update if values provided, otherwise keep existing
+                    new_price_first_2_hours = safe_price_convert(request.form.get('price_first_2_hours') or request.form.get('price_first_2_hours_both'))
+                    new_price_per_additional_hour = safe_price_convert(request.form.get('price_per_additional_hour') or request.form.get('price_per_additional_hour_both'))
+                    new_price_overnight = safe_price_convert(request.form.get('price_overnight') or request.form.get('price_overnight_both'))
+                    new_price_daytime = safe_price_convert(request.form.get('price_daytime') or request.form.get('price_daytime_both'))
+                    
+                    home.price_first_2_hours = new_price_first_2_hours if new_price_first_2_hours is not None else existing_pricing['price_first_2_hours']
+                    home.price_per_additional_hour = new_price_per_additional_hour if new_price_per_additional_hour is not None else existing_pricing['price_per_additional_hour']
+                    home.price_overnight = new_price_overnight if new_price_overnight is not None else existing_pricing['price_overnight']
+                    home.price_daytime = new_price_daytime if new_price_daytime is not None else existing_pricing['price_daytime']
+                    
+                    # Reset daily pricing for hourly only
+                    home.price_per_day = None
+                    
+                    # Legacy support
                     hourly_price = request.form.get('hourly_price')
                     if hourly_price:
-                        price_value = float(hourly_price) / 1000
-                        if price_value <= 0:
+                        price_value = safe_price_convert(hourly_price)
+                        if price_value and price_value > 0:
+                            home.price_per_hour = price_value
+                        elif price_value is not None and price_value <= 0:
                             flash('Giá nhà phải lớn hơn 0!', 'danger')
                             return redirect(url_for('owner.edit_home', home_id=home_id))
-                        home.price_per_hour = price_value
-                elif rental_type == 'nightly':
-                    nightly_price = request.form.get('nightly_price')
-                    if nightly_price:
-                        price_value = float(nightly_price) / 1000
-                        if price_value <= 0:
+                    else:
+                        # Keep existing hourly price or set from enhanced pricing
+                        if home.price_first_2_hours and home.price_first_2_hours > 0:
+                            home.price_per_hour = home.price_first_2_hours
+                        else:
+                            home.price_per_hour = existing_pricing['price_per_hour']
+                    
+                    # Reset daily legacy pricing
+                    home.price_per_night = 0.0
+                        
+                elif rental_type == 'daily':
+                    # Daily pricing - only update if values provided, otherwise keep existing
+                    new_price_per_day = safe_price_convert(request.form.get('price_per_day') or request.form.get('price_per_day_both'))
+                    home.price_per_day = new_price_per_day if new_price_per_day is not None else existing_pricing['price_per_day']
+                    
+                    # Reset hourly pricing for daily only
+                    home.price_first_2_hours = None
+                    home.price_per_additional_hour = None
+                    home.price_overnight = None
+                    home.price_daytime = None
+                    
+                    # Legacy support
+                    daily_price = request.form.get('daily_price')
+                    if daily_price:
+                        price_value = safe_price_convert(daily_price)
+                        if price_value and price_value > 0:
+                            home.price_per_night = price_value
+                        elif price_value is not None and price_value <= 0:
                             flash('Giá nhà phải lớn hơn 0!', 'danger')
                             return redirect(url_for('owner.edit_home', home_id=home_id))
-                        home.price_per_night = price_value
-            except (ValueError, TypeError):
+                    else:
+                        # Keep existing daily price or set from enhanced pricing
+                        if home.price_per_day and home.price_per_day > 0:
+                            home.price_per_night = home.price_per_day
+                        else:
+                            home.price_per_night = existing_pricing['price_per_night']
+                    
+                    # Reset hourly legacy pricing
+                    home.price_per_hour = 0.0
+                        
+                elif rental_type == 'both':
+                    # Both hourly and daily pricing - only update if values provided, otherwise keep existing
+                    new_price_first_2_hours = safe_price_convert(request.form.get('price_first_2_hours') or request.form.get('price_first_2_hours_both'))
+                    new_price_per_additional_hour = safe_price_convert(request.form.get('price_per_additional_hour') or request.form.get('price_per_additional_hour_both'))
+                    new_price_overnight = safe_price_convert(request.form.get('price_overnight') or request.form.get('price_overnight_both'))
+                    new_price_daytime = safe_price_convert(request.form.get('price_daytime') or request.form.get('price_daytime_both'))
+                    new_price_per_day = safe_price_convert(request.form.get('price_per_day') or request.form.get('price_per_day_both'))
+                    
+                    home.price_first_2_hours = new_price_first_2_hours if new_price_first_2_hours is not None else existing_pricing['price_first_2_hours']
+                    home.price_per_additional_hour = new_price_per_additional_hour if new_price_per_additional_hour is not None else existing_pricing['price_per_additional_hour']
+                    home.price_overnight = new_price_overnight if new_price_overnight is not None else existing_pricing['price_overnight']
+                    home.price_daytime = new_price_daytime if new_price_daytime is not None else existing_pricing['price_daytime']
+                    home.price_per_day = new_price_per_day if new_price_per_day is not None else existing_pricing['price_per_day']
+                    
+                    # Set legacy pricing for compatibility - keep existing if new values not provided
+                    if home.price_first_2_hours and home.price_first_2_hours > 0:
+                        home.price_per_hour = home.price_first_2_hours
+                    else:
+                        home.price_per_hour = existing_pricing['price_per_hour']
+                        
+                    if home.price_per_day and home.price_per_day > 0:
+                        home.price_per_night = home.price_per_day
+                    else:
+                        home.price_per_night = existing_pricing['price_per_night']
+                        
+                else:
+                    # No rental type specified or unknown type - keep all existing pricing
+                    home.price_per_hour = existing_pricing['price_per_hour']
+                    home.price_per_night = existing_pricing['price_per_night']
+                    home.price_first_2_hours = existing_pricing['price_first_2_hours']
+                    home.price_per_additional_hour = existing_pricing['price_per_additional_hour']
+                    home.price_overnight = existing_pricing['price_overnight']
+                    home.price_daytime = existing_pricing['price_daytime']
+                    home.price_per_day = existing_pricing['price_per_day']
+                        
+            except (ValueError, TypeError) as e:
                 flash('Giá nhà không hợp lệ!', 'danger')
+                return redirect(url_for('owner.edit_home', home_id=home_id))
+            
+            # Validate that we have at least some valid pricing after the update
+            # Only enforce this if rental_type was provided (user modified pricing)
+            has_valid_pricing = (
+                (home.price_per_hour and home.price_per_hour > 0) or
+                (home.price_per_night and home.price_per_night > 0) or
+                (home.price_first_2_hours and home.price_first_2_hours > 0) or
+                (home.price_per_day and home.price_per_day > 0)
+            )
+            
+            # Only enforce pricing validation if user explicitly provided rental type (modified pricing section)
+            if rental_type and not has_valid_pricing:
+                flash('Vui lòng nhập giá hợp lệ để cập nhật homestay!', 'danger')
                 return redirect(url_for('owner.edit_home', home_id=home_id))
             
             # Cập nhật amenities
@@ -745,22 +977,51 @@ def edit_home(home_id):
             # Single part - treat as street address
             street_address = home.address
     
+    # Determine rental type based on what pricing fields are set
+    rental_type = 'hourly'  # default
+    if home.price_per_day and home.price_per_day > 0:
+        if ((home.price_first_2_hours and home.price_first_2_hours > 0) or 
+            (home.price_per_additional_hour and home.price_per_additional_hour > 0) or
+            (home.price_overnight and home.price_overnight > 0) or 
+            (home.price_daytime and home.price_daytime > 0)):
+            rental_type = 'both'
+        else:
+            rental_type = 'daily'
+    elif ((home.price_first_2_hours and home.price_first_2_hours > 0) or 
+          (home.price_per_additional_hour and home.price_per_additional_hour > 0) or
+          (home.price_overnight and home.price_overnight > 0) or 
+          (home.price_daytime and home.price_daytime > 0)):
+        rental_type = 'hourly'
+
+    # Get location codes from stored names
+    location_codes = get_location_codes_from_names(home.city, home.district, ward_name)
+    
     home_data = {
         'id': home.id,
         'title': home.title,
         'description': home.description,
         'accommodation_type': home.accommodation_type,
         'property_type': get_property_type_en(home.home_type),
-        'province': home.city,
-        'district': home.district,
-        'ward': ward_name,
+        'province': location_codes['province_code'],
+        'district': location_codes['district_code'],
+        'ward': location_codes['ward_name'],
         'street': street_address,
         'bathroom_count': home.bathroom_count,
         'bed_count': home.bed_count,
         'guest_count': home.max_guests,
-        'rental_type': 'nightly' if home.price_per_night and home.price_per_night > 0 else 'hourly',
+        'rental_type': rental_type,
+        
+        # Legacy pricing fields
         'hourly_price': int(home.price_per_hour * 1000) if home.price_per_hour else 0,
-        'nightly_price': int(home.price_per_night * 1000) if home.price_per_night else None,
+        'daily_price': int(home.price_per_day * 1000) if home.price_per_day else None,
+        
+        # Enhanced pricing fields
+        'price_first_2_hours': home.price_first_2_hours,
+        'price_per_additional_hour': home.price_per_additional_hour,
+        'price_overnight': home.price_overnight,
+        'price_daytime': home.price_daytime,
+        'price_per_day': home.price_per_day,
+        
         'rules': [{'id': rule.id, 'name': rule.name} for rule in home.rules],
         'amenities': [{'id': amenity.id, 'name': amenity.name, 'icon': amenity.icon} for amenity in home.amenities],
         'images': [{'id': img.id, 'path': img.image_path, 'is_featured': img.is_featured} for img in home.images]
@@ -815,7 +1076,7 @@ def delete_home(home_id):
             owner_name=owner_name,
             delete_reason=delete_reason,
             home_address=f"{home.address}, {home.district}, {home.city}",
-            home_price=home.price_per_hour or home.price_per_night
+            home_price=home.price_per_hour or home.price_per_day
         )
         db.session.add(deletion_log)
         
@@ -1458,7 +1719,7 @@ def book_home(home_id=None):
         
         end_datetime = start_datetime + timedelta(days=duration)
         # Calculate total price using the home's price per night
-        total_price = home.price_per_night * duration
+        total_price = home.price_per_day * duration
         
         # Check for overlapping bookings for this home
         existing_bookings = Booking.query.filter_by(home_id=home.id).all()
@@ -1584,13 +1845,13 @@ def statistics():
         
         # Calculate revenue by type
         hourly_revenue = sum(b.total_price for b in completed_bookings if b.booking_type == 'hourly')
-        nightly_revenue = sum(b.total_price for b in completed_bookings if b.booking_type == 'nightly')
+        nightly_revenue = sum(b.total_price for b in completed_bookings if b.booking_type == 'daily')
         
         # Determine common booking type
         if hourly_count > nightly_count:
             common_type = "Theo giờ"
         elif nightly_count > hourly_count:
-            common_type = "Qua đêm"
+            common_type = "Theo ngày"
         else:
             common_type = "N/A"
         
@@ -1693,7 +1954,7 @@ def get_chart_data(period, chart_type='both'):
         home_ids = [home.id for home in owner_homes]
         
         if not home_ids:
-            return jsonify({'hourly': [], 'nightly': []})
+            return jsonify({'hourly': [], 'daily': []})
         
         # Get completed bookings
         completed_bookings = Booking.query.filter(
@@ -1712,7 +1973,7 @@ def get_chart_data(period, chart_type='both'):
                 
                 # Separate hourly and nightly bookings
                 hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
-                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
+                nightly_bookings = [b for b in day_bookings if b.booking_type == 'daily']
                 
                 hourly_revenue = sum(b.total_price for b in hourly_bookings)
                 nightly_revenue = sum(b.total_price for b in nightly_bookings)
@@ -1738,7 +1999,7 @@ def get_chart_data(period, chart_type='both'):
                 
                 # Separate hourly and nightly bookings
                 hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
-                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
+                nightly_bookings = [b for b in day_bookings if b.booking_type == 'daily']
                 
                 hourly_revenue = sum(b.total_price for b in hourly_bookings)
                 nightly_revenue = sum(b.total_price for b in nightly_bookings)
@@ -1764,7 +2025,7 @@ def get_chart_data(period, chart_type='both'):
                 
                 # Separate hourly and nightly bookings
                 hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
-                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
+                nightly_bookings = [b for b in day_bookings if b.booking_type == 'daily']
                 
                 hourly_revenue = sum(b.total_price for b in hourly_bookings)
                 nightly_revenue = sum(b.total_price for b in nightly_bookings)
@@ -1803,7 +2064,7 @@ def get_chart_data(period, chart_type='both'):
                 
                 # Separate hourly and nightly bookings
                 hourly_bookings = [b for b in month_bookings if b.booking_type == 'hourly']
-                nightly_bookings = [b for b in month_bookings if b.booking_type == 'nightly']
+                nightly_bookings = [b for b in month_bookings if b.booking_type == 'daily']
                 
                 hourly_revenue = sum(b.total_price for b in hourly_bookings)
                 nightly_revenue = sum(b.total_price for b in nightly_bookings)
@@ -1822,12 +2083,12 @@ def get_chart_data(period, chart_type='both'):
         
         return jsonify({
             'hourly': chart_data_hourly,
-            'nightly': chart_data_nightly
+            'daily': chart_data_nightly
         })
         
     except Exception as e:
         print(f"Error getting chart data: {e}")
-        return jsonify({'hourly': [], 'nightly': []}), 500
+        return jsonify({'hourly': [], 'daily': []}), 500
 
 @owner_bp.route('/api/stats-data/<period>')
 @owner_bp.route('/api/stats-data/<period>/<chart_type>')
@@ -1876,8 +2137,8 @@ def get_stats_data(period, chart_type='both'):
         # Filter by chart type
         if chart_type == 'hourly':
             query = query.filter(Booking.booking_type == 'hourly')
-        elif chart_type == 'nightly':
-            query = query.filter(Booking.booking_type == 'nightly')
+        elif chart_type == 'daily':
+            query = query.filter(Booking.booking_type == 'daily')
         # If chart_type == 'both', don't add any filter
         
         completed_bookings = query.all()
@@ -1895,7 +2156,7 @@ def get_stats_data(period, chart_type='both'):
         if hourly_count > nightly_count:
             common_type = "Theo giờ"
         elif nightly_count > hourly_count:
-            common_type = "Qua đêm"
+            common_type = "Theo ngày"
         else:
             common_type = "N/A"
         
@@ -1937,7 +2198,7 @@ def get_stats_data(period, chart_type='both'):
             # Determine most common booking type for this home
             home_hourly = sum(1 for b in home_bookings if b.booking_type == 'hourly')
             home_nightly = len(home_bookings) - home_hourly
-            home_common_type = "Theo giờ" if home_hourly >= home_nightly else "Qua đêm"
+            home_common_type = "Theo giờ" if home_hourly >= home_nightly else "Theo ngày"
             
             # Calculate booking rate for this home
             home_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in home_bookings)
@@ -2010,8 +2271,8 @@ def get_custom_stats_data(chart_type='both'):
         # Filter by chart type
         if chart_type == 'hourly':
             query = query.filter(Booking.booking_type == 'hourly')
-        elif chart_type == 'nightly':
-            query = query.filter(Booking.booking_type == 'nightly')
+        elif chart_type == 'daily':
+            query = query.filter(Booking.booking_type == 'daily')
         # If chart_type == 'both', don't add any filter
         
         completed_bookings = query.all()
@@ -2029,7 +2290,7 @@ def get_custom_stats_data(chart_type='both'):
         if hourly_count > nightly_count:
             common_type = "Theo giờ"
         elif nightly_count > hourly_count:
-            common_type = "Qua đêm"
+            common_type = "Theo ngày"
         else:
             common_type = "N/A"
         
@@ -2069,7 +2330,7 @@ def get_custom_stats_data(chart_type='both'):
             # Determine most common booking type for this home
             home_hourly = sum(1 for b in home_bookings if b.booking_type == 'hourly')
             home_nightly = len(home_bookings) - home_hourly
-            home_common_type = "Theo giờ" if home_hourly >= home_nightly else "Qua đêm"
+            home_common_type = "Theo giờ" if home_hourly >= home_nightly else "Theo ngày"
             
             # Calculate booking rate for this home
             home_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in home_bookings)
@@ -2118,7 +2379,7 @@ def get_custom_chart_data_query():
         home_ids = [home.id for home in owner_homes]
         
         if not home_ids:
-            return jsonify({'hourly': [], 'nightly': []})
+            return jsonify({'hourly': [], 'daily': []})
         
         # Get completed bookings in date range
         completed_bookings = Booking.query.filter(
@@ -2143,7 +2404,7 @@ def get_custom_chart_data_query():
                 
                 # Separate hourly and nightly bookings
                 hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
-                nightly_bookings = [b for b in day_bookings if b.booking_type == 'nightly']
+                nightly_bookings = [b for b in day_bookings if b.booking_type == 'daily']
                 
                 hourly_revenue = sum(b.total_price for b in hourly_bookings)
                 nightly_revenue = sum(b.total_price for b in nightly_bookings)
@@ -2173,7 +2434,7 @@ def get_custom_chart_data_query():
                 
                 # Separate hourly and nightly bookings
                 hourly_bookings = [b for b in week_bookings if b.booking_type == 'hourly']
-                nightly_bookings = [b for b in week_bookings if b.booking_type == 'nightly']
+                nightly_bookings = [b for b in week_bookings if b.booking_type == 'daily']
                 
                 hourly_revenue = sum(b.total_price for b in hourly_bookings)
                 nightly_revenue = sum(b.total_price for b in nightly_bookings)
@@ -2194,12 +2455,12 @@ def get_custom_chart_data_query():
         
         return jsonify({
             'hourly': chart_data_hourly,
-            'nightly': chart_data_nightly
+            'daily': chart_data_nightly
         })
         
     except Exception as e:
         print(f"Error getting custom chart data: {e}")
-        return jsonify({'hourly': [], 'nightly': []}), 500
+        return jsonify({'hourly': [], 'daily': []}), 500
 
 @owner_bp.route('/api/bookings')
 @owner_required

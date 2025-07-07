@@ -321,6 +321,14 @@ class Home(db.Model):
     # Giá và mô tả
     price_per_hour = db.Column(db.Float, nullable=True)  # Allow NULL for homes that only have nightly pricing
     price_per_night = db.Column(db.Float, nullable=True)  # Thêm giá theo đêm
+    
+    # Enhanced pricing structure for flexible hourly pricing
+    price_first_2_hours = db.Column(db.Float, nullable=True)  # Giá 2 giờ đầu
+    price_per_additional_hour = db.Column(db.Float, nullable=True)  # Giá 1 giờ sau
+    price_overnight = db.Column(db.Float, nullable=True)  # Giá qua đêm (21h-8h)
+    price_daytime = db.Column(db.Float, nullable=True)  # Giá qua ngày (9h-20h)
+    price_per_day = db.Column(db.Float, nullable=True)  # Giá theo ngày
+    
     description = db.Column(db.Text, nullable=True)
     
     # Trạng thái và thời gian
@@ -357,12 +365,16 @@ class Home(db.Model):
 
     @property
     def display_price(self):
-        """Return formatted price per hour"""
+        """Return formatted price per hour - prioritize enhanced pricing"""
+        if self.price_first_2_hours and self.price_first_2_hours > 0:
+            return self.price_first_2_hours
         return self.price_per_hour or 0
 
     @property
     def display_price_per_night(self):
-        """Return formatted price per night"""
+        """Return formatted price per night - prioritize enhanced pricing"""
+        if self.price_per_day and self.price_per_day > 0:
+            return self.price_per_day
         return self.price_per_night or 0
 
     def __repr__(self):
@@ -384,6 +396,11 @@ class Home(db.Model):
             'max_guests': self.max_guests,
             'price_per_hour': self.price_per_hour,
             'price_per_night': self.price_per_night,
+            'price_first_2_hours': self.price_first_2_hours,
+            'price_per_additional_hour': self.price_per_additional_hour,
+            'price_overnight': self.price_overnight,
+            'price_daytime': self.price_daytime,
+            'price_per_day': self.price_per_day,
             'description': self.description,
             'is_active': self.is_active,
             'is_booked': self.is_booked,
@@ -500,7 +517,7 @@ class Booking(db.Model):
     payment_method = db.Column(db.String(50), nullable=True)
     payment_reference = db.Column(db.String(100), nullable=True)
     
-    booking_type = db.Column(db.String(20), default='hourly')  # 'hourly' hoặc 'nightly'
+    booking_type = db.Column(db.String(20), default='hourly')  # 'hourly' hoặc 'daily'
     
     @property
     def homestay(self):

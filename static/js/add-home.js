@@ -171,7 +171,7 @@ function validateStep3() {
         } else if (rentalType.value === 'nightly') {
             const nightlyPrice = document.querySelector('input[name="nightly_price"]').value;
             if (!nightlyPrice || nightlyPrice.trim() === '') {
-                errors.push('Vui lòng nhập giá theo đêm');
+                errors.push('Vui lòng nhập giá theo ngày');
             }
         }
     }

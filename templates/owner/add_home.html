@@ -228,10 +228,17 @@
                                 </label>
                             </div>
                             <div class="rental-option">
-                                <input type="radio" id="nightly" name="rental_type" value="nightly" class="rental-radio" {% if home_data.selected_rental_type == 'nightly' %}checked{% endif %}>
-                                <label for="nightly" class="rental-label">
-                                    <i class="rental-icon bi bi-moon"></i>
-                                    <span class="rental-text">Qua đêm</span>
+                                <input type="radio" id="daily" name="rental_type" value="daily" class="rental-radio" {% if home_data.selected_rental_type == 'daily' %}checked{% endif %}>
+                                <label for="daily" class="rental-label">
+                                    <i class="rental-icon bi bi-calendar-day"></i>
+                                    <span class="rental-text">Theo ngày</span>
+                                </label>
+                            </div>
+                            <div class="rental-option">
+                                <input type="radio" id="both" name="rental_type" value="both" class="rental-radio" {% if home_data.selected_rental_type == 'both' %}checked{% endif %}>
+                                <label for="both" class="rental-label">
+                                    <i class="rental-icon bi bi-calendar-range"></i>
+                                    <span class="rental-text">Cả 2</span>
                                 </label>
                             </div>
                         </div>
@@ -314,22 +321,114 @@
                     <h3>Thêm giá dịch vụ</h3>
                     <div class="form-content">
                         <div class="pricing-section">
+                            <!-- Enhanced Hourly Pricing -->
                             <div class="pricing-option" id="hourly-pricing" style="display: none;">
-                                <h4>Theo giờ</h4>
-                                <div class="price-input">
-                                    <span class="currency">VND</span>
-                                    <input type="text" name="hourly_price" placeholder="Nhập giá theo giờ (VD: 200000)" class="price-field" value="{{ home_data.hourly_price or '' }}" 
-                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'hourly')">
+                                <h4>Giá thuê theo giờ</h4>
+                                <div class="pricing-grid">
+                                    <div class="price-input-group">
+                                        <label class="price-label">Giá 2 giờ đầu</label>
+                                        <div class="price-input">
+                                            <span class="currency">VND</span>
+                                            <input type="text" name="price_first_2_hours" placeholder="Nhập giá 2 giờ đầu (VD: 400000)" class="price-field" value="{{ home_data.price_first_2_hours or '' }}" 
+                                                   oninput="formatPriceInput(this)" onblur="validatePrice(this, 'first_2_hours')">
+                                        </div>
+                                    </div>
+                                    <div class="price-input-group">
+                                        <label class="price-label">Giá 1 giờ sau</label>
+                                        <div class="price-input">
+                                            <span class="currency">VND</span>
+                                            <input type="text" name="price_per_additional_hour" placeholder="Nhập giá 1 giờ sau (VD: 150000)" class="price-field" value="{{ home_data.price_per_additional_hour or '' }}" 
+                                                   oninput="formatPriceInput(this)" onblur="validatePrice(this, 'additional_hour')">
+                                        </div>
+                                    </div>
+                                    <div class="price-input-group">
+                                        <label class="price-label">Giá qua đêm (21h-8h)</label>
+                                        <div class="price-input">
+                                            <span class="currency">VND</span>
+                                            <input type="text" name="price_overnight" placeholder="Nhập giá qua đêm (VD: 800000)" class="price-field" value="{{ home_data.price_overnight or '' }}" 
+                                                   oninput="formatPriceInput(this)" onblur="validatePrice(this, 'overnight')">
+                                        </div>
+                                    </div>
+                                    <div class="price-input-group">
+                                        <label class="price-label">Giá qua ngày (9h-20h)</label>
+                                        <div class="price-input">
+                                            <span class="currency">VND</span>
+                                            <input type="text" name="price_daytime" placeholder="Nhập giá qua ngày (VD: 1200000)" class="price-field" value="{{ home_data.price_daytime or '' }}" 
+                                                   oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daytime')">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="pricing-option" id="nightly-pricing" style="display: none;">
-                                <h4>Theo đêm</h4>
-                                <div class="price-input">
-                                    <span class="currency">VND</span>
-                                    <input type="text" name="nightly_price" placeholder="Nhập giá theo đêm (VD: 800000)" class="price-field" value="{{ home_data.nightly_price or '' }}" 
-                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'nightly')">
+                            
+                            <!-- Daily Pricing -->
+                            <div class="pricing-option" id="daily-pricing" style="display: none;">
+                                <h4>Giá thuê theo ngày</h4>
+                                <div class="price-input-group">
+                                    <label class="price-label">Giá theo ngày</label>
+                                    <div class="price-input">
+                                        <span class="currency">VND</span>
+                                        <input type="text" name="price_per_day" placeholder="Nhập giá theo ngày (VD: 800000)" class="price-field" value="{{ home_data.price_per_day or '' }}" 
+                                               oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daily')">
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <!-- Both Types Pricing -->
+                            <div class="pricing-option" id="both-pricing" style="display: none;">
+                                <h4>Giá thuê theo giờ và ngày</h4>
+                                <div class="pricing-sections">
+                                    <div class="pricing-section-item">
+                                        <h5>Giá thuê theo giờ</h5>
+                                        <div class="pricing-grid">
+                                            <div class="price-input-group">
+                                                <label class="price-label">Giá 2 giờ đầu</label>
+                                                <div class="price-input">
+                                                    <span class="currency">VND</span>
+                                                    <input type="text" name="price_first_2_hours_both" placeholder="Nhập giá 2 giờ đầu (VD: 400000)" class="price-field" value="{{ home_data.price_first_2_hours or '' }}" 
+                                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'first_2_hours_both')">
+                                                </div>
+                                            </div>
+                                            <div class="price-input-group">
+                                                <label class="price-label">Giá 1 giờ sau</label>
+                                                <div class="price-input">
+                                                    <span class="currency">VND</span>
+                                                    <input type="text" name="price_per_additional_hour_both" placeholder="Nhập giá 1 giờ sau (VD: 150000)" class="price-field" value="{{ home_data.price_per_additional_hour or '' }}" 
+                                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'additional_hour_both')">
+                                                </div>
+                                            </div>
+                                            <div class="price-input-group">
+                                                <label class="price-label">Giá qua đêm (21h-8h)</label>
+                                                <div class="price-input">
+                                                    <span class="currency">VND</span>
+                                                    <input type="text" name="price_overnight_both" placeholder="Nhập giá qua đêm (VD: 800000)" class="price-field" value="{{ home_data.price_overnight or '' }}" 
+                                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'overnight_both')">
+                                                </div>
+                                            </div>
+                                            <div class="price-input-group">
+                                                <label class="price-label">Giá qua ngày (9h-20h)</label>
+                                                <div class="price-input">
+                                                    <span class="currency">VND</span>
+                                                    <input type="text" name="price_daytime_both" placeholder="Nhập giá qua ngày (VD: 1200000)" class="price-field" value="{{ home_data.price_daytime or '' }}" 
+                                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daytime_both')">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="pricing-section-item">
+                                        <h5>Giá thuê theo ngày</h5>
+                                        <div class="price-input-group">
+                                            <label class="price-label">Giá theo ngày</label>
+                                            <div class="price-input">
+                                                <span class="currency">VND</span>
+                                                <input type="text" name="price_per_day_both" placeholder="Nhập giá theo ngày (VD: 800000)" class="price-field" value="{{ home_data.price_per_day or '' }}" 
+                                                       oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daily_both')">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="no-rental-type-selected" id="no-pricing-selected">
                                 <p style="color: #666; font-style: italic; text-align: center;">
                                     <i class="bi bi-arrow-left me-2"></i>
@@ -1946,10 +2045,11 @@ function nextStep() {
         } else if (currentStep === 2) {
             // Check if rental type is selected
             const hourlyRadio = document.getElementById('hourly');
-            const nightlyRadio = document.getElementById('nightly');
+            const dailyRadio = document.getElementById('daily');
+            const bothRadio = document.getElementById('both');
             
-            if (!hourlyRadio.checked && !nightlyRadio.checked) {
-                showValidationAlert('Vui lòng chọn hình thức cho thuê (theo giờ hoặc qua đêm)');
+            if (!hourlyRadio.checked && !dailyRadio.checked && !bothRadio.checked) {
+                showValidationAlert('Vui lòng chọn hình thức cho thuê (theo giờ, theo ngày, hoặc cả 2)');
                 return;
             }
         }
@@ -2394,25 +2494,25 @@ function prepareFormData() {
     document.getElementById('bed_count_input').value = bedCount;
     document.getElementById('guest_count_input').value = guestCount;
     
-    // Đảm bảo giá tiền được gửi đúng (chỉ số, không có format)
-    const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
-    const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
+    // Đảm bảo giá tiền được gửi đúng (chỉ số, không có format) cho tất cả pricing fields
+    const priceFields = [
+        'price_first_2_hours',
+        'price_per_additional_hour', 
+        'price_overnight',
+        'price_daytime',
+        'price_per_day'
+    ];
     
-    if (hourlyPriceInput) {
-        const numericValue = getNumericPrice(hourlyPriceInput);
-        if (numericValue) {
-            hourlyPriceInput.value = numericValue; // Gửi số thuần
-            console.log('✅ Prepared hourly price:', numericValue);
+    priceFields.forEach(fieldName => {
+        const priceInput = document.querySelector(`input[name="${fieldName}"]`);
+        if (priceInput) {
+            const numericValue = getNumericPrice(priceInput);
+            if (numericValue) {
+                priceInput.value = numericValue; // Gửi số thuần
+                console.log(`✅ Prepared ${fieldName}:`, numericValue);
+            }
         }
-    }
-    
-    if (nightlyPriceInput) {
-        const numericValue = getNumericPrice(nightlyPriceInput);
-        if (numericValue) {
-            nightlyPriceInput.value = numericValue; // Gửi số thuần
-            console.log('✅ Prepared nightly price:', numericValue);
-        }
-    }
+    });
     
     // Convert base64 images từ sessionStorage thành file inputs
     convertSessionStorageImagesToFiles();
@@ -2441,16 +2541,38 @@ function validatePricingRequirement() {
     
     // Check which rental type is selected and get corresponding price
     const hourlyRadio = document.getElementById('hourly');
-    const nightlyRadio = document.getElementById('nightly');
+    const dailyRadio = document.getElementById('daily');
+    const bothRadio = document.getElementById('both');
     
     if (hourlyRadio && hourlyRadio.checked) {
-        priceToCheck = hourlyPriceInput;
-        priceType = 'theo giờ';
-        currentPrice = parseInt(getNumericPrice(hourlyPriceInput)) || 0;
-    } else if (nightlyRadio && nightlyRadio.checked) {
-        priceToCheck = nightlyPriceInput;
-        priceType = 'theo đêm';
-        currentPrice = parseInt(getNumericPrice(nightlyPriceInput)) || 0;
+        // For hourly rental, check price_first_2_hours
+        const priceFirst2Hours = document.querySelector('input[name="price_first_2_hours"]');
+        if (priceFirst2Hours) {
+            priceToCheck = priceFirst2Hours;
+            priceType = 'theo giờ (2 giờ đầu)';
+            currentPrice = parseInt(getNumericPrice(priceFirst2Hours)) || 0;
+        }
+    } else if (dailyRadio && dailyRadio.checked) {
+        // For daily rental, check price_per_day
+        const pricePerDay = document.querySelector('input[name="price_per_day"]');
+        if (pricePerDay) {
+            priceToCheck = pricePerDay;
+            priceType = 'theo ngày';
+            currentPrice = parseInt(getNumericPrice(pricePerDay)) || 0;
+        }
+    } else if (bothRadio && bothRadio.checked) {
+        // For both rental types, check both prices
+        const priceFirst2Hours = document.querySelector('input[name="price_first_2_hours"]');
+        const pricePerDay = document.querySelector('input[name="price_per_day"]');
+        
+        let hourlyPrice = parseInt(getNumericPrice(priceFirst2Hours)) || 0;
+        let dailyPrice = parseInt(getNumericPrice(pricePerDay)) || 0;
+        
+        if (hourlyPrice < minPrice && dailyPrice < minPrice) {
+            showPriceValidationAlert('Vui lòng nhập ít nhất một giá hợp lệ (theo giờ hoặc theo ngày) ≥ 10,000đ');
+            return false;
+        }
+        return true; // At least one price is valid
     }
     
     // If no rental type selected (shouldn't happen due to step 2 validation)
@@ -3192,39 +3314,119 @@ document.querySelector('.form-textarea').addEventListener('input', function() {
 
 function updatePricingDisplay() {
     const hourlyRadio = document.getElementById('hourly');
-    const nightlyRadio = document.getElementById('nightly');
+    const dailyRadio = document.getElementById('daily');
+    const bothRadio = document.getElementById('both');
     const hourlyPricing = document.getElementById('hourly-pricing');
-    const nightlyPricing = document.getElementById('nightly-pricing');
+    const dailyPricing = document.getElementById('daily-pricing');
+    const bothPricing = document.getElementById('both-pricing');
     const noPricingSelected = document.getElementById('no-pricing-selected');
     const selectedRentalTypeInput = document.getElementById('selected_rental_type');
     
     // Hide all pricing options first
     hourlyPricing.style.display = 'none';
-    nightlyPricing.style.display = 'none';
+    dailyPricing.style.display = 'none';
+    bothPricing.style.display = 'none';
     noPricingSelected.style.display = 'block';
     
     // Show appropriate pricing based on selected rental type
-    if (hourlyRadio.checked) {
+    if (hourlyRadio && hourlyRadio.checked) {
         hourlyPricing.style.display = 'block';
         noPricingSelected.style.display = 'none';
         selectedRentalTypeInput.value = 'hourly';
-        // Clear nightly price input since it's not selected
-        document.querySelector('input[name="nightly_price"]').value = '';
-    } else if (nightlyRadio.checked) {
-        nightlyPricing.style.display = 'block';
+        // Clear other pricing inputs
+        clearNonHourlyPricing();
+    } else if (dailyRadio && dailyRadio.checked) {
+        dailyPricing.style.display = 'block';
         noPricingSelected.style.display = 'none';
-        selectedRentalTypeInput.value = 'nightly';
-        // Clear hourly price input since it's not selected
-        document.querySelector('input[name="hourly_price"]').value = '';
+        selectedRentalTypeInput.value = 'daily';
+        // Clear other pricing inputs
+        clearNonDailyPricing();
+    } else if (bothRadio && bothRadio.checked) {
+        bothPricing.style.display = 'block';
+        noPricingSelected.style.display = 'none';
+        selectedRentalTypeInput.value = 'both';
+        // Sync values between both and individual pricing
+        syncBothPricingValues();
     } else {
         selectedRentalTypeInput.value = '';
+        clearAllPricingInputs();
+    }
+}
+
+function clearNonHourlyPricing() {
+    // Clear daily pricing
+    const dailyPriceInput = document.querySelector('input[name="price_per_day"]');
+    if (dailyPriceInput) dailyPriceInput.value = '';
+    
+    // Clear both pricing inputs for daily
+    const dailyPriceBothInput = document.querySelector('input[name="price_per_day_both"]');
+    if (dailyPriceBothInput) dailyPriceBothInput.value = '';
+}
+
+function clearNonDailyPricing() {
+    // Clear hourly pricing
+    const priceFields = ['price_first_2_hours', 'price_per_additional_hour', 'price_overnight', 'price_daytime'];
+    priceFields.forEach(field => {
+        const input = document.querySelector(`input[name="${field}"]`);
+        if (input) input.value = '';
+    });
+    
+    // Clear both pricing inputs for hourly
+    const hourlyBothFields = ['price_first_2_hours_both', 'price_per_additional_hour_both', 'price_overnight_both', 'price_daytime_both'];
+    hourlyBothFields.forEach(field => {
+        const input = document.querySelector(`input[name="${field}"]`);
+        if (input) input.value = '';
+    });
+}
+
+function clearAllPricingInputs() {
+    const allPriceFields = [
+        'price_first_2_hours', 'price_per_additional_hour', 'price_overnight', 'price_daytime', 'price_per_day',
+        'price_first_2_hours_both', 'price_per_additional_hour_both', 'price_overnight_both', 'price_daytime_both', 'price_per_day_both'
+    ];
+    allPriceFields.forEach(field => {
+        const input = document.querySelector(`input[name="${field}"]`);
+        if (input) input.value = '';
+    });
+}
+
+function syncBothPricingValues() {
+    // Sync hourly pricing values
+    const hourlyFields = [
+        'price_first_2_hours', 'price_per_additional_hour', 'price_overnight', 'price_daytime'
+    ];
+    
+    hourlyFields.forEach(field => {
+        const singleInput = document.querySelector(`input[name="${field}"]`);
+        const bothInput = document.querySelector(`input[name="${field}_both"]`);
+        
+        if (singleInput && bothInput) {
+            if (singleInput.value && !bothInput.value) {
+                bothInput.value = singleInput.value;
+            } else if (bothInput.value && !singleInput.value) {
+                singleInput.value = bothInput.value;
+            }
+        }
+    });
+    
+    // Sync daily pricing value
+    const dailyInput = document.querySelector('input[name="price_per_day"]');
+    const dailyBothInput = document.querySelector('input[name="price_per_day_both"]');
+    
+    if (dailyInput && dailyBothInput) {
+        if (dailyInput.value && !dailyBothInput.value) {
+            dailyBothInput.value = dailyInput.value;
+        } else if (dailyBothInput.value && !dailyInput.value) {
+            dailyInput.value = dailyBothInput.value;
+        }
     }
 }
 
 // Add event listeners for rental type radio buttons
 document.addEventListener('DOMContentLoaded', function() {
     const hourlyRadio = document.getElementById('hourly');
-    const nightlyRadio = document.getElementById('nightly');
+    const dailyRadio = document.getElementById('daily');
+    const bothRadio = document.getElementById('both');
     
     if (hourlyRadio) {
         hourlyRadio.addEventListener('change', function() {
@@ -3234,8 +3436,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    if (nightlyRadio) {
-        nightlyRadio.addEventListener('change', function() {
+    if (dailyRadio) {
+        dailyRadio.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricingDisplay();
+            }
+        });
+    }
+    
+    if (bothRadio) {
+        bothRadio.addEventListener('change', function() {
             if (this.checked) {
                 updatePricingDisplay();
             }
@@ -4875,7 +5085,7 @@ function validatePrice(input, type) {
     } else if (type === 'nightly') {
         if (numValue > 2000000) {
             isValid = false;
-            errorMessage = 'Giá qua đêm tối đa là 2.000.000đ';
+                            errorMessage = 'Giá theo ngày tối đa là 2.000.000đ';
         }
     }
     

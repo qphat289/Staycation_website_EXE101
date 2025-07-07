@@ -1050,8 +1050,10 @@ window.backendImages = [
                             <option>
                                 {% if home_data.selected_rental_type == 'hourly' %}
                                     Theo giờ
-                                {% elif home_data.selected_rental_type == 'nightly' %}
-                                    Theo đêm
+                                {% elif home_data.selected_rental_type == 'daily' %}
+                                    Theo ngày
+                                {% elif home_data.selected_rental_type == 'both' %}
+                                    Cả 2 (Theo giờ và ngày)
                                 {% else %}
                                     Chưa chọn
                                 {% endif %}
@@ -1181,23 +1183,115 @@ window.backendImages = [
             </div>
             {% endif %}
 
-            <!-- Giá -->
+            <!-- Enhanced Pricing -->
             <div class="form-group">
                 <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
                     {% if home_data.selected_rental_type == 'hourly' %}
-                        Giá mỗi giờ
-                    {% elif home_data.selected_rental_type == 'nightly' %}
-                        Giá mỗi đêm
+                        Giá thuê theo giờ
+                    {% elif home_data.selected_rental_type == 'daily' %}
+                        Giá thuê theo ngày
+                    {% elif home_data.selected_rental_type == 'both' %}
+                        Giá thuê theo giờ và ngày
                     {% else %}
                         Giá
                     {% endif %}
                 </h3>
+                
+                <!-- Hourly Pricing Display -->
+                {% if home_data.selected_rental_type == 'hourly' %}
+                <div class="pricing-preview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    {% if home_data.price_first_2_hours %}
+                    <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá 2 giờ đầu</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_first_2_hours|int }} VND</div>
+                    </div>
+                    {% endif %}
+                    {% if home_data.price_per_additional_hour %}
+                    <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá 1 giờ sau</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_per_additional_hour|int }} VND</div>
+                    </div>
+                    {% endif %}
+                    {% if home_data.price_overnight %}
+                    <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá qua đêm (21h-8h)</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_overnight|int }} VND</div>
+                    </div>
+                    {% endif %}
+                    {% if home_data.price_daytime %}
+                    <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá qua ngày (9h-20h)</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_daytime|int }} VND</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Daily Pricing Display -->
+                {% elif home_data.selected_rental_type == 'daily' %}
+                {% if home_data.price_per_day %}
+                <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef; max-width: 250px;">
+                    <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá theo ngày</div>
+                    <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_per_day|int }} VND</div>
+                </div>
+                {% endif %}
+                
+                <!-- Both Pricing Display -->
+                {% elif home_data.selected_rental_type == 'both' %}
+                <div class="pricing-preview-sections" style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Hourly Section -->
+                    {% if home_data.price_first_2_hours or home_data.price_per_additional_hour or home_data.price_overnight or home_data.price_daytime %}
+                    <div class="pricing-section-preview">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #555; margin-bottom: 10px;">Giá thuê theo giờ</h4>
+                        <div class="pricing-preview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                            {% if home_data.price_first_2_hours %}
+                            <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá 2 giờ đầu</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_first_2_hours|int }} VND</div>
+                            </div>
+                            {% endif %}
+                            {% if home_data.price_per_additional_hour %}
+                            <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá 1 giờ sau</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_per_additional_hour|int }} VND</div>
+                            </div>
+                            {% endif %}
+                            {% if home_data.price_overnight %}
+                            <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá qua đêm (21h-8h)</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_overnight|int }} VND</div>
+                            </div>
+                            {% endif %}
+                            {% if home_data.price_daytime %}
+                            <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá qua ngày (9h-20h)</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_daytime|int }} VND</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Daily Section -->
+                    {% if home_data.price_per_day %}
+                    <div class="pricing-section-preview">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #555; margin-bottom: 10px;">Giá thuê theo ngày</h4>
+                        <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef; max-width: 200px;">
+                            <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá theo ngày</div>
+                            <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_per_day|int }} VND</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Fallback for legacy or missing pricing -->
+                {% else %}
                 <div class="price-input-group">
                     <span class="currency-label">VND</span>
                     <input type="text" class="price-input" 
-                           value="{% if home_data.selected_rental_type == 'hourly' and home_data.hourly_price %}{{ home_data.hourly_price }}{% elif home_data.selected_rental_type == 'nightly' and home_data.nightly_price %}{{ home_data.nightly_price }}{% endif %}" 
+                           value="{% if home_data.hourly_price %}{{ home_data.hourly_price }}{% elif home_data.nightly_price %}{{ home_data.nightly_price }}{% endif %}" 
                            readonly>
                 </div>
+                {% endif %}
             </div>
 
             <!-- Mô tả -->
