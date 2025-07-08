@@ -8,9 +8,14 @@ import os
 import importlib.util
 import sys as _sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add the project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
 
-app_py_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'app.py')
+# Also set it in the environment for subprocesses
+os.environ['PYTHONPATH'] = project_root + (os.pathsep + os.environ.get('PYTHONPATH', ''))
+
+app_py_path = os.path.join(project_root, 'app.py')
 spec = importlib.util.spec_from_file_location('app_main', app_py_path)
 app_module = importlib.util.module_from_spec(spec)
 _sys.modules['app_main'] = app_module
