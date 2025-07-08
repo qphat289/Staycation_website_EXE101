@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize image gallery
     initializeImageGallery();
     
-    // Initialize map if address is available
-    initializeMap();
+    // Skip map initialization - using Mapbox implementation in template instead
+    // initializeMap();
     
     // Initialize amenities and rules display
     initializeAmenitiesRules();

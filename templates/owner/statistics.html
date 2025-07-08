@@ -1256,150 +1256,92 @@ function createTitleBarLegend() {
     titleContainer.appendChild(legendDiv);
 }
 
-// Setup chart type filters
-function setupChartTypeFilters() {
-    document.querySelectorAll('.chart-type-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Update active state
-            document.querySelectorAll('.chart-type-btn').forEach(sibling => {
-                sibling.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            // Get chart type from data attribute
-            const chartType = this.getAttribute('data-chart');
-            currentChart = chartType;
-            
-            // Update chart title
-            const titles = {
-                'hourly': 'Doanh thu thuê theo giờ',
-                'daily': 'Doanh thu thuê theo ngày',
-                'both': 'Doanh thu thuê (Tổng hợp)'
-            };
-            document.getElementById('chartTitle').innerHTML = `
-                <i class="fas fa-chart-line" style="color: #E0EC9B;"></i>
-                ${titles[chartType]}
-            `;
-            
-            // Reload chart data with new chart type
-            loadAllDataWithChartType(currentPeriod, chartType);
-        });
-    });
-}
-
-// Setup master filter functionality
+// Setup master filter buttons
 function setupMasterFilters() {
-    // Period filter buttons
-    document.querySelectorAll('.master-filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const period = this.dataset.period;
-            const dropdown = document.getElementById('masterCustomDropdown');
-            
-            // Handle custom period toggle
-            if (period === 'custom') {
-                const isCurrentlyActive = this.classList.contains('active');
-                const isDropdownVisible = dropdown.style.display === 'block';
-                
-                if (isCurrentlyActive && isDropdownVisible) {
-                    // Close dropdown if clicking active custom button
-                    dropdown.classList.remove('show');
-                    setTimeout(() => dropdown.style.display = 'none', 300);
-                    
-                    // Reset to previous period or default to total
-                    const previousPeriod = currentPeriod !== 'custom' ? currentPeriod : 'total';
-                    document.querySelectorAll('.master-filter-btn').forEach(sibling => {
-                        sibling.classList.remove('active');
-                        if (sibling.dataset.period === previousPeriod) {
-                            sibling.classList.add('active');
-                        }
-                    });
-                    currentPeriod = previousPeriod;
-                    return;
-                }
-                
-                // Show dropdown
-                dropdown.style.display = 'block';
-                setTimeout(() => dropdown.classList.add('show'), 10);
-            } else {
-                // Hide dropdown for other periods
-                dropdown.classList.remove('show');
-                setTimeout(() => dropdown.style.display = 'none', 300);
-                
-                // Update current period BEFORE loading data
-                currentPeriod = period;
-                loadAllData(period);
-            }
-            
-            // Update active state
-            document.querySelectorAll('.master-filter-btn').forEach(sibling => {
-                sibling.classList.remove('active');
-            });
-            this.classList.add('active');
-        });
-    });
-    
-    // Chart type toggle buttons
-    document.querySelectorAll('.chart-type-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Update active state
-            document.querySelectorAll('.chart-type-btn').forEach(sibling => {
-                sibling.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            const chartType = this.dataset.chart;
-            currentChart = chartType;
-            
-            // Update chart title
-            const chartTitle = document.getElementById('chartTitle');
-            
-            if (chartType === 'hourly') {
-                chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo giờ';
-            } else if (chartType === 'daily') {
-                chartTitle.innerHTML = '<i class="fas fa-chart-bar" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo ngày';
-            } else if (chartType === 'both') {
-                chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>So sánh doanh thu theo giờ và theo ngày';
-            }
-            
-            // Reload both chart and stats data with new chart type
-            loadAllDataWithChartType(currentPeriod, chartType);
-        });
-    });
-}
-
-// Setup filter buttons
-function setupFilterButtons() {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Update active state
-            this.parentNode.querySelectorAll('.filter-btn').forEach(sibling => {
-                sibling.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            // Get period from data attribute
+    const filterButtons = document.querySelectorAll('.master-filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
             const period = this.getAttribute('data-period');
             
-            // Show/hide date picker for custom option
-            const customDropdown = document.getElementById('customDateDropdown');
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
             
             if (period === 'custom') {
-                customDropdown.style.display = 'block';
-                // Add smooth animation
-                setTimeout(() => {
-                    customDropdown.style.opacity = '1';
-                    customDropdown.style.transform = 'translateY(0)';
-                }, 10);
+                // Show custom date picker
+                showMasterCustomDatePicker();
             } else {
-                customDropdown.style.display = 'none';
-                // Load new data if different period
-                if (period !== currentPeriod) {
-                    currentPeriod = period;
-                    loadChartData(period);
-                }
+                // Hide custom date picker
+                hideMasterCustomDatePicker();
+                // Update current period and load data
+                currentPeriod = period;
+                loadAllDataWithChartType(period, currentChart);
             }
         });
     });
+}
+
+// Setup chart type filter buttons
+function setupChartTypeFilters() {
+    const chartButtons = document.querySelectorAll('.chart-type-btn');
+    chartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const chartType = this.getAttribute('data-chart');
+            
+            // Remove active class from all buttons
+            chartButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Update current chart type and load data
+            currentChart = chartType;
+            loadAllDataWithChartType(currentPeriod, chartType);
+            
+            // Update chart title
+            updateChartTitle(chartType);
+        });
+    });
+}
+
+// Show custom date picker
+function showMasterCustomDatePicker() {
+    const dropdown = document.getElementById('masterCustomDropdown');
+    dropdown.style.display = 'block';
+    setTimeout(() => {
+        dropdown.classList.add('show');
+    }, 10);
+}
+
+// Hide custom date picker
+function hideMasterCustomDatePicker() {
+    const dropdown = document.getElementById('masterCustomDropdown');
+    dropdown.classList.remove('show');
+    setTimeout(() => {
+        dropdown.style.display = 'none';
+    }, 300);
+}
+
+// Update chart title based on chart type
+function updateChartTitle(chartType) {
+    const chartTitle = document.getElementById('chartTitle');
+    const icon = '<i class="fas fa-chart-line" style="color: #E0EC9B;"></i>';
+    
+    let title;
+    switch(chartType) {
+        case 'hourly':
+            title = 'Doanh thu theo giờ';
+            break;
+        case 'daily':
+            title = 'Doanh thu theo ngày';
+            break;
+        case 'both':
+        default:
+            title = 'So sánh doanh thu theo giờ và theo ngày';
+            break;
+    }
+    
+    chartTitle.innerHTML = `${icon} ${title}`;
 }
 
 // Load all data (stats + chart)

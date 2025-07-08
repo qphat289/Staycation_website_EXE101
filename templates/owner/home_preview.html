@@ -937,15 +937,6 @@
     }
 </style>
 
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-<!-- Load config trước -->
-<script src="{{ url_for('static', filename='js/config.js') }}"></script>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <!-- Mapbox GL CSS và JS -->
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
@@ -1498,6 +1489,306 @@ window.backendImages = [
         <div class="modal-main-badge" id="modalMainBadge" style="display: none;">Ảnh bìa</div>
     </div>
 </div>
+
+<!-- Map initialization script -->
+<script>
+// Map initialization for home preview
+let previewMapInitialized = false;
+
+function checkPreviewMapVisibility() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer || previewMapInitialized) return;
+    
+    const rect = mapContainer.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    
+    // Initialize map when user scrolls near it (200px away)
+    if (rect.top < windowHeight + 200) {
+        previewMapInitialized = true;
+        initializePreviewMap();
+        // Remove listener after initialization
+        window.removeEventListener('scroll', checkPreviewMapVisibility);
+    }
+}
+
+// Wait for DOM to be fully loaded before initializing
+document.addEventListener('DOMContentLoaded', function() {
+    // Check immediately on load (if map is already visible)
+    setTimeout(checkPreviewMapVisibility, 100);
+    
+    // Check when user scrolls
+    window.addEventListener('scroll', checkPreviewMapVisibility, { passive: true });
+});
+
+function initializePreviewMap() {
+    try {
+        // Check if Mapbox GL is available
+        if (typeof mapboxgl === 'undefined') {
+            console.error('Mapbox GL JS not loaded');
+            return;
+        }
+        
+        // Hide loading placeholder
+        const loadingElement = document.getElementById('map-loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+        
+        // Mapbox access token
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
+
+    // Custom style for popup
+    const customPopupStyle = `
+        .mapboxgl-popup {
+            max-width: 300px !important;
+        }
+        .mapboxgl-popup-content {
+            padding: 0 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+            overflow: hidden !important;
+        }
+        .mapboxgl-popup-close-button {
+            padding: 8px !important;
+            color: #666 !important;
+            font-size: 20px !important;
+            line-height: 14px !important;
+            right: 4px !important;
+            top: 4px !important;
+            z-index: 10 !important;
+        }
+        .mapboxgl-popup-close-button:hover {
+            background: none !important;
+            color: #333 !important;
+        }
+        .custom-popup-header {
+            background: #8bc34a;
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .custom-popup-content {
+            padding: 15px;
+            background: rgba(248, 249, 250, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .custom-popup-address {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .custom-popup-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .custom-popup-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .custom-popup-btn.primary {
+            background: #8bc34a;
+            color: white;
+        }
+        .custom-popup-btn.primary:hover {
+            background: #7cb342;
+        }
+        .custom-popup-btn.secondary {
+            background: rgba(139, 195, 74, 0.1);
+            color: #333;
+            border: 1px solid rgba(139, 195, 74, 0.3);
+        }
+        .custom-popup-btn.secondary:hover {
+            background: #e9ecef;
+        }
+        .custom-popup-btn i {
+            margin-right: 6px;
+        }
+    `;
+
+    // Add style to head
+    const styleElement = document.createElement('style');
+    styleElement.textContent = customPopupStyle;
+    document.head.appendChild(styleElement);
+    
+    // Create Mapbox map
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [106.6297, 10.8231], // Default to Ho Chi Minh City
+        zoom: 13,
+        attributionControl: true,
+        scrollZoom: false // Disable scroll zoom by default
+    });
+
+    // Add event listeners for hover
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+        mapContainer.addEventListener('mouseenter', () => {
+            map.scrollZoom.enable(); // Enable scroll zoom on hover
+        });
+        
+        mapContainer.addEventListener('mouseleave', () => {
+            map.scrollZoom.disable(); // Disable scroll zoom when not hovering
+        });
+    }
+    
+    // Add controls
+    map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+    
+    // Geocoding with Mapbox Geocoding API
+    var address = "{{ map_address }}";
+    var geocodeUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(address) + '.json?access_token=' + mapboxgl.accessToken + '&country=vn&limit=1&types=address,poi';
+    
+    fetch(geocodeUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data.features && data.features.length > 0) {
+                var coordinates = data.features[0].center; // [lng, lat]
+                var placeName = data.features[0].place_name;
+                
+                // Fly to location
+                map.flyTo({
+                    center: coordinates,
+                    zoom: 15,
+                    duration: 800,
+                    essential: false
+                });
+                
+                // Create custom marker element
+                var markerEl = document.createElement('div');
+                markerEl.innerHTML = `
+                    <div style="
+                        color: #8bc34a;
+                        font-size: 32px;
+                        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                        cursor: pointer;
+                    ">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                `;
+                
+                // Add marker with popup
+                var marker = new mapboxgl.Marker(markerEl)
+                    .setLngLat(coordinates)
+                    .setPopup(new mapboxgl.Popup({ 
+                        offset: 30,
+                        closeButton: true,
+                        closeOnClick: false
+                    }).setHTML(`
+                        <div>
+                            <div class="custom-popup-header">
+                                {{ home_data.title or 'Homestay Preview' }}
+                            </div>
+                            <div class="custom-popup-content">
+                                <div class="custom-popup-address">
+                                    <i class="fas fa-map-marker-alt" style="margin-right: 6px;"></i>
+                                    {% if home_data.street %}{{ home_data.street }}, {% endif %}{{ location_names.ward_name }}, {{ location_names.district_name }}, {{ location_names.province_name }}
+                                </div>
+                                <div class="custom-popup-actions">
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
+                                       target="_blank" 
+                                       class="custom-popup-btn primary">
+                                        <i class="fas fa-directions"></i>
+                                        Chỉ đường
+                                    </a>
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
+                                       target="_blank" 
+                                       class="custom-popup-btn secondary">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `))
+                    .addTo(map);
+                
+                // Open popup immediately
+                marker.getPopup().addTo(map);
+                
+            }
+        })
+        .catch(error => {
+            console.log('Geocoding error, using fallback:', error);
+            // Fallback: display default coordinates
+            var fallbackCoords = [106.6297, 10.8231]; // Ho Chi Minh City
+            
+            map.flyTo({ center: fallbackCoords, zoom: 13, duration: 600 });
+            
+            var markerEl = document.createElement('div');
+            markerEl.innerHTML = `
+                <div style="
+                    color: #8bc34a;
+                    font-size: 32px;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                    cursor: pointer;
+                ">
+                    <i class="bi bi-geo-alt-fill"></i>
+                </div>
+            `;
+            
+            new mapboxgl.Marker(markerEl)
+                .setLngLat(fallbackCoords)
+                .setPopup(new mapboxgl.Popup({ offset: 30 })
+                    .setHTML(`
+                        <div>
+                            <div class="custom-popup-header">
+                                {{ home_data.title or 'Homestay Preview' }}
+                            </div>
+                            <div class="custom-popup-content">
+                                <div class="custom-popup-address">
+                                    <i class="fas fa-map-marker-alt" style="margin-right: 6px;"></i>
+                                    {% if home_data.street %}{{ home_data.street }}, {% endif %}{{ location_names.ward_name }}, {{ location_names.district_name }}, {{ location_names.province_name }}
+                                </div>
+                                <div class="custom-popup-actions">
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
+                                       target="_blank" 
+                                       class="custom-popup-btn primary">
+                                        <i class="fas fa-directions"></i>
+                                        Chỉ đường
+                                    </a>
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
+                                       target="_blank" 
+                                       class="custom-popup-btn secondary">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `))
+                .addTo(map);
+        });
+    } catch (error) {
+        console.error('Error initializing map:', error);
+        // Show error message in map container
+        const mapContainer = document.getElementById('map');
+        if (mapContainer) {
+            mapContainer.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 14px;">
+                    <div style="text-align: center;">
+                        <i class="bi bi-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px; color: #ffc107;"></i><br>
+                        Không thể tải bản đồ. Vui lòng thử lại sau.
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+</script>
 
 </div>
 

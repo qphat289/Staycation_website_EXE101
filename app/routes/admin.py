@@ -240,7 +240,7 @@ def dashboard():
         if hourly_homestays_count > nightly_homestays_count:
             stats.common_type = "Theo giờ"
         elif nightly_homestays_count > hourly_homestays_count:
-            stats.common_type = "Qua đêm"
+            stats.common_type = "Theo ngày"
         else:
             stats.common_type = "N/A"  # Equal numbers or no homestays
 

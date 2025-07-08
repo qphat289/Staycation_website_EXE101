@@ -1828,10 +1828,10 @@ def statistics():
                                        'top_homes': []
                                    })
         
-        # Get all completed bookings for owner's homes
+        # Get all completed and confirmed bookings for owner's homes
         completed_bookings = Booking.query.filter(
             Booking.home_id.in_(home_ids),
-            Booking.status == 'completed'
+            Booking.status.in_(['completed', 'confirmed'])
         ).all()
         
         # Calculate basic statistics
@@ -1871,7 +1871,7 @@ def statistics():
             func.sum(Booking.total_price).label('total_revenue'),
             func.avg(Review.rating).label('avg_rating')
         ).select_from(Home)\
-         .outerjoin(Booking, (Home.id == Booking.home_id) & (Booking.status == 'completed'))\
+         .outerjoin(Booking, (Home.id == Booking.home_id) & (Booking.status.in_(['completed', 'confirmed'])))\
          .outerjoin(Review, Home.id == Review.home_id)\
          .filter(Home.owner_id == current_user.id)\
          .group_by(Home.id, Home.title)\
@@ -1886,7 +1886,7 @@ def statistics():
             # Determine most common booking type for this home
             home_hourly = sum(1 for b in home_bookings if b.booking_type == 'hourly')
             home_nightly = len(home_bookings) - home_hourly
-            home_common_type = "Theo giờ" if home_hourly >= home_nightly else "Qua đêm"
+            home_common_type = "Theo giờ" if home_hourly >= home_nightly else "Theo ngày"
             
             # Calculate booking rate for this home
             home_total_hours = sum((b.end_time - b.start_time).total_seconds() / 3600 for b in home_bookings)
@@ -1956,44 +1956,85 @@ def get_chart_data(period, chart_type='both'):
         if not home_ids:
             return jsonify({'hourly': [], 'daily': []})
         
-        # Get completed bookings
+        # Get completed and confirmed bookings (confirmed bookings should also appear in charts)
         completed_bookings = Booking.query.filter(
             Booking.home_id.in_(home_ids),
-            Booking.status == 'completed'
+            Booking.status.in_(['completed', 'confirmed'])
         ).all()
         
         if period == 'total':
-            # Generate data for the last 30 days (default view for total)
+            # Generate data for ALL completed bookings divided into exactly 20 columns
             chart_data_hourly = []
             chart_data_nightly = []
             
-            for i in range(29, -1, -1):  # 30 days
-                date = datetime.now().date() - timedelta(days=i)
-                day_bookings = [b for b in completed_bookings if b.created_at.date() == date]
+            # Get date range of all bookings
+            if completed_bookings:
+                earliest_booking = min(b.created_at for b in completed_bookings)
+                latest_booking = max(b.created_at for b in completed_bookings)
                 
-                # Separate hourly and nightly bookings
-                hourly_bookings = [b for b in day_bookings if b.booking_type == 'hourly']
-                nightly_bookings = [b for b in day_bookings if b.booking_type == 'daily']
+                # Calculate total time span in days
+                total_days = (latest_booking.date() - earliest_booking.date()).days + 1
                 
-                hourly_revenue = sum(b.total_price for b in hourly_bookings)
-                nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                # Divide into 20 equal periods
+                days_per_period = max(1, total_days // 20)
                 
-                chart_data_hourly.append({
-                    'date': date.strftime('%d/%m'),
-                    'revenue': int(hourly_revenue)
-                })
-                
-                chart_data_nightly.append({
-                    'date': date.strftime('%d/%m'),
-                    'revenue': int(nightly_revenue)
-                })
+                for i in range(20):
+                    # Calculate start and end date for this period
+                    period_start = earliest_booking.date() + timedelta(days=i * days_per_period)
+                    
+                    # For the last period, make sure it goes to the end
+                    if i == 19:
+                        period_end = latest_booking.date()
+                    else:
+                        period_end = earliest_booking.date() + timedelta(days=(i + 1) * days_per_period - 1)
+                        # Don't exceed the latest booking date
+                        if period_end > latest_booking.date():
+                            period_end = latest_booking.date()
+                    
+                    # Get bookings for this period
+                    period_bookings = [b for b in completed_bookings 
+                                     if period_start <= b.created_at.date() <= period_end]
+                    
+                    # Separate hourly and nightly bookings
+                    hourly_bookings = [b for b in period_bookings if b.booking_type == 'hourly']
+                    nightly_bookings = [b for b in period_bookings if b.booking_type == 'daily']
+                    
+                    hourly_revenue = sum(b.total_price for b in hourly_bookings)
+                    nightly_revenue = sum(b.total_price for b in nightly_bookings)
+                    
+                    # Create period label
+                    if days_per_period <= 7:
+                        # For short periods, show date range
+                        period_label = f"{period_start.strftime('%d/%m')}-{period_end.strftime('%d/%m')}"
+                    elif days_per_period <= 31:
+                        # For medium periods, show week numbers or dates
+                        period_label = f"{period_start.strftime('%d/%m')}"
+                    else:
+                        # For long periods, show month/year
+                        period_label = f"{period_start.strftime('%m/%Y')}"
+                    
+                    chart_data_hourly.append({
+                        'date': period_label,
+                        'revenue': int(hourly_revenue)
+                    })
+                    
+                    chart_data_nightly.append({
+                        'date': period_label,
+                        'revenue': int(nightly_revenue)
+                    })
+            else:
+                # No bookings, return empty data
+                chart_data_hourly = []
+                chart_data_nightly = []
         
         elif period == 'week':
-            # Generate data for the last 7 days
+            # Generate data for exactly 7 days counting from today (6 days ago to today)
+            # Days arranged from left to right: oldest to newest
             chart_data_hourly = []
             chart_data_nightly = []
             
-            for i in range(6, -1, -1):
+            # Generate exactly 7 days from 6 days ago to today
+            for i in range(6, -1, -1):  # 6, 5, 4, 3, 2, 1, 0 (left to right: oldest to newest)
                 date = datetime.now().date() - timedelta(days=i)
                 day_bookings = [b for b in completed_bookings if b.created_at.date() == date]
                 
@@ -2125,10 +2166,10 @@ def get_stats_data(period, chart_type='both'):
         else:
             return jsonify({'error': 'Invalid period'}), 400
         
-        # Get completed bookings
+        # Get completed and confirmed bookings (confirmed bookings should also appear in stats)
         query = Booking.query.filter(
             Booking.home_id.in_(home_ids),
-            Booking.status == 'completed'
+            Booking.status.in_(['completed', 'confirmed'])
         )
         
         if start_date:
@@ -2180,7 +2221,7 @@ def get_stats_data(period, chart_type='both'):
             func.sum(Booking.total_price).label('total_revenue'),
             func.avg(Review.rating).label('avg_rating')
         ).select_from(Home)\
-         .outerjoin(Booking, (Home.id == Booking.home_id) & (Booking.status == 'completed'))\
+         .outerjoin(Booking, (Home.id == Booking.home_id) & (Booking.status.in_(['completed', 'confirmed'])))\
          .outerjoin(Review, Home.id == Review.home_id)\
          .filter(Home.owner_id == current_user.id)
         
@@ -2260,10 +2301,10 @@ def get_custom_stats_data(chart_type='both'):
                 'top_homes': []
             })
         
-        # Get completed bookings in date range
+        # Get completed and confirmed bookings in date range
         query = Booking.query.filter(
             Booking.home_id.in_(home_ids),
-            Booking.status == 'completed',
+            Booking.status.in_(['completed', 'confirmed']),
             Booking.created_at >= start_date,
             Booking.created_at < end_date
         )
@@ -2314,7 +2355,7 @@ def get_custom_stats_data(chart_type='both'):
             func.sum(Booking.total_price).label('total_revenue'),
             func.avg(Review.rating).label('avg_rating')
         ).select_from(Home)\
-         .outerjoin(Booking, (Home.id == Booking.home_id) & (Booking.status == 'completed') & 
+         .outerjoin(Booking, (Home.id == Booking.home_id) & (Booking.status.in_(['completed', 'confirmed'])) & 
                     (Booking.created_at >= start_date) & (Booking.created_at < end_date))\
          .outerjoin(Review, (Home.id == Review.home_id) & 
                     (Review.created_at >= start_date) & (Review.created_at < end_date))\
@@ -2381,10 +2422,10 @@ def get_custom_chart_data_query():
         if not home_ids:
             return jsonify({'hourly': [], 'daily': []})
         
-        # Get completed bookings in date range
+        # Get completed and confirmed bookings in date range
         completed_bookings = Booking.query.filter(
             Booking.home_id.in_(home_ids),
-            Booking.status == 'completed',
+            Booking.status.in_(['completed', 'confirmed']),
             Booking.created_at >= start_date,
             Booking.created_at < end_date
         ).all()

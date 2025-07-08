@@ -240,7 +240,7 @@ main.container {
 
 /* Hero Section Compact Styles - Like Traveloka */
 .hero-section-fullwidth {
-    background-image: url('/static/images/hero-bg.jpg');
+    background-image: url('/static/data/system/hero-bg.jpg');
     position: relative;
     background-size: cover;
     background-position: center;

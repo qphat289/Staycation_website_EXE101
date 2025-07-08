@@ -556,12 +556,12 @@
         <div class="container">
             {% if current_user.is_authenticated and current_user.is_owner() %}
                 <span class="navbar-brand fw-bold" style="color: #333333;">
-                    <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
+                    <img src="{{ url_for('static', filename='data/system/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
                     <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Horin</span>
                 </span>
             {% else %}
                 <a class="navbar-brand fw-bold" href="{{ url_for('home') }}" style="color: #333333;">
-                    <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
+                    <img src="{{ url_for('static', filename='data/system/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
                     <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Horin</span>
                 </a>
             {% endif %}
@@ -596,7 +596,7 @@
                         <!-- Language Toggle Button -->
                         <li class="nav-item">
                             <button id="languageToggle" class="btn ms-2 rounded-pill" onclick="toggleLanguage(event)">
-                                <img src="{{ url_for('static', filename='images/flags/vn.svg') }}" alt="VN" class="flag-img">
+                                <img src="{{ url_for('static', filename='data/system/flags/vn.svg') }}" alt="VN" class="flag-img">
                                 <span>VI</span>
                             </button>
                         </li>
@@ -607,7 +607,7 @@
                                 {% if current_user.avatar %}
                                     <img src="{{ url_for('static', filename=current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% else %}
-                                    <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
+                                    <img src="{{ url_for('static', filename='data/system/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% endif %}
                                 <span {% if request.endpoint == 'renter.view_home' %}style="color: #000 !important;"{% endif %}>{{ current_user.username }}</span>
                                 <i class="fas fa-bars ms-2" style="font-size: 14px; {% if request.endpoint == 'renter.view_home' %}color: #000 !important;{% endif %}"></i>
@@ -657,7 +657,7 @@
                         </li>
                         <li class="nav-item">
                             <button id="languageToggle" class="btn ms-2 rounded-pill" onclick="toggleLanguage(event)">
-                                <img src="{{ url_for('static', filename='images/flags/vn.svg') }}" alt="VN" class="flag-img">
+                                <img src="{{ url_for('static', filename='data/system/flags/vn.svg') }}" alt="VN" class="flag-img">
                                 <span>VI</span>
                             </button>
                         </li>
