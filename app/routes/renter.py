@@ -53,8 +53,14 @@ def dashboard():
 
 # City and district mapping
 CITY_MAPPING = {
-    'TP. Hồ Chí Minh': 'hcm',
-    'Hà Nội': 'hanoi'
+    'TP. Hồ Chí Minh': 'TP. Hồ Chí Minh',  # Use the actual names stored in the database
+    'Hà Nội': 'Hà Nội',
+    'Đà Nẵng': 'Đà Nẵng',
+    'Hội An': 'Hội An',
+    'Đà Lạt': 'Đà Lạt',
+    'Nha Trang': 'Nha Trang',
+    'Huế': 'Huế',
+    'Vũng Tàu': 'Vũng Tàu'
 }
 
 DISTRICT_MAPPING = {
@@ -88,6 +94,8 @@ def search():
     max_price = request.args.get('max_price', type=float)
     room_type = request.args.get('room_type', '')
     booking_type = request.args.get('booking_type', 'hourly')  # Default to hourly if not specified
+    city = request.args.get('city', '')
+    district = request.args.get('district', '')
     
     # Get time parameters
     checkin_date = request.args.get('checkin_date')
@@ -100,9 +108,14 @@ def search():
     rooms_count = request.args.get('rooms', type=int, default=1)
     total_guests = adults + children if adults is not None and children is not None else None
     
+    # Get amenity filters
+    amenity_ids = request.args.getlist('amenities')
+    
     # Log search parameters
     print("🔍 Search Parameters:")
     print(f"Location: {location}")
+    print(f"City: {city}")
+    print(f"District: {district}")
     print(f"Booking Type: {booking_type}")
     print(f"Check-in Date: {checkin_date}")
     print(f"Check-in Time: {checkin_time}")
@@ -165,6 +178,37 @@ def search():
         query = query.filter(Home.max_guests >= total_guests)
         print(f"🔍 Max guests filter: {total_guests}")
     
+    # Filter by specific city if selected
+    if city:
+        # Map city name to database value if needed
+        city_db = CITY_MAPPING.get(city, city)
+        # Use direct equality comparison instead of LIKE for exact city matches
+        query = query.filter(Home.city == city_db)
+        print(f"🔍 City filter: {city} -> {city_db} (exact match)")
+    
+    # Filter by specific district if selected
+    if district:
+        # Map district name to database value if needed
+        district_db = DISTRICT_MAPPING.get(district, district)
+        query = query.filter(Home.district == district_db)
+        print(f"🔍 District filter: {district} -> {district_db}")
+
+    # Filter by amenities if specified
+    if amenity_ids:
+        # Convert amenity_ids to integers
+        valid_amenity_ids = []
+        for amenity_id in amenity_ids:
+            try:
+                valid_amenity_ids.append(int(amenity_id))
+                print(f"🔍 Amenity filter added: ID {amenity_id}")
+            except (ValueError, TypeError):
+                print(f"❌ Invalid amenity ID: {amenity_id}")
+        
+        if valid_amenity_ids:
+            # Filter homes that have ALL selected amenities
+            for amenity_id in valid_amenity_ids:
+                query = query.filter(Home.amenities.any(Amenity.id == amenity_id))
+    
     # Execute query and get all matching homes
     homes = query.all()
     print(f"🔍 Found {len(homes)} matching homes")
@@ -185,18 +229,38 @@ def search():
     districts = db.session.query(Home.district).distinct().all()
     home_types = db.session.query(Home.home_type).distinct().all()
     
-    # Map database values to display names
-    city_display_names = {v: k for k, v in CITY_MAPPING.items()}
-    district_display_names = {v: k for k, v in DISTRICT_MAPPING.items()}
+    # Get amenities and categories for filter - include the category relationship
+    amenity_categories = AmenityCategory.query.filter_by(is_active=True).order_by(AmenityCategory.display_order).all()
+    amenities = Amenity.query.filter_by(is_active=True).options(
+        joinedload(Amenity.amenity_category)
+    ).order_by(Amenity.display_order).all()
     
-    cities = [city_display_names.get(city[0], city[0].upper()) for city in cities]
+    # City names are already in display format, so we don't need to map them
+    # Just extract the city names from query result
+    cities = [city[0] for city in cities if city[0]]  # Extract city names and filter empty values
+    # Sort cities alphabetically for better display
+    cities.sort()
+    
+    # For districts, still use mapping if available
+    district_display_names = {v: k for k, v in DISTRICT_MAPPING.items()}
     districts = [district_display_names.get(district[0], district[0].upper()) for district in districts]
+    
+    # Get selected amenity IDs as integers for comparison in template
+    selected_amenity_ids = []
+    for amenity_id in amenity_ids:
+        try:
+            selected_amenity_ids.append(int(amenity_id))
+        except (ValueError, TypeError):
+            pass
     
     return render_template('renter/search.html', 
                           homes=homes,
                           cities=cities,
                           districts=districts,
                           home_types=[rt[0] for rt in home_types if rt[0]],
+                          amenity_categories=amenity_categories,
+                          amenities=amenities,
+                          selected_amenity_ids=selected_amenity_ids,
                           search_params=request.args)
 
 @renter_bp.route('/view-home/<int:id>')
@@ -691,4 +755,13 @@ def debug_homes():
             'is_active': home.is_active,
             'home_type': home.home_type
         })
-    return jsonify(result)
+    
+    # Also return unique city values for debugging
+    unique_cities = db.session.query(Home.city).distinct().all()
+    city_list = [city[0] for city in unique_cities]
+    
+    return jsonify({
+        'homes': result,
+        'unique_cities': city_list,
+        'city_mapping': CITY_MAPPING
+    })

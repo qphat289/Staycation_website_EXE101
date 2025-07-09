@@ -1,140 +1,486 @@
 {% extends 'base.html' %}
 {% block title %}Search Homestays - Horin{% endblock %}
 
-{% block content %}
-<div class="row">
-    <!-- Search Filters -->
-    <div class="col-md-3">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0" data-translate="filter-options">Filter Options</h5>
-            </div>
-            <div class="card-body">
-                <form method="get" action="{{ url_for('renter.search') }}">
-                    <!-- Hidden booking type field -->
-                    <input type="hidden" name="booking_type" value="{{ search_params.booking_type or 'hourly' }}">
-                    
-                    <div class="mb-3">
-                        <label for="location" class="form-label">Địa điểm hoặc tên homestay</label>
-                        <input type="text" class="form-control" id="location" name="location" 
-                               value="{{ search_params.location or '' }}"
-                               placeholder="Nhập địa điểm hoặc tên homestay">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="city" class="form-label" data-translate="city">City</label>
-                        <select class="form-select" id="city" name="city">
-                            <option value="" data-translate="all-cities">All Cities</option>
-                            {% for city in cities %}
-                            <option value="{{ city }}" {% if search_params.city == city %}selected{% endif %}>{{ city }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="district" class="form-label" data-translate="district">District</label>
-                        <select class="form-select" id="district" name="district">
-                            <option value="" data-translate="all-districts">All Districts</option>
-                            {% for district in districts %}
-                            <option value="{{ district }}" {% if search_params.district == district %}selected{% endif %}>{{ district }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="min_price" class="form-label">
-                            {% if search_params.booking_type == 'daily' %}
-                                Giá tối thiểu/đêm
-                            {% else %}
-                                Giá tối thiểu/giờ
-                            {% endif %}
-                        </label>
-                        <input type="number" class="form-control" id="min_price" name="min_price" 
-                               min="0" step="0.01" value="{{ search_params.min_price or '' }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="max_price" class="form-label">
-                            {% if search_params.booking_type == 'daily' %}
-                                Giá tối đa/đêm
-                            {% else %}
-                                Giá tối đa/giờ
-                            {% endif %}
-                        </label>
-                        <input type="number" class="form-control" id="max_price" name="max_price" 
-                               min="0" step="0.01" value="{{ search_params.max_price or '' }}">
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100" data-translate="apply-filters">Tìm kiếm</button>
-                </form>
-            </div>
-        </div>
-    </div>
+{% block head_scripts %}
+<!-- noUiSlider for range sliders -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section {
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
     
-    <!-- Home Results -->
-    <div class="col-md-9">
-        <h2 class="mb-4">
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        cursor: pointer;
+    }
+    
+    .amenity-checkbox {
+        margin-bottom: 12px;
+    }
+    
+    .filter-content {
+        margin-bottom: 15px;
+    }
+    
+    .price-inputs {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .price-inputs div {
+        flex: 1;
+    }
+    
+    .price-inputs .form-control {
+        height: 45px;
+        font-size: 16px;
+    }
+    
+    .filter-box {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .filter-button {
+        padding: 8px 15px;
+        background-color: #f8f9fa;
+        border-radius: 20px;
+        border: 1px solid #dee2e6;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .filter-button:hover {
+        background-color: #e9ecef;
+    }
+    
+    .filter-button i {
+        margin-right: 5px;
+    }
+    
+    #filter-offcanvas {
+        width: 500px; /* Larger width for modal */
+        margin: auto;
+        left: 0;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        height: auto;
+        max-height: 90vh;
+        border-radius: 12px;
+        position: fixed;
+    }
+    
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .range-slider {
+        width: 100%;
+        margin: 15px 0;
+    }
+    
+    .price-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+    
+    .price-display {
+        font-weight: 600;
+        color: #0d6efd;
+    }
+    
+    .amenity-group {
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+    }
+    
+    .amenity-group h6 {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .offcanvas-backdrop {
+        background-color: rgba(0, 0, 0, 0.6);
+    }
+    
+    .offcanvas-body {
+        padding: 20px 25px;
+    }
+    
+    .offcanvas {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>
             {% if search_params.booking_type == 'daily' %}
                 Nhà cho thuê theo ngày
             {% else %}
                 Nhà cho thuê theo giờ
             {% endif %}
-        </h2>
+            {% if homes %}({{ homes|length }} kết quả){% endif %}
+        </h4>
         
-        {% if homes %}
-            <div class="row">
-                {% for home in homes %}
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        {% if home.images and home.images|length > 0 %}
-                            {% set featured_image = None %}
-                            {% for img in home.images %}
-                                {% if img.is_featured %}
-                                    {% set featured_image = img %}
-                                {% endif %}
-                            {% endfor %}
-                            
-                            {% if featured_image %}
-                                <img src="{{ url_for('static', filename=featured_image.image_path) }}" 
-                                     class="card-img-top" alt="{{ home.title }}" 
-                                     style="height: 200px; object-fit: cover;">
-                            {% else %}
-                                <img src="{{ url_for('static', filename=home.images[0].image_path) }}" 
-                                     class="card-img-top" alt="{{ home.title }}" 
-                                     style="height: 200px; object-fit: cover;">
-                            {% endif %}
-                        {% else %}
-                            <img src="{{ url_for('static', filename='images/default-home.jpg') }}" 
-                                 class="card-img-top" alt="Default Image" 
-                                 style="height: 200px; object-fit: cover;">
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title">{{ home.title }}</h5>
-                            <p class="card-text">{{ home.description|truncate(100) }}</p>
-                            <p class="card-text">
-                                <small class="text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ home.city | format_city }}, {{ home.district | format_district }}
-                                </small>
-                            </p>
-                            <p class="card-text fw-bold">
-                                {% if search_params.booking_type == 'daily' %}
-                                    {{ "{:,.0f}".format(home.display_price_per_night) }}đ /ngày
-                                {% else %}
-                                    {{ "{:,.0f}".format(home.display_price) }}đ /giờ
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div class="card-footer">
-                            <a href="{{ url_for('renter.view_home', id=home.id) }}" class="btn btn-primary" data-translate="view-details">Xem chi tiết</a>
-                            {% if current_user.is_authenticated and current_user.is_renter() %}
-                                <a href="{{ url_for('renter.book_home', home_id=home.id) }}" class="btn btn-outline-primary" data-translate="book-now">Đặt nhà</a>
-                            {% endif %}
-                        </div>
+        <!-- Filter Button -->
+        <button class="btn btn-outline-secondary btn-lg" type="button" id="filter-button" data-bs-toggle="offcanvas" data-bs-target="#filter-offcanvas">
+            <i class="bi bi-sliders me-2"></i> Bộ lọc
+        </button>
+    </div>
+    
+    <!-- Filter Tags -->
+    <div class="mb-3">
+        {% if search_params.location %}
+        <div class="filter-button">
+            <i class="bi bi-geo-alt"></i> {{ search_params.location }}
+        </div>
+        {% endif %}
+        
+        {% if search_params.min_price or search_params.max_price %}
+        <div class="filter-button">
+            <i class="bi bi-cash"></i> 
+            {% if search_params.min_price and search_params.max_price %}
+                {{ "{:,.0f}".format(search_params.min_price|float) }}đ - {{ "{:,.0f}".format(search_params.max_price|float) }}đ
+            {% elif search_params.min_price %}
+                Từ {{ "{:,.0f}".format(search_params.min_price|float) }}đ
+            {% elif search_params.max_price %}
+                Đến {{ "{:,.0f}".format(search_params.max_price|float) }}đ
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if search_params.city %}
+        <div class="filter-button city-filter">
+            <i class="bi bi-building"></i> {{ search_params.city }}
+        </div>
+        {% endif %}
+        
+        {% if search_params.district %}
+        <div class="filter-button district-filter">
+            <i class="bi bi-geo-fill"></i> {{ search_params.district }}
+        </div>
+        {% endif %}
+        
+        {% if selected_amenity_ids %}
+            {% for amenity in amenities %}
+                {% if amenity.id in selected_amenity_ids %}
+                <div class="filter-button">
+                    <i class="bi {{ amenity.icon }}"></i> {{ amenity.name }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
+        {% if search_params.location or search_params.min_price or search_params.max_price or search_params.city or search_params.district or selected_amenity_ids %}
+        <a href="{{ url_for('renter.search', booking_type=search_params.booking_type) }}" class="filter-button">
+            <i class="bi bi-x-circle"></i> Xóa tất cả
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Modal Filter Panel -->
+    <div class="offcanvas" tabindex="-1" id="filter-offcanvas" aria-labelledby="filter-offcanvas-label">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="filter-offcanvas-label">Tùy Chọn Lọc</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <form method="get" action="{{ url_for('renter.search') }}" id="filter-form">
+                <!-- Hidden booking type field -->
+                <input type="hidden" name="booking_type" value="{{ search_params.booking_type or 'hourly' }}">
+                <input type="hidden" id="min_price" name="min_price" value="{{ search_params.min_price or '0' }}">
+                <input type="hidden" id="max_price" name="max_price" value="{{ search_params.max_price or '10000000' }}">
+                
+                <div class="filter-section">
+                    <div class="filter-header">
+                        <h6 class="mb-0">Địa điểm</h6>
+                    </div>
+                    <div class="filter-content">
+                        <input type="text" class="form-control form-control-lg" id="location" name="location" 
+                               value="{{ search_params.location or '' }}"
+                               placeholder="Nhập địa điểm hoặc tên homestay">
                     </div>
                 </div>
-                {% endfor %}
+                
+                <div class="filter-section">
+                    <div class="filter-header">
+                        <h6 class="mb-0">Khu vực</h6>
+                    </div>
+                    <div class="filter-content">
+                        <select class="form-select form-select-lg mb-3" id="city" name="city">
+                            <option value="">Tất Cả Thành Phố</option>
+                            {% for city in cities %}
+                            <option value="{{ city }}" {% if search_params.city == city %}selected{% endif %}>{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <select class="form-select form-select-lg" id="district" name="district">
+                            <option value="">Tất Cả Quận/Huyện</option>
+                            {% for district in districts %}
+                            <option value="{{ district }}" {% if search_params.district == district %}selected{% endif %}>{{ district }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-header">
+                        <h6 class="mb-0">Giá</h6>
+                    </div>
+                    <div class="filter-content">
+                        <div class="price-inputs">
+                            <div class="mb-3">
+                                <label for="min_price_input" class="form-label">Giá tối thiểu (VNĐ)</label>
+                                <input type="number" class="form-control" id="min_price_input" 
+                                    placeholder="0" value="{{ search_params.min_price|default(0)|int }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="max_price_input" class="form-label">Giá tối đa (VNĐ)</label>
+                                <input type="number" class="form-control" id="max_price_input" 
+                                    placeholder="10000000" value="{{ search_params.max_price|default(10000000)|int }}">
+                            </div>
+                        </div>
+                        
+                        <small class="text-muted d-block text-center">
+                            {% if search_params.booking_type == 'daily' %}
+                                Nhập giá theo đêm (VNĐ)
+                            {% else %}
+                                Nhập giá theo giờ (VNĐ)
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Tiện ích -->
+                <div class="filter-section">
+                    <div class="filter-header">
+                        <h6 class="mb-0">Tiện ích</h6>
+                    </div>
+                    <div class="filter-content">
+                        {% set amenities_by_category = {} %}
+                        {% for amenity in amenities %}
+                            {% if amenity.amenity_category %}
+                                {% if amenity.amenity_category.name not in amenities_by_category %}
+                                    {% set _ = amenities_by_category.update({amenity.amenity_category.name: []}) %}
+                                {% endif %}
+                                {% set _ = amenities_by_category[amenity.amenity_category.name].append(amenity) %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Group amenities by category -->
+                        {% for category_name, category_amenities in amenities_by_category.items() %}
+                            <div class="amenity-group">
+                                <h6>{{ category_name }}</h6>
+                                <div class="amenities-grid">
+                                    {% for amenity in category_amenities %}
+                                    <div class="form-check amenity-checkbox">
+                                        <input class="form-check-input" type="checkbox" value="{{ amenity.id }}" 
+                                               id="amenity-{{ amenity.id }}" name="amenities" 
+                                               {% if amenity.id in selected_amenity_ids %}checked{% endif %}>
+                                        <label class="form-check-label" for="amenity-{{ amenity.id }}">
+                                            <i class="bi {{ amenity.icon }} me-2"></i>{{ amenity.name }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- If no categories exist, show all amenities in a grid -->
+                            <div class="amenities-grid">
+                                {% for amenity in amenities %}
+                                <div class="form-check amenity-checkbox">
+                                    <input class="form-check-input" type="checkbox" value="{{ amenity.id }}" 
+                                           id="amenity-{{ amenity.id }}" name="amenities" 
+                                           {% if amenity.id in selected_amenity_ids %}checked{% endif %}>
+                                    <label class="form-check-label" for="amenity-{{ amenity.id }}">
+                                        <i class="bi {{ amenity.icon }} me-2"></i>{{ amenity.name }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Áp dụng</button>
+                    <a href="{{ url_for('renter.search', booking_type=search_params.booking_type) }}" class="btn btn-outline-secondary">Xóa tất cả</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- This section was duplicated - removed -->
+
+    <!-- Home Results -->
+    <div class="row">
+        {% if homes %}
+            {% for home in homes %}
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card h-100">
+                    {% if home.images and home.images|length > 0 %}
+                        {% set featured_image = None %}
+                        {% for img in home.images %}
+                            {% if img.is_featured %}
+                                {% set featured_image = img %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if featured_image %}
+                            <img src="{{ url_for('static', filename=featured_image.image_path) }}" 
+                                 class="card-img-top" alt="{{ home.title }}" 
+                                 style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename=home.images[0].image_path) }}" 
+                                 class="card-img-top" alt="{{ home.title }}" 
+                                 style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                    {% else %}
+                        <img src="{{ url_for('static', filename='images/default-home.jpg') }}" 
+                             class="card-img-top" alt="Default Image" 
+                             style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ home.title }}</h5>
+                        <p class="card-text">{{ home.description|truncate(100) }}</p>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="bi bi-geo-alt"></i> {{ home.city | format_city }}, {{ home.district | format_district }}
+                            </small>
+                        </p>
+                        <p class="card-text fw-bold">
+                            {% if search_params.booking_type == 'daily' %}
+                                {{ "{:,.0f}".format(home.display_price_per_night) }}đ /ngày
+                            {% else %}
+                                {{ "{:,.0f}".format(home.display_price) }}đ /giờ
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <a href="{{ url_for('renter.view_home', id=home.id) }}" class="btn btn-sm btn-primary">Chi tiết</a>
+                        {% if current_user.is_authenticated and current_user.is_renter() %}
+                            <a href="{{ url_for('renter.book_home', home_id=home.id) }}" class="btn btn-sm btn-outline-primary">Đặt ngay</a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
+            {% endfor %}
         {% else %}
-            <div class="alert alert-info">
-                Không tìm thấy nhà phù hợp với tiêu chí tìm kiếm. Vui lòng thử lại với bộ lọc khác.
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Không tìm thấy nhà phù hợp với tiêu chí tìm kiếm. Vui lòng thử lại với bộ lọc khác.
+                </div>
             </div>
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format price function
+        function formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+        }
+        
+        // Price input functionality
+        const minPriceInput = document.getElementById('min_price');
+        const maxPriceInput = document.getElementById('max_price');
+        const minPriceInputField = document.getElementById('min_price_input');
+        const maxPriceInputField = document.getElementById('max_price_input');
+        
+        // Set initial min/max values if not already set
+        const initialMinPrice = parseFloat(minPriceInput.value) || 0;
+        const initialMaxPrice = parseFloat(maxPriceInput.value) || 10000000;
+        
+        // Initialize price input fields
+        minPriceInputField.value = initialMinPrice;
+        maxPriceInputField.value = initialMaxPrice;
+        
+        // Update hidden inputs when number inputs change
+        minPriceInputField.addEventListener('input', function() {
+            minPriceInput.value = this.value || 0;
+        });
+        
+        maxPriceInputField.addEventListener('input', function() {
+            maxPriceInput.value = this.value || 10000000;
+        });
+        
+        // Show active filters
+        const filterButtons = document.querySelectorAll('.filter-button');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // If this is the "clear all" button, don't need special handling
+                if (this.querySelector('.bi-x-circle')) return;
+                
+                // Otherwise remove just this filter
+                const filterType = this.querySelector('i').className;
+                if (filterType.includes('bi-geo-alt')) {
+                    document.getElementById('location').value = '';
+                } else if (filterType.includes('bi-building')) {
+                    document.getElementById('city').value = '';
+                } else if (filterType.includes('bi-geo-fill')) {
+                    document.getElementById('district').value = '';
+                } else if (filterType.includes('bi-cash')) {
+                    document.getElementById('min_price').value = '0';
+                    document.getElementById('max_price').value = '10000000';
+                    document.getElementById('min_price_input').value = '0';
+                    document.getElementById('max_price_input').value = '10000000';
+                } else {
+                    // Must be an amenity filter
+                    const amenityText = this.textContent.trim();
+                    document.querySelectorAll('.amenity-checkbox label').forEach(label => {
+                        if (label.textContent.trim() === amenityText) {
+                            label.previousElementSibling.checked = false;
+                        }
+                    });
+                }
+                
+                // Submit the form
+                document.querySelector('#filter-form').submit();
+                e.preventDefault();
+            });
+        });
+        
+        // Make district dropdown dependent on city selection
+        const citySelect = document.getElementById('city');
+        const districtSelect = document.getElementById('district');
+        
+        citySelect.addEventListener('change', function() {
+            const selectedCity = this.value;
+            // This could be enhanced with AJAX to load only relevant districts
+            // For now, just reset the district dropdown
+            districtSelect.value = '';
+        });
+        
+        // The filter modal is now automatically centered using CSS
+    });
+</script>
 {% endblock %}
