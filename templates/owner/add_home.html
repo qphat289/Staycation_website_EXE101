@@ -2500,7 +2500,13 @@ function prepareFormData() {
         'price_per_additional_hour', 
         'price_overnight',
         'price_daytime',
-        'price_per_day'
+        'price_per_day',
+        // Add "_both" fields for when "cả 2" option is selected
+        'price_first_2_hours_both',
+        'price_per_additional_hour_both',
+        'price_overnight_both',
+        'price_daytime_both',
+        'price_per_day_both'
     ];
     
     priceFields.forEach(fieldName => {
@@ -2561,9 +2567,9 @@ function validatePricingRequirement() {
             currentPrice = parseInt(getNumericPrice(pricePerDay)) || 0;
         }
     } else if (bothRadio && bothRadio.checked) {
-        // For both rental types, check both prices
-        const priceFirst2Hours = document.querySelector('input[name="price_first_2_hours"]');
-        const pricePerDay = document.querySelector('input[name="price_per_day"]');
+        // For both rental types, check both prices - use the correct "_both" field names
+        const priceFirst2Hours = document.querySelector('input[name="price_first_2_hours_both"]');
+        const pricePerDay = document.querySelector('input[name="price_per_day_both"]');
         
         let hourlyPrice = parseInt(getNumericPrice(priceFirst2Hours)) || 0;
         let dailyPrice = parseInt(getNumericPrice(pricePerDay)) || 0;
