@@ -23,7 +23,7 @@
         cursor: pointer;
     }
     
-    .amenity-checkbox {
+    .amenity-checkbox, .rule-checkbox {
         margin-bottom: 12px;
     }
     
@@ -198,6 +198,16 @@
             {% endfor %}
         {% endif %}
         
+        {% if selected_rule_ids %}
+            {% for rule in rules %}
+                {% if rule.id in selected_rule_ids %}
+                <div class="filter-button">
+                    <i class="bi {{ rule.icon }}"></i> {{ rule.name }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
         {% if search_params.location or search_params.min_price or search_params.max_price or search_params.city or search_params.district or selected_amenity_ids %}
         <a href="{{ url_for('renter.search', booking_type=search_params.booking_type) }}" class="filter-button">
             <i class="bi bi-x-circle"></i> Xóa tất cả
@@ -326,6 +336,27 @@
                                 {% endfor %}
                             </div>
                         {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Nội quy -->
+                <div class="filter-section">
+                    <div class="filter-header">
+                        <h6 class="mb-0">Nội Quy</h6>
+                    </div>
+                    <div class="filter-content">
+                        <div class="rules-grid amenities-grid">
+                            {% for rule in rules %}
+                            <div class="form-check rule-checkbox">
+                                <input class="form-check-input" type="checkbox" value="{{ rule.id }}" 
+                                       id="rule-{{ rule.id }}" name="rules" 
+                                       {% if rule.id in selected_rule_ids %}checked{% endif %}>
+                                <label class="form-check-label" for="rule-{{ rule.id }}">
+                                    <i class="bi {{ rule.icon }} me-2"></i>{{ rule.name }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
                 
