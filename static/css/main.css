@@ -89,6 +89,31 @@ main {
     flex: 1;
 }
 
+/* Container width expansion - Override Bootstrap container constraints */
+.container {
+    max-width: none !important;
+    width: 100% !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Responsive padding adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+}
+
 /* 1.2 Card Effects */
 .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;

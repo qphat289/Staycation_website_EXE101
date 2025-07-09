@@ -91,7 +91,7 @@ body {
     min-height: 100vh;
     padding: 1.5rem;
     position: fixed;
-    left: 0;
+    left: 0; /* Keep at edge for this specific page */
     top: 0;
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1051;
@@ -126,7 +126,7 @@ nav.navbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 1400px;
+    max-width: none; /* Allow full width to match global changes */
     margin: 0 auto;
     padding: 0 2rem;
 }

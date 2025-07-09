@@ -50,10 +50,10 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
 
 /* Adjust navbar container */
 .navbar .container {
-    max-width: 1400px;
+    max-width: none; /* Allow full width */
     width: 100%;
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 0 2rem; /* Consistent with main container padding */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -313,7 +313,7 @@ main.container {
     justify-content: center;
     padding: 0 2rem;
     width: 100%;
-    max-width: 1400px;
+    max-width: none; /* Allow full width */
     margin-left: auto;
     margin-right: auto;
 }
@@ -613,7 +613,7 @@ main.container {
 }
 
 .featured-section .container {
-    max-width: 1400px !important; /* Tăng max-width để phù hợp với form tìm kiếm */
+    max-width: none !important; /* Full width to match global container changes */
     padding: 0 2rem !important;
     margin: 0 auto !important;
     width: 100% !important;
@@ -923,9 +923,10 @@ main.container {
         margin-top: 5px; /* Giảm margin-top trên mobile */
     }
     
-    /* Điều chỉnh container trên mobile */
+    /* Remove the negative margin that was compensating for old container constraints */
     .featured-section .container {
-        margin-left: -10px !important; /* Giảm margin-left trên mobile */
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
 }
 
