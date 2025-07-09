@@ -407,7 +407,7 @@
                         </p>
                         <p class="card-text fw-bold">
                             {% if search_params.booking_type == 'daily' %}
-                                {{ "{:,.0f}".format(home.display_price_per_night) }}đ /ngày
+                                {{ "{:,.0f}".format(home.price_per_night) }}đ /ngày
                             {% else %}
                                 {{ "{:,.0f}".format(home.display_price) }}đ /giờ
                             {% endif %}

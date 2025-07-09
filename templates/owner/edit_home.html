@@ -1168,8 +1168,7 @@
                                 <label class="price-label">Giá theo ngày</label>
                                 <div class="price-input">
                                     <span class="currency">VND</span>
-                                    <input type="text" name="price_per_day" class="price-field" 
-                                           placeholder="Nhập giá theo ngày" 
+                                    <input type="text" name="price_per_day" class="price-field" placeholder="Nhập giá theo ngày (VD: 10000, không nhập dấu chấm hoặc phẩy)"
                                            value="{% if home.price_per_day and home.price_per_day > 0 %}{{ (home.price_per_day * 1000)|int }}{% endif %}"
                                            oninput="formatPriceInput(this)">
                                 </div>
@@ -1232,8 +1231,7 @@
                                         <label class="price-label">Giá theo ngày</label>
                                         <div class="price-input">
                                             <span class="currency">VND</span>
-                                            <input type="text" name="price_per_day_both" class="price-field" 
-                                                   placeholder="Nhập giá theo ngày" 
+                                            <input type="text" name="price_per_day_both" class="price-field" placeholder="Nhập giá theo ngày (VD: 10000, không nhập dấu chấm hoặc phẩy)"
                                                    value="{% if home.price_per_day and home.price_per_day > 0 %}{{ (home.price_per_day * 1000)|int }}{% endif %}"
                                                    oninput="formatPriceInput(this)">
                                         </div>

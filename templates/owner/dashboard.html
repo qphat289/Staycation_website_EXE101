@@ -699,16 +699,16 @@
                         <span>
                             {% if home.price_first_2_hours and home.price_first_2_hours > 0 %}
                                 {% if home.price_per_day and home.price_per_day > 0 %}
-                                    {{ "{:,.0f}".format(home.price_first_2_hours * 1000) }}đ /2h, {{ "{:,.0f}".format(home.price_per_day * 1000) }}đ /ngày
+                                    {{ "{:,.0f}".format(home.price_first_2_hours) }}đ /2h, {{ "{:,.0f}".format(home.price_per_day) }}đ /ngày
                                 {% else %}
-                                    {{ "{:,.0f}".format(home.price_first_2_hours * 1000) }}đ /2h đầu
+                                    {{ "{:,.0f}".format(home.price_first_2_hours) }}đ /2h đầu
                                 {% endif %}
                             {% elif home.price_per_day and home.price_per_day > 0 %}
-                                {{ "{:,.0f}".format(home.price_per_day * 1000) }}đ /ngày
+                                {{ "{:,.0f}".format(home.price_per_day) }}đ /ngày
                             {% elif home.price_per_hour and home.price_per_hour > 0 %}
-                                {{ "{:,.0f}".format(home.price_per_hour * 1000) }}đ /giờ
+                                {{ "{:,.0f}".format(home.price_per_hour) }}đ /giờ
                             {% elif home.price_per_night and home.price_per_night > 0 %}
-                                {{ "{:,.0f}".format(home.price_per_night * 1000) }}đ /đêm
+                                {{ "{:,.0f}".format(home.price_per_night) }}đ /đêm
                             {% else %}
                                 Chưa có giá
                             {% endif %}

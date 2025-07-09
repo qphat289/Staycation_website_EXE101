@@ -440,9 +440,9 @@ def confirm_home():
             if not price_str:
                 return None
             try:
-                # Remove any formatting and convert
-                clean_price = str(price_str).replace(',', '').replace('.', '')
-                return float(clean_price) / 1000 if clean_price else None
+                # Remove all thousand separators (dot or comma), keep only digits
+                clean_price = str(price_str).replace('.', '').replace(',', '')
+                return float(clean_price) if clean_price else None
             except (ValueError, TypeError):
                 return None
         
@@ -513,6 +513,9 @@ def confirm_home():
             floor_number=1,  # Mặc định
             owner_id=current_user.id
         )
+        # --- ĐỒNG BỘ GIÁ ---
+        if (selected_rental_type in ['daily', 'both']) and new_home.price_per_day and new_home.price_per_day > 0:
+            new_home.price_per_night = new_home.price_per_day
         
         db.session.add(new_home)
         db.session.commit()
@@ -738,7 +741,7 @@ def edit_home(home_id):
                 if not price_str:
                     return None
                 try:
-                    clean_price = str(price_str).replace(',', '').replace('.', '')
+                    clean_price = str(price_str).replace('.', '').replace(',', '')
                     return float(clean_price) / 1000 if clean_price else None
                 except (ValueError, TypeError):
                     return None

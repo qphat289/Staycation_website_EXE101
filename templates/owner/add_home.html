@@ -367,7 +367,7 @@
                                     <label class="price-label">Giá theo ngày</label>
                                     <div class="price-input">
                                         <span class="currency">VND</span>
-                                        <input type="text" name="price_per_day" placeholder="Nhập giá theo ngày (VD: 800000)" class="price-field" value="{{ home_data.price_per_day or '' }}" 
+                                        <input type="text" name="price_per_day" placeholder="Nhập giá theo ngày (VD: 10000, không nhập dấu chấm hoặc phẩy)" class="price-field" value="{{ home_data.price_per_day or '' }}" 
                                                oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daily')">
                                     </div>
                                 </div>
@@ -421,7 +421,7 @@
                                             <label class="price-label">Giá theo ngày</label>
                                             <div class="price-input">
                                                 <span class="currency">VND</span>
-                                                <input type="text" name="price_per_day_both" placeholder="Nhập giá theo ngày (VD: 800000)" class="price-field" value="{{ home_data.price_per_day or '' }}" 
+                                                <input type="text" name="price_per_day_both" placeholder="Nhập giá theo ngày (VD: 10000, không nhập dấu chấm hoặc phẩy)" class="price-field" value="{{ home_data.price_per_day or '' }}" 
                                                        oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daily_both')">
                                             </div>
                                         </div>

@@ -9,6 +9,7 @@ from app.utils.payment_utils import update_booking_payment_status
 from app.utils.notification_service import notification_service
 from app.models.models import db
 import logging
+import traceback
 
 webhook_bp = Blueprint('webhook', __name__)
 
@@ -89,19 +90,55 @@ def payos_webhook():
             update_booking_payment_status(payment.booking_id, 'success')
             current_app.logger.info(f"Payment {order_code} marked as successful")
             
+            # DEBUG: Thêm logging chi tiết
+            print(f"🔍 DEBUG WEBHOOK: Payment successful - {order_code}")
+            print(f"🔍 DEBUG WEBHOOK: Payment ID: {payment.id}")
+            print(f"🔍 DEBUG WEBHOOK: Customer email: {payment.customer_email}")
+            print(f"🔍 DEBUG WEBHOOK: Booking ID: {payment.booking_id}")
+            
             # Gửi thông báo và email
             try:
+                print(f"🔍 DEBUG WEBHOOK: Starting notifications...")
+                
+                # DEBUG: Kiểm tra payment object
+                print(f"🔍 DEBUG WEBHOOK: Payment object check:")
+                print(f"  - payment.id: {payment.id}")
+                print(f"  - payment.customer_email: {payment.customer_email}")
+                print(f"  - payment.customer_name: {payment.customer_name}")
+                print(f"  - payment.amount: {payment.amount}")
+                print(f"  - payment.booking: {payment.booking}")
+                
+                if payment.booking:
+                    print(f"  - booking.id: {payment.booking.id}")
+                    print(f"  - booking.home: {payment.booking.home}")
+                    if payment.booking.home:
+                        print(f"  - home.title: {payment.booking.home.title}")
+                        print(f"  - home.owner: {payment.booking.home.owner}")
+                else:
+                    print(f"❌ DEBUG WEBHOOK: Payment.booking is None!")
+                
                 # Gửi email xác nhận cho renter
-                notification_service.send_payment_success_email(payment)
+                print(f"🔍 DEBUG WEBHOOK: Calling send_payment_success_email...")
+                email_result = notification_service.send_payment_success_email(payment)
+                print(f"🔍 DEBUG WEBHOOK: Email result: {email_result}")
                 
                 # Gửi thông báo cho owner
-                notification_service.send_payment_success_notification_to_owner(payment)
+                print(f"🔍 DEBUG WEBHOOK: Calling send_payment_success_notification_to_owner...")
+                owner_result = notification_service.send_payment_success_notification_to_owner(payment)
+                print(f"🔍 DEBUG WEBHOOK: Owner notification result: {owner_result}")
                 
                 # Tạo web notification
-                notification_service.create_web_notification(payment)
+                print(f"🔍 DEBUG WEBHOOK: Creating web notification...")
+                web_result = notification_service.create_web_notification(payment)
+                print(f"🔍 DEBUG WEBHOOK: Web notification result: {web_result}")
                 
                 current_app.logger.info(f"Notifications sent successfully for payment {order_code}")
+                print(f"✅ DEBUG WEBHOOK: All notifications completed!")
+                
             except Exception as e:
+                print(f"💥 DEBUG WEBHOOK: Exception in notifications: {str(e)}")
+                print(f"💥 DEBUG WEBHOOK: Exception type: {type(e)}")
+                traceback.print_exc()
                 current_app.logger.error(f"Error sending notifications for payment {order_code}: {str(e)}")
             
         elif payos.is_payment_failed(payos_status):
