@@ -1180,19 +1180,25 @@ def calendar():
 @owner_bp.route('/calendar/api/bookings/<date>')
 @owner_required
 def get_bookings_by_date(date):
-    """API endpoint to get bookings for a specific date"""
+    """API endpoint to get bookings that overlap with a specific date"""
     try:
-        from datetime import datetime
+        from datetime import datetime, timedelta
         target_date = datetime.strptime(date, '%Y-%m-%d').date()
+        
+        # Create datetime objects for the start and end of the target date
+        target_start = datetime.combine(target_date, datetime.min.time())
+        target_end = datetime.combine(target_date, datetime.max.time())
         
         # Get all homes owned by current user
         homes = Home.query.filter_by(owner_id=current_user.id).all()
         home_ids = [home.id for home in homes]
         
-        # Get bookings for the specific date
+        # Get bookings that overlap with the specific date
+        # A booking overlaps if: booking.start_time <= target_end AND booking.end_time >= target_start
         bookings = Booking.query.filter(
             Booking.home_id.in_(home_ids),
-            func.date(Booking.start_time) == target_date
+            Booking.start_time <= target_end,
+            Booking.end_time >= target_start
         ).all()
         
         bookings_data = []
@@ -1288,29 +1294,40 @@ def get_booking_detail(booking_id):
 def get_dates_with_bookings(year, month):
     """API endpoint to get dates that have bookings for calendar dots"""
     try:
-        from datetime import datetime, date
+        from datetime import datetime, date, timedelta
         from calendar import monthrange
         
         # Get first and last day of the month
         first_day = date(year, month, 1)
         last_day = date(year, month, monthrange(year, month)[1])
         
+        # Convert to datetime for comparison
+        first_datetime = datetime.combine(first_day, datetime.min.time())
+        last_datetime = datetime.combine(last_day, datetime.max.time())
+        
         # Get all homes owned by current user
         homes = Home.query.filter_by(owner_id=current_user.id).all()
         home_ids = [home.id for home in homes]
         
-        # Get bookings for the month
+        # Get bookings that overlap with the month
         bookings = Booking.query.filter(
             Booking.home_id.in_(home_ids),
-            func.date(Booking.start_time) >= first_day,
-            func.date(Booking.start_time) <= last_day
+            Booking.start_time <= last_datetime,
+            Booking.end_time >= first_datetime
         ).all()
         
-        # Extract unique dates
+        # Extract unique dates that have bookings
         dates_with_bookings = set()
         for booking in bookings:
-            if booking.start_time:
-                dates_with_bookings.add(booking.start_time.date().day)
+            if booking.start_time and booking.end_time:
+                # Get all dates this booking spans within the month
+                booking_start = max(booking.start_time.date(), first_day)
+                booking_end = min(booking.end_time.date(), last_day)
+                
+                current_date = booking_start
+                while current_date <= booking_end:
+                    dates_with_bookings.add(current_date.day)
+                    current_date += timedelta(days=1)
         
         return jsonify({
             'success': True,

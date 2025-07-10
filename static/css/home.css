@@ -444,20 +444,336 @@ main.container {
 
 /* Specific styling for hourly form only */
 .search-form.hourly-form .row {
-    gap: 1.2rem !important;
-}
-
-.search-form.hourly-form .col-xxl-1 {
-    margin-right: 0.4rem;
-    min-width: 125px !important;
-}
-
-.search-form.hourly-form .col-xxl-3 {
-    margin-right: 0.6rem;
+    gap: 1rem !important;
 }
 
 .search-form.hourly-form .col-xxl-4 {
-    margin-right: 0.4rem;
+    margin-right: 0.3rem;
+    min-width: 210px !important;
+}
+
+.search-form.hourly-form .col-xxl-3 {
+    margin-right: 0.3rem;
+    min-width: 160px !important;
+}
+
+/* Custom DateTime Selector for Hourly Booking */
+.datetime-selector-hourly {
+    position: relative;
+}
+
+.datetime-display {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+}
+
+.datetime-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    z-index: 1000;
+    padding: 15px;
+    display: none;
+    min-width: 480px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.datetime-dropdown.show {
+    display: block;
+}
+
+/* Step Progress */
+.step-progress {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+
+.step.active {
+    opacity: 1;
+}
+
+.step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #ddd;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    transition: all 0.3s;
+}
+
+.step.active .step-number {
+    background: #007bff;
+    color: white;
+}
+
+.step-label {
+    font-size: 11px;
+    color: #666;
+    font-weight: 500;
+}
+
+.step.active .step-label {
+    color: #007bff;
+}
+
+/* Step Content */
+.step-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.step-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Calendar Section */
+.calendar-section {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.calendar-nav {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #666;
+}
+
+.calendar-nav:hover {
+    background-color: #f0f0f0;
+}
+
+.calendar-title {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 8px;
+}
+
+.calendar-weekdays span {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #666;
+    padding: 6px 0;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+.calendar-day {
+    text-align: center;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 13px;
+    border: none;
+    background: none;
+    transition: all 0.2s;
+    min-height: 32px;
+}
+
+.calendar-day:hover {
+    background-color: #f0f8ff;
+}
+
+.calendar-day.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.calendar-day.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.calendar-day.other-month {
+    color: #ccc;
+}
+
+/* Time and Duration Section */
+.time-duration-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.time-section, .duration-section {
+    min-width: 0; /* Allow shrinking */
+}
+
+.time-section h4, .duration-section h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.time-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.duration-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+/* Compact Grids for Steps */
+.time-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.duration-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+/* Step Actions */
+.step-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.btn-back, .btn-next {
+    padding: 8px 16px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    background: white;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-back:hover, .btn-next:hover {
+    background: #007bff;
+    color: white;
+}
+
+.btn-next {
+    background: #007bff;
+    color: white;
+}
+
+.btn-next:hover {
+    background: #0056b3;
+}
+
+.time-slot, .duration-slot {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 11px;
+    text-align: center;
+    transition: all 0.2s;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-slot:hover, .duration-slot:hover {
+    border-color: #007bff;
+    background-color: #f0f8ff;
+}
+
+.time-slot.active, .duration-slot.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Apply Button */
+.datetime-actions {
+    text-align: center;
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+}
+
+.btn-apply {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 13px;
+}
+
+.btn-apply:hover {
+    background-color: #218838;
 }
 
 /* Ensure labels are visible in hourly form */
@@ -473,9 +789,9 @@ main.container {
 
 /* Make guest dropdown smaller in hourly form - like daily form */
 .search-form.hourly-form .guest-dropdown {
-    min-width: 200px !important;
-    width: 200px !important;
-    max-width: 200px !important;
+    min-width: 220px !important;
+    width: 220px !important;
+    max-width: 220px !important;
     left: auto !important;
     right: 0 !important;
     padding: 0.5rem !important;
@@ -507,23 +823,52 @@ main.container {
 /* Ensure hourly form has better spacing on larger screens */
 @media (min-width: 1400px) {
     .search-form.hourly-form .row {
-        gap: 1.5rem !important;
+        gap: 1.2rem !important;
     }
     
-    .search-form.hourly-form .col-xxl-1 {
-        min-width: 135px !important;
-        margin-right: 0.5rem;
+    .search-form.hourly-form .col-xxl-4 {
+        min-width: 240px !important;
+        margin-right: 0.4rem;
+    }
+    
+    .search-form.hourly-form .col-xxl-3 {
+        min-width: 180px !important;
+        margin-right: 0.4rem;
     }
 }
 
 @media (max-width: 1200px) {
     .search-form.hourly-form .row {
-        gap: 1rem !important;
+        gap: 0.8rem !important;
     }
     
-    .search-form.hourly-form .col-xxl-1 {
-        min-width: 105px !important;
-        margin-right: 0.3rem;
+    .search-form.hourly-form .col-xxl-4 {
+        min-width: 190px !important;
+        margin-right: 0.2rem;
+    }
+    
+    .search-form.hourly-form .col-xxl-3 {
+        min-width: 140px !important;
+        margin-right: 0.2rem;
+    }
+    
+    .datetime-dropdown {
+        min-width: 400px !important;
+        max-height: 450px !important;
+    }
+    
+    .time-duration-section {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .time-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-height: 120px;
+    }
+    
+    .duration-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 

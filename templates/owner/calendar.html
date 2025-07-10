@@ -256,6 +256,23 @@
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 
+    /* Multi-day booking styling */
+    .booking-block.multi-day-booking {
+        background-color: #3b82f6;
+        background-image: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            rgba(255,255,255,0.1) 10px,
+            rgba(255,255,255,0.1) 20px
+        );
+        border-left: 4px solid #1d4ed8;
+    }
+
+    .booking-block.multi-day-booking:hover {
+        background-color: #2563eb;
+    }
+
     .booking-customer {
         font-size: 11px;
         font-weight: 600;
@@ -418,6 +435,16 @@
 
     .booking-item:hover {
         background: #e5e7eb;
+    }
+
+    /* Multi-day booking item styling */
+    .booking-item.multi-day-booking {
+        background: #eff6ff;
+        border-left: 4px solid #1d4ed8;
+    }
+
+    .booking-item.multi-day-booking:hover {
+        background: #dbeafe;
     }
 
     .booking-item-customer {
@@ -1043,17 +1070,39 @@
             const startTime = new Date(booking.start_time);
             const endTime = new Date(booking.end_time);
             
-            // Only show bookings for selected date
-            if (startTime.toDateString() !== selectedDate.toDateString()) return;
+            // Check if booking overlaps with selected date
+            const selectedDateStart = new Date(selectedDate);
+            selectedDateStart.setHours(0, 0, 0, 0);
+            const selectedDateEnd = new Date(selectedDate);
+            selectedDateEnd.setHours(23, 59, 59, 999);
             
-            const startHour = startTime.getHours();
-            const startMinute = startTime.getMinutes();
-            const endHour = endTime.getHours();
-            const endMinute = endTime.getMinutes();
+            // Skip if booking doesn't overlap with selected date
+            if (endTime <= selectedDateStart || startTime > selectedDateEnd) return;
+            
+            // Calculate display times for this specific day
+            const dayStart = new Date(selectedDate);
+            dayStart.setHours(0, 0, 0, 0);
+            const dayEnd = new Date(selectedDate);
+            dayEnd.setHours(23, 59, 59, 999);
+            
+            // Determine actual start and end times for display on this day
+            const displayStart = startTime > dayStart ? startTime : dayStart;
+            const displayEnd = endTime < dayEnd ? endTime : dayEnd;
+            
+            const startHour = displayStart.getHours();
+            const startMinute = displayStart.getMinutes();
+            const endHour = displayEnd.getHours();
+            const endMinute = displayEnd.getMinutes();
             
             // Calculate position (each hour = 60px, align with time labels)
             const startPosition = startHour * 60 + (startMinute / 60) * 60;
-            const endPosition = endHour * 60 + (endMinute / 60) * 60;
+            let endPosition = endHour * 60 + (endMinute / 60) * 60;
+            
+            // Special handling for bookings that end at midnight or extend beyond the day
+            if (displayEnd >= dayEnd) {
+                endPosition = 24 * 60; // Show until end of day (24:00)
+            }
+            
             const duration = endPosition - startPosition;
             
             // Find the room timeline for this booking
@@ -1068,12 +1117,42 @@
                     (booking.renter.full_name || booking.renter.username || 'Khách hàng') : 
                     'Khách hàng';
                 
-                const startTimeStr = startTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
-                const endTimeStr = endTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                // Show time range based on actual booking times, not just display times
+                const originalStartStr = startTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                const originalEndStr = endTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                
+                // If this is a multi-day booking, show different labels
+                const isMultiDay = startTime.toDateString() !== endTime.toDateString();
+                const startsToday = startTime.toDateString() === selectedDate.toDateString();
+                const endsToday = endTime.toDateString() === selectedDate.toDateString();
+                
+                let timeLabel;
+                if (isMultiDay) {
+                    if (startsToday && !endsToday) {
+                        // Booking starts today but continues
+                        timeLabel = `${originalStartStr} - (tiếp tục)`;
+                    } else if (!startsToday && endsToday) {
+                        // Booking started earlier and ends today
+                        timeLabel = `(tiếp tục) - ${originalEndStr}`;
+                    } else if (!startsToday && !endsToday) {
+                        // Booking spans across this day
+                        timeLabel = `(toàn ngày)`;
+                    } else {
+                        // Same day (shouldn't happen with isMultiDay true)
+                        timeLabel = `${originalStartStr} - ${originalEndStr}`;
+                    }
+                } else {
+                    timeLabel = `${originalStartStr} - ${originalEndStr}`;
+                }
+                
+                // Add visual indicator for multi-day bookings
+                if (isMultiDay) {
+                    blockElement.classList.add('multi-day-booking');
+                }
                 
                 blockElement.innerHTML = `
                     <div class="booking-customer">${customerName}</div>
-                    <div class="booking-time">${startTimeStr} - ${endTimeStr}</div>
+                    <div class="booking-time">${timeLabel}</div>
                 `;
                 
                 blockElement.addEventListener('click', () => showBookingModal(booking));
@@ -1086,11 +1165,19 @@
     function updateBookingSummary() {
         const summaryContainer = document.getElementById('bookingSummary');
         
-        // Get bookings for selected date
+        // Get bookings that overlap with selected date
         const todayBookings = bookings.filter(booking => {
-            if (!booking.start_time) return false;
+            if (!booking.start_time || !booking.end_time) return false;
             const startTime = new Date(booking.start_time);
-            return startTime.toDateString() === selectedDate.toDateString();
+            const endTime = new Date(booking.end_time);
+            
+            const selectedDateStart = new Date(selectedDate);
+            selectedDateStart.setHours(0, 0, 0, 0);
+            const selectedDateEnd = new Date(selectedDate);
+            selectedDateEnd.setHours(23, 59, 59, 999);
+            
+            // Check if booking overlaps with selected date
+            return !(endTime <= selectedDateStart || startTime > selectedDateEnd);
         });
 
         if (todayBookings.length === 0) {
@@ -1107,15 +1194,35 @@
                 (booking.renter.full_name || booking.renter.username || 'Khách hàng') : 
                 'Khách hàng';
 
+            // Create appropriate time label for summary
+            const isMultiDay = startTime.toDateString() !== endTime.toDateString();
+            const startsToday = startTime.toDateString() === selectedDate.toDateString();
+            const endsToday = endTime.toDateString() === selectedDate.toDateString();
+            
+            let timeLabel;
+            if (isMultiDay) {
+                if (startsToday && !endsToday) {
+                    timeLabel = `${startTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})} - (tiếp tục)`;
+                } else if (!startsToday && endsToday) {
+                    timeLabel = `(tiếp tục) - ${endTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}`;
+                } else if (!startsToday && !endsToday) {
+                    timeLabel = `(toàn ngày)`;
+                } else {
+                    timeLabel = `${startTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})} - ${endTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}`;
+                }
+            } else {
+                timeLabel = `${startTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})} - ${endTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}`;
+            }
+
             const bookingItem = document.createElement('div');
             bookingItem.className = 'booking-item';
+            if (isMultiDay) {
+                bookingItem.classList.add('multi-day-booking');
+            }
             bookingItem.innerHTML = `
                 <div class="booking-item-customer">${customerName}</div>
                 <div class="booking-item-room">${home ? home.title : 'N/A'}</div>
-                <div class="booking-item-time">
-                    ${startTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})} - 
-                    ${endTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}
-                </div>
+                <div class="booking-item-time">${timeLabel}</div>
             `;
             
             bookingItem.addEventListener('click', () => showBookingModal(booking));
