@@ -624,6 +624,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
         <!-- Search Tabs -->
         <div class="search-tabs">
             <button type="button" class="search-tab active" data-tab="hourly" onclick="switchTab('hourly')">Theo giờ</button>
+            <button type="button" class="search-tab" data-tab="overnight" onclick="switchTab('overnight')">Qua đêm</button>
             <button type="button" class="search-tab" data-tab="daily" onclick="switchTab('daily')">Theo ngày</button>
             </div>
         
@@ -701,6 +702,71 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                 </div>
                 <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-6 search-btn-col d-flex justify-content-center">
                     <button type="submit" class="btn search-btn" style="white-space: nowrap; min-width: 100px;">Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+        
+        <!-- Overnight Search Form -->
+        <form class="search-form overnight-form" id="overnight-form" action="{{ url_for('renter.search') }}" method="GET">
+            <input type="hidden" name="booking_type" value="overnight">
+            <div class="row g-2 align-items-end">
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
+                    <label for="location-overnight" class="form-label">Địa điểm hoặc tên homestay</label>
+                    <div class="location-selector">
+                        <input type="text" class="form-control location-input" id="location-overnight" name="location" 
+                               placeholder="Nhập hoặc chọn địa điểm" autocomplete="off">
+                        <div class="location-dropdown" id="location-dropdown-overnight">
+                            <!-- Options will be loaded dynamically from API -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-3">
+                    <label for="checkin-overnight" class="form-label">Ngày nhận phòng</label>
+                    <div class="date-input-wrapper">
+                        <input type="date" class="form-control" id="checkin-overnight" name="checkin_date">
+                        <div class="custom-placeholder" data-for="checkin-overnight">Chọn ngày nhận phòng</div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-3">
+                    <label for="checkout-overnight" class="form-label">Ngày trả phòng</label>
+                    <div class="date-input-wrapper">
+                        <input type="date" class="form-control" id="checkout-overnight" name="checkout_date">
+                        <div class="custom-placeholder" data-for="checkout-overnight">Chọn ngày trả phòng</div>
+                    </div>
+                </div>
+                <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
+                    <label for="guests-homes-overnight" class="form-label">Khách</label>
+                    <div class="guest-selector">
+                        <input type="text" class="form-control guest-display" id="guests-homes-overnight" name="guests_homes" 
+                               value="1 người lớn, 0 Trẻ em" readonly>
+                        <div class="guest-dropdown" id="guest-dropdown-overnight">
+                            <div class="guest-row">
+                                <div class="guest-info">
+                                    <i class="bi bi-person-fill text-success"></i>
+                                    <span>Người lớn</span>
+                                </div>
+                                <div class="guest-controls">
+                                    <button type="button" class="btn-decrease" data-target="adults">−</button>
+                                    <span class="guest-count" id="adults-count-overnight">1</span>
+                                    <button type="button" class="btn-increase" data-target="adults">+</button>
+                                </div>
+                            </div>
+                            <div class="guest-row">
+                                <div class="guest-info">
+                                    <i class="bi bi-person text-success"></i>
+                                    <span>Trẻ em</span>
+                                </div>
+                                <div class="guest-controls">
+                                    <button type="button" class="btn-decrease" data-target="children">−</button>
+                                    <span class="guest-count" id="children-count-overnight">0</span>
+                                    <button type="button" class="btn-increase" data-target="children">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-6 search-btn-col">
+                    <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
                 </div>
             </div>
         </form>
@@ -985,23 +1051,29 @@ function switchTab(tabType) {
     console.log('SWITCH TAB CALLED: ' + tabType);
     
     var hourlyTab = document.querySelector('[data-tab="hourly"]');
+    var overnightTab = document.querySelector('[data-tab="overnight"]');
     var dailyTab = document.querySelector('[data-tab="daily"]');
     var hourlyForm = document.getElementById('hourly-form');
+    var overnightForm = document.getElementById('overnight-form');
     var dailyForm = document.getElementById('daily-form');
     
     console.log('Found elements:', {
         hourlyTab: !!hourlyTab,
+        overnightTab: !!overnightTab,
         dailyTab: !!dailyTab, 
         hourlyForm: !!hourlyForm,
+        overnightForm: !!overnightForm,
         dailyForm: !!dailyForm
     });
     
     // Remove active from all tabs
     if (hourlyTab) hourlyTab.classList.remove('active');
+    if (overnightTab) overnightTab.classList.remove('active');
     if (dailyTab) dailyTab.classList.remove('active');
     
     // Remove active from all forms
     if (hourlyForm) hourlyForm.classList.remove('active');
+    if (overnightForm) overnightForm.classList.remove('active');
     if (dailyForm) dailyForm.classList.remove('active');
     
     if (tabType === 'daily') {
@@ -1009,6 +1081,12 @@ function switchTab(tabType) {
         if (dailyForm) {
             dailyForm.classList.add('active');
             console.log('SUCCESS: DAILY FORM IS NOW ACTIVE');
+        }
+    } else if (tabType === 'overnight') {
+        if (overnightTab) overnightTab.classList.add('active');
+        if (overnightForm) {
+            overnightForm.classList.add('active');
+            console.log('SUCCESS: OVERNIGHT FORM IS NOW ACTIVE');
         }
     } else if (tabType === 'hourly') {
         if (hourlyTab) hourlyTab.classList.add('active');
@@ -1273,48 +1351,31 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Setting up tabs...');
         
         var hourlyTab = document.querySelector('[data-tab="hourly"]');
+        var overnightTab = document.querySelector('[data-tab="overnight"]');
         var dailyTab = document.querySelector('[data-tab="daily"]');
         var hourlyForm = document.getElementById('hourly-form');
+        var overnightForm = document.getElementById('overnight-form');
         var dailyForm = document.getElementById('daily-form');
         
         console.log('Hourly tab:', hourlyTab);
+        console.log('Overnight tab:', overnightTab);
         console.log('Daily tab:', dailyTab);
         console.log('Hourly form:', hourlyForm);
+        console.log('Overnight form:', overnightForm);
         console.log('Daily form:', dailyForm);
-        
-        if (dailyTab) {
-            dailyTab.onclick = function() {
-                console.log('DAILY TAB CLICKED!');
-                
-                // Remove active from both tabs
-                if (hourlyTab) hourlyTab.classList.remove('active');
-                if (dailyTab) dailyTab.classList.remove('active');
-                
-                // Remove active from both forms
-                if (hourlyForm) hourlyForm.classList.remove('active');
-                if (dailyForm) dailyForm.classList.remove('active');
-                
-                // Add active to daily tab and form
-                dailyTab.classList.add('active');
-                if (dailyForm) {
-                    dailyForm.classList.add('active');
-                    console.log('Daily form activated');
-                }
-                
-                return false;
-            };
-        }
         
         if (hourlyTab) {
             hourlyTab.onclick = function() {
                 console.log('HOURLY TAB CLICKED!');
                 
-                // Remove active from both tabs
+                // Remove active from all tabs
                 if (hourlyTab) hourlyTab.classList.remove('active');
+                if (overnightTab) overnightTab.classList.remove('active');
                 if (dailyTab) dailyTab.classList.remove('active');
                 
-                // Remove active from both forms
+                // Remove active from all forms
                 if (hourlyForm) hourlyForm.classList.remove('active');
+                if (overnightForm) overnightForm.classList.remove('active');
                 if (dailyForm) dailyForm.classList.remove('active');
                 
                 // Add active to hourly tab and form
@@ -1322,6 +1383,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (hourlyForm) {
                     hourlyForm.classList.add('active');
                     console.log('Hourly form activated');
+                }
+                
+                return false;
+            };
+        }
+        
+        if (overnightTab) {
+            overnightTab.onclick = function() {
+                console.log('OVERNIGHT TAB CLICKED!');
+                
+                // Remove active from all tabs
+                if (hourlyTab) hourlyTab.classList.remove('active');
+                if (overnightTab) overnightTab.classList.remove('active');
+                if (dailyTab) dailyTab.classList.remove('active');
+                
+                // Remove active from all forms
+                if (hourlyForm) hourlyForm.classList.remove('active');
+                if (overnightForm) overnightForm.classList.remove('active');
+                if (dailyForm) dailyForm.classList.remove('active');
+                
+                // Add active to overnight tab and form
+                overnightTab.classList.add('active');
+                if (overnightForm) {
+                    overnightForm.classList.add('active');
+                    console.log('Overnight form activated');
+                }
+                
+                return false;
+            };
+        }
+        
+        if (dailyTab) {
+            dailyTab.onclick = function() {
+                console.log('DAILY TAB CLICKED!');
+                
+                // Remove active from all tabs
+                if (hourlyTab) hourlyTab.classList.remove('active');
+                if (overnightTab) overnightTab.classList.remove('active');
+                if (dailyTab) dailyTab.classList.remove('active');
+                
+                // Remove active from all forms
+                if (hourlyForm) hourlyForm.classList.remove('active');
+                if (overnightForm) overnightForm.classList.remove('active');
+                if (dailyForm) dailyForm.classList.remove('active');
+                
+                // Add active to daily tab and form
+                dailyTab.classList.add('active');
+                if (dailyForm) {
+                    dailyForm.classList.add('active');
+                    console.log('Daily form activated');
                 }
                 
                 return false;
@@ -1347,6 +1458,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (checkinTime) checkinTime.value = '14:00';
         if (checkoutTime) checkoutTime.value = '18:00';
         
+        // Set for overnight form
+        const checkinOvernight = document.getElementById('checkin-overnight');
+        const checkoutOvernight = document.getElementById('checkout-overnight');
+        
+        if (checkinOvernight) checkinOvernight.value = today;
+        if (checkoutOvernight) checkoutOvernight.value = tomorrowStr;
+        
         // Set for daily form
         const checkinDaily = document.getElementById('checkin-daily');
         const checkoutDaily = document.getElementById('checkout-daily');
@@ -1355,14 +1473,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (checkoutDaily) checkoutDaily.value = tomorrowStr;
     }
     
-    // Setup guest selectors for both forms
+    // Setup guest selectors for all forms
     setupGuestSelector('hourly');
+    setupGuestSelector('overnight');
     setupGuestSelector('daily');
     
-    // Setup location autocomplete for both forms with delay to ensure DOM is ready
+    // Setup location autocomplete for all forms with delay to ensure DOM is ready
     console.log('Starting location autocomplete setup...');
     setTimeout(function() {
         setupLocationAutocomplete('hourly');
+        setupLocationAutocomplete('overnight');
         setupLocationAutocomplete('daily');
     }, 100);
     
@@ -1394,8 +1514,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Setup other components
         setupGuestSelector('hourly');
+        setupGuestSelector('overnight');
         setupGuestSelector('daily');
         setupLocationAutocomplete('hourly');
+        setupLocationAutocomplete('overnight');
         setupLocationAutocomplete('daily');
         
         console.log('Setup completed');
@@ -1514,8 +1636,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize for both forms
+    // Initialize for all forms
     initializeButtonStates('hourly');
+    initializeButtonStates('overnight');
     initializeButtonStates('daily');
     
     // Track initialized forms to avoid duplicate setup
