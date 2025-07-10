@@ -801,7 +801,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
         
         <div class="row g-4">
             {% for homestay in homestays %}
-            <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="col-xl-5cols col-lg-5cols col-md-6">
                 <div class="card homestay-card h-100">
                     <div class="card-img-container">
                         {% if homestay.images and homestay.images|length > 0 %}
@@ -835,7 +835,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                             <span class="text-muted">từ </span>
                             <span class="fw-bold text-dark">
                                 {% if homestay.display_price_per_night %}
-                                    {{ "{:,.0f}".format(homestay.display_price_per_night) }} VND/đêm
+                                    {{ "{:,.0f}".format(homestay.display_price_per_night) }} VND/ngày
                                 {% else %}
                                     {{ "{:,}".format(homestay.display_price) }} VND/h
                                 {% endif %}

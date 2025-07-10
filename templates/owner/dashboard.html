@@ -708,7 +708,7 @@
                             {% elif home.price_per_hour and home.price_per_hour > 0 %}
                                 {{ "{:,.0f}".format(home.price_per_hour) }}đ /giờ
                             {% elif home.price_per_night and home.price_per_night > 0 %}
-                                {{ "{:,.0f}".format(home.price_per_night) }}đ /đêm
+                                {{ "{:,.0f}".format(home.price_per_night) }}đ /ngày
                             {% else %}
                                 Chưa có giá
                             {% endif %}
