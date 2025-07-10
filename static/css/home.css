@@ -447,17 +447,206 @@ main.container {
     gap: 1.2rem !important;
 }
 
-.search-form.hourly-form .col-xxl-1 {
-    margin-right: 0.4rem;
-    min-width: 125px !important;
-}
-
 .search-form.hourly-form .col-xxl-3 {
-    margin-right: 0.6rem;
+    margin-right: 0.4rem;
+    min-width: 200px !important;
 }
 
-.search-form.hourly-form .col-xxl-4 {
+.search-form.hourly-form .col-xxl-2 {
     margin-right: 0.4rem;
+    min-width: 140px !important;
+}
+
+/* Custom DateTime Selector for Hourly Booking */
+.datetime-selector-hourly {
+    position: relative;
+}
+
+.datetime-display {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+}
+
+.datetime-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    z-index: 1000;
+    padding: 20px;
+    display: none;
+    min-width: 500px;
+}
+
+.datetime-dropdown.show {
+    display: block;
+}
+
+/* Calendar Section */
+.calendar-section {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.calendar-nav {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #666;
+}
+
+.calendar-nav:hover {
+    background-color: #f0f0f0;
+}
+
+.calendar-title {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.calendar-weekdays span {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    padding: 8px 0;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day {
+    text-align: center;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 14px;
+    border: none;
+    background: none;
+    transition: all 0.2s;
+}
+
+.calendar-day:hover {
+    background-color: #f0f8ff;
+}
+
+.calendar-day.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.calendar-day.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.calendar-day.other-month {
+    color: #ccc;
+}
+
+/* Time and Duration Section */
+.time-duration-section {
+    display: flex;
+    gap: 30px;
+}
+
+.time-section, .duration-section {
+    flex: 1;
+}
+
+.time-section h4, .duration-section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.time-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.duration-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.time-slot, .duration-slot {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 12px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.time-slot:hover, .duration-slot:hover {
+    border-color: #007bff;
+    background-color: #f0f8ff;
+}
+
+.time-slot.active, .duration-slot.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Apply Button */
+.datetime-actions {
+    text-align: center;
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.btn-apply {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-apply:hover {
+    background-color: #218838;
 }
 
 /* Ensure labels are visible in hourly form */
@@ -473,9 +662,9 @@ main.container {
 
 /* Make guest dropdown smaller in hourly form - like daily form */
 .search-form.hourly-form .guest-dropdown {
-    min-width: 200px !important;
-    width: 200px !important;
-    max-width: 200px !important;
+    min-width: 220px !important;
+    width: 220px !important;
+    max-width: 220px !important;
     left: auto !important;
     right: 0 !important;
     padding: 0.5rem !important;
@@ -510,8 +699,13 @@ main.container {
         gap: 1.5rem !important;
     }
     
-    .search-form.hourly-form .col-xxl-1 {
-        min-width: 135px !important;
+    .search-form.hourly-form .col-xxl-3 {
+        min-width: 220px !important;
+        margin-right: 0.5rem;
+    }
+    
+    .search-form.hourly-form .col-xxl-2 {
+        min-width: 160px !important;
         margin-right: 0.5rem;
     }
 }
@@ -521,9 +715,23 @@ main.container {
         gap: 1rem !important;
     }
     
-    .search-form.hourly-form .col-xxl-1 {
-        min-width: 105px !important;
+    .search-form.hourly-form .col-xxl-3 {
+        min-width: 180px !important;
         margin-right: 0.3rem;
+    }
+    
+    .search-form.hourly-form .col-xxl-2 {
+        min-width: 130px !important;
+        margin-right: 0.3rem;
+    }
+    
+    .datetime-dropdown {
+        min-width: 450px !important;
+    }
+    
+    .time-duration-section {
+        flex-direction: column;
+        gap: 15px;
     }
 }
 
