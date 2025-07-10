@@ -322,6 +322,9 @@ class Room(db.Model):
     price_per_night = db.Column(db.Float, nullable=True)  # Thêm giá theo đêm
     description = db.Column(db.Text, nullable=True)
     
+    # Hoa hồng cho từng căn
+    commission_percent = db.Column(db.Float, nullable=True, default=10.0)  # Phần trăm hoa hồng, mặc định 10%
+    
     # Trạng thái và thời gian
     is_active = db.Column(db.Boolean, default=True)
     is_booked = db.Column(db.Boolean, default=False)
@@ -361,6 +364,13 @@ class Room(db.Model):
     def display_price_per_night(self):
         """Return the night price formatted for display (multiplied by 1000 and converted to integer)"""
         return int(self.price_per_night * 1000) if self.price_per_night else None
+
+    @property
+    def revenue(self):
+        # Tổng doanh thu của phòng là tổng total_price của các booking đã hoàn thành
+        if not self.bookings:
+            return 0
+        return sum([b.total_price for b in self.bookings if getattr(b, 'status', None) == 'completed'])
 
     def __repr__(self):
         return f'<Room {self.title}>'

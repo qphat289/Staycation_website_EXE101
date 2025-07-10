@@ -198,6 +198,89 @@ body {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     margin-bottom: 1rem;
+}
+
+/* Advanced Visualize Styles */
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#ownerRevenueTable {
+    font-size: 0.9rem;
+}
+
+#ownerRevenueTable th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#ownerRevenueTable td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.card h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Loading animation */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Tab styles */
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #9ed649;
+    background-color: rgba(158, 214, 73, 0.1);
+}
+
+.nav-tabs .nav-link.active {
+    color: #9ed649;
+    background-color: transparent;
+    border-bottom: 3px solid #9ed649;
+    font-weight: 600;
+}
+
+/* Page Header */
+.page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1890,7 +1973,7 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng tài khoản</h6>
-                                <h5 class="mb-1">{{ (stats.total_owners + stats.total_renters) if stats else 0 }}</h5>
+                                <h5 class="mb-1">{{   (stats.total_owners|default(0, true) + stats.total_renters|default(0, true)) if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ (weekly_stats.new_owners_month + weekly_stats.new_renters_month) if weekly_stats else 0 }} trong tháng này</small>
                             </div>
                         </div>
@@ -1899,7 +1982,7 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng Owner</h6>
-                                <h5 class="mb-1">{{ stats.total_owners if stats else 0 }}</h5>
+                                <h5 class="mb-1">{{ stats.total_owners|default(0, true) if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_owners_month if weekly_stats else 0 }} trong tháng này</small>
                             </div>
                         </div>
@@ -1908,7 +1991,7 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng Renter</h6>
-                                <h5 class="mb-1">{{ stats.total_renters if stats else 0 }}</h5>
+                                <h5 class="mb-1">{{ stats.total_renters|default(0, true) if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_renters_month if weekly_stats else 0 }} trong tháng này</small>
                             </div>
                         </div>
@@ -1918,8 +2001,8 @@ nav[aria-label="Page navigation"] {
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tài khoản thêm trong tuần</h6>
                                 <h5 class="mb-1">{{ (weekly_stats.new_owners + weekly_stats.new_renters) if weekly_stats else 0 }}</h5>                                <small class="text-success">
-                                    {% if stats and (stats.total_owners + stats.total_renters) > 0 %}
-                                        +{{ (((weekly_stats.new_owners + weekly_stats.new_renters) / (stats.total_owners + stats.total_renters)) * 100)|round(1) if weekly_stats else 0 }}% so với tuần trước
+                                                                {% if stats and (stats.total_owners|default(0, true) + stats.total_renters|default(0, true)) > 0 %}
+                            +{{ (((weekly_stats.new_owners + weekly_stats.new_renters) / (stats.total_owners|default(0, true) + stats.total_renters|default(0, true))) * 100)|round(1) if weekly_stats else 0 }}% so với tuần trước
                                     {% else %}
                                         +0% so với tuần trước
                                     {% endif %}
@@ -1932,8 +2015,8 @@ nav[aria-label="Page navigation"] {
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Renter thêm trong tháng</h6>
                                 <h5 class="mb-1">{{ weekly_stats.new_renters_month if weekly_stats else 0 }}</h5>                                <small class="text-success">
-                                    {% if stats and stats.total_renters > 0 %}
-                                        +{{ ((weekly_stats.new_renters_month / stats.total_renters) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
+                                                                {% if stats and stats.total_renters|default(0, true) > 0 %}
+                            +{{ ((weekly_stats.new_renters_month / stats.total_renters|default(0, true)) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
                                     {% else %}
                                         +0% so với tháng trước
                                     {% endif %}
@@ -1946,8 +2029,8 @@ nav[aria-label="Page navigation"] {
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Owner thêm trong tháng</h6>
                                 <h5 class="mb-1">{{ weekly_stats.new_owners_month if weekly_stats else 0 }}</h5>                                <small class="text-success">
-                                    {% if stats and stats.total_owners > 0 %}
-                                        +{{ ((weekly_stats.new_owners_month / stats.total_owners) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
+                                                                {% if stats and stats.total_owners|default(0, true) > 0 %}
+                            +{{ ((weekly_stats.new_owners_month / stats.total_owners|default(0, true)) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
                                     {% else %}
                                         +0% so với tháng trước
                                     {% endif %}
@@ -2007,7 +2090,7 @@ nav[aria-label="Page navigation"] {
                                             <i class="fas fa-ellipsis-vertical"></i>
                                         </button>                                        <ul class="dropdown-menu dropdown-menu-end shadow">
                                             <li>
-                                                <a class="dropdown-item" href="#" data-user-id="{{ user.id }}" data-role-type="{{ user.role_type }}" onclick="viewUserDetails(this)">
+                                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#ownerDetailModal{{ user.id }}">
                                                     <i class="fas fa-eye me-2"></i>
                                                     <span>Xem chi tiết</span>
                                                 </a>
@@ -2158,14 +2241,14 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng số chủ nhà</h6>
-                                <h5 class="mb-1">{{ stats.total_owners }}</h5>
+                                <h5 class="mb-1">{{ stats.total_owners|default(0, true) }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_owners if weekly_stats.new_owners else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng người thuê</h6>
-                                <h5 class="mb-1">{{ stats.total_renters }}</h5>
+                                <h5 class="mb-1">{{ stats.total_renters|default(0, true) }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_renters if weekly_stats.new_renters else 0 }} trong tuần</small>
                             </div>
                         </div>
@@ -2613,225 +2696,362 @@ nav[aria-label="Page navigation"] {
 </div>
 
 <!-- Modal Chi tiết Owner -->
-{% for owner in owners.items %}
-<div class="modal fade" id="ownerDetailModal{{ owner.id }}" tabindex="-1" aria-labelledby="ownerDetailModalLabel{{ owner.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="ownerDetailModalLabel{{ owner.id }}">
-                    Chi tiết tài khoản Owner
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Tabs Navigation -->
-                <ul class="nav nav-tabs mb-4" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-bs-toggle="tab" href="#info{{ owner.id }}">
-                            <i class="fas fa-user me-2"></i>Thông tin cá nhân
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="tab" href="#rooms{{ owner.id }}">
-                            <i class="fas fa-home me-2"></i>Danh sách phòng
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="tab" href="#activities{{ owner.id }}">
-                            <i class="fas fa-history me-2"></i>Lịch sử hoạt động
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="tab" href="#payments{{ owner.id }}">
-                            <i class="fas fa-money-bill me-2"></i>Lịch sử thanh toán
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Tabs Content -->
-                <div class="tab-content">
-                    <!-- Thông tin cá nhân -->
-                    <div class="tab-pane fade show active" id="info{{ owner.id }}">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <h6 class="card-subtitle mb-3 text-muted">Thông tin cơ bản</h6>
-                                        <table class="table table-borderless">
-                                            <tr>
-                                                <td class="text-muted" width="40%">Username:</td>
-                                                <td>{{ owner.username }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted">Họ & tên:</td>
-                                                <td>{{ owner.fullname if owner.fullname else 'Chưa cập nhật' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted">Email:</td>
-                                                <td>{{ owner.email }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted">Số điện thoại:</td>
-                                                <td>{{ owner.phone if owner.phone else 'Chưa cập nhật' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted">Ngày tham gia:</td>
-                                                <td>{{ owner.created_at.strftime('%d/%m/%Y') }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted">Trạng thái:</td>
-                                                <td>
-                                                    <span class="badge {% if owner.is_active %}bg-success{% else %}badge-inactive{% endif %}">
-                                                        {{ 'Đang hoạt động' if owner.is_active else 'Đã khóa' }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </div>
+{% for user in users.items %}
+    {% if user.role_type == 'owner' %}
+        {% set owner = owners | selectattr('id', 'equalto', user.id) | list | first %}
+        {% if owner %}
+            <div class="modal fade" id="ownerDetailModal{{ owner.id }}" tabindex="-1" aria-labelledby="ownerDetailModalLabel{{ owner.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" > <!-- Tăng tối đa chiều rộng modal -->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="ownerDetailModalLabel{{ owner.id }}">
+                                Chi tiết tài khoản Owner
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-3 border-end">
+                                    <!-- Vertical Nav Tabs -->
+                                    <ul class="nav flex-column nav-pills mb-4" role="tablist">
+                                        <li class="nav-item mb-2">
+                                            <a class="nav-link active" data-bs-toggle="tab" href="#info{{ owner.id }}">
+                                                <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                                            </a>
+                                        </li>
+                                        <li class="nav-item mb-2">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#rooms{{ owner.id }}">
+                                                <i class="fas fa-home me-2"></i>Danh sách phòng
+                                            </a>
+                                        </li>
+                                        <li class="nav-item mb-2">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#commission{{ owner.id }}">
+                                                <i class="fas fa-percent me-2"></i>Doanh thu & Hoa hồng
+                                            </a>
+                                        </li>
+                                        <li class="nav-item mb-2">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#payments{{ owner.id }}">
+                                                <i class="fas fa-money-bill me-2"></i>Lịch sử thanh toán
+                                            </a>
+                                        </li>
+                                        <li class="nav-item mb-2">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#analytics{{ owner.id }}">
+                                                <i class="fas fa-chart-pie me-2"></i>Phân tích dữ liệu nâng cao
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <h6 class="card-subtitle mb-3 text-muted">Thông tin bổ sung</h6>
-                                        <table class="table table-borderless">
-                                            <tr>
-                                                <td class="text-muted" width="40%">Địa chỉ:</td>
-                                                <td>{{ owner.address if owner.address else 'Chưa cập nhật' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted">Ngân hàng:</td>
-                                                <td>{{ owner.bank_name if owner.bank_name else 'Chưa cập nhật' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted">Số tài khoản:</td>
-                                                <td>{{ owner.bank_account if owner.bank_account else 'Chưa cập nhật' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted">Số phòng đã đăng:</td>
-                                                <td>{{ owner.rooms|length if owner.rooms else '0' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted">Đánh giá trung bình:</td>
-                                                <td>
-                                                    {% if owner.average_rating %}
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fas fa-star text-warning me-1"></i>
-                                                        <span>{{ owner.average_rating }}/5</span>
+                                <div class="col-9">
+                                    <!-- Tabs Content -->
+                                    <div class="tab-content">
+                                        <!-- Thông tin cá nhân -->
+                                        <div class="tab-pane fade show active" id="info{{ owner.id }}">
+                                            <div class="row g-4">
+                                                <div class="col-md-6">
+                                                    <div class="card h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-subtitle mb-3 text-muted">Thông tin cơ bản</h6>
+                                                            <table class="table table-borderless">
+                                                                <tr>
+                                                                    <td class="text-muted" width="40%">Username:</td>
+                                                                    <td>{{ owner.username }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="text-muted">Họ & tên:</td>
+                                                                    <td>{{ owner.fullname if owner.fullname else 'Chưa cập nhật' }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="text-muted">Email:</td>
+                                                                    <td>{{ owner.email }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="text-muted">Số điện thoại:</td>
+                                                                    <td>{{ owner.phone if owner.phone else 'Chưa cập nhật' }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="text-muted">Ngày tham gia:</td>
+                                                                    <td>{{ owner.created_at.strftime('%d/%m/%Y') }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="text-muted">Trạng thái:</td>
+                                                                    <td>
+                                                                        <span class="badge {% if owner.is_active %}bg-success{% else %}badge-inactive{% endif %}">
+                                                                            {{ 'Đang hoạt động' if owner.is_active else 'Đã khóa' }}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
                                                     </div>
-                                                    {% else %}
-                                                    <span class="text-muted">Chưa có đánh giá</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        </table>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-subtitle mb-3 text-muted">Thông tin bổ sung</h6>
+                                                            <table class="table table-borderless">
+                                                                <tr>
+                                                                    <td class="text-muted" width="40%">Địa chỉ:</td>
+                                                                    <td>{{ owner.address if owner.address else 'Chưa cập nhật' }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="text-muted">Ngân hàng:</td>
+                                                                    <td>{{ owner.bank_name if owner.bank_name else 'Chưa cập nhật' }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="text-muted">Số tài khoản:</td>
+                                                                    <td>{{ owner.bank_account if owner.bank_account else 'Chưa cập nhật' }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="text-muted">Số phòng đã đăng:</td>
+                                                                    <td>{{ owner.rooms|length if owner.rooms else '0' }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="text-muted">Đánh giá trung bình:</td>
+                                                                    <td>
+                                                                        {% if owner.average_rating %}
+                                                                        <div class="d-flex align-items-center">
+                                                                            <i class="fas fa-star text-warning me-1"></i>
+                                                                            <span>{{ owner.average_rating }}/5</span>
+                                                                        </div>
+                                                                        {% else %}
+                                                                        <span class="text-muted">Chưa có đánh giá</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Danh sách phòng -->
+                                        <div class="tab-pane fade" id="rooms{{ owner.id }}">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Tên phòng</th>
+                                                            <th>Địa chỉ</th>
+                                                            <th>Giá/giờ</th>
+                                                            <th>Trạng thái</th>
+                                                            <th>Đánh giá</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for room in owner.rooms %}
+                                                        <tr>
+                                                            <td>{{ room.title }}</td>
+                                                            <td>{{ room.address }}</td>
+                                                            <td>{{ '{:,.0f}'.format(room.price_per_hour|float * 1000) }} VNĐ</td>
+                                                            <td>
+                                                                <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
+                                                                    {{ 'Còn trống' if room.is_available else 'Đã đặt' }}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <div class="d-flex align-items-center">
+                                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                                    <span>{{ room.average_rating|default('Chưa có đánh giá', true) }}</span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        {% else %}
+                                                        <tr>
+                                                            <td colspan="5" class="text-center">Chưa có phòng nào được đăng</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- Doanh thu & Hoa hồng -->
+                                        <div class="tab-pane fade" id="commission{{ owner.id }}">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Tên phòng</th>
+                                                            <th>Doanh thu</th>
+                                                            <th>Hoa hồng (%)</th>
+                                                            <th>Cập nhật</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for room in owner.rooms %}
+                                                        <tr>
+                                                            <td>{{ room.title }}</td>
+                                                            <td>{{ '{:,.0f}'.format(room.revenue|default(0, true) * 1000) }} VNĐ</td>
+                                                            <td>
+                                                                <input type="number" min="0" max="100" step="0.1"
+                                                                       value="{{ room.commission_percent|default(10.0, true) }}"
+                                                                       class="form-control commission-input"
+                                                                       data-room-id="{{ room.id }}">
+                                                            </td>
+                                                            <td>
+                                                                <button class="btn btn-primary btn-save-commission"
+                                                                        data-room-id="{{ room.id }}">Lưu</button>
+                                                            </td>
+                                                        </tr>
+                                                        {% else %}
+                                                        <tr>
+                                                            <td colspan="4" class="text-center">Chưa có phòng nào được đăng</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- Lịch sử thanh toán -->
+                                        <div class="tab-pane fade" id="payments{{ owner.id }}">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Mã giao dịch</th>
+                                                            <th>Ngày</th>
+                                                            <th>Loại</th>
+                                                            <th>Số tiền</th>
+                                                            <th>Trạng thái</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for payment in owner.payments %}
+                                                        <tr>
+                                                            <td>{{ payment.transaction_id }}</td>
+                                                            <td>{{ payment.created_at.strftime('%d/%m/%Y') }}</td>
+                                                            <td>{{ payment.type }}</td>
+                                                            <td>{{ '{:,.0f}'.format(payment.amount|float * 1000) }} VNĐ</td>
+                                                            <td>
+                                                                <span class="badge {% if payment.status == 'success' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                                    {{ payment.status|title }}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                        {% else %}
+                                                        <tr>
+                                                            <td colspan="5" class="text-center">Chưa có giao dịch nào</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <!-- Phân tích dữ liệu nâng cao -->
+                                        <div class="tab-pane fade" id="analytics{{ owner.id }}">
+                                            <div class="row g-3 mb-4">
+                                                <!-- Booking Chart -->
+                                                <div class="col-lg-6">
+                                                    <div class="chart-container bg-white p-4 rounded shadow-sm h-100">
+                                                        <div class="chart-header d-flex justify-content-between align-items-center mb-3">
+                                                            <h5 class="mb-0"><i class="fas fa-chart-area text-primary me-2"></i>Lượt đặt phòng</h5>
+                                                            <div class="chart-navbar">
+                                                                <div class="dropdown">
+                                                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="ownerBookingChartPeriodDropdown{{ owner.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                        <i class="fas fa-calendar-alt me-2"></i>
+                                                                        <span id="ownerCurrentBookingPeriodText{{ owner.id }}">Tuần này</span>
+                                                                    </button>
+                                                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="ownerBookingChartPeriodDropdown{{ owner.id }}">
+                                                                        <li><h6 class="dropdown-header">Chọn khoảng thời gian</h6></li>
+                                                                        <li><a class="dropdown-item owner-booking-period-option active" href="#" data-period="week" data-text="Tuần này"><i class="fas fa-calendar-week me-2"></i>Tuần này (7 ngày)</a></li>
+                                                                        <li><a class="dropdown-item owner-booking-period-option" href="#" data-period="month" data-text="Tháng này"><i class="fas fa-calendar-alt me-2"></i>Tháng này (30 ngày)</a></li>
+                                                                        <li><a class="dropdown-item owner-booking-period-option" href="#" data-period="year" data-text="Năm này"><i class="fas fa-calendar me-2"></i>Năm này (365 ngày)</a></li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="chart-wrapper" style="position: relative; height: 300px;">
+                                                            <div id="ownerBookingChart{{ owner.id }}" style="height:100%;"></div>
+                                                            <div class="chart-legend" style="position: absolute; top: 10px; right: 10px; display: flex; gap: 20px; font-size: 12px;">
+                                                                <div class="legend-item" style="display: flex; align-items: center; gap: 5px;"><div style="width: 12px; height: 3px; background: #f59e0b; border-radius: 2px;"></div><span>Đặt phòng theo giờ</span></div>
+                                                                <div class="legend-item" style="display: flex; align-items: center; gap: 5px;"><div style="width: 12px; height: 3px; background: #3b82f6; border-radius: 2px;"></div><span>Đặt phòng qua đêm</span></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- User Growth Chart -->
+                                                <div class="col-lg-6">
+                                                    <div class="chart-container bg-white p-4 rounded shadow-sm h-100">
+                                                        <div class="chart-header d-flex justify-content-between align-items-center mb-3">
+                                                            <h5 class="mb-0"><i class="fas fa-chart-line text-success me-2"></i>Tăng trưởng người dùng</h5>
+                                                            <div class="chart-navbar">
+                                                                <div class="dropdown">
+                                                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="ownerUserGrowthChartPeriodDropdown{{ owner.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                        <i class="fas fa-calendar-alt me-2"></i>
+                                                                        <span id="ownerCurrentUserGrowthPeriodText{{ owner.id }}">Tuần này</span>
+                                                                    </button>
+                                                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="ownerUserGrowthChartPeriodDropdown{{ owner.id }}">
+                                                                        <li><h6 class="dropdown-header">Chọn khoảng thời gian</h6></li>
+                                                                        <li><a class="dropdown-item owner-usergrowth-period-option active" href="#" data-period="week" data-text="Tuần này"><i class="fas fa-calendar-week me-2"></i>Tuần này (7 ngày)</a></li>
+                                                                        <li><a class="dropdown-item owner-usergrowth-period-option" href="#" data-period="month" data-text="Tháng này"><i class="fas fa-calendar-alt me-2"></i>Tháng này (30 ngày)</a></li>
+                                                                        <li><a class="dropdown-item owner-usergrowth-period-option" href="#" data-period="year" data-text="Năm này"><i class="fas fa-calendar me-2"></i>Năm này (365 ngày)</a></li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="chart-wrapper" style="position: relative; height: 300px;">
+                                                            <div id="ownerUserGrowthChart{{ owner.id }}" style="height:100%;"></div>
+                                                            <div class="chart-legend" style="position: absolute; top: 10px; right: 10px; display: flex; gap: 20px; font-size: 12px;">
+                                                                <div class="legend-item" style="display: flex; align-items: center; gap: 5px;"><div style="width: 12px; height: 3px; background: #dc2626; border-radius: 2px;"></div><span>Owner</span></div>
+                                                                <div class="legend-item" style="display: flex; align-items: center; gap: 5px;"><div style="width: 12px; height: 3px; background: #9ed649; border-radius: 2px;"></div><span>Renter</span></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row g-3 mb-4">
+                                                <!-- Revenue Chart -->
+                                                <div class="col-lg-6">
+                                                    <div class="chart-container bg-white p-4 rounded shadow-sm h-100">
+                                                        <div class="chart-header d-flex justify-content-between align-items-center mb-3">
+                                                            <h5 class="mb-0"><i class="fas fa-chart-bar text-warning me-2"></i>Doanh thu</h5>
+                                                            <div class="chart-navbar">
+                                                                <div class="dropdown">
+                                                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="ownerRevenueYearDropdown{{ owner.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                        <i class="fas fa-calendar-year me-2"></i>
+                                                                        <span id="ownerCurrentRevenueYearText{{ owner.id }}">2025</span>
+                                                                    </button>
+                                                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="ownerRevenueYearDropdown{{ owner.id }}">
+                                                                        <li><h6 class="dropdown-header">Chọn năm</h6></li>
+                                                                        <li><a class="dropdown-item owner-revenue-year-option active" href="#" data-year="2025" data-text="2025"><i class="fas fa-calendar me-2"></i>2025</a></li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="chart-wrapper" style="position: relative; height: 400px;">
+                                                            <div id="ownerRevenueChart{{ owner.id }}" style="height:100%;"></div>
+                                                            <div class="chart-legend" style="position: absolute; top: 10px; right: 10px; display: flex; gap: 15px; font-size: 12px; background: rgba(255, 255, 255, 0.9); padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+                                                                <div class="legend-item" style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: #9ed649; border-radius: 50%;"></div><span>Tổng doanh thu</span></div>
+                                                                <div class="legend-item" style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: #ef4444; border-radius: 50%;"></div><span>Doanh thu thuê qua đêm</span></div>
+                                                                <div class="legend-item" style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: #fbbf24; border-radius: 50%;"></div><span>Doanh thu thuê theo giờ</span></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Rating Pie Chart -->
+                                                <div class="col-lg-6">
+                                                    <div class="chart-container bg-white p-4 rounded shadow-sm h-100">
+                                                        <div class="chart-header d-flex justify-content-between align-items-center mb-3">
+                                                            <h5 class="mb-0"><i class="fas fa-chart-pie text-info me-2"></i>Tỉ lệ đánh giá (1-5 sao)</h5>
+                                                        </div>
+                                                        <div class="chart-wrapper" style="position: relative; height: 400px;">
+                                                            <div id="ownerRatingPieChart{{ owner.id }}" style="height:100%;"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Danh sách phòng -->
-                    <div class="tab-pane fade" id="rooms{{ owner.id }}">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Tên phòng</th>
-                                        <th>Địa chỉ</th>
-                                        <th>Giá/đêm</th>
-                                        <th>Trạng thái</th>
-                                        <th>Đánh giá</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for room in owner.rooms %}
-                                    <tr>
-                                        <td>{{ room.name }}</td>
-                                        <td>{{ room.address }}</td>
-                                        <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VNĐ</td>
-                                        <td>
-                                            <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
-                                                {{ 'Còn trống' if room.is_available else 'Đã đặt' }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-star text-warning me-1"></i>
-                                                <span>{{ room.average_rating|default('Chưa có đánh giá', true) }}</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% else %}
-                                    <tr>
-                                        <td colspan="5" class="text-center">Chưa có phòng nào được đăng</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Lịch sử hoạt động -->
-                    <div class="tab-pane fade" id="activities{{ owner.id }}">
-                        <div class="timeline">
-                            {% for activity in owner.activities %}
-                            <div class="timeline-item">
-                                <div class="timeline-icon {% if activity.type == 'room' %}bg-primary{% elif activity.type == 'comment' %}bg-info{% else %}bg-success{% endif %}">
-                                    <i class="fas {% if activity.type == 'room' %}fa-home{% elif activity.type == 'comment' %}fa-comment{% else %}fa-check{% endif %}"></i>
-                                </div>
-                                <div class="timeline-content">
-                                    <h6 class="mb-1">{{ activity.title }}</h6>
-                                    <p class="mb-0 text-muted">{{ activity.description }}</p>
-                                    <small class="text-muted">{{ activity.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
-                                </div>
-                            </div>
-                            {% else %}
-                            <p class="text-center">Chưa có hoạt động nào</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Lịch sử thanh toán -->
-                    <div class="tab-pane fade" id="payments{{ owner.id }}">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Mã giao dịch</th>
-                                        <th>Ngày</th>
-                                        <th>Loại</th>
-                                        <th>Số tiền</th>
-                                        <th>Trạng thái</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for payment in owner.payments %}
-                                    <tr>
-                                        <td>{{ payment.transaction_id }}</td>
-                                        <td>{{ payment.created_at.strftime('%d/%m/%Y') }}</td>
-                                        <td>{{ payment.type }}</td>
-                                        <td>{{ '{:,.0f}'.format(payment.amount|float) }} VNĐ</td>
-                                        <td>
-                                            <span class="badge {% if payment.status == 'success' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
-                                                {{ payment.status|title }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    {% else %}
-                                    <tr>
-                                        <td colspan="5" class="text-center">Chưa có giao dịch nào</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+        {% endif %}
+    {% endif %}
 {% endfor %}
 
 <!-- Modal Xác nhận xóa -->
@@ -2960,6 +3180,139 @@ nav[aria-label="Page navigation"] {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chi tiết User -->
+<div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userDetailModalLabel">Chi tiết tài khoản</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted" width="40%">Họ & tên:</td>
+                        <td id="modalUserFullName"></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Email:</td>
+                        <td id="modalUserEmail"></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Số điện thoại:</td>
+                        <td id="modalUserPhone"></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Vai trò:</td>
+                        <td id="modalUserRole"></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Trạng thái:</td>
+                        <td id="modalUserStatus"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="advanced-visualize-section" style="display: none; padding: 1.5rem; margin-left: 250px; margin-top: -30px !important; padding-top: 0 !important;">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" id="advancedVisualizeTitle">Advanced Visualize Data Analysis</h1>
+            <p class="page-subtitle">Phân tích dữ liệu nâng cao, xuất báo cáo và đề xuất chiến lược</p>
+        </div>
+    </div>
+    <ul class="nav nav-tabs mb-4" id="advancedVisualizeTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-revenue-system" data-bs-toggle="tab" data-bs-target="#revenue-system" type="button" role="tab" aria-controls="revenue-system" aria-selected="true">Doanh thu tổng hệ thống</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-revenue-owner" data-bs-toggle="tab" data-bs-target="#revenue-owner" type="button" role="tab" aria-controls="revenue-owner" aria-selected="false">Doanh thu từng chủ nhà</button>
+        </li>
+    </ul>
+    <div class="tab-content" id="advancedVisualizeTabContent">
+        <div class="tab-pane fade show active" id="revenue-system" role="tabpanel" aria-labelledby="tab-revenue-system">
+            <div class="mb-3">
+                <button class="btn btn-success me-2" id="exportExcelBtn"><i class="fas fa-file-excel me-1"></i> Xuất Excel</button>
+                <button class="btn btn-danger" id="exportPdfBtn"><i class="fas fa-file-pdf me-1"></i> Xuất PDF</button>
+            </div>
+            <div class="alert alert-info">Biểu đồ và bảng doanh thu tổng hệ thống sẽ hiển thị ở đây.</div>
+        </div>
+        <div class="tab-pane fade" id="revenue-owner" role="tabpanel" aria-labelledby="tab-revenue-owner">
+            <div class="mb-3">
+                <button class="btn btn-success me-2" id="exportExcelOwnerBtn"><i class="fas fa-file-excel me-1"></i> Xuất Excel</button>
+                <button class="btn btn-danger" id="exportPdfOwnerBtn"><i class="fas fa-file-pdf me-1"></i> Xuất PDF</button>
+                <button class="btn btn-primary" id="refreshOwnerDataBtn"><i class="fas fa-sync-alt me-1"></i> Làm mới dữ liệu</button>
+            </div>
+            <div id="ownerRevenueLoading" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <p class="mt-2">Đang tải dữ liệu doanh thu chủ nhà...</p>
+            </div>
+            <div id="ownerRevenueContent" style="display: none;">
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Tổng chủ nhà</h5>
+                                <h3 id="totalOwners">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Tổng doanh thu</h5>
+                                <h3 id="totalRevenue">0 VNĐ</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Tổng phòng</h5>
+                                <h3 id="totalRooms">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Tổng lượt đặt</h5>
+                                <h3 id="totalBookings">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="ownerRevenueTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên chủ nhà</th>
+                                <th>Số phòng</th>
+                                <th>Lượt đặt</th>
+                                <th>Doanh thu (VNĐ)</th>
+                                <th>Đánh giá TB</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ownerRevenueTableBody">
+                            <!-- Dữ liệu sẽ được thêm vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="ownerRevenueError" class="alert alert-danger" style="display: none;">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span id="errorMessage">Có lỗi xảy ra khi tải dữ liệu</span>
             </div>
         </div>
     </div>
@@ -3273,17 +3626,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const menuStats = document.getElementById('menu-stats');
         const menuOwner = document.getElementById('menu-owner');
         const menuManageAdmin = document.getElementById('menu-manage-admin');
+        const menuAdvancedVisualize = document.getElementById('menu-advanced-visualize');
+        const advancedVisualizeSection = document.getElementById('advanced-visualize-section');
 
         // Hàm để ẩn tất cả các section
         const hideAllSections = () => {
             if (statsSection) statsSection.style.display = 'none';
             if (ownerSection) ownerSection.style.display = 'none';
             if (manageAdminSection) manageAdminSection.style.display = 'none';
+            if (advancedVisualizeSection) advancedVisualizeSection.style.display = 'none';
         };
 
         // Hàm để cập nhật trạng thái active của menu
         const setActiveMenu = (activeMenu) => {
-            [menuStats, menuOwner, menuManageAdmin].forEach(menu => {
+            [menuStats, menuOwner, menuManageAdmin, menuAdvancedVisualize].forEach(menu => {
                 if (menu) {
                     menu.classList.remove('active');
                 }
@@ -3324,6 +3680,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+        if (menuAdvancedVisualize) {
+            menuAdvancedVisualize.addEventListener('click', () => {
+                showSection('advanced-visualize-section', menuAdvancedVisualize);
+            });
+        }
+
         // Logic hiển thị section khi tải trang - ưu tiên localStorage
         hideAllSections(); // Ẩn tất cả trước
         
@@ -3343,6 +3705,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     setActiveMenu(menuManageAdmin);
                 } else if (savedSection === 'owner-section') {
                     setActiveMenu(menuOwner);
+                } else if (savedSection === 'advanced-visualize-section') {
+                    setActiveMenu(menuAdvancedVisualize);
                 }
             } else {
                 // Nếu section không tồn tại, fallback về owner
@@ -5116,6 +5480,172 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 100);
         }
     }
+
+    // Advanced Visualize - Owner Revenue Functions
+    function loadOwnerRevenueData() {
+        const loadingDiv = document.getElementById('ownerRevenueLoading');
+        const contentDiv = document.getElementById('ownerRevenueContent');
+        const errorDiv = document.getElementById('ownerRevenueError');
+        
+        // Show loading
+        loadingDiv.style.display = 'block';
+        contentDiv.style.display = 'none';
+        errorDiv.style.display = 'none';
+        
+        fetch('/admin/api/owner-revenue')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    displayOwnerRevenueData(data.data);
+                    loadingDiv.style.display = 'none';
+                    contentDiv.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Có lỗi xảy ra khi tải dữ liệu');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading owner revenue data:', error);
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message;
+            });
+    }
+
+    function displayOwnerRevenueData(owners) {
+        const tableBody = document.getElementById('ownerRevenueTableBody');
+        tableBody.innerHTML = '';
+        
+        let totalRevenue = 0;
+        let totalRooms = 0;
+        let totalBookings = 0;
+        
+        owners.forEach((owner, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm me-2">
+                            <i class="fas fa-user-circle fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <strong>${owner.full_name}</strong>
+                            <br><small class="text-muted">ID: ${owner.id}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge bg-info">${owner.room_count}</span>
+                </td>
+                <td>
+                    <span class="badge bg-warning">${owner.booking_count}</span>
+                </td>
+                <td>
+                    <strong class="text-success">${formatCurrency(owner.total_revenue)}</strong>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            ${generateStarRating(owner.avg_rating)}
+                        </div>
+                        <span class="text-muted">(${owner.avg_rating})</span>
+                    </div>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewOwnerDetails(${owner.id})">
+                        <i class="fas fa-eye me-1"></i>Xem chi tiết
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+            
+            // Calculate totals
+            totalRevenue += owner.total_revenue;
+            totalRooms += owner.room_count;
+            totalBookings += owner.booking_count;
+        });
+        
+        // Update summary cards
+        document.getElementById('totalOwners').textContent = owners.length;
+        document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+        document.getElementById('totalRooms').textContent = totalRooms;
+        document.getElementById('totalBookings').textContent = totalBookings;
+    }
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
+    }
+
+    function generateStarRating(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 !== 0;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        let stars = '';
+        for (let i = 0; i < fullStars; i++) {
+            stars += '<i class="fas fa-star text-warning"></i>';
+        }
+        if (hasHalfStar) {
+            stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+        }
+        for (let i = 0; i < emptyStars; i++) {
+            stars += '<i class="far fa-star text-warning"></i>';
+        }
+        return stars;
+    }
+
+    function viewOwnerDetails(ownerId) {
+        // TODO: Implement owner details modal
+        alert(`Xem chi tiết chủ nhà ID: ${ownerId}`);
+    }
+
+    // Initialize owner revenue data when tab is shown
+    document.addEventListener('DOMContentLoaded', function() {
+        // Listen for tab changes
+        const ownerRevenueTab = document.getElementById('tab-revenue-owner');
+        const ownerRevenuePane = document.getElementById('revenue-owner');
+        if (ownerRevenueTab) {
+            ownerRevenueTab.addEventListener('click', function() {
+                setTimeout(() => {
+                    loadOwnerRevenueData();
+                }, 100);
+            });
+        }
+        // Gọi API nếu tab này đang active khi load trang
+        if (ownerRevenuePane && ownerRevenuePane.classList.contains('show') && ownerRevenuePane.classList.contains('active')) {
+            setTimeout(() => {
+                loadOwnerRevenueData();
+            }, 100);
+        }
+        // Refresh button
+        const refreshBtn = document.getElementById('refreshOwnerDataBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function() {
+                loadOwnerRevenueData();
+            });
+        }
+        // Export buttons (placeholder)
+        const exportExcelBtn = document.getElementById('exportExcelOwnerBtn');
+        const exportPdfBtn = document.getElementById('exportPdfOwnerBtn');
+        if (exportExcelBtn) {
+            exportExcelBtn.addEventListener('click', function() {
+                alert('Tính năng xuất Excel sẽ được phát triển sau');
+            });
+        }
+        if (exportPdfBtn) {
+            exportPdfBtn.addEventListener('click', function() {
+                alert('Tính năng xuất PDF sẽ được phát triển sau');
+            });
+        }
+    });
 </script>
 
 <!-- Modal Thêm Admin -->
@@ -5163,4 +5693,100 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 {% endif %}
 
+<script>
+// Xử lý cập nhật hoa hồng từng căn (modal chi tiết)
+$(document).on('click', '.btn-save-commission', function() {
+    var roomId = $(this).data('room-id');
+    var input = $('.commission-input[data-room-id="' + roomId + '"]');
+    var percent = input.val();
+    var btn = $(this);
+    btn.prop('disabled', true);
+    $.ajax({
+        url: '/admin/api/room/' + roomId + '/commission',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ commission_percent: percent }),
+        success: function(res) {
+            if (res.success) {
+                input.val(res.commission_percent);
+                if (window.notificationSystem) {
+                    window.notificationSystem.showCustomNotification(res.message || 'Cập nhật hoa hồng thành công!', 'success');
+                } else {
+                    alert(res.message || 'Cập nhật hoa hồng thành công!');
+                }
+            } else {
+                if (window.notificationSystem) {
+                    window.notificationSystem.showCustomNotification(res.error || 'Có lỗi xảy ra!', 'error');
+                } else {
+                    alert(res.error || 'Có lỗi xảy ra!');
+                }
+            }
+        },
+        error: function(xhr) {
+            if (window.notificationSystem) {
+                window.notificationSystem.showCustomNotification('Có lỗi xảy ra khi kết nối server!', 'error');
+            } else {
+                alert('Có lỗi xảy ra khi kết nối server!');
+            }
+        },
+        complete: function() {
+            btn.prop('disabled', false);
+        }
+    });
+});
+
+// Xử lý cập nhật hoa hồng đại diện cho Owner trong bảng user
+$(document).on('click', '.btn-save-commission-owner', function() {
+    var ownerId = $(this).data('owner-id');
+    var input = $('.commission-owner-input[data-owner-id="' + ownerId + '"]');
+    var percent = input.val();
+    var btn = $(this);
+    btn.prop('disabled', true);
+    $.ajax({
+        url: '/admin/api/owner/' + ownerId + '/commission',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ commission_percent: percent }),
+        success: function(res) {
+            if (res.success) {
+                input.val(res.commission_percent);
+                if (window.notificationSystem) {
+                    window.notificationSystem.showCustomNotification(res.message || 'Cập nhật hoa hồng thành công!', 'success');
+                } else {
+                    alert(res.message || 'Cập nhật hoa hồng thành công!');
+                }
+            } else {
+                if (window.notificationSystem) {
+                    window.notificationSystem.showCustomNotification(res.error || 'Có lỗi xảy ra!', 'error');
+                } else {
+                    alert(res.error || 'Có lỗi xảy ra!');
+                }
+            }
+        },
+        error: function(xhr) {
+            if (window.notificationSystem) {
+                window.notificationSystem.showCustomNotification('Có lỗi xảy ra khi kết nối server!', 'error');
+            } else {
+                alert('Có lỗi xảy ra khi kết nối server!');
+            }
+        },
+        complete: function() {
+            btn.prop('disabled', false);
+        }
+    });
+});
+</script>
+
 {% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var lang = localStorage.getItem('language') || 'vi';
+    if (lang === 'vi') {
+        var advTitle = document.getElementById('advancedVisualizeTitle');
+        if (advTitle) advTitle.textContent = 'Phân tích dữ liệu nâng cao';
+    }
+});
+</script>
+```
+</script>

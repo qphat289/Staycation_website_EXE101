@@ -1341,3 +1341,83 @@ body.homepage html body .navbar .nav-link.user-dropdown-container:hover,
 body.homepage html body .navbar .nav-link.user-dropdown-container:hover span {
     color: #b2e254 !important; /* Light green hover for homepage */
 }
+
+/* Modal chi tiết Owner rộng tối đa */
+#ownerDetailModal .modal-dialog {
+    max-width: 1200px !important;
+    width: 1200px;
+}
+
+#ownerDetailModal .modal-body .row > .col-3 {
+    flex: 0 0 22%;
+    max-width: 220%;
+}
+#ownerDetailModal .modal-body .row > .col-9 {
+    flex: 0 0 78%;
+    max-width: 78%;
+}
+
+/* Sidebar tab dọc nổi bật */
+#ownerDetailModal .nav-pills .nav-link {
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #222;
+    background: #f8f9fa;
+    transition: background 0.2s, color 0.2s;
+}
+#ownerDetailModal .nav-pills .nav-link.active {
+    background: #156ef5;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Card thông tin căn giữa, bóng nhẹ */
+#ownerDetailModal .tab-pane .card {
+    margin-bottom: 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: none;
+}
+#ownerDetailModal .tab-pane .card-body {
+    padding: 1.5rem 2rem;
+}
+
+/* Responsive cho modal lớn */
+@media (max-width: 1200px) {
+    #ownerDetailModal .modal-dialog {
+        max-width: 1200px !important;
+        width: 1200px;
+    }    
+    #ownerDetailModal .modal-body .row > .col-3 {
+        max-width: 30%;
+    }
+    #ownerDetailModal .modal-body .row > .col-9 {
+        max-width: 70%;
+    }
+}
+[id^="ownerDetailModal"] .modal-dialog {
+    max-width: 1400px !important;
+    width: 1400px !important;
+    max-height: 90vh !important;
+    height: 90vh !important;
+    display: flex;
+    align-items: center;
+    margin-top: 50px !important; /* Dịch modal xuống thấp hơn */
+}
+
+[id^="ownerDetailModal"] .modal-content {
+    max-width: 1400px !important;
+    width: 1400px !important;
+    min-width: 900px;
+    max-height: 90vh !important;
+    height: 90vh !important;
+    display: flex;
+    flex-direction: column;
+}
+
+[id^="ownerDetailModal"] .modal-body {
+    overflow-y: auto;
+    flex: 1 1 auto;
+    max-height: 70vh;
+}
