@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Database seeding script for the Staycation website.
+Run this script to populate the database with sample data.
+"""
+
 import sys
 import os
 import random
@@ -91,6 +97,52 @@ def calculate_price(home, booking_type, total_hours, start_time):
     
     return int(total_price)
 
+def check_booking_overlap(start_time, end_time, home_id, existing_bookings):
+    """
+    Check if a new booking overlaps with existing bookings for the same home.
+    Returns True if there's an overlap (conflict), False if it's safe to book.
+    """
+    for booking in existing_bookings:
+        if booking.home_id != home_id:
+            continue
+            
+        # Skip cancelled bookings as they don't block availability
+        if booking.status in ['cancelled', 'no_show']:
+            continue
+            
+        # Check for overlap: new booking conflicts if it starts before existing ends
+        # and ends after existing starts
+        if (start_time < booking.end_time and end_time > booking.start_time):
+            return True
+    
+    return False
+
+def find_available_time_slot(home, duration_hours, preferred_start_time, existing_bookings, max_attempts=20):
+    """
+    Find an available time slot for a booking that doesn't overlap with existing bookings.
+    Returns (start_time, end_time) if found, or None if no slot available.
+    """
+    
+    for attempt in range(max_attempts):
+        # Add some randomness to the preferred start time
+        random_offset_hours = random.randint(-12, 12)
+        start_time = preferred_start_time + timedelta(hours=random_offset_hours)
+        end_time = start_time + timedelta(hours=duration_hours)
+        
+        # Ensure the booking is within our target time range (past week to next week)
+        now = datetime.now()
+        earliest_allowed = now - timedelta(days=7)
+        latest_allowed = now + timedelta(days=7)
+        
+        if start_time < earliest_allowed or end_time > latest_allowed:
+            continue
+            
+        # Check for conflicts
+        if not check_booking_overlap(start_time, end_time, home.id, existing_bookings):
+            return start_time, end_time
+    
+    return None
+
 def get_customer_type():
     """Generate customer behavior patterns"""
     customer_types = [
@@ -98,8 +150,8 @@ def get_customer_type():
             'type': 'business_traveler',
             'weight': 0.25,
             'booking_preferences': {
-                'advance_booking_days': (3, 21),  # Books 3-21 days ahead
-                'preferred_duration': (1, 3),     # 1-3 days
+                'advance_booking_days': (1, 7),    # Books 1-7 days ahead
+                'preferred_duration': (4, 24),     # 4-24 hours 
                 'preferred_times': [(6, 9), (17, 20)],  # Early morning or evening
                 'payment_methods': ['credit_card', 'bank_transfer'],
                 'cancellation_rate': 0.1
@@ -109,8 +161,8 @@ def get_customer_type():
             'type': 'leisure_traveler',
             'weight': 0.35,
             'booking_preferences': {
-                'advance_booking_days': (7, 60),   # Books 1 week to 2 months ahead
-                'preferred_duration': (2, 7),      # 2-7 days
+                'advance_booking_days': (2, 14),   # Books 2 days to 2 weeks ahead
+                'preferred_duration': (24, 72),    # 1-3 days
                 'preferred_times': [(10, 16)],     # Daytime check-in
                 'payment_methods': ['momo', 'credit_card', 'payos'],
                 'cancellation_rate': 0.15
@@ -120,8 +172,8 @@ def get_customer_type():
             'type': 'local_resident',
             'weight': 0.2,
             'booking_preferences': {
-                'advance_booking_days': (0, 7),    # Last minute to 1 week
-                'preferred_duration': (0.25, 1),   # Few hours to 1 day
+                'advance_booking_days': (0, 3),    # Same day to 3 days
+                'preferred_duration': (2, 8),      # Few hours
                 'preferred_times': [(18, 23)],     # Evening/night
                 'payment_methods': ['momo', 'cash'],
                 'cancellation_rate': 0.2
@@ -131,19 +183,19 @@ def get_customer_type():
             'type': 'group_traveler',
             'weight': 0.15,
             'booking_preferences': {
-                'advance_booking_days': (14, 90),  # 2 weeks to 3 months ahead
-                'preferred_duration': (2, 5),      # 2-5 days
+                'advance_booking_days': (7, 14),   # 1-2 weeks ahead
+                'preferred_duration': (48, 120),   # 2-5 days
                 'preferred_times': [(14, 18)],     # Afternoon
                 'payment_methods': ['bank_transfer', 'credit_card'],
-                'cancellation_rate': 0.25  # Higher due to coordination challenges
+                'cancellation_rate': 0.25
             }
         },
         {
             'type': 'staycation',
             'weight': 0.05,
             'booking_preferences': {
-                'advance_booking_days': (1, 14),   # 1 day to 2 weeks
-                'preferred_duration': (1, 3),      # 1-3 days
+                'advance_booking_days': (1, 7),    # 1 day to 1 week
+                'preferred_duration': (24, 48),    # 1-2 days
                 'preferred_times': [(15, 17)],     # Standard check-in
                 'payment_methods': ['momo', 'payos'],
                 'cancellation_rate': 0.1
@@ -153,20 +205,6 @@ def get_customer_type():
     
     weights = [ct['weight'] for ct in customer_types]
     return random.choices(customer_types, weights=weights)[0]
-
-def generate_seasonal_booking_volume(date):
-    """Generate booking volume multiplier based on season"""
-    month = date.month
-    
-    # High season: Summer vacation (June-August), Tet (Jan-Feb), holidays
-    if month in [6, 7, 8, 1, 2]:
-        return 1.5  # 50% more bookings
-    # Medium season: Spring (March-May), Fall (September-November) 
-    elif month in [3, 4, 5, 9, 10, 11]:
-        return 1.0  # Normal booking volume
-    # Low season: December (post-holiday)
-    else:
-        return 0.7  # 30% fewer bookings
 
 def create_sample_renters():
     """Create sample renters with different profiles"""
@@ -201,86 +239,78 @@ def create_sample_renters():
                 'full_name': 'Phạm Thị Du',
                 'phone': '0923456789'
             },
-            {
-                'username': 'hoang_backpacker',
-                'email': 'hoang.adventure@outlook.com',
-                'full_name': 'Hoàng Văn Phượt',
-                'phone': '0934567890'
-            },
             # Local residents
             {
-                'username': 'vu_local',
-                'email': 'vu.local@email.vn',
-                'full_name': 'Vũ Thị Địa',
-                'phone': '0945678901'
+                'username': 'hoang_local',
+                'email': 'hoang.local@gmail.com',
+                'full_name': 'Hoàng Văn Địa',
+                'phone': '0934567890'
             },
             {
-                'username': 'dao_resident',
-                'email': 'dao.resident@gmail.com',
-                'full_name': 'Đào Văn Dân',
-                'phone': '0956789012'
+                'username': 'vo_resident',
+                'email': 'vo.resident@outlook.com',
+                'full_name': 'Võ Thị Phương',
+                'phone': '0945678901'
             },
             # Group travelers
             {
-                'username': 'group_organizer',
-                'email': 'organizer@groups.vn',
-                'full_name': 'Nhóm Du Lịch ABC',
-                'phone': '0967890123'
+                'username': 'group_leader',
+                'email': 'leader@group-travel.vn',
+                'full_name': 'Đặng Văn Nhóm',
+                'phone': '0956789012'
             },
-            {
-                'username': 'company_event',
-                'email': 'events@company.com',
-                'full_name': 'Công Ty Sự Kiện',
-                'phone': '0978901234'
-            },
-            # Staycation users
+            # Staycation customers
             {
                 'username': 'staycation_user',
-                'email': 'staycation@local.vn',
-                'full_name': 'Nguyễn Thị Nghỉ',
-                'phone': '0989012345'
+                'email': 'stay@home.vn',
+                'full_name': 'Lý Thị Nghỉ',
+                'phone': '0967890123'
             }
         ]
         
-        for data in renter_profiles:
+        for profile in renter_profiles:
+            # Check if renter already exists
+            existing_renter = Renter.query.filter_by(email=profile['email']).first()
+            if existing_renter:
+                sample_renters.append(existing_renter)
+                continue
+            
             renter = Renter(
-                username=data['username'],
-                email=data['email'],
-                full_name=data['full_name'],
-                phone=data['phone']
+                username=profile['username'],
+                email=profile['email'],
+                full_name=profile['full_name'],
+                phone=profile['phone']
             )
-            renter.set_password('password123')  # Default password
+            renter.set_password('123')  # Default password
+            db.session.add(renter)
             sample_renters.append(renter)
         
-        # Save to database
-        db.session.bulk_save_objects(sample_renters)
         db.session.commit()
-        
-        print(f"Created {len(sample_renters)} sample renters with diverse profiles")
-        return Renter.query.all()  # Return fresh list from database
+        print(f"Created/found {len(sample_renters)} renters")
+        return sample_renters
         
     except Exception as e:
-        print(f"Error creating sample renters: {e}")
+        print(f"Error creating sample renters: {str(e)}")
         db.session.rollback()
-        return None
+        return []
 
 def generate_payment_reference(payment_method, booking_id):
-    """Generate realistic payment reference based on method"""
-    if payment_method == 'credit_card':
-        return f"CC{random.randint(100000, 999999)}"
-    elif payment_method == 'momo':
-        return f"MOMO{random.randint(1000000, 9999999)}"
-    elif payment_method == 'bank_transfer':
-        return f"BANK{random.randint(100000, 999999)}"
+    """Generate realistic payment reference numbers"""
+    if payment_method == 'momo':
+        return f"MOMO{random.randint(1000000000, 9999999999)}"
     elif payment_method == 'payos':
-        return f"PAYOS{random.randint(10000000, 99999999)}"
-    elif payment_method == 'cash':
-        return f"CASH{booking_id}"
+        return f"PAYOS{random.randint(100000, 999999)}"
+    elif payment_method == 'bank_transfer':
+        return f"BANK{random.randint(10000000, 99999999)}"
+    elif payment_method == 'credit_card':
+        return f"CC{random.randint(1000000, 9999999)}"
+    elif payment_method == 'zalopay':
+        return f"ZALO{random.randint(100000, 999999)}"
     else:
         return f"PAY{random.randint(100000, 999999)}"
 
 def create_enhanced_booking_data():
-    """Create diverse and realistic booking data with customer behavior patterns"""
+    """Create exactly ~50 diverse booking data with no time conflicts"""
     
     # Get existing homes and renters
     homes = Home.query.all()
@@ -288,7 +318,7 @@ def create_enhanced_booking_data():
     
     if not homes:
         print("Error: No homes found in database. Please seed homes first.")
-        return
+        return []
     
     # Create sample renters if none exist
     if not renters:
@@ -296,9 +326,21 @@ def create_enhanced_booking_data():
         renters = create_sample_renters()
         if not renters:
             print("Failed to create sample renters.")
-            return
+            return []
+    
+    # Check if we need more renters for diversity
+    if len(renters) < 5:
+        print(f"Creating additional renters for diversity (current: {len(renters)})...")
+        additional_renters = create_sample_renters()
+        renters.extend(additional_renters)
     
     print(f"Found {len(homes)} homes and {len(renters)} renters")
+    
+    # Calculate theoretical capacity
+    timeframe_hours = 14 * 24  # 2 weeks in hours
+    capacity_per_home = timeframe_hours // 4  # Assuming average 4-hour bookings
+    total_capacity = len(homes) * capacity_per_home
+    print(f"Estimated booking capacity: {total_capacity} bookings across {len(homes)} homes")
     
     # Filter homes that have valid pricing data
     valid_homes = []
@@ -321,21 +363,26 @@ def create_enhanced_booking_data():
     
     homes = valid_homes
     
-    # Enhanced booking status options with realistic distribution
+    # Booking configuration - adjust based on actual capacity
+    base_target = 50
+    TARGET_BOOKINGS = min(base_target, total_capacity)
+    if TARGET_BOOKINGS < base_target:
+        print(f"⚠️  Adjusted target to {TARGET_BOOKINGS} bookings due to limited home capacity")
+    else:
+        print(f"🎯 Target: {TARGET_BOOKINGS} bookings")
     status_options = [
-        ('completed', 0.35),     # 35% completed
-        ('confirmed', 0.25),     # 25% confirmed/upcoming
+        ('completed', 0.30),     # 30% completed (past bookings)
+        ('confirmed', 0.25),     # 25% confirmed (future bookings)
         ('cancelled', 0.15),     # 15% cancelled
-        ('pending', 0.1),        # 10% pending
-        ('active', 0.05),        # 5% currently active
+        ('pending', 0.10),       # 10% pending
+        ('active', 0.10),        # 10% currently active 
         ('checked_out', 0.05),   # 5% checked out
         ('no_show', 0.03),       # 3% no show
         ('disputed', 0.02)       # 2% disputed
     ]
     
-    # Enhanced payment methods with Vietnamese market preferences
     payment_methods = [
-        ('momo', 0.35),          # 35% MoMo (very popular in Vietnam)
+        ('momo', 0.35),          # 35% MoMo
         ('bank_transfer', 0.25), # 25% bank transfer
         ('payos', 0.18),         # 18% PayOS
         ('credit_card', 0.15),   # 15% credit card
@@ -343,7 +390,6 @@ def create_enhanced_booking_data():
         ('zalopay', 0.02)        # 2% ZaloPay
     ]
     
-    # Enhanced payment status distribution
     payment_status_map = {
         'completed': ['paid', 'paid', 'paid', 'refunded'],
         'confirmed': ['paid', 'paid', 'pending'],
@@ -356,355 +402,176 @@ def create_enhanced_booking_data():
     }
     
     bookings = []
+    all_existing_bookings = []  # Track all bookings to prevent conflicts
     
-    # Generate bookings for different time periods with varying volume
-    base_date = datetime.now() - timedelta(days=365)  # Start 1 year ago
-    end_date = datetime.now() + timedelta(days=180)   # 6 months from now
+    # Time range: 1 week ago to 1 week from now
+    now = datetime.now()
+    start_date = now - timedelta(days=7)
+    end_date = now + timedelta(days=7)
     
-    current_date = base_date
-    total_bookings_created = 0
+    print(f"Creating bookings from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
     
-    while current_date < end_date:
-        # Calculate daily booking volume based on season and day of week
-        seasonal_multiplier = generate_seasonal_booking_volume(current_date)
+    # Get existing bookings to avoid conflicts
+    existing_bookings = Booking.query.filter(
+        Booking.start_time >= start_date,
+        Booking.end_time <= end_date
+    ).all()
+    all_existing_bookings.extend(existing_bookings)
+    
+    attempts = 0
+    max_attempts = TARGET_BOOKINGS * 3  # Allow multiple attempts
+    
+    while len(bookings) < TARGET_BOOKINGS and attempts < max_attempts:
+        attempts += 1
         
-        # Weekend effect
-        if current_date.weekday() >= 5:  # Weekend
-            day_multiplier = 1.4
-        else:
-            day_multiplier = 1.0
-        
-        # Base bookings per day
-        base_bookings_per_day = 3
-        daily_bookings = int(base_bookings_per_day * seasonal_multiplier * day_multiplier)
-        daily_bookings = max(1, daily_bookings)  # At least 1 booking per day
-        
-        # Generate bookings for this day
-        for _ in range(daily_bookings):
-            if total_bookings_created >= 400:  # Limit total bookings
-                break
-                
-            # Select random home and renter
-            home = random.choice(homes)
-            renter = random.choice(renters)
-            
-            # Get customer behavior pattern
-            customer_profile = get_customer_type()
-            prefs = customer_profile['booking_preferences']
-            
-            # Generate booking date based on customer behavior
-            advance_days = random.randint(*prefs['advance_booking_days'])
-            if current_date <= datetime.now():
-                # Historical booking
-                booking_created_date = current_date - timedelta(days=advance_days)
-                start_time = current_date
-            else:
-                # Future booking
-                booking_created_date = datetime.now() - timedelta(days=advance_days)
-                start_time = current_date
-            
-            # Adjust start time based on customer preferences
-            preferred_time_ranges = prefs['preferred_times']
-            time_range = random.choice(preferred_time_ranges)
-            start_hour = random.randint(time_range[0], time_range[1])
-            start_time = start_time.replace(hour=start_hour, minute=random.choice([0, 30]))
-            
-            # Determine booking type and duration based on customer profile
-            duration_range = prefs['preferred_duration']
-            if duration_range[1] <= 1:  # Hourly booking
-                booking_type = 'hourly'
-                duration_hours = random.uniform(duration_range[0], duration_range[1]) * 24
-                duration_hours = max(2, int(duration_hours))  # Minimum 2 hours
-            else:  # Daily booking
-                booking_type = 'daily'
-                duration_days = random.uniform(duration_range[0], duration_range[1])
-                duration_hours = max(24, int(duration_days * 24))
-            
-            end_time = start_time + timedelta(hours=duration_hours)
-            
-            # Calculate pricing
-            total_hours = calculate_total_hours(start_time, end_time)
-            total_price = calculate_price(home, booking_type, total_hours, start_time)
-            
-            # Apply customer-specific pricing adjustments
-            if customer_profile['type'] == 'group_traveler':
-                total_price *= 1.1  # 10% group surcharge
-            elif customer_profile['type'] == 'business_traveler':
-                total_price *= 1.05  # 5% business rate
-            elif customer_profile['type'] == 'local_resident' and booking_type == 'hourly':
-                total_price *= 0.95  # 5% local discount for short bookings
-            
-            # Ensure minimum price
-            if total_price < 20000:  # Minimum 20,000 VND
-                total_price = 20000
-            
-            # Determine booking status based on timing and customer behavior
-            if start_time < datetime.now() - timedelta(days=1):
-                # Past bookings
-                if random.random() < prefs['cancellation_rate']:
-                    status = 'cancelled'
-                else:
-                    status = random.choices(['completed', 'no_show'], weights=[0.95, 0.05])[0]
-            elif start_time < datetime.now() + timedelta(hours=6):
-                # Current/very near future
-                status = random.choices(['active', 'checked_out', 'confirmed'], weights=[0.4, 0.3, 0.3])[0]
-            else:
-                # Future bookings
-                if random.random() < prefs['cancellation_rate']:
-                    status = 'cancelled'
-                else:
-                    status = random.choices(['confirmed', 'pending'], weights=[0.8, 0.2])[0]
-            
-            # Choose payment method based on customer profile
-            preferred_methods = prefs['payment_methods']
-            payment_method = random.choice(preferred_methods)
-            
-            # Choose payment status
-            payment_status = random.choice(payment_status_map[status])
-            
-            # Generate payment details
-            payment_date = None
-            payment_reference = None
-            
-            if payment_status in ['paid', 'refunded', 'on_hold']:
-                if booking_type == 'daily':
-                    # Daily bookings usually paid in advance
-                    payment_date = booking_created_date + timedelta(hours=random.randint(1, 48))
-                else:
-                    # Hourly bookings might be paid closer to check-in
-                    payment_date = start_time - timedelta(hours=random.randint(1, 24))
-                payment_reference = generate_payment_reference(payment_method, total_bookings_created + 1)
-            elif payment_status == 'failed':
-                payment_date = booking_created_date + timedelta(minutes=random.randint(5, 120))
-                payment_reference = generate_payment_reference(payment_method, total_bookings_created + 1)
-            
-            # Create booking
-            booking = Booking(
-                start_time=start_time,
-                end_time=end_time,
-                total_hours=total_hours,
-                total_price=total_price,
-                status=status,
-                home_id=home.id,
-                renter_id=renter.id,
-                payment_status=payment_status,
-                payment_date=payment_date,
-                payment_method=payment_method,
-                payment_reference=payment_reference,
-                booking_type=booking_type,
-                created_at=booking_created_date
-            )
-            
-            bookings.append(booking)
-            total_bookings_created += 1
-        
-        current_date += timedelta(days=1)
-        
-        if total_bookings_created >= 400:
-            break
-    
-    # Add special scenario bookings
-    special_bookings = create_special_scenario_bookings(homes, renters)
-    bookings.extend(special_bookings)
-    
-    return bookings
-
-def create_special_scenario_bookings(homes, renters):
-    """Create special scenario bookings for testing various edge cases and realistic situations"""
-    special_bookings = []
-    
-    if not homes or not renters:
-        return special_bookings
-    
-    # Scenario 1: Corporate long-term booking (1 month)
-    home = random.choice(homes)
-    renter = random.choice(renters)
-    start_time = datetime.now() - timedelta(days=60)
-    end_time = start_time + timedelta(days=30)
-    total_hours = calculate_total_hours(start_time, end_time)
-    total_price = calculate_price(home, 'daily', total_hours, start_time) * 0.85  # 15% corporate discount
-    
-    special_bookings.append(Booking(
-        start_time=start_time,
-        end_time=end_time,
-        total_hours=total_hours,
-        total_price=total_price,
-        status='completed',
-        home_id=home.id,
-        renter_id=renter.id,
-        payment_status='paid',
-        payment_date=start_time - timedelta(days=7),
-        payment_method='bank_transfer',
-        payment_reference='CORP_LONGTERM_001',
-        booking_type='daily',
-        created_at=start_time - timedelta(days=14)
-    ))
-    
-    # Scenario 2: Last-minute emergency booking
-    home = random.choice(homes)
-    renter = random.choice(renters)
-    start_time = datetime.now() + timedelta(hours=2)
-    end_time = start_time + timedelta(hours=8)
-    total_hours = calculate_total_hours(start_time, end_time)
-    total_price = calculate_price(home, 'hourly', total_hours, start_time) * 1.2  # 20% emergency surcharge
-    
-    special_bookings.append(Booking(
-        start_time=start_time,
-        end_time=end_time,
-        total_hours=total_hours,
-        total_price=total_price,
-        status='confirmed',
-        home_id=home.id,
-        renter_id=renter.id,
-        payment_status='paid',
-        payment_date=datetime.now() + timedelta(minutes=15),
-        payment_method='momo',
-        payment_reference='EMERGENCY_001',
-        booking_type='hourly',
-        created_at=datetime.now()
-    ))
-    
-    # Scenario 3: Wedding/event booking (3 days)
-    home = random.choice(homes)
-    renter = random.choice(renters)
-    next_month = datetime.now() + timedelta(days=30)
-    # Find next Saturday
-    days_until_saturday = (5 - next_month.weekday()) % 7
-    wedding_date = next_month + timedelta(days=days_until_saturday)
-    start_time = wedding_date.replace(hour=12, minute=0)
-    end_time = start_time + timedelta(days=3)
-    total_hours = calculate_total_hours(start_time, end_time)
-    total_price = calculate_price(home, 'daily', total_hours, start_time) * 1.5  # 50% event premium
-    
-    special_bookings.append(Booking(
-        start_time=start_time,
-        end_time=end_time,
-        total_hours=total_hours,
-        total_price=total_price,
-        status='confirmed',
-        home_id=home.id,
-        renter_id=renter.id,
-        payment_status='paid',
-        payment_date=datetime.now() - timedelta(days=5),
-        payment_method='bank_transfer',
-        payment_reference='WEDDING_EVENT_001',
-        booking_type='daily',
-        created_at=datetime.now() - timedelta(days=21)
-    ))
-    
-    # Scenario 4: Payment dispute case
-    home = random.choice(homes)
-    renter = random.choice(renters)
-    start_time = datetime.now() - timedelta(days=15)
-    end_time = start_time + timedelta(days=2)
-    total_hours = calculate_total_hours(start_time, end_time)
-    total_price = calculate_price(home, 'daily', total_hours, start_time)
-    
-    special_bookings.append(Booking(
-        start_time=start_time,
-        end_time=end_time,
-        total_hours=total_hours,
-        total_price=total_price,
-        status='disputed',
-        home_id=home.id,
-        renter_id=renter.id,
-        payment_status='on_hold',
-        payment_date=start_time - timedelta(days=3),
-        payment_method='credit_card',
-        payment_reference='DISPUTE_001',
-        booking_type='daily',
-        created_at=start_time - timedelta(days=10)
-    ))
-    
-    # Scenario 5: Tet holiday premium booking
-    tet_2024 = datetime(2024, 2, 10, 15, 0)  # Tet 2024
-    if tet_2024 > datetime.now() - timedelta(days=365):  # If within our data range
+        # Select random home and renter
         home = random.choice(homes)
         renter = random.choice(renters)
-        start_time = tet_2024
-        end_time = start_time + timedelta(days=5)
-        total_hours = calculate_total_hours(start_time, end_time)
-        total_price = calculate_price(home, 'daily', total_hours, start_time)  # Already includes Tet premium
         
-        special_bookings.append(Booking(
+        # Get customer behavior pattern
+        customer_profile = get_customer_type()
+        prefs = customer_profile['booking_preferences']
+        
+        # Generate booking timing
+        advance_days = random.randint(*prefs['advance_booking_days'])
+        
+        # Determine if this is a past or future booking
+        if random.random() < 0.4:  # 40% past bookings
+            booking_date = now - timedelta(days=random.randint(1, 7))
+            booking_created_date = booking_date - timedelta(days=advance_days)
+        else:  # 60% future bookings
+            booking_date = now + timedelta(days=random.randint(0, 7))
+            booking_created_date = now - timedelta(days=advance_days)
+        
+        # Adjust start time based on customer preferences
+        preferred_time_ranges = prefs['preferred_times']
+        time_range = random.choice(preferred_time_ranges)
+        start_hour = random.randint(time_range[0], time_range[1])
+        preferred_start_time = booking_date.replace(hour=start_hour, minute=random.choice([0, 30]))
+        
+        # Determine duration
+        duration_range = prefs['preferred_duration']
+        duration_hours = random.randint(int(duration_range[0]), int(duration_range[1]))
+        duration_hours = max(2, duration_hours)  # Minimum 2 hours
+        
+        # Find available time slot
+        time_slot = find_available_time_slot(
+            home, duration_hours, preferred_start_time, all_existing_bookings
+        )
+        
+        # If can't find slot with preferred duration, try shorter durations
+        if not time_slot and duration_hours > 2:
+            for shorter_duration in [duration_hours // 2, 4, 3, 2]:
+                if shorter_duration < 2:
+                    break
+                time_slot = find_available_time_slot(
+                    home, shorter_duration, preferred_start_time, all_existing_bookings
+                )
+                if time_slot:
+                    duration_hours = shorter_duration
+                    break
+        
+        if not time_slot:
+            continue  # Try again with different parameters
+        
+        start_time, end_time = time_slot
+        
+        # Determine booking type
+        booking_type = 'daily' if duration_hours >= 24 else 'hourly'
+        
+        # Calculate pricing
+        total_hours = calculate_total_hours(start_time, end_time)
+        total_price = calculate_price(home, booking_type, total_hours, start_time)
+        
+        # Apply customer-specific pricing adjustments
+        if customer_profile['type'] == 'group_traveler':
+            total_price *= 1.1  # 10% group surcharge
+        elif customer_profile['type'] == 'business_traveler':
+            total_price *= 1.05  # 5% business rate
+        elif customer_profile['type'] == 'local_resident' and booking_type == 'hourly':
+            total_price *= 0.95  # 5% local discount
+        
+        # Ensure minimum price
+        total_price = max(total_price, 20000)  # Minimum 20,000 VND
+        
+        # Determine booking status based on timing
+        if start_time < now - timedelta(hours=1):
+            # Past bookings
+            if random.random() < prefs['cancellation_rate']:
+                status = 'cancelled'
+            else:
+                status = random.choices(['completed', 'no_show'], weights=[0.95, 0.05])[0]
+        elif start_time < now + timedelta(hours=2):
+            # Current/very near future
+            status = random.choices(['active', 'checked_out', 'confirmed'], weights=[0.5, 0.3, 0.2])[0]
+        else:
+            # Future bookings
+            if random.random() < prefs['cancellation_rate'] * 0.5:  # Lower cancellation for future
+                status = 'cancelled'
+            else:
+                status = random.choices(['confirmed', 'pending'], weights=[0.8, 0.2])[0]
+        
+        # Choose payment method and status
+        payment_method_weights = [weight for _, weight in payment_methods]
+        payment_method = random.choices([method for method, _ in payment_methods], weights=payment_method_weights)[0]
+        payment_status = random.choice(payment_status_map[status])
+        
+        # Generate payment details
+        payment_date = None
+        payment_reference = None
+        
+        if payment_status in ['paid', 'refunded', 'on_hold']:
+            if booking_type == 'daily':
+                payment_date = booking_created_date + timedelta(hours=random.randint(1, 48))
+            else:
+                payment_date = start_time - timedelta(hours=random.randint(1, 24))
+            payment_reference = generate_payment_reference(payment_method, len(bookings) + 1)
+        elif payment_status == 'failed':
+            payment_date = booking_created_date + timedelta(minutes=random.randint(5, 120))
+            payment_reference = generate_payment_reference(payment_method, len(bookings) + 1)
+        
+        # Create booking
+        booking = Booking(
             start_time=start_time,
             end_time=end_time,
             total_hours=total_hours,
             total_price=total_price,
-            status='completed' if start_time < datetime.now() else 'confirmed',
+            status=status,
             home_id=home.id,
             renter_id=renter.id,
-            payment_status='paid',
-            payment_date=start_time - timedelta(days=30),
-            payment_method='bank_transfer',
-            payment_reference='TET_HOLIDAY_001',
-            booking_type='daily',
-            created_at=start_time - timedelta(days=45)
-        ))
+            payment_status=payment_status,
+            payment_date=payment_date,
+            payment_method=payment_method,
+            payment_reference=payment_reference,
+            booking_type=booking_type,
+            created_at=booking_created_date
+        )
+        
+        bookings.append(booking)
+        all_existing_bookings.append(booking)  # Add to tracking list
+        
+        print(f"Created booking {len(bookings)}/{TARGET_BOOKINGS}: {home.title[:30]}... from {start_time.strftime('%m-%d %H:%M')} to {end_time.strftime('%m-%d %H:%M')}")
     
-    # Scenario 6: Repeat customer loyalty booking
-    home = random.choice(homes)
-    renter = random.choice(renters)
-    start_time = datetime.now() + timedelta(days=14)
-    end_time = start_time + timedelta(days=2)
-    total_hours = calculate_total_hours(start_time, end_time)
-    total_price = calculate_price(home, 'daily', total_hours, start_time) * 0.9  # 10% loyalty discount
-    
-    special_bookings.append(Booking(
-        start_time=start_time,
-        end_time=end_time,
-        total_hours=total_hours,
-        total_price=total_price,
-        status='confirmed',
-        home_id=home.id,
-        renter_id=renter.id,
-        payment_status='paid',
-        payment_date=datetime.now() - timedelta(days=2),
-        payment_method='momo',
-        payment_reference='LOYALTY_001',
-        booking_type='daily',
-        created_at=datetime.now() - timedelta(days=5)
-    ))
-    
-    print(f"Created {len(special_bookings)} special scenario bookings")
-    return special_bookings
+    print(f"Successfully created {len(bookings)} bookings with no time conflicts!")
+    return bookings
 
 def print_pricing_debug_info(homes):
     """Print pricing information for homes to help debug"""
     print(f"\n=== HOME PRICING DEBUG INFO ===")
+    print(f"Total homes available: {len(homes)}")
     
-    homes_with_hourly = 0
-    homes_with_daily = 0
-    homes_with_both = 0
-    homes_with_none = 0
-    
-    for home in homes[:5]:  # Show first 5 homes
-        print(f"\nHome ID {home.id}: {home.title[:30]}...")
+    homes_with_pricing = 0
+    for home in homes[:3]:  # Show first 3 homes
+        print(f"\nHome ID {home.id}: {home.title[:40]}...")
         print(f"  First 2 hours: {home.price_first_2_hours or 'Not set'}")
         print(f"  Additional hour: {home.price_per_additional_hour or 'Not set'}")
-        print(f"  Overnight: {home.price_overnight or 'Not set'}")
-        print(f"  Daytime: {home.price_daytime or 'Not set'}")
         print(f"  Per day: {home.price_per_day or 'Not set'}")
         
-        has_hourly = any([home.price_first_2_hours, home.price_per_additional_hour, 
-                         home.price_overnight, home.price_daytime])
-        has_daily = bool(home.price_per_day)
-        
-        if has_hourly and has_daily:
-            homes_with_both += 1
-        elif has_hourly:
-            homes_with_hourly += 1
-        elif has_daily:
-            homes_with_daily += 1
-        else:
-            homes_with_none += 1
+        has_pricing = any([home.price_first_2_hours, home.price_per_additional_hour, home.price_per_day])
+        if has_pricing:
+            homes_with_pricing += 1
     
-    total_homes = len(homes)
-    print(f"\n=== PRICING SUMMARY (Total: {total_homes} homes) ===")
-    print(f"Homes with hourly pricing only: {homes_with_hourly}")
-    print(f"Homes with daily pricing only: {homes_with_daily}")
-    print(f"Homes with both pricing types: {homes_with_both}")
-    print(f"Homes with no pricing: {homes_with_none}")
+    print(f"Homes with valid pricing: {homes_with_pricing}/{len(homes)}")
 
 def print_booking_statistics(bookings):
     """Print statistics about generated bookings"""
@@ -764,40 +631,63 @@ def print_booking_statistics(bookings):
 if __name__ == "__main__":
     with app.app_context():
         try:
-            # Clear existing bookings (optional - comment out to keep existing data)
-            print("Clearing existing bookings...")
-            Booking.query.delete()
-            db.session.commit()
+            print("🚀 Starting booking data generation...")
+            print("=" * 50)
             
             # Show pricing debug info
             homes = Home.query.all()
             if homes:
                 print_pricing_debug_info(homes)
             
+            # Option to clear existing bookings in time range
+            print(f"\n📊 Checking existing bookings in target range...")
+            now = datetime.now()
+            existing_count = Booking.query.filter(
+                Booking.start_time >= now - timedelta(days=7),
+                Booking.end_time <= now + timedelta(days=7)
+            ).count()
+            
+            if existing_count > 0:
+                print(f"Found {existing_count} existing bookings in target time range")
+                response = input("Clear existing bookings in this range? (y/N): ").lower()
+                if response == 'y':
+                    Booking.query.filter(
+                        Booking.start_time >= now - timedelta(days=7),
+                        Booking.end_time <= now + timedelta(days=7)
+                    ).delete()
+                    db.session.commit()
+                    print("✅ Cleared existing bookings in target range")
+            else:
+                print("No existing bookings found in target range")
+            
             # Generate new bookings
-            print("Generating enhanced booking data...")
+            print("\n🎯 Generating ~50 diverse bookings with no time conflicts...")
+            print("Time range: 1 week ago to 1 week from now")
+            print("=" * 50)
+            
             bookings = create_enhanced_booking_data()
             
             if bookings:
                 # Save to database
-                print(f"Saving {len(bookings)} bookings to database...")
+                print(f"\n💾 Saving {len(bookings)} bookings to database...")
                 db.session.bulk_save_objects(bookings)
                 db.session.commit()
                 
                 # Print statistics
                 print_booking_statistics(bookings)
                 
-                print(f"\n✅ Successfully created {len(bookings)} diverse bookings!")
-                print("The bookings include:")
-                print("- Realistic time patterns and durations")
-                print("- Various payment methods and statuses")
-                print("- Seasonal and weekend pricing")
-                print("- Special scenarios (long-term, same-day, etc.)")
-                print("- Historical data spanning 2 years")
-                print("- Future bookings for testing")
+                print(f"\n🎉 SUCCESS! Created {len(bookings)} bookings with features:")
+                print("✅ No time conflicts between bookings")
+                print("✅ Diverse customer behavior patterns")
+                print("✅ Realistic payment methods and statuses")
+                print("✅ Weekend and seasonal pricing")
+                print("✅ Mix of past and future bookings")
+                print("✅ Focus on recent timeframe (±1 week)")
             else:
                 print("❌ No bookings were generated. Please check if homes and renters exist.")
                 
         except Exception as e:
             print(f"❌ Error generating booking data: {str(e)}")
+            import traceback
+            traceback.print_exc()
             db.session.rollback()

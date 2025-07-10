@@ -239,7 +239,8 @@
         position: absolute;
         left: 4px;
         right: 4px;
-        background-color: #4ade80;
+        background-color: #ddf8b5eb;
+        border: 1px solid #425e26;
         border-radius: 4px;
         padding: 4px 8px;
         cursor: pointer;
@@ -247,30 +248,26 @@
         z-index: 10;
         overflow: hidden;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        color: white;
+        color: #2d5016;
     }
 
     .booking-block:hover {
-        background-color: #22c55e;
+        background-color: #ddf8b5eb;
+        border-color: #425e26;
         transform: translateY(-1px);
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 
     /* Multi-day booking styling */
     .booking-block.multi-day-booking {
-        background-color: #3b82f6;
-        background-image: repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 10px,
-            rgba(255,255,255,0.1) 10px,
-            rgba(255,255,255,0.1) 20px
-        );
-        border-left: 4px solid #1d4ed8;
+        background-color: #ddf8b5eb;
+        border: 2px solid #425e26;
+        border-left: 4px solid #5a8f2e;
     }
 
     .booking-block.multi-day-booking:hover {
-        background-color: #2563eb;
+        background-color: #ddf8b5eb;
+        border-color: #425e26;
     }
 
     .booking-customer {
