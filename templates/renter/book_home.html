@@ -26,7 +26,7 @@
                 <p class="card-text">
                   <span class="badge bg-primary">{{ home.home_type }}</span>
                   <span class="badge bg-info">{{ home.max_guests }} guests</span>
-                  <span class="badge bg-success">{{ "{:,.0f}".format(home.price_per_night) }}đ/ngày</span>
+                  <span class="badge bg-success">{{ "{:,.0f}".format(home.price_per_night) }} VND/ngày</span>
                 </p>
               </div>
             </div>
@@ -57,7 +57,7 @@
               <table class="table table-borderless">
                 <tr>
                   <td data-translate="price-per-night">Price per Night</td>
-                  <td class="text-end" id="price-per-night">{{ "{:,.0f}".format(home.price_per_night) }}đ</td>
+                  <td class="text-end" id="price-per-night">{{ "{:,.0f}".format(home.price_per_night) }} VND</td>
                 </tr>
                 <tr>
                   <td data-translate="duration-days">Duration (days)</td>
@@ -69,7 +69,7 @@
                 </tr>
                 <tr class="fw-bold">
                   <td data-translate="total-price">Total</td>
-                  <td class="text-end" id="total-price">{{ "{:,.0f}".format(home.price_per_night) }}đ</td>
+                  <td class="text-end" id="total-price">{{ "{:,.0f}".format(home.price_per_night) }} VND</td>
                 </tr>
               </table>
             </div>
@@ -114,7 +114,7 @@
 
     // Calculate total price (price per night * duration)
     const totalPrice = duration * pricePerNight;
-    totalPriceEl.textContent = (totalPrice.toLocaleString('vi-VN') + 'đ');
+    totalPriceEl.textContent = (totalPrice.toLocaleString('vi-VN') + ' VND');
   }
 
   durationInput.addEventListener('input', updateSummary);

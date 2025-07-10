@@ -26,10 +26,10 @@
                             <p><strong>Số phòng tắm:</strong> {{ home.bathroom_count }}</p>
                             <p><strong>Số khách tối đa:</strong> {{ home.max_guests }}</p>
                             {% if home.price_per_hour %}
-                            <p><strong>Giá theo giờ:</strong> {{ "{:,.0f}".format(home.price_per_hour) }}đ/giờ</p>
+                            <p><strong>Giá theo giờ:</strong> {{ "{:,.0f}".format(home.price_per_hour) }} VND/giờ</p>
                             {% endif %}
                             {% if home.price_per_night %}
-                            <p><strong>Giá theo đêm:</strong> {{ "{:,.0f}".format(home.price_per_night) }}đ/ngày</p>
+                            <p><strong>Giá theo đêm:</strong> {{ "{:,.0f}".format(home.price_per_night) }} VND/ngày</p>
                             {% endif %}
                         </div>
                         <div class="col-md-6">

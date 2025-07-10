@@ -69,6 +69,16 @@ def property_type_vn_filter(value):
     }
     return property_type_map.get(value, value)
 
+@app.template_filter('format_price')
+def format_price_filter(value):
+    """Format price with proper number formatting, handle None values"""
+    if value is None or value == 0:
+        return "0"
+    try:
+        return "{:,.0f}".format(value)
+    except (TypeError, ValueError):
+        return "0"
+
 @login_manager.user_loader
 def load_user(user_id):
     # Get user role from session to load correct user type

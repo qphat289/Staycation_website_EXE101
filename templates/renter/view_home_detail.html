@@ -657,11 +657,11 @@
                 </h2>
                 <div class="description-text">
                     {% if home.price_per_hour %}
-                        <span style="color: #4a5568; font-weight: 600;">{{ "{:,.0f}".format(home.price_per_hour) }}đ/giờ</span>
+                        <span style="color: #4a5568; font-weight: 600;">{{ "{:,.0f}".format(home.price_per_hour) }} VND/giờ</span>
                         {% if home.price_per_hour and home.price_per_night %} | {% endif %}
                     {% endif %}
                     {% if home.price_per_night %}
-                        <span style="color: #4a5568; font-weight: 600;">{{ "{:,.0f}".format(home.price_per_night) }}đ/ngày</span>
+                        <span style="color: #4a5568; font-weight: 600;">{{ "{:,.0f}".format(home.price_per_night) }} VND/ngày</span>
                     {% endif %}
                 </div>
             </div>

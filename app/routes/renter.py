@@ -85,6 +85,83 @@ DISTRICT_MAPPING = {
     'Quận Thủ Đức': 'quan_thu_duc'
 }
 
+def _get_location_db_value(location):
+    """Helper function to get database value for location"""
+    if location in CITY_MAPPING:
+        return CITY_MAPPING[location]
+    elif location in DISTRICT_MAPPING:
+        return DISTRICT_MAPPING[location]
+    return location
+
+def _build_location_filters(location):
+    """Helper function to build location filters"""
+    location_db = _get_location_db_value(location)
+    
+    filters = []
+    # Search in city, district, title, and address (case insensitive)
+    for field in [Home.city, Home.district, Home.title, Home.address]:
+        filters.append(field.ilike(f'%{location}%'))
+        if location_db != location:
+            filters.append(field.ilike(f'%{location_db}%'))
+    
+    return filters
+
+def _build_price_filters(booking_type, min_price=None, max_price=None):
+    """Helper function to build price filters"""
+    if booking_type == 'hourly':
+        availability_fields = [Home.price_per_hour, Home.price_first_2_hours, Home.price_per_additional_hour]
+    else:
+        availability_fields = [Home.price_per_night, Home.price_per_day, Home.price_overnight, Home.price_daytime]
+    
+    # First, ensure availability
+    availability_filter = db.or_(*[
+        db.and_(field.isnot(None), field > 0) for field in availability_fields
+    ])
+    
+    # Then apply price range if specified
+    price_filters = []
+    if min_price is not None or max_price is not None:
+        for field in availability_fields:
+            conditions = [db.and_(field.isnot(None), field > 0)]
+            if min_price is not None:
+                conditions.append(field >= min_price)
+            if max_price is not None:
+                conditions.append(field <= max_price)
+            
+            if len(conditions) > 1:
+                price_filters.append(db.and_(*conditions))
+    
+    return availability_filter, price_filters
+
+def _convert_ids_to_integers(ids_list):
+    """Helper function to convert string IDs to integers"""
+    valid_ids = []
+    for id_str in ids_list:
+        try:
+            valid_ids.append(int(id_str))
+        except (ValueError, TypeError):
+            continue
+    return valid_ids
+
+def _get_filter_options():
+    """Helper function to get filter options for dropdowns"""
+    cities = [city[0] for city in db.session.query(Home.city).distinct().all() if city[0]]
+    cities.sort()
+    
+    # Map district database values to display names
+    district_display_names = {v: k for k, v in DISTRICT_MAPPING.items()}
+    districts = []
+    for district in db.session.query(Home.district).distinct().all():
+        if district[0]:
+            display_name = district_display_names.get(district[0], district[0])
+            if display_name not in districts:
+                districts.append(display_name)
+    districts.sort()
+    
+    home_types = [rt[0] for rt in db.session.query(Home.home_type).distinct().all() if rt[0]]
+    
+    return cities, districts, home_types
+
 @renter_bp.route('/search')
 def search():
     """Search for rooms with filters"""
@@ -93,161 +170,65 @@ def search():
     min_price = request.args.get('min_price', type=float)
     max_price = request.args.get('max_price', type=float)
     room_type = request.args.get('room_type', '')
-    booking_type = request.args.get('booking_type', 'hourly')  # Default to hourly if not specified
+    booking_type = request.args.get('booking_type', 'daily')
     city = request.args.get('city', '')
     district = request.args.get('district', '')
-    
-    # Get time parameters
-    checkin_date = request.args.get('checkin_date')
-    checkin_time = request.args.get('checkin_time')
-    checkout_time = request.args.get('checkout_time')
     
     # Get guest parameters
     adults = request.args.get('adults', type=int, default=1)
     children = request.args.get('children', type=int, default=0)
-    rooms_count = request.args.get('rooms', type=int, default=1)
     total_guests = adults + children if adults is not None and children is not None else None
     
     # Get amenity and rule filters
     amenity_ids = request.args.getlist('amenities')
     rule_ids = request.args.getlist('rules')
     
-    # Log search parameters
-    print("🔍 Search Parameters:")
-    print(f"Location: {location}")
-    print(f"City: {city}")
-    print(f"District: {district}")
-    print(f"Booking Type: {booking_type}")
-    print(f"Rules: {rule_ids}")
-    print(f"Check-in Date: {checkin_date}")
-    print(f"Check-in Time: {checkin_time}")
-    print(f"Check-out Time: {checkout_time}")
-    print(f"Adults: {adults}")
-    print(f"Children: {children}")
-    print(f"Rooms: {rooms_count}")
-    print(f"Total Guests: {total_guests}")
-    
-    # Build query
+    # Build base query
     query = Home.query.filter_by(is_active=True)
     
-    # Filter by location (city, district or room title)
+    # Apply location filters
     if location:
-        # Map location to database values if it matches a city or district
-        location_db = location
-        if location in CITY_MAPPING:
-            location_db = CITY_MAPPING[location]
-        elif location in DISTRICT_MAPPING:
-            location_db = DISTRICT_MAPPING[location]
-            
-        # Try to match location against city, district, or title
-        query = query.filter(
-            db.or_(
-                Home.city.ilike(f'%{location_db}%'),
-                Home.district.ilike(f'%{location_db}%'),
-                Home.title.ilike(f'%{location}%')  # Keep original for title search
-            )
-        )
-        print(f"🔍 Location filter: {location} -> {location_db}")
-        
-    # Apply price filters based on booking type
-    if booking_type == 'hourly':
-        if min_price is not None:
-            query = query.filter(Home.price_per_hour >= min_price)
-            print(f"🔍 Min hourly price filter: {min_price}")
-        if max_price is not None:
-            query = query.filter(Home.price_per_hour <= max_price)
-            print(f"🔍 Max hourly price filter: {max_price}")
-        # Ensure home has hourly price and it's not zero
-        query = query.filter(Home.price_per_hour.isnot(None))
-        query = query.filter(Home.price_per_hour > 0)
-    else:  # daily/daily
-        if min_price is not None:
-            query = query.filter(Home.price_per_night >= min_price)
-            print(f"🔍 Min daily price filter: {min_price}")
-        if max_price is not None:
-            query = query.filter(Home.price_per_night <= max_price)
-            print(f"🔍 Max daily price filter: {max_price}")
-        # Ensure home has daily price and it's not zero
-        query = query.filter(Home.price_per_night.isnot(None))
-        query = query.filter(Home.price_per_night > 0)
+        location_filters = _build_location_filters(location)
+        query = query.filter(db.or_(*location_filters))
     
+    # Apply price filters
+    availability_filter, price_filters = _build_price_filters(booking_type, min_price, max_price)
+    query = query.filter(availability_filter)
+    if price_filters:
+        query = query.filter(db.or_(*price_filters))
+    
+    # Apply other filters
     if room_type:
         query = query.filter(Home.home_type == room_type)
-        print(f"🔍 Home type filter: {room_type}")
     
-    # Filter by max guests if specified
     if total_guests is not None:
         query = query.filter(Home.max_guests >= total_guests)
-        print(f"🔍 Max guests filter: {total_guests}")
     
-    # Filter by specific city if selected
     if city:
-        # Map city name to database value if needed
         city_db = CITY_MAPPING.get(city, city)
-        # Use direct equality comparison instead of LIKE for exact city matches
         query = query.filter(Home.city == city_db)
-        print(f"🔍 City filter: {city} -> {city_db} (exact match)")
     
-    # Filter by specific district if selected
     if district:
-        # Map district name to database value if needed
         district_db = DISTRICT_MAPPING.get(district, district)
         query = query.filter(Home.district == district_db)
-        print(f"🔍 District filter: {district} -> {district_db}")
-
-    # Filter by rules if specified
-    if rule_ids:
-        # Convert rule_ids to integers
-        valid_rule_ids = []
-        for rule_id in rule_ids:
-            try:
-                valid_rule_ids.append(int(rule_id))
-                print(f"🔍 Rule filter added: ID {rule_id}")
-            except (ValueError, TypeError):
-                print(f"❌ Invalid rule ID: {rule_id}")
-        
-        if valid_rule_ids:
-            # Filter homes that have ALL selected rules
-            for rule_id in valid_rule_ids:
-                query = query.filter(Home.rules.any(Rule.id == rule_id))
-
-    # Filter by amenities if specified
-    if amenity_ids:
-        # Convert amenity_ids to integers
-        valid_amenity_ids = []
-        for amenity_id in amenity_ids:
-            try:
-                valid_amenity_ids.append(int(amenity_id))
-                print(f"🔍 Amenity filter added: ID {amenity_id}")
-            except (ValueError, TypeError):
-                print(f"❌ Invalid amenity ID: {amenity_id}")
-        
-        if valid_amenity_ids:
-            # Filter homes that have ALL selected amenities
-            for amenity_id in valid_amenity_ids:
-                query = query.filter(Home.amenities.any(Amenity.id == amenity_id))
     
-    # Execute query and get all matching homes
+    # Apply amenity filters
+    valid_amenity_ids = _convert_ids_to_integers(amenity_ids)
+    for amenity_id in valid_amenity_ids:
+        query = query.filter(Home.amenities.any(Amenity.id == amenity_id))
+    
+    # Apply rule filters
+    valid_rule_ids = _convert_ids_to_integers(rule_ids)
+    for rule_id in valid_rule_ids:
+        query = query.filter(Home.rules.any(Rule.id == rule_id))
+    
+    # Execute query
     homes = query.all()
-    print(f"🔍 Found {len(homes)} matching homes")
     
-    # Print details of each home for debugging
-    for home in homes:
-        print(f"\nHome Details:")
-        print(f"Title: {home.title}")
-        print(f"City: {home.city}")
-        print(f"District: {home.district}")
-        print(f"Max Guests: {home.max_guests}")
-        print(f"Price per Hour: {home.price_per_hour}")
-        print(f"Price per Night: {home.price_per_night}")
-        print(f"Is Active: {home.is_active}")
+    # Get filter options
+    cities, districts, home_types = _get_filter_options()
     
-    # Get unique cities and districts for filter dropdowns
-    cities = db.session.query(Home.city).distinct().all()
-    districts = db.session.query(Home.district).distinct().all()
-    home_types = db.session.query(Home.home_type).distinct().all()
-    
-    # Get amenities and categories for filter - include the category relationship
+    # Get amenities and categories for filter
     amenity_categories = AmenityCategory.query.filter_by(is_active=True).order_by(AmenityCategory.display_order).all()
     amenities = Amenity.query.filter_by(is_active=True).options(
         joinedload(Amenity.amenity_category)
@@ -256,42 +237,16 @@ def search():
     # Get rules for filter
     rules = Rule.query.filter_by(is_active=True).order_by(Rule.name).all()
     
-    # City names are already in display format, so we don't need to map them
-    # Just extract the city names from query result
-    cities = [city[0] for city in cities if city[0]]  # Extract city names and filter empty values
-    # Sort cities alphabetically for better display
-    cities.sort()
-    
-    # For districts, still use mapping if available
-    district_display_names = {v: k for k, v in DISTRICT_MAPPING.items()}
-    districts = [district_display_names.get(district[0], district[0].upper()) for district in districts]
-    
-    # Get selected amenity IDs as integers for comparison in template
-    selected_amenity_ids = []
-    for amenity_id in amenity_ids:
-        try:
-            selected_amenity_ids.append(int(amenity_id))
-        except (ValueError, TypeError):
-            pass
-    
-    # Get selected rule IDs as integers for comparison in template
-    selected_rule_ids = []
-    for rule_id in rule_ids:
-        try:
-            selected_rule_ids.append(int(rule_id))
-        except (ValueError, TypeError):
-            pass
-    
     return render_template('renter/search.html', 
                           homes=homes,
                           cities=cities,
                           districts=districts,
-                          home_types=[rt[0] for rt in home_types if rt[0]],
+                          home_types=home_types,
                           amenity_categories=amenity_categories,
                           amenities=amenities,
                           rules=rules,
-                          selected_amenity_ids=selected_amenity_ids,
-                          selected_rule_ids=selected_rule_ids,
+                          selected_amenity_ids=valid_amenity_ids,
+                          selected_rule_ids=valid_rule_ids,
                           search_params=request.args)
 
 @renter_bp.route('/view-home/<int:id>')
@@ -831,3 +786,76 @@ def debug_rules():
         'sample_home_id': sample_home.id if sample_home else None,
         'sample_home_rules': home_rules
     })
+
+@renter_bp.route('/debug_search')
+def debug_search():
+    """Single comprehensive debug route for search functionality"""
+    try:
+        # Get basic statistics
+        all_homes = Home.query.all()
+        active_homes = Home.query.filter_by(is_active=True).all()
+        
+        # Test different search scenarios
+        test_results = {}
+        
+        if active_homes:
+            sample_home = active_homes[0]
+            
+            # Test basic search
+            test_results['basic_search'] = {
+                'total_homes': len(all_homes),
+                'active_homes': len(active_homes)
+            }
+            
+            # Test location search
+            if sample_home.title:
+                title_part = sample_home.title[:3]
+                title_results = Home.query.filter_by(is_active=True).filter(
+                    Home.title.ilike(f'%{title_part}%')
+                ).all()
+                test_results['title_search'] = {
+                    'search_term': title_part,
+                    'results': len(title_results)
+                }
+            
+            # Test price availability
+            hourly_homes = Home.query.filter_by(is_active=True).filter(
+                db.or_(
+                    db.and_(Home.price_per_hour.isnot(None), Home.price_per_hour > 0),
+                    db.and_(Home.price_first_2_hours.isnot(None), Home.price_first_2_hours > 0)
+                )
+            ).all()
+            
+            daily_homes = Home.query.filter_by(is_active=True).filter(
+                db.or_(
+                    db.and_(Home.price_per_night.isnot(None), Home.price_per_night > 0),
+                    db.and_(Home.price_per_day.isnot(None), Home.price_per_day > 0)
+                )
+            ).all()
+            
+            test_results['pricing'] = {
+                'hourly_homes': len(hourly_homes),
+                'daily_homes': len(daily_homes)
+            }
+            
+            # Sample home info
+            test_results['sample_home'] = {
+                'id': sample_home.id,
+                'title': sample_home.title,
+                'city': sample_home.city,
+                'district': sample_home.district,
+                'pricing': {
+                    'hourly': sample_home.price_per_hour,
+                    'nightly': sample_home.price_per_night,
+                    'first_2_hours': sample_home.price_first_2_hours,
+                    'per_day': sample_home.price_per_day
+                }
+            }
+        
+        return jsonify(test_results)
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'type': type(e).__name__
+        }), 500
