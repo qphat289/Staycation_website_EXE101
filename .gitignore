@@ -63,6 +63,14 @@ migrations/versions/__pycache__/
 migrations/README
 instance/
 *.db
+*.sqlite
+*.sqlite3
+
+# Database specific files
+homestay.db
+instance/homestay.db
+database.db
+
 
 # Cache
 .cache/
