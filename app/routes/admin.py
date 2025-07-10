@@ -36,6 +36,13 @@ def dashboard():
         # Get owners
         owners = Owner.query.all()
         for owner in owners:
+            # Lấy commission_percent của phòng đầu tiên (nếu có)
+            commission_percent = None
+            total_revenue = 0
+            if owner.rooms and len(owner.rooms) > 0:
+                commission_percent = owner.rooms[0].commission_percent
+                # Tính tổng doanh thu các phòng
+                total_revenue = sum([room.revenue or 0 for room in owner.rooms])
             users.append({
                 'id': owner.id,
                 'username': owner.username,
@@ -45,7 +52,9 @@ def dashboard():
                 'is_active': getattr(owner, 'is_active', True),
                 'role': 'Owner',
                 'role_type': 'owner',
-                'created_at': getattr(owner, 'created_at', None)
+                'created_at': getattr(owner, 'created_at', None),
+                'commission_percent': commission_percent,
+                'total_revenue': total_revenue
             })
         
         # Get renters
@@ -70,6 +79,7 @@ def dashboard():
     
     # Get all users
     all_users = get_all_users()
+    owners = Owner.query.all()  # Thêm dòng này để lấy danh sách Owner thực sự
       # Apply role filter (only owner and renter, no admin)
     if role_filter != 'all':
         if role_filter in ['owner', 'renter']:
@@ -353,7 +363,7 @@ def dashboard():
     # --- RETURN TEMPLATE ---
     return render_template('admin/dashboard.html', 
                           users=users,  # Changed from owners to users
-                          owners=users,  # Keep owners for backwards compatibility
+                          owners=owners,  # Truyền đúng đối tượng Owner
                           total_count=total_count,
                           active_count=active_count,
                           inactive_count=inactive_count,
@@ -1563,5 +1573,102 @@ def delete_user(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+# @admin_bp.route('/advanced-visualize')
+# @login_required
+# def advanced_visualize():
+#     if not isinstance(current_user, Admin):
+#         flash("You are not authorized!", "danger")
+#         return redirect(url_for('auth.login'))
+#     return render_template('admin/advanced_visualize.html')
+
+@admin_bp.route('/api/owner-revenue')
+@login_required
+def api_owner_revenue():
+    if not isinstance(current_user, Admin):
+        return jsonify({'error': 'Unauthorized'}), 401
+    from sqlalchemy import func, distinct
+    from app.models.models import Owner, Room, Booking, Review
+    owners = db.session.query(
+        Owner.id,
+        Owner.full_name,
+        func.count(distinct(Room.id)).label('room_count'),
+        func.count(Booking.id).label('booking_count'),
+        func.sum(Booking.total_price).label('total_revenue'),
+        func.avg(Review.rating).label('avg_rating')
+    ).join(Room, Owner.id == Room.owner_id) \
+     .outerjoin(Booking, Room.id == Booking.room_id) \
+     .outerjoin(Review, Room.id == Review.room_id) \
+     .filter(Room.is_active == True) \
+     .group_by(Owner.id, Owner.full_name) \
+     .order_by(func.sum(Booking.total_price).desc()) \
+     .all()
+    result = []
+    for o in owners:
+        result.append({
+            'id': o.id,
+            'full_name': o.full_name or f'Chủ nhà {o.id}',
+            'room_count': o.room_count,
+            'booking_count': o.booking_count,
+            'total_revenue': int(o.total_revenue) if o.total_revenue else 0,
+            'avg_rating': round(o.avg_rating, 1) if o.avg_rating else 0.0
+        })
+    return jsonify({'success': True, 'data': result}), 200
+
+@admin_bp.route('/api/room/<int:room_id>/commission', methods=['POST'])
+@login_required
+def update_room_commission(room_id):
+    if not isinstance(current_user, Admin):
+        return jsonify({'success': False, 'error': 'Bạn không có quyền thực hiện thao tác này!'}), 403
+    data = request.get_json()
+    percent = data.get('commission_percent')
+    if percent is None:
+        return jsonify({'success': False, 'error': 'Thiếu dữ liệu phần trăm hoa hồng!'}), 400
+    try:
+        percent = float(percent)
+        if percent < 0 or percent > 100:
+            return jsonify({'success': False, 'error': 'Phần trăm hoa hồng phải từ 0 đến 100!'}), 400
+    except Exception:
+        return jsonify({'success': False, 'error': 'Dữ liệu hoa hồng không hợp lệ!'}), 400
+    room = Room.query.get(room_id)
+    if not room:
+        return jsonify({'success': False, 'error': 'Không tìm thấy phòng!'}), 404
+    room.commission_percent = percent
+    try:
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Cập nhật hoa hồng thành công!', 'commission_percent': percent})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Lỗi khi lưu dữ liệu: ' + str(e)}), 500
+
+@admin_bp.route('/api/owner/<int:owner_id>/commission', methods=['POST'])
+@login_required
+def update_owner_commission(owner_id):
+    if not isinstance(current_user, Admin):
+        return jsonify({'success': False, 'error': 'Bạn không có quyền thực hiện thao tác này!'}), 403
+    data = request.get_json()
+    percent = data.get('commission_percent')
+    if percent is None:
+        return jsonify({'success': False, 'error': 'Thiếu dữ liệu phần trăm hoa hồng!'}), 400
+    try:
+        percent = float(percent)
+        if percent < 0 or percent > 100:
+            return jsonify({'success': False, 'error': 'Phần trăm hoa hồng phải từ 0 đến 100!'}), 400
+    except Exception:
+        return jsonify({'success': False, 'error': 'Dữ liệu hoa hồng không hợp lệ!'}), 400
+    owner = Owner.query.get(owner_id)
+    if not owner:
+        return jsonify({'success': False, 'error': 'Không tìm thấy owner!'}), 404
+    rooms = owner.rooms
+    if not rooms:
+        return jsonify({'success': False, 'error': 'Owner chưa có phòng nào!'}), 400
+    for room in rooms:
+        room.commission_percent = percent
+    try:
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Cập nhật hoa hồng cho tất cả phòng thành công!', 'commission_percent': percent})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Lỗi khi lưu dữ liệu: ' + str(e)}), 500
 
 

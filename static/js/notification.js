@@ -136,37 +136,7 @@ class NotificationSystem {
             pointer-events: auto;
             cursor: pointer;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        `;
-
-        // Tạo nội dung thông báo
-        const icon = document.createElement('div');
-        icon.innerHTML = '💰';
-        icon.style.cssText = `
-            font-size: 24px;
-            margin-bottom: 8px;
-        `;
-
-        const title = document.createElement('div');
-        title.textContent = 'Thanh toán thành công!';
-        title.style.cssText = `
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 5px;
-        `;
-
-        const message = document.createElement('div');
-        message.textContent = notificationData.message;
-        message.style.cssText = `
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 8px;
-        `;
-
-        const time = document.createElement('div');
-        time.textContent = this.formatTime(notificationData.timestamp);
-        time.style.cssText = `
-            font-size: 12px;
-            opacity: 0.7;
+            position: relative;
         `;
 
         // Thêm close button
@@ -191,12 +161,56 @@ class NotificationSystem {
             this.hideNotification(notification);
         };
 
-        // Thêm các element vào notification
         notification.appendChild(closeBtn);
-        notification.appendChild(icon);
-        notification.appendChild(title);
-        notification.appendChild(message);
-        notification.appendChild(time);
+
+        if (notificationData.type === 'custom') {
+            // Chỉ hiển thị message
+            const message = document.createElement('div');
+            message.textContent = notificationData.message;
+            message.style.cssText = `
+                font-size: 15px;
+                opacity: 0.95;
+                margin-bottom: 2px;
+                font-weight: 500;
+            `;
+            notification.appendChild(message);
+        } else {
+            // Tạo nội dung thông báo mặc định
+            const icon = document.createElement('div');
+            icon.innerHTML = '��';
+            icon.style.cssText = `
+                font-size: 24px;
+                margin-bottom: 8px;
+            `;
+
+            const title = document.createElement('div');
+            title.textContent = 'Thanh toán thành công!';
+            title.style.cssText = `
+                font-weight: bold;
+                font-size: 16px;
+                margin-bottom: 5px;
+            `;
+
+            const message = document.createElement('div');
+            message.textContent = notificationData.message;
+            message.style.cssText = `
+                font-size: 14px;
+                opacity: 0.9;
+                margin-bottom: 8px;
+            `;
+
+            const time = document.createElement('div');
+            time.textContent = this.formatTime(notificationData.timestamp);
+            time.style.cssText = `
+                font-size: 12px;
+                opacity: 0.7;
+            `;
+
+            notification.appendChild(icon);
+            notification.appendChild(title);
+            notification.appendChild(message);
+            notification.appendChild(time);
+        }
 
         // Thêm click event để xem chi tiết
         notification.onclick = () => {

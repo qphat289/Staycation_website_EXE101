@@ -331,6 +331,9 @@ class Home(db.Model):
     
     description = db.Column(db.Text, nullable=True)
     
+    # Hoa hồng cho từng căn
+    commission_percent = db.Column(db.Float, nullable=True, default=10.0)  # Phần trăm hoa hồng, mặc định 10%
+    
     # Trạng thái và thời gian
     is_active = db.Column(db.Boolean, default=True)
     is_booked = db.Column(db.Boolean, default=False)
@@ -376,6 +379,13 @@ class Home(db.Model):
         if self.price_per_day and self.price_per_day > 0:
             return self.price_per_day
         return self.price_per_night or 0
+
+    @property
+    def revenue(self):
+        # Tổng doanh thu của phòng là tổng total_price của các booking đã hoàn thành
+        if not self.bookings:
+            return 0
+        return sum([b.total_price for b in self.bookings if getattr(b, 'status', None) == 'completed'])
 
     def __repr__(self):
         return f'<Home {self.title}>'

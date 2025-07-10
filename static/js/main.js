@@ -454,3 +454,22 @@ function adjustNavbarTextColor() {
     
     console.log(`Navbar background: ${backgroundColor}, Luminance: ${luminance.toFixed(3)}, Theme: ${navbar.getAttribute('data-theme')}`);
 }
+
+// Hiển thị chi tiết tài khoản user trong modal
+function viewUserDetails(element) {
+    const fullName = element.getAttribute('data-full-name');
+    const email = element.getAttribute('data-email');
+    const phone = element.getAttribute('data-phone');
+    const role = element.getAttribute('data-role');
+    const status = element.getAttribute('data-status');
+
+    document.getElementById('modalUserFullName').textContent = fullName;
+    document.getElementById('modalUserEmail').textContent = email;
+    document.getElementById('modalUserPhone').textContent = phone;
+    document.getElementById('modalUserRole').textContent = role;
+    document.getElementById('modalUserStatus').textContent = status;
+
+    // Hiển thị modal
+    const userDetailModal = new bootstrap.Modal(document.getElementById('userDetailModal'));
+    userDetailModal.show();
+}
