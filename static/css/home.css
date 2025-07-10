@@ -481,27 +481,94 @@ main.container {
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     z-index: 1000;
-    padding: 20px;
+    padding: 15px;
     display: none;
-    min-width: 500px;
+    min-width: 480px;
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 .datetime-dropdown.show {
     display: block;
 }
 
+/* Step Progress */
+.step-progress {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+
+.step.active {
+    opacity: 1;
+}
+
+.step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #ddd;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    transition: all 0.3s;
+}
+
+.step.active .step-number {
+    background: #007bff;
+    color: white;
+}
+
+.step-label {
+    font-size: 11px;
+    color: #666;
+    font-weight: 500;
+}
+
+.step.active .step-label {
+    color: #007bff;
+}
+
+/* Step Content */
+.step-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.step-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Calendar Section */
 .calendar-section {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 20px;
+    padding-bottom: 15px;
 }
 
 .calendar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .calendar-nav {
@@ -526,33 +593,34 @@ main.container {
 .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    margin-bottom: 10px;
+    gap: 3px;
+    margin-bottom: 8px;
 }
 
 .calendar-weekdays span {
     text-align: center;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #666;
-    padding: 8px 0;
+    padding: 6px 0;
 }
 
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
+    gap: 3px;
 }
 
 .calendar-day {
     text-align: center;
-    padding: 8px;
+    padding: 6px;
     cursor: pointer;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 4px;
+    font-size: 13px;
     border: none;
     background: none;
     transition: all 0.2s;
+    min-height: 32px;
 }
 
 .calendar-day:hover {
@@ -575,44 +643,102 @@ main.container {
 
 /* Time and Duration Section */
 .time-duration-section {
-    display: flex;
-    gap: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
 
 .time-section, .duration-section {
-    flex: 1;
+    min-width: 0; /* Allow shrinking */
 }
 
 .time-section h4, .duration-section h4 {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     color: #333;
 }
 
 .time-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 4px;
+    margin-bottom: 12px;
+    max-height: 140px;
+    overflow-y: auto;
 }
 
 .duration-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+/* Compact Grids for Steps */
+.time-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.duration-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
     gap: 8px;
     margin-bottom: 20px;
 }
 
+/* Step Actions */
+.step-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.btn-back, .btn-next {
+    padding: 8px 16px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    background: white;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-back:hover, .btn-next:hover {
+    background: #007bff;
+    color: white;
+}
+
+.btn-next {
+    background: #007bff;
+    color: white;
+}
+
+.btn-next:hover {
+    background: #0056b3;
+}
+
 .time-slot, .duration-slot {
-    padding: 8px 12px;
+    padding: 6px 8px;
     border: 1px solid #ddd;
-    border-radius: 6px;
+    border-radius: 4px;
     background: white;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
     text-align: center;
     transition: all 0.2s;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .time-slot:hover, .duration-slot:hover {
@@ -629,20 +755,21 @@ main.container {
 /* Apply Button */
 .datetime-actions {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 15px;
     border-top: 1px solid #eee;
-    padding-top: 15px;
+    padding-top: 12px;
 }
 
 .btn-apply {
     background-color: #28a745;
     color: white;
     border: none;
-    padding: 10px 30px;
-    border-radius: 6px;
+    padding: 8px 24px;
+    border-radius: 4px;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
+    font-size: 13px;
 }
 
 .btn-apply:hover {
@@ -726,12 +853,22 @@ main.container {
     }
     
     .datetime-dropdown {
-        min-width: 450px !important;
+        min-width: 400px !important;
+        max-height: 450px !important;
     }
     
     .time-duration-section {
-        flex-direction: column;
-        gap: 15px;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .time-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-height: 120px;
+    }
+    
+    .duration-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
