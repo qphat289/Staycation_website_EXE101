@@ -36,13 +36,13 @@ def dashboard():
         # Get owners
         owners = Owner.query.all()
         for owner in owners:
-            # Lấy commission_percent của phòng đầu tiên (nếu có)
+            # Lấy commission_percent của nhà đầu tiên (nếu có)
             commission_percent = None
             total_revenue = 0
-            if owner.rooms and len(owner.rooms) > 0:
-                commission_percent = owner.rooms[0].commission_percent
-                # Tính tổng doanh thu các phòng
-                total_revenue = sum([room.revenue or 0 for room in owner.rooms])
+            if owner.homes and len(owner.homes) > 0:
+                commission_percent = owner.homes[0].commission_percent if hasattr(owner.homes[0], 'commission_percent') else 10.0
+                # Tính tổng doanh thu các nhà
+                total_revenue = sum([home.revenue or 0 for home in owner.homes])
             users.append({
                 'id': owner.id,
                 'username': owner.username,
@@ -1536,8 +1536,9 @@ def delete_user(user_id):
         if user_type == 'owner':
             user = Owner.query.get_or_404(user_id)
             model_name = 'Owner'
-            # Check if owner has active bookings or rooms
-            if user.rooms.count() > 0:
+            # Check if owner has active homes
+            active_homes_count = Home.query.filter_by(owner_id=user_id, is_active=True).count()
+            if active_homes_count > 0:
                 return jsonify({'error': 'Không thể xóa Owner có nhà đang hoạt động'}), 400
         elif user_type == 'renter':
             user = Renter.query.get_or_404(user_id)
@@ -1588,18 +1589,18 @@ def api_owner_revenue():
     if not isinstance(current_user, Admin):
         return jsonify({'error': 'Unauthorized'}), 401
     from sqlalchemy import func, distinct
-    from app.models.models import Owner, Room, Booking, Review
+    from app.models.models import Owner, Home, Booking, Review
     owners = db.session.query(
         Owner.id,
         Owner.full_name,
-        func.count(distinct(Room.id)).label('room_count'),
+        func.count(distinct(Home.id)).label('home_count'),
         func.count(Booking.id).label('booking_count'),
         func.sum(Booking.total_price).label('total_revenue'),
         func.avg(Review.rating).label('avg_rating')
-    ).join(Room, Owner.id == Room.owner_id) \
-     .outerjoin(Booking, Room.id == Booking.room_id) \
-     .outerjoin(Review, Room.id == Review.room_id) \
-     .filter(Room.is_active == True) \
+    ).join(Home, Owner.id == Home.owner_id) \
+     .outerjoin(Booking, Home.id == Booking.home_id) \
+     .outerjoin(Review, Home.id == Review.home_id) \
+     .filter(Home.is_active == True) \
      .group_by(Owner.id, Owner.full_name) \
      .order_by(func.sum(Booking.total_price).desc()) \
      .all()
@@ -1608,16 +1609,16 @@ def api_owner_revenue():
         result.append({
             'id': o.id,
             'full_name': o.full_name or f'Chủ nhà {o.id}',
-            'room_count': o.room_count,
+            'home_count': o.home_count,
             'booking_count': o.booking_count,
             'total_revenue': int(o.total_revenue) if o.total_revenue else 0,
             'avg_rating': round(o.avg_rating, 1) if o.avg_rating else 0.0
         })
     return jsonify({'success': True, 'data': result}), 200
 
-@admin_bp.route('/api/room/<int:room_id>/commission', methods=['POST'])
+@admin_bp.route('/api/home/<int:home_id>/commission', methods=['POST'])
 @login_required
-def update_room_commission(room_id):
+def update_home_commission(home_id):
     if not isinstance(current_user, Admin):
         return jsonify({'success': False, 'error': 'Bạn không có quyền thực hiện thao tác này!'}), 403
     data = request.get_json()
@@ -1630,10 +1631,10 @@ def update_room_commission(room_id):
             return jsonify({'success': False, 'error': 'Phần trăm hoa hồng phải từ 0 đến 100!'}), 400
     except Exception:
         return jsonify({'success': False, 'error': 'Dữ liệu hoa hồng không hợp lệ!'}), 400
-    room = Room.query.get(room_id)
-    if not room:
-        return jsonify({'success': False, 'error': 'Không tìm thấy phòng!'}), 404
-    room.commission_percent = percent
+    home = Home.query.get(home_id)
+    if not home:
+        return jsonify({'success': False, 'error': 'Không tìm thấy nhà!'}), 404
+    home.commission_percent = percent
     try:
         db.session.commit()
         return jsonify({'success': True, 'message': 'Cập nhật hoa hồng thành công!', 'commission_percent': percent})
@@ -1659,14 +1660,14 @@ def update_owner_commission(owner_id):
     owner = Owner.query.get(owner_id)
     if not owner:
         return jsonify({'success': False, 'error': 'Không tìm thấy owner!'}), 404
-    rooms = owner.rooms
-    if not rooms:
-        return jsonify({'success': False, 'error': 'Owner chưa có phòng nào!'}), 400
-    for room in rooms:
-        room.commission_percent = percent
+    homes = owner.homes
+    if not homes:
+        return jsonify({'success': False, 'error': 'Owner chưa có nhà nào!'}), 400
+    for home in homes:
+        home.commission_percent = percent
     try:
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Cập nhật hoa hồng cho tất cả phòng thành công!', 'commission_percent': percent})
+        return jsonify({'success': True, 'message': 'Cập nhật hoa hồng cho tất cả nhà thành công!', 'commission_percent': percent})
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': 'Lỗi khi lưu dữ liệu: ' + str(e)}), 500
