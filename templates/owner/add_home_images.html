@@ -1,0 +1,86 @@
+{% extends "owner/base_owner.html" %}
+
+{% block title %}Thêm ảnh cho nhà{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Thêm ảnh cho nhà: {{ home.title }}</h3>
+                    <div class="card-tools">
+                        <a href="{{ url_for('owner.dashboard') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="images">Chọn ảnh (có thể chọn nhiều ảnh cùng lúc):</label>
+                                    <input type="file" class="form-control-file" id="images" name="images[]" multiple accept="image/*" required>
+                                    <small class="form-text text-muted">Chọn các file ảnh (PNG, JPG, JPEG, GIF)</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload"></i> Upload ảnh
+                                </button>
+                                <a href="{{ url_for('owner.dashboard') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Hủy
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hiển thị ảnh hiện có -->
+    {% if home.images %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Ảnh hiện có</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for image in home.images %}
+                        <div class="col-md-3 mb-3">
+                            <div class="card">
+                                <img src="{{ url_for('static', filename=image.image_path) }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                                <div class="card-body p-2">
+                                    <div class="btn-group btn-group-sm w-100">
+                                        {% if not image.is_featured %}
+                                        <a href="{{ url_for('owner.set_featured_image', image_id=image.id) }}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-star"></i> Làm ảnh chính
+                                        </a>
+                                        {% else %}
+                                        <span class="btn btn-warning btn-sm disabled">
+                                            <i class="fas fa-star"></i> Ảnh chính
+                                        </span>
+                                        {% endif %}
+                                        <a href="{{ url_for('owner.delete_home_image', image_id=image.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa ảnh này?')">
+                                            <i class="fas fa-trash"></i> Xóa
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

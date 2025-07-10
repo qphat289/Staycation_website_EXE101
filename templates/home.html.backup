@@ -1,0 +1,1825 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Horin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<style>
+/* Force white navbar for home page - Inline CSS has highest priority */
+.navbar-dark .navbar-nav .nav-link {
+    color: white !important;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand .brand-text {
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#languageToggle {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+}
+
+#languageToggle span {
+    color: white !important;
+}
+
+.navbar .dropdown-toggle {
+    color: white !important;
+}
+
+/* Search Tabs Styling */
+.search-tabs-container {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.form-control {
+    min-width: 120px;
+}
+
+.form-label {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Custom 16-column grid system for search forms */
+.search-form .row {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: end;
+    margin-top: calc(-1 * var(--bs-gutter-y));
+    margin-right: calc(-0.5 * var(--bs-gutter-x));
+    margin-left: calc(-0.5 * var(--bs-gutter-x));
+}
+
+.search-form .row > * {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    padding-right: calc(var(--bs-gutter-x) * 0.5);
+    padding-left: calc(var(--bs-gutter-x) * 0.5);
+    margin-top: var(--bs-gutter-y);
+}
+
+/* 16-column classes */
+@media (min-width: 1400px) {
+    .search-form .col-xxl-1 { flex: 0 0 auto; width: 6.25%; }
+    .search-form .col-xxl-2 { flex: 0 0 auto; width: 12.5%; }
+    .search-form .col-xxl-3 { flex: 0 0 auto; width: 18.75%; }
+    .search-form .col-xxl-4 { flex: 0 0 auto; width: 25%; }
+    .search-form .col-xxl-5 { flex: 0 0 auto; width: 31.25%; }
+    .search-form .col-xxl-6 { flex: 0 0 auto; width: 37.5%; }
+    .search-form .col-xxl-7 { flex: 0 0 auto; width: 43.75%; }
+    .search-form .col-xxl-8 { flex: 0 0 auto; width: 50%; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1399px) {
+    .search-form .row {
+        flex-wrap: wrap;
+    }
+}
+
+.search-btn-col {
+    display: flex;
+    align-items: end;
+}
+
+/* Guest selector dropdown positioning */
+.guest-selector {
+    position: relative;
+    z-index: 1000;
+}
+
+.guest-dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    margin-top: 5px !important;
+    overflow: visible !important;
+}
+
+.search-form .row {
+    overflow: visible !important;
+}
+
+.search-forms-container {
+    overflow: visible !important;
+}
+
+.search-tabs-container {
+    overflow: visible !important;
+}
+
+/* Location autocomplete dropdown */
+.location-selector {
+    position: relative;
+    z-index: 1000;
+}
+
+.location-selector * {
+    pointer-events: auto !important;
+}
+
+.location-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 99999;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    margin-top: 2px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    pointer-events: auto;
+}
+
+.location-dropdown.show {
+    display: block;
+}
+
+.location-option {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+    pointer-events: auto;
+    position: relative;
+    z-index: 100000;
+}
+
+.location-option:hover {
+    background-color: #f8f9fa;
+}
+
+.location-option:last-child {
+    border-bottom: none;
+}
+
+.location-option.highlighted {
+    background-color: #8bc34a;
+    color: white;
+}
+
+/* Ensure location options are always interactive */
+.search-form .location-option {
+    pointer-events: auto !important;
+    user-select: none;
+}
+
+.search-form.active .location-option {
+    pointer-events: auto !important;
+}
+
+.location-input {
+    width: 100%;
+    position: relative;
+}
+
+.search-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px 12px 0 0;
+    margin-bottom: 0;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 12px;
+    font-weight: 500;
+    font-size: 15px;
+    color: #6c757d;
+    cursor: pointer !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border-radius: 12px 12px 0 0;
+    pointer-events: auto !important;
+    z-index: 100;
+}
+
+.search-tab:hover {
+    background: rgba(139, 195, 74, 0.08);
+    color: #8bc34a;
+    transform: translateY(-1px);
+}
+
+.search-tab.active {
+    background: white;
+    color: #8bc34a;
+    font-weight: 600;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.search-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #8bc34a, #689f38);
+    border-radius: 2px;
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+    to {
+        width: 40px;
+        opacity: 1;
+    }
+}
+
+.search-forms-container {
+    background: white;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+    min-height: 100px;
+    z-index: 5;
+}
+
+.search-form {
+    display: none;
+    background: white;
+    padding: 20px 24px;
+    z-index: 10;
+}
+
+.search-form.active {
+    display: block !important;
+    z-index: 20;
+}
+
+.search-form input,
+.search-form select,
+.search-form button {
+    pointer-events: auto !important;
+}
+
+.search-form.slide-out {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.search-tabs-container .search-form {
+    margin-top: 0;
+}
+
+/* Enhanced form styling */
+.search-form .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #fafafa;
+    position: relative;
+    z-index: 30;
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+.search-form .form-control:focus {
+    border-color: #8bc34a;
+    box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.1);
+    background: white;
+    transform: translateY(-1px);
+}
+
+.search-form .form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #8bc34a, #689f38);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(139, 195, 74, 0.3);
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 195, 74, 0.4);
+    background: linear-gradient(135deg, #689f38, #558b2f);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .search-tabs-container {
+        margin: 0 15px;
+    }
+    
+    .search-form {
+        padding: 20px 16px;
+    }
+    
+    .search-form .row {
+        margin: 0 -8px;
+    }
+    
+    .search-form .row > * {
+        padding: 0 8px;
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .search-form .col-lg-3,
+    .search-form .col-lg-2,
+    .search-form .col-md-4,
+    .search-form .col-md-3,
+    .search-form .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Guest selector styling for both forms */
+.guest-selector {
+    position: relative;
+}
+
+.guest-display {
+    cursor: pointer;
+    background: #fafafa !important;
+}
+
+.guest-display:focus {
+    background: white !important;
+}
+
+.guest-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    z-index: 1050;
+    margin-top: 8px;
+    backdrop-filter: blur(10px);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.guest-dropdown.show {
+    display: block;
+}
+
+.guest-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.guest-row:last-of-type {
+    border-bottom: none;
+}
+
+.guest-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guest-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-decrease, .btn-increase {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-decrease:hover, .btn-increase:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+}
+
+.btn-decrease:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.guest-count {
+    font-weight: 500;
+    min-width: 20px;
+    text-align: center;
+}
+
+.guest-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+/* Custom placeholder for date/time inputs */
+.date-input-wrapper, .time-input-wrapper {
+    position: relative;
+}
+
+.custom-placeholder {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    z-index: 1;
+    background: white;
+    padding: 0 4px;
+}
+
+.custom-placeholder.hidden {
+    display: none;
+}
+
+input[type="date"], input[type="time"] {
+    position: relative;
+    z-index: 2;
+}
+
+/* Remove focus outline and background colors */
+input[type="date"]:focus,
+input[type="time"]:focus {
+    background-color: white !important;
+    border-color: #ced4da !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Remove blue highlight/selection on date/time fields */
+input[type="date"]::-webkit-datetime-edit-text:focus,
+input[type="date"]::-webkit-datetime-edit-month-field:focus,
+input[type="date"]::-webkit-datetime-edit-day-field:focus,
+input[type="date"]::-webkit-datetime-edit-year-field:focus,
+input[type="time"]::-webkit-datetime-edit-text:focus,
+input[type="time"]::-webkit-datetime-edit-hour-field:focus,
+input[type="time"]::-webkit-datetime-edit-minute-field:focus,
+input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
+    background-color: transparent !important;
+    outline: none !important;
+}
+
+/* Remove all selection highlighting */
+input[type="date"]::selection,
+input[type="time"]::selection {
+    background: transparent !important;
+}
+
+input[type="date"]::-moz-selection,
+input[type="time"]::-moz-selection {
+    background: transparent !important;
+}
+
+/* Hide default ugly format */
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="time"]::-webkit-datetime-edit-text,
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field,
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+    color: transparent;
+}
+
+input[type="date"]:focus::-webkit-datetime-edit-text,
+input[type="date"]:focus::-webkit-datetime-edit-month-field,
+input[type="date"]:focus::-webkit-datetime-edit-day-field,
+input[type="date"]:focus::-webkit-datetime-edit-year-field,
+input[type="time"]:focus::-webkit-datetime-edit-text,
+input[type="time"]:focus::-webkit-datetime-edit-hour-field,
+input[type="time"]:focus::-webkit-datetime-edit-minute-field,
+input[type="time"]:focus::-webkit-datetime-edit-ampm-field {
+    color: #212529;
+    background-color: transparent !important;
+}
+
+input[type="date"][data-has-value="true"]::-webkit-datetime-edit-text,
+input[type="date"][data-has-value="true"]::-webkit-datetime-edit-month-field,
+input[type="date"][data-has-value="true"]::-webkit-datetime-edit-day-field,
+input[type="date"][data-has-value="true"]::-webkit-datetime-edit-year-field,
+input[type="time"][data-has-value="true"]::-webkit-datetime-edit-text,
+input[type="time"][data-has-value="true"]::-webkit-datetime-edit-hour-field,
+input[type="time"][data-has-value="true"]::-webkit-datetime-edit-minute-field,
+input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
+    color: #212529;
+    background-color: transparent !important;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section-fullwidth">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="hero-content">
+                    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                    <h1 class="hero-title" data-translate="admin-management-interface">Giao diện quản lí cho<br> Admin</h1>
+                    <p class="hero-subtitle" data-translate="admin-subtitle">Quản lý toàn bộ hệ thống homestay, người dùng và đặt phòng một cách hiệu quả</p>
+                    {% elif current_user.is_authenticated and current_user.role == 'renter' %}
+                    <h1 class="hero-title" data-translate="welcome-back-renter">Chào mừng<br>{{ current_user.full_name }}!</h1>
+                    <p class="hero-subtitle" data-translate="renter-subtitle">Khám phá những homestay tuyệt vời và tạo nên những chuyến đi đáng nhớ của bạn</p>
+                    {% else %}
+                    <h1 class="hero-title" data-translate="find-perfect-place">Tìm kiếm chỗ nghỉ ngơi<br>lý tưởng cho bạn</h1>
+                    <p class="hero-subtitle" data-translate="book-description">Book ngay và thỏa mãn trải nghiệm du lịch của bạn</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Search Form - Outside hero section for better positioning -->
+<div class="search-form-wrapper">
+        {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <!-- Admin search form - simplified -->
+    <form class="search-form" action="{{ url_for('renter.search') }}" method="GET">
+        <div class="row g-2 justify-content-center">
+            <div class="col-md-8">
+                <label for="location" class="form-label">Tìm kiếm homestay theo địa điểm hoặc tên</label>
+                <input type="text" class="form-control" id="location" name="location" placeholder="Nhập địa điểm hoặc tên homestay để quản lý">
+            </div>
+            <div class="col-md-2 search-btn-col">
+                <label class="form-label d-block">&nbsp;</label>
+                <button type="submit" class="btn search-btn w-100" data-translate="search">Tìm kiếm</button>
+            </div>
+        </div>
+    </form>
+        {% else %}
+    <!-- Regular user search form with tabs -->
+    <div class="search-tabs-container">
+        <!-- Search Tabs -->
+        <div class="search-tabs">
+            <button type="button" class="search-tab active" data-tab="hourly" onclick="switchTab('hourly')">Theo giờ</button>
+            <button type="button" class="search-tab" data-tab="daily" onclick="switchTab('daily')">Theo ngày</button>
+            </div>
+        
+        <!-- Search Forms Container -->
+        <div class="search-forms-container">
+            <!-- Hourly Search Form -->
+            <form class="search-form hourly-form active" id="hourly-form" action="{{ url_for('renter.search') }}" method="GET">
+            <input type="hidden" name="booking_type" value="hourly">
+            <!-- Hidden inputs for guest counts -->
+            <input type="hidden" name="adults" id="adults-input-hourly" value="1">
+            <input type="hidden" name="children" id="children-input-hourly" value="0">
+            <input type="hidden" name="rooms" id="rooms-input-hourly" value="1">
+            
+            <div class="row g-2 align-items-end">
+                <div class="col-xxl-3 col-xl-3 col-lg-4 col-md-6">
+                    <label for="location-hourly" class="form-label">Địa điểm hoặc tên homestay</label>
+                    <div class="location-selector">
+                        <input type="text" class="form-control location-input" id="location-hourly" name="location" 
+                               placeholder="Nhập hoặc chọn địa điểm" autocomplete="off">
+                        <div class="location-dropdown" id="location-dropdown-hourly">
+                            <!-- Options will be loaded dynamically from API -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-1 col-xl-2 col-lg-2 col-md-3">
+                    <label for="checkin-hourly" class="form-label">Ngày nhận phòng</label>
+                    <div class="date-input-wrapper">
+                        <input type="date" class="form-control" id="checkin-hourly" name="checkin_date">
+                        <div class="custom-placeholder" data-for="checkin-hourly">Chọn ngày nhận phòng</div>
+                    </div>
+                </div>
+                <div class="col-xxl-1 col-xl-1 col-lg-2 col-md-3">
+                    <label for="checkin-time-hourly" class="form-label">Giờ nhận phòng</label>
+                    <div class="time-input-wrapper">
+                        <input type="time" class="form-control" id="checkin-time-hourly" name="checkin_time">
+                        <div class="custom-placeholder" data-for="checkin-time-hourly">Chọn giờ nhận</div>
+                    </div>
+                </div>
+                <div class="col-xxl-1 col-xl-1 col-lg-2 col-md-3">
+                    <label for="checkout-time-hourly" class="form-label">Giờ trả phòng</label>
+                    <div class="time-input-wrapper">
+                        <input type="time" class="form-control" id="checkout-time-hourly" name="checkout_time">
+                        <div class="custom-placeholder" data-for="checkout-time-hourly">Chọn giờ trả</div>
+                    </div>
+                </div>
+                <div class="col-xxl-4 col-xl-4 col-lg-3 col-md-3">
+                    <label for="guests-rooms-hourly" class="form-label">Khách</label>
+                    <input type="text" class="form-control guest-display" id="guests-rooms-hourly" 
+                           value="1 người lớn, 0 Trẻ em" readonly>
+                    <div class="guest-dropdown" id="guest-dropdown-hourly">
+                        <div class="guest-row">
+                            <div class="guest-info">
+                                <i class="bi bi-person-fill text-success"></i>
+                                <span>Người lớn</span>
+                            </div>
+                            <div class="guest-controls">
+                                <button type="button" class="btn-decrease" data-target="adults">−</button>
+                                <span class="guest-count" id="adults-count-hourly">1</span>
+                                <button type="button" class="btn-increase" data-target="adults">+</button>
+                            </div>
+                        </div>
+                        <div class="guest-row">
+                            <div class="guest-info">
+                                <i class="bi bi-person text-success"></i>
+                                <span>Trẻ em</span>
+                            </div>
+                            <div class="guest-controls">
+                                <button type="button" class="btn-decrease" data-target="children">−</button>
+                                <span class="guest-count" id="children-count-hourly">0</span>
+                                <button type="button" class="btn-increase" data-target="children">+</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-6 search-btn-col d-flex justify-content-center">
+                    <button type="submit" class="btn search-btn" style="white-space: nowrap; min-width: 100px;">Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+        
+        <!-- Daily Search Form -->
+        <form class="search-form daily-form" id="daily-form" action="{{ url_for('renter.search') }}" method="GET">
+            <input type="hidden" name="booking_type" value="daily">
+            <div class="row g-2 align-items-end">
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
+                    <label for="location-daily" class="form-label">Địa điểm hoặc tên homestay</label>
+                    <div class="location-selector">
+                        <input type="text" class="form-control location-input" id="location-daily" name="location" 
+                               placeholder="Nhập hoặc chọn địa điểm" autocomplete="off">
+                        <div class="location-dropdown" id="location-dropdown-daily">
+                            <!-- Options will be loaded dynamically from API -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-3">
+                    <label for="checkin-daily" class="form-label">Ngày nhận phòng</label>
+                    <div class="date-input-wrapper">
+                        <input type="date" class="form-control" id="checkin-daily" name="checkin_date">
+                        <div class="custom-placeholder" data-for="checkin-daily">Chọn ngày nhận phòng</div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-3">
+                    <label for="checkout-daily" class="form-label">Ngày trả phòng</label>
+                    <div class="date-input-wrapper">
+                        <input type="date" class="form-control" id="checkout-daily" name="checkout_date">
+                        <div class="custom-placeholder" data-for="checkout-daily">Chọn ngày trả phòng</div>
+                    </div>
+                </div>
+                <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
+                    <label for="guests-rooms-daily" class="form-label">Khách</label>
+                    <div class="guest-selector">
+                        <input type="text" class="form-control guest-display" id="guests-rooms-daily" name="guests_rooms" 
+                               value="1 người lớn, 0 Trẻ em" readonly>
+                        <div class="guest-dropdown" id="guest-dropdown-daily">
+                            <div class="guest-row">
+                                <div class="guest-info">
+                                    <i class="bi bi-person-fill text-success"></i>
+                                    <span>Người lớn</span>
+                                </div>
+                                <div class="guest-controls">
+                                    <button type="button" class="btn-decrease" data-target="adults">−</button>
+                                    <span class="guest-count" id="adults-count-daily">1</span>
+                                    <button type="button" class="btn-increase" data-target="adults">+</button>
+                                </div>
+                            </div>
+                            <div class="guest-row">
+                                <div class="guest-info">
+                                    <i class="bi bi-person text-success"></i>
+                                    <span>Trẻ em</span>
+                                </div>
+                                <div class="guest-controls">
+                                    <button type="button" class="btn-decrease" data-target="children">−</button>
+                                    <span class="guest-count" id="children-count-daily">0</span>
+                                    <button type="button" class="btn-increase" data-target="children">+</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-6 search-btn-col">
+                    <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Featured Homestays Section -->
+<section class="featured-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-header d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+                    <div class="section-title-wrapper text-center text-md-start mb-3 mb-md-0">
+                        {% if current_user.is_authenticated and current_user.role == 'renter' %}
+                        <h2 class="section-title mb-0" data-translate="recommended-homestays">Homestay Được Gợi Ý Cho Bạn</h2>
+                        <p class="section-subtitle text-muted mb-0">Những điểm đến hoàn hảo dành riêng cho {{ current_user.username }}</p>
+                        {% else %}
+                        <h2 class="section-title mb-0" data-translate="featured-homestays">Khám Phá Ngay Các Homestay Nổi Bật!</h2>
+                        <p class="section-subtitle text-muted mb-0">Khám phá những homestay được yêu thích nhất</p>
+                        {% endif %}
+                    </div>
+                    <div class="section-action">
+                        <a href="{{ url_for('renter.search') }}" class="btn btn-view-all d-flex align-items-center">
+                            <i class="bi bi-grid me-2"></i>
+                            <span data-translate="view-all">Xem Tất Cả</span>                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for homestay in homestays %}
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="card homestay-card h-100">
+                    <div class="card-img-container">
+                        {% if homestay.images and homestay.images|length > 0 %}
+                            {% set featured_image = homestay.images|selectattr('is_featured', 'equalto', True)|list|first %}
+                            {% if featured_image %}
+                                <img src="{{ url_for('static', filename=featured_image.image_path) }}" class="card-img-top" alt="{{ homestay.title }}">
+                            {% else %}
+                                <img src="{{ url_for('static', filename=homestay.images[0].image_path) }}" class="card-img-top" alt="{{ homestay.title }}">
+                            {% endif %}
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <!-- Title and detail button -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0">{{ homestay.title }}</h5>
+                            <a href="{{ url_for('renter.view_room', id=homestay.id) }}" class="btn btn-outline-primary btn-sm">
+                                Chi tiết
+                            </a>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="location-info mb-3">
+                            <i class="bi bi-geo-alt me-1 text-muted"></i>
+                            <span class="text-muted">{{ homestay.district | format_district }}, {{ homestay.city | format_city }}</span>
+                        </div>
+                        
+                        <!-- Price -->
+                        <div class="price-info">
+                            <span class="text-muted">từ </span>
+                            <span class="fw-bold text-dark">
+                                {% if homestay.display_price_per_night %}
+                                    {{ "{:,}".format(homestay.display_price_per_night) }} VND/đêm
+                                {% else %}
+                                    {{ "{:,}".format(homestay.display_price) }} VND/h
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Renter-specific features section -->
+{% if current_user.is_authenticated and current_user.role == 'renter' %}
+<section class="renter-features-section py-5" style="background: linear-gradient(135deg, #f8fdf4 0%, #e8f5e8 100%);">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h3 class="section-title" data-translate="quick-actions">Truy Cập Nhanh</h3>
+                <p class="text-muted" data-translate="manage-your-bookings">Quản lý các đặt phòng và khám phá tính năng mới</p>
+            </div>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-clock-history" style="font-size: 2.5rem; color: #8bc34a;"></i>
+                    </div>
+                    <h5 class="feature-title mb-2" data-translate="booking-history">Lịch Sử Đặt Phòng</h5>
+                    <p class="feature-desc text-muted mb-3" data-translate="view-past-bookings">Xem lại các chuyến đi đã qua</p>
+                    <a href="{{ url_for('renter.booking_history') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Xem Ngay
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-person-circle" style="font-size: 2.5rem; color: #8bc34a;"></i>
+                    </div>
+                    <h5 class="feature-title mb-2" data-translate="my-profile">Hồ Sơ Cá Nhân</h5>
+                    <p class="feature-desc text-muted mb-3" data-translate="update-profile-info">Cập nhật thông tin cá nhân</p>
+                    <a href="{{ url_for('renter.profile') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Cập Nhật
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-search" style="font-size: 2.5rem; color: #8bc34a;"></i>
+                    </div>
+                    <h5 class="feature-title mb-2" data-translate="advanced-search">Tìm Kiếm Nâng Cao</h5>
+                    <p class="feature-desc text-muted mb-3" data-translate="filter-by-preferences">Lọc theo sở thích của bạn</p>
+                    <a href="{{ url_for('renter.search') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Khám Phá
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-heart" style="font-size: 2.5rem; color: #8bc34a;"></i>
+                    </div>
+                    <h5 class="feature-title mb-2" data-translate="favorites">Yêu Thích</h5>
+                    <p class="feature-desc text-muted mb-3" data-translate="saved-homestays">Homestay đã lưu</p>
+                    <a href="{{ url_for('renter.dashboard') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Xem Danh Sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.renter-features-section .feature-card {
+    background: white;
+    border-radius: 15px;
+    border: 1px solid rgba(139, 195, 74, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.renter-features-section .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(139, 195, 74, 0.15);
+    border-color: rgba(139, 195, 74, 0.3);
+}
+
+.renter-features-section .feature-title {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.renter-features-section .feature-desc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.btn-outline-success {
+    border-color: #8bc34a;
+    color: #8bc34a;
+}
+
+.btn-outline-success:hover {
+    background-color: #8bc34a;
+    border-color: #8bc34a;
+    color: white;
+}
+</style>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Global error handler to catch and log JavaScript errors
+window.addEventListener('error', function(e) {
+    console.error('JavaScript Error caught:', e.error, 'at', e.filename, 'line', e.lineno);
+});
+
+// Global cleanup function
+function cleanupLocationDropdowns() {
+    try {
+        console.log('Cleaning up location dropdowns...');
+        const dropdowns = document.querySelectorAll('.location-dropdown');
+        dropdowns.forEach(dropdown => {
+            if (dropdown) {
+                dropdown.innerHTML = '';
+                if (dropdown.classList) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+        console.log('Cleanup completed');
+    } catch (e) {
+        console.error('Error in cleanup:', e);
+    }
+}
+
+// Cleanup when page unloads
+window.addEventListener('beforeunload', cleanupLocationDropdowns);
+
+// GLOBAL FUNCTION FOR TAB SWITCHING
+function switchTab(tabType) {
+    console.log('SWITCH TAB CALLED: ' + tabType);
+    
+    var hourlyTab = document.querySelector('[data-tab="hourly"]');
+    var dailyTab = document.querySelector('[data-tab="daily"]');
+    var hourlyForm = document.getElementById('hourly-form');
+    var dailyForm = document.getElementById('daily-form');
+    
+    console.log('Found elements:', {
+        hourlyTab: !!hourlyTab,
+        dailyTab: !!dailyTab, 
+        hourlyForm: !!hourlyForm,
+        dailyForm: !!dailyForm
+    });
+    
+    // Remove active from all tabs
+    if (hourlyTab) hourlyTab.classList.remove('active');
+    if (dailyTab) dailyTab.classList.remove('active');
+    
+    // Remove active from all forms
+    if (hourlyForm) hourlyForm.classList.remove('active');
+    if (dailyForm) dailyForm.classList.remove('active');
+    
+    if (tabType === 'daily') {
+        if (dailyTab) dailyTab.classList.add('active');
+        if (dailyForm) {
+            dailyForm.classList.add('active');
+            console.log('SUCCESS: DAILY FORM IS NOW ACTIVE');
+        }
+    } else if (tabType === 'hourly') {
+        if (hourlyTab) hourlyTab.classList.add('active');
+        if (hourlyForm) {
+            hourlyForm.classList.add('active');
+            console.log('SUCCESS: HOURLY FORM IS NOW ACTIVE');
+        }
+    }
+    
+    return false; // Prevent default behavior
+}
+
+// Function to analyze image brightness and adjust navbar text color
+function analyzeImageBrightness() {
+    const heroSection = document.querySelector('.hero-section-fullwidth');
+    if (!heroSection) return;
+    
+    // Create a canvas to analyze the hero background image
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    // Get background image URL
+    const computedStyle = window.getComputedStyle(heroSection);
+    const backgroundImage = computedStyle.backgroundImage;
+    
+    if (backgroundImage && backgroundImage !== 'none') {
+        // Extract URL from background-image CSS property
+        const imageUrl = backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/i, '$1');
+        
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+            // Set canvas size (smaller for performance)
+            canvas.width = 100;
+            canvas.height = 100;
+            
+            // Draw image to canvas
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            try {
+                // Get image data
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                let totalBrightness = 0;
+                let pixelCount = 0;
+                
+                // Calculate average brightness
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    
+                    // Calculate brightness using luminance formula
+                    const brightness = (0.299 * r + 0.587 * g + 0.114 * b);
+                    totalBrightness += brightness;
+                    pixelCount++;
+                }
+                
+                const averageBrightness = totalBrightness / pixelCount;
+                
+                // Adjust navbar text color based on brightness
+                // Threshold: 128 (middle value between 0-255)
+                const navbar = document.querySelector('.navbar');
+                if (navbar) {
+                    if (averageBrightness < 128) {
+                        // Dark image - use white text
+                        navbar.classList.add('navbar-light-text');
+                        navbar.classList.remove('navbar-dark-text');
+                    } else {
+                        // Light image - use dark text
+                        navbar.classList.add('navbar-dark-text');
+                        navbar.classList.remove('navbar-light-text');
+                    }
+                }
+                
+                } catch (error) {
+                console.log('Error analyzing image brightness, using default white text');
+                // Fallback to white text for dark images
+                const navbar = document.querySelector('.navbar');
+                if (navbar) {
+                    navbar.classList.add('navbar-light-text');
+                    navbar.classList.remove('navbar-dark-text');
+                }
+            }
+        };
+        
+        img.onerror = function() {
+            // Fallback to white text
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.classList.add('navbar-light-text');
+                navbar.classList.remove('navbar-dark-text');
+            }
+        };
+        
+        img.src = imageUrl;
+    } else {
+        // No background image, use default
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.classList.add('navbar-light-text');
+        }
+    }
+}
+
+// Navbar scroll effect
+window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
+
+// Set default dates and times
+document.addEventListener('DOMContentLoaded', function() {
+    // Analyze image brightness when page loads
+    analyzeImageBrightness();
+    
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // Set default date for check-in
+    const checkinInput = document.getElementById('checkin');
+    if (checkinInput) {
+        checkinInput.value = todayStr;
+        checkinInput.min = todayStr; // Prevent past dates
+    }
+    
+    // Set default times
+    const checkinTimeInput = document.getElementById('checkin-time');
+    const checkoutTimeInput = document.getElementById('checkout-time');
+    
+    if (checkinTimeInput) {
+        checkinTimeInput.value = '14:00'; // Default check-in time 2:00 PM
+    }
+    
+    if (checkoutTimeInput) {
+        checkoutTimeInput.value = '12:00'; // Default check-out time 12:00 PM
+    }
+    
+
+    
+    // Custom placeholder management for date/time inputs
+    function setupCustomPlaceholders() {
+        const inputs = document.querySelectorAll('input[type="date"], input[type="time"]');
+        
+        inputs.forEach(function(input) {
+            const placeholder = document.querySelector('.custom-placeholder[data-for="' + input.id + '"]');
+            if (!placeholder) return;
+            
+            // Show/hide placeholder based on input value
+            function updatePlaceholder() {
+                if (input.value) {
+                    placeholder.classList.add('hidden');
+                    input.setAttribute('data-has-value', 'true');
+                } else {
+                    placeholder.classList.remove('hidden');
+                    input.removeAttribute('data-has-value');
+                }
+            }
+            
+            // Initial check
+            updatePlaceholder();
+            
+            // Hide placeholder on focus
+            input.addEventListener('focus', function() {
+                placeholder.classList.add('hidden');
+                this.showPicker && this.showPicker(); // Auto-open picker
+            });
+            
+            // Show placeholder on blur if empty
+            input.addEventListener('blur', function() {
+                updatePlaceholder();
+            });
+            
+            // Update on change
+            input.addEventListener('change', function() {
+                updatePlaceholder();
+            });
+            
+            // Click on placeholder = focus input
+            placeholder.addEventListener('click', function() {
+                input.focus();
+            });
+        });
+    }
+    
+    // Initialize custom placeholders
+    setupCustomPlaceholders();
+    
+    // Guest Selector Functionality
+    const guestDisplay = document.querySelector('.guest-display');
+    const guestDropdown = document.getElementById('guest-dropdown');
+    const btnDone = document.querySelector('.btn-done');
+    
+    let guestCounts = {
+        adults: 1,
+        children: 0,
+        rooms: 1
+    };
+    
+    // Toggle dropdown
+    guestDisplay.addEventListener('click', function(e) {
+        e.stopPropagation();
+        guestDropdown.classList.toggle('show');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.guest-selector')) {
+            guestDropdown.classList.remove('show');
+        }
+    });
+    
+    // Handle increase/decrease buttons
+    document.querySelectorAll('.btn-increase, .btn-decrease').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const target = this.dataset.target;
+            const isIncrease = this.classList.contains('btn-increase');
+            
+            if (isIncrease) {
+                guestCounts[target]++;
+            } else {
+                if (target === 'adults' && guestCounts[target] > 1) {
+                    guestCounts[target]--;
+                } else if (target === 'children' && guestCounts[target] > 0) {
+                    guestCounts[target]--;
+                }
+            }
+            
+            // Update display
+            document.getElementById(target + '-count').textContent = guestCounts[target];
+            
+            // Update decrease button state
+            const decreaseBtn = document.querySelector(`[data-target="${target}"].btn-decrease`);
+            if (target === 'adults' && guestCounts[target] <= 1) {
+                decreaseBtn.disabled = true;
+            } else if (target === 'children' && guestCounts[target] <= 0) {
+                decreaseBtn.disabled = true;
+            } else {
+                decreaseBtn.disabled = false;
+            }
+            
+            updateGuestDisplay();
+        });
+    });
+
+    // Update guest display text
+    function updateGuestDisplay() {
+        const adultsText = guestCounts.adults + ' người lớn';
+        const childrenText = guestCounts.children + ' Trẻ em';
+        
+        guestDisplay.value = `${adultsText}, ${childrenText}`;
+    }
+    
+    // SIMPLE TAB SWITCHING - DIRECT APPROACH
+    function setupTabs() {
+        console.log('Setting up tabs...');
+        
+        var hourlyTab = document.querySelector('[data-tab="hourly"]');
+        var dailyTab = document.querySelector('[data-tab="daily"]');
+        var hourlyForm = document.getElementById('hourly-form');
+        var dailyForm = document.getElementById('daily-form');
+        
+        console.log('Hourly tab:', hourlyTab);
+        console.log('Daily tab:', dailyTab);
+        console.log('Hourly form:', hourlyForm);
+        console.log('Daily form:', dailyForm);
+        
+        if (dailyTab) {
+            dailyTab.onclick = function() {
+                console.log('DAILY TAB CLICKED!');
+                
+                // Remove active from both tabs
+                if (hourlyTab) hourlyTab.classList.remove('active');
+                if (dailyTab) dailyTab.classList.remove('active');
+                
+                // Remove active from both forms
+                if (hourlyForm) hourlyForm.classList.remove('active');
+                if (dailyForm) dailyForm.classList.remove('active');
+                
+                // Add active to daily tab and form
+                dailyTab.classList.add('active');
+                if (dailyForm) {
+                    dailyForm.classList.add('active');
+                    console.log('Daily form activated');
+                }
+                
+                return false;
+            };
+        }
+        
+        if (hourlyTab) {
+            hourlyTab.onclick = function() {
+                console.log('HOURLY TAB CLICKED!');
+                
+                // Remove active from both tabs
+                if (hourlyTab) hourlyTab.classList.remove('active');
+                if (dailyTab) dailyTab.classList.remove('active');
+                
+                // Remove active from both forms
+                if (hourlyForm) hourlyForm.classList.remove('active');
+                if (dailyForm) dailyForm.classList.remove('active');
+                
+                // Add active to hourly tab and form
+                hourlyTab.classList.add('active');
+                if (hourlyForm) {
+                    hourlyForm.classList.add('active');
+                    console.log('Hourly form activated');
+                }
+                
+                return false;
+            };
+        }
+        
+        console.log('Tabs setup complete');
+    }
+    
+    // Set initial default dates
+    function setInitialDates() {
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        
+        // Set for hourly form
+        const checkinHourly = document.getElementById('checkin-hourly');
+        const checkinTime = document.getElementById('checkin-time-hourly');
+        const checkoutTime = document.getElementById('checkout-time-hourly');
+        
+        if (checkinHourly) checkinHourly.value = today;
+        if (checkinTime) checkinTime.value = '14:00';
+        if (checkoutTime) checkoutTime.value = '18:00';
+        
+        // Set for daily form
+        const checkinDaily = document.getElementById('checkin-daily');
+        const checkoutDaily = document.getElementById('checkout-daily');
+        
+        if (checkinDaily) checkinDaily.value = today;
+        if (checkoutDaily) checkoutDaily.value = tomorrowStr;
+    }
+    
+    // Setup guest selectors for both forms
+    setupGuestSelector('hourly');
+    setupGuestSelector('daily');
+    
+    // Setup location autocomplete for both forms with delay to ensure DOM is ready
+    console.log('Starting location autocomplete setup...');
+    setTimeout(function() {
+        setupLocationAutocomplete('hourly');
+        setupLocationAutocomplete('daily');
+    }, 100);
+    
+    // Test function to manually trigger dropdown
+    window.testDropdown = function() {
+        const hourlyInput = document.getElementById('location-hourly');
+        const hourlyDropdown = document.getElementById('location-dropdown-hourly');
+        
+        console.log('Manual test - Input:', hourlyInput);
+        console.log('Manual test - Dropdown:', hourlyDropdown);
+        
+        if (hourlyDropdown) {
+            hourlyDropdown.innerHTML = '<div class="location-option" style="padding: 10px; cursor: pointer;" onclick="console.log(\'Test click works!\')">Test Option</div>';
+            hourlyDropdown.style.display = 'block';
+            hourlyDropdown.classList.add('show');
+            console.log('Test dropdown created');
+        }
+    };
+    
+    // INITIALIZE WHEN PAGE LOADS
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('PAGE LOADED - Starting setup...');
+        
+        // Setup tabs immediately
+        setupTabs();
+        
+        // Set initial dates
+        setInitialDates();
+        
+        // Setup other components
+        setupGuestSelector('hourly');
+        setupGuestSelector('daily');
+        setupLocationAutocomplete('hourly');
+        setupLocationAutocomplete('daily');
+        
+        console.log('Setup completed');
+    });
+    
+    // Also try to setup after a short delay
+    setTimeout(function() {
+        console.log('DELAYED SETUP - trying again...');
+        setupTabs();
+    }, 500);
+    
+
+    
+    // Close dropdown when clicking outside (for both forms) - with error protection
+    document.addEventListener('click', function(e) {
+        try {
+            if (!e.target.closest('.guest-selector')) {
+                document.querySelectorAll('.guest-dropdown').forEach(dropdown => {
+                    if (dropdown && dropdown.classList) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+            }
+            
+            if (!e.target.closest('.location-selector')) {
+                document.querySelectorAll('.location-dropdown').forEach(dropdown => {
+                    if (dropdown && dropdown.classList) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Error in outside click handler:', e);
+        }
+    });
+    
+    function setupGuestSelector(formType) {
+        const guestDisplay = document.getElementById(`guests-rooms-${formType}`);
+        const guestDropdown = document.getElementById(`guest-dropdown-${formType}`);
+        
+        if (!guestDisplay || !guestDropdown) return;
+        
+        let guestCounts = {
+            adults: 1,
+            children: 0
+        };
+        
+        // Toggle dropdown
+        guestDisplay.addEventListener('click', function(e) {
+            e.stopPropagation();
+            guestDropdown.classList.toggle('show');
+        });
+        
+        // Handle increase/decrease buttons
+        guestDropdown.querySelectorAll('.btn-increase, .btn-decrease').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const target = this.dataset.target;
+                const isIncrease = this.classList.contains('btn-increase');
+                
+                if (isIncrease) {
+                    guestCounts[target]++;
+                } else {
+                    if (target === 'adults' && guestCounts[target] > 1) {
+                        guestCounts[target]--;
+                    } else if (target === 'children' && guestCounts[target] > 0) {
+                        guestCounts[target]--;
+                    }
+                }
+                
+                // Update display
+                document.getElementById(`${target}-count-${formType}`).textContent = guestCounts[target];
+                
+                updateGuestDisplayForForm(formType, guestCounts, guestDisplay);
+                updateButtonStates(formType, guestCounts);
+            });
+        });
+
+        // Initialize display
+        updateGuestDisplayForForm(formType, guestCounts, guestDisplay);
+        updateButtonStates(formType, guestCounts);
+    }
+    
+    function updateGuestDisplayForForm(formType, guestCounts, guestDisplay) {
+        const adultsText = guestCounts.adults + ' người lớn';
+        const childrenText = guestCounts.children + ' Trẻ em';
+        
+        guestDisplay.value = `${adultsText}, ${childrenText}`;
+    }
+    
+    function updateButtonStates(formType, guestCounts) {
+        const adultsDecreaseBtn = document.querySelector(`#guest-dropdown-${formType} [data-target="adults"].btn-decrease`);
+        const childrenDecreaseBtn = document.querySelector(`#guest-dropdown-${formType} [data-target="children"].btn-decrease`);
+        
+        // Adults minimum is 1
+        if (adultsDecreaseBtn) {
+            adultsDecreaseBtn.disabled = guestCounts.adults <= 1;
+        }
+        
+        // Children minimum is 0
+        if (childrenDecreaseBtn) {
+            childrenDecreaseBtn.disabled = guestCounts.children <= 0;
+        }
+    }
+    
+    // Initialize decrease button states for both forms
+    function initializeButtonStates(formType) {
+        const adultsCount = document.getElementById(`adults-count-${formType}`);
+        const childrenCount = document.getElementById(`children-count-${formType}`);
+        
+        if (adultsCount && parseInt(adultsCount.textContent) <= 1) {
+            document.querySelector(`#guest-dropdown-${formType} [data-target="adults"].btn-decrease`).disabled = true;
+        }
+        if (childrenCount && parseInt(childrenCount.textContent) <= 0) {
+            document.querySelector(`#guest-dropdown-${formType} [data-target="children"].btn-decrease`).disabled = true;
+        }
+    }
+    
+    // Initialize for both forms
+    initializeButtonStates('hourly');
+    initializeButtonStates('daily');
+    
+    // Track initialized forms to avoid duplicate setup
+    const initializedForms = new Set();
+    
+    function setupLocationAutocomplete(formType) {
+        console.log('Setting up location autocomplete for:', formType);
+        
+        // Avoid duplicate initialization
+        if (initializedForms.has(formType)) {
+            console.log('Already initialized for:', formType);
+            return;
+        }
+        
+        const locationInput = document.getElementById(`location-${formType}`);
+        const locationDropdown = document.getElementById(`location-dropdown-${formType}`);
+        
+        console.log('Location input found:', !!locationInput);
+        console.log('Location dropdown found:', !!locationDropdown);
+        
+        if (!locationInput || !locationDropdown) {
+            console.error('Missing elements for form:', formType, 'retrying in 200ms...');
+            // Retry after a short delay
+            setTimeout(() => {
+                initializedForms.delete(formType); // Allow retry
+                setupLocationAutocomplete(formType);
+            }, 200);
+            return;
+        }
+        
+        // Mark as initialized first to prevent re-entry
+        initializedForms.add(formType);
+        
+        // Clear any existing content with safety checks
+        try {
+            if (locationDropdown) {
+                locationDropdown.innerHTML = '';
+                if (locationDropdown.classList) {
+                    locationDropdown.classList.remove('show');
+                }
+            }
+        } catch (e) {
+            console.error('Error clearing dropdown:', e);
+            return;
+        }
+        
+        let currentFocus = -1;
+        let provinces = []; // Store provinces data
+        
+        // Load provinces from API
+        loadProvinces();
+        
+        // Health check function for elements
+        function checkElementHealth() {
+            const input = document.getElementById(`location-${formType}`);
+            const dropdown = document.getElementById(`location-dropdown-${formType}`);
+            
+            if (!input || !dropdown) {
+                console.warn('Elements became unavailable for form:', formType);
+                return false;
+            }
+            return true;
+        }
+        
+        function loadProvinces() {
+            console.log('Loading provinces for form:', formType);
+            
+            if (!checkElementHealth()) {
+                console.error('Elements not healthy, aborting loadProvinces');
+                return;
+            }
+            
+            fetch('/api/provinces')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Provinces API response:', data);
+                    if (data.success) {
+                        provinces = data.data;
+                        console.log('Provinces loaded:', provinces);
+                        renderOptions();
+                        setupEventListeners();
+                    } else {
+                        console.error('Failed to load provinces:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading provinces:', error);
+                });
+        }
+        
+        function renderOptions() {
+            console.log('Rendering options for:', formType, 'with provinces:', provinces);
+            
+            if (!checkElementHealth()) {
+                console.error('Elements not healthy in renderOptions');
+                return;
+            }
+            
+            if (!locationDropdown) {
+                console.error('locationDropdown is null in renderOptions');
+                return;
+            }
+            
+            locationDropdown.innerHTML = '';
+            
+            if (!provinces || provinces.length === 0) {
+                console.warn('No provinces data to render');
+                return;
+            }
+            
+            provinces.forEach(province => {
+                const option = document.createElement('div');
+                option.className = 'location-option';
+                option.dataset.value = province.name;
+                option.textContent = province.name;
+                option.style.pointerEvents = 'auto';
+                option.style.cursor = 'pointer';
+                
+                console.log('Creating option for:', province.name);
+                
+                // Add multiple event listeners to ensure clicking works
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Location option clicked:', province.name);
+                    selectOption(this);
+                });
+                
+                option.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Location option mousedown:', province.name);
+                    selectOption(this);
+                });
+                
+                option.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Location option touchstart:', province.name);
+                    selectOption(this);
+                });
+                
+                locationDropdown.appendChild(option);
+            });
+            
+            console.log('Options rendered, dropdown children count:', locationDropdown.children.length);
+        }
+        
+        function setupEventListeners() {
+            console.log('Setting up event listeners for:', formType);
+            
+            if (!locationInput || !locationDropdown) {
+                console.error('Missing elements in setupEventListeners:', {
+                    locationInput: !!locationInput,
+                    locationDropdown: !!locationDropdown
+                });
+                return;
+            }
+            
+            // Show dropdown on focus/click
+            locationInput.addEventListener('focus', function() {
+                console.log('Location input focused');
+                showAllOptions();
+            });
+            
+            locationInput.addEventListener('click', function() {
+                console.log('Location input clicked');
+                showAllOptions();
+            });
+            
+            // Filter dropdown on input
+            locationInput.addEventListener('input', function() {
+                if (!locationDropdown) return;
+                
+                const value = this.value.toLowerCase();
+                let visibleCount = 0;
+                
+                const options = locationDropdown.querySelectorAll('.location-option');
+                options.forEach(option => {
+                    if (option && option.textContent && option.style) {
+                        const text = option.textContent.toLowerCase();
+                        if (text.includes(value)) {
+                            option.style.display = 'block';
+                            visibleCount++;
+                        } else {
+                            option.style.display = 'none';
+                        }
+                    }
+                });
+                
+                if (visibleCount > 0 && value.length > 0) {
+                    if (locationDropdown && locationDropdown.classList) {
+                        locationDropdown.classList.add('show');
+                    }
+                } else if (value.length === 0) {
+                    showAllOptions();
+                } else {
+                    if (locationDropdown && locationDropdown.classList) {
+                        locationDropdown.classList.remove('show');
+                    }
+                }
+                
+                currentFocus = -1;
+                clearHighlight();
+            });
+            
+            // Handle keyboard navigation
+            locationInput.addEventListener('keydown', function(e) {
+                try {
+                    if (!locationDropdown) return;
+                    
+                    const options = locationDropdown.querySelectorAll('.location-option');
+                    const visibleOptions = Array.from(options).filter(opt => opt && opt.style && opt.style.display !== 'none');
+                    
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        currentFocus++;
+                        if (currentFocus >= visibleOptions.length) currentFocus = 0;
+                        setActive(visibleOptions);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        currentFocus--;
+                        if (currentFocus < 0) currentFocus = visibleOptions.length - 1;
+                        setActive(visibleOptions);
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (currentFocus > -1 && visibleOptions.length > currentFocus && visibleOptions[currentFocus]) {
+                            selectOption(visibleOptions[currentFocus]);
+                        }
+                    } else if (e.key === 'Escape') {
+                        if (locationDropdown && locationDropdown.classList) {
+                            locationDropdown.classList.remove('show');
+                        }
+                        currentFocus = -1;
+                    }
+                } catch (e) {
+                    console.error('Error in keyboard navigation:', e);
+                }
+            });
+        }
+        
+        function showAllOptions() {
+            console.log('showAllOptions called for:', formType);
+            if (!locationDropdown) return;
+            
+            const options = locationDropdown.querySelectorAll('.location-option');
+            console.log('Found options:', options.length);
+            
+            options.forEach(option => {
+                if (option && option.style) {
+                    option.style.display = 'block';
+                }
+            });
+            
+            if (locationDropdown && locationDropdown.classList) {
+                locationDropdown.classList.add('show');
+                console.log('Dropdown should now be visible:', locationDropdown.classList.contains('show'));
+            }
+            
+            currentFocus = -1;
+            clearHighlight();
+        }
+        
+        function selectOption(option) {
+            if (!option || !option.dataset) return;
+            
+            console.log('selectOption called with:', option.dataset.value);
+            if (locationInput) locationInput.value = option.dataset.value;
+            if (locationDropdown) locationDropdown.classList.remove('show');
+            currentFocus = -1;
+            clearHighlight();
+            console.log('Location input value set to:', locationInput ? locationInput.value : 'N/A');
+        }
+        
+        function setActive(visibleOptions) {
+            clearHighlight();
+            try {
+                if (currentFocus > -1 && visibleOptions && visibleOptions.length > currentFocus) {
+                    const targetOption = visibleOptions[currentFocus];
+                    if (targetOption && targetOption.classList && typeof targetOption.classList.add === 'function') {
+                        targetOption.classList.add('highlighted');
+                    }
+                }
+            } catch (e) {
+                console.error('Error in setActive:', e);
+            }
+        }
+        
+        function clearHighlight() {
+            try {
+                if (!locationDropdown) return;
+                const options = locationDropdown.querySelectorAll('.location-option');
+                if (options && options.forEach) {
+                    options.forEach(option => {
+                        if (option && option.classList && typeof option.classList.remove === 'function') {
+                            option.classList.remove('highlighted');
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error in clearHighlight:', e);
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

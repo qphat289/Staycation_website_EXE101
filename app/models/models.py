@@ -127,9 +127,9 @@ class Owner(UserMixin, db.Model):
     
     @property
     def city(self):
-        """Return the city from one of the owner's rooms"""
-        if self.rooms:
-            return self.rooms[0].city
+        """Return the city from one of the owner's homes"""
+        if self.homes:
+            return self.homes[0].city
         return "Chưa cập nhật"
         
     def __repr__(self):
@@ -209,18 +209,18 @@ class Renter(UserMixin, db.Model):
         return f'<Renter {self.username}>'
 
 #######################################
-# 2. Các bảng liên quan đến Room      #
+# 2. Các bảng liên quan đến Home      #
 #######################################
 
-# Bảng liên kết nhiều-nhiều giữa Room và Amenity
-room_amenities = db.Table('room_amenities',
-    db.Column('room_id', db.Integer, db.ForeignKey('room.id'), primary_key=True),
+# Bảng liên kết nhiều-nhiều giữa Home và Amenity
+home_amenities = db.Table('home_amenities',
+    db.Column('home_id', db.Integer, db.ForeignKey('home.id'), primary_key=True),
     db.Column('amenity_id', db.Integer, db.ForeignKey('amenity.id'), primary_key=True)
 )
 
-# Bảng liên kết nhiều-nhiều giữa Room và Rule
-room_rules = db.Table('room_rules',
-    db.Column('room_id', db.Integer, db.ForeignKey('room.id'), primary_key=True),
+# Bảng liên kết nhiều-nhiều giữa Home và Rule
+home_rules = db.Table('home_rules',
+    db.Column('home_id', db.Integer, db.ForeignKey('home.id'), primary_key=True),
     db.Column('rule_id', db.Integer, db.ForeignKey('rule.id'), primary_key=True)
 )
 
@@ -299,11 +299,12 @@ class Ward(db.Model):
             'district_id': self.district_id
         }
 
-class Room(db.Model):
-    __tablename__ = 'room'
+class Home(db.Model):
+    __tablename__ = 'home'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    room_type = db.Column(db.String(50), nullable=False)  # Loại phòng: Standard, Deluxe, Suite, etc.
+    home_type = db.Column(db.String(50), nullable=False)  # Loại nhà: Standard, Deluxe, Suite, etc.
+    accommodation_type = db.Column(db.String(50), nullable=False, default='entire_home')  # 'entire_home' hoặc 'private_room'
     
     # Thông tin địa chỉ
     address = db.Column(db.String(200), nullable=False)
@@ -311,15 +312,23 @@ class Room(db.Model):
     district = db.Column(db.String(50), nullable=False)
     floor_number = db.Column(db.Integer, nullable=False, default=1)
     
-    # Thông tin phòng
-    room_number = db.Column(db.String(100), nullable=True)  # Có thể không cần số phòng
+    # Thông tin nhà
+    home_number = db.Column(db.String(100), nullable=True)  # Có thể không cần số nhà
     bed_count = db.Column(db.Integer, nullable=False)
     bathroom_count = db.Column(db.Integer, nullable=False)
     max_guests = db.Column(db.Integer, nullable=False)
     
     # Giá và mô tả
-    price_per_hour = db.Column(db.Float, nullable=True)  # Allow NULL for rooms that only have nightly pricing
+    price_per_hour = db.Column(db.Float, nullable=True)  # Allow NULL for homes that only have nightly pricing
     price_per_night = db.Column(db.Float, nullable=True)  # Thêm giá theo đêm
+    
+    # Enhanced pricing structure for flexible hourly pricing
+    price_first_2_hours = db.Column(db.Float, nullable=True)  # Giá 2 giờ đầu
+    price_per_additional_hour = db.Column(db.Float, nullable=True)  # Giá 1 giờ sau
+    price_overnight = db.Column(db.Float, nullable=True)  # Giá qua đêm (21h-8h)
+    price_daytime = db.Column(db.Float, nullable=True)  # Giá qua ngày (9h-20h)
+    price_per_day = db.Column(db.Float, nullable=True)  # Giá theo ngày
+    
     description = db.Column(db.Text, nullable=True)
     
     # Hoa hồng cho từng căn
@@ -333,37 +342,43 @@ class Room(db.Model):
     
     @property
     def is_available(self):
-        # A room is available if it's both active and not currently booked
+        # A home is available if it's both active and not currently booked
         return self.is_active and not self.is_booked
     
     # Liên kết với Owner
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
-    owner = db.relationship('Owner', backref=db.backref('rooms', lazy=True))
+    owner = db.relationship('Owner', backref=db.backref('homes', lazy=True))
     
     # Relationships
-    images = db.relationship('RoomImage', backref='room', lazy=True, cascade="all, delete-orphan")
-    bookings = db.relationship('Booking', backref='room', lazy=True, cascade="all, delete-orphan")
-    reviews = db.relationship('Review', backref='room', lazy=True)
-    amenities = db.relationship('Amenity', secondary=room_amenities, backref=db.backref('rooms', lazy='dynamic'))
-    rules = db.relationship('Rule', secondary=room_rules, backref=db.backref('rooms', lazy='dynamic'))
+    images = db.relationship('HomeImage', backref='home', lazy=True, cascade="all, delete-orphan")
+    bookings = db.relationship('Booking', backref='home', lazy=True, cascade="all, delete-orphan")
+    reviews = db.relationship('Review', backref='home', lazy=True)
+    amenities = db.relationship('Amenity', secondary=home_amenities, backref=db.backref('homes', lazy='dynamic'))
+    rules = db.relationship('Rule', secondary=home_rules, backref=db.backref('homes', lazy='dynamic'))
 
     @property
     def homestay(self):
+        """Return the homestay (owner) for this home"""
         return self.owner
     
     @property
     def homestay_id(self):
+        """Return the homestay (owner) ID for this home"""
         return self.owner_id
 
     @property
     def display_price(self):
-        """Return the price formatted for display (multiplied by 1000 and converted to integer)"""
-        return int(self.price_per_hour * 1000)
+        """Return formatted price per hour - prioritize enhanced pricing"""
+        if self.price_first_2_hours and self.price_first_2_hours > 0:
+            return self.price_first_2_hours
+        return self.price_per_hour or 0
 
     @property
     def display_price_per_night(self):
-        """Return the night price formatted for display (multiplied by 1000 and converted to integer)"""
-        return int(self.price_per_night * 1000) if self.price_per_night else None
+        """Return formatted price per night - prioritize enhanced pricing"""
+        if self.price_per_day and self.price_per_day > 0:
+            return self.price_per_day
+        return self.price_per_night or 0
 
     @property
     def revenue(self):
@@ -373,45 +388,53 @@ class Room(db.Model):
         return sum([b.total_price for b in self.bookings if getattr(b, 'status', None) == 'completed'])
 
     def __repr__(self):
-        return f'<Room {self.title}>'
+        return f'<Home {self.title}>'
     
     def to_dict(self):
-        """Convert Room object to dictionary for JSON serialization"""
         return {
             'id': self.id,
             'title': self.title,
-            'room_type': self.room_type,
+            'home_type': self.home_type,
+            'accommodation_type': self.accommodation_type,
             'address': self.address,
             'city': self.city,
             'district': self.district,
+            'floor_number': self.floor_number,
+            'home_number': self.home_number,
             'bed_count': self.bed_count,
             'bathroom_count': self.bathroom_count,
             'max_guests': self.max_guests,
             'price_per_hour': self.price_per_hour,
             'price_per_night': self.price_per_night,
+            'price_first_2_hours': self.price_first_2_hours,
+            'price_per_additional_hour': self.price_per_additional_hour,
+            'price_overnight': self.price_overnight,
+            'price_daytime': self.price_daytime,
+            'price_per_day': self.price_per_day,
             'description': self.description,
             'is_active': self.is_active,
-            'amenities': [amenity.to_dict() for amenity in self.amenities],
-            'rules': [rule.to_dict() for rule in self.rules],
-            'images': [{'id': img.id, 'image_path': img.image_path, 'is_featured': img.is_featured} for img in self.images]
+            'is_booked': self.is_booked,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'owner_id': self.owner_id
         }
 
-class RoomImage(db.Model):
-    __tablename__ = 'room_image'
+class HomeImage(db.Model):
+    __tablename__ = 'home_image'
     id = db.Column(db.Integer, primary_key=True)
     image_path = db.Column(db.String(200))
     is_featured = db.Column(db.Boolean, default=False)
-    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
+    home_id = db.Column(db.Integer, db.ForeignKey('home.id'), nullable=False)
     
     def __repr__(self):
-        return f'<RoomImage {self.id} for Room {self.room_id}>'
+        return f'<HomeImage {self.id} for Home {self.home_id}>'
 
 # Bảng phân loại tiện nghi
 class AmenityCategory(db.Model):
     __tablename__ = 'amenity_category'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)  # VD: "Tiện nghi phòng", "Tiện nghi phổ biến"
-    code = db.Column(db.String(50), nullable=False, unique=True)  # VD: "room", "common", "unique"
+    name = db.Column(db.String(100), nullable=False, unique=True)  # VD: "Tiện nghi nhà", "Tiện nghi phổ biến"
+    code = db.Column(db.String(50), nullable=False, unique=True)  # VD: "home", "common", "unique"
     icon = db.Column(db.String(100), nullable=True)  # Bootstrap icon
     description = db.Column(db.Text, nullable=True)
     display_order = db.Column(db.Integer, default=0)  # Thứ tự hiển thị
@@ -496,7 +519,7 @@ class Booking(db.Model):
     status = db.Column(db.String(20), default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
+    home_id = db.Column(db.Integer, db.ForeignKey('home.id'), nullable=False)
     renter_id = db.Column(db.Integer, db.ForeignKey('renter.id'), nullable=False)
     
     payment_status = db.Column(db.String(20), default='pending')
@@ -504,17 +527,17 @@ class Booking(db.Model):
     payment_method = db.Column(db.String(50), nullable=True)
     payment_reference = db.Column(db.String(100), nullable=True)
     
-    booking_type = db.Column(db.String(20), default='hourly')  # 'hourly' hoặc 'nightly'
+    booking_type = db.Column(db.String(20), default='hourly')  # 'hourly' hoặc 'daily'
     
     @property
     def homestay(self):
         """Return the homestay (owner) for this booking"""
-        return self.room.homestay if self.room else None
+        return self.home.homestay if self.home else None
     
     @property
     def homestay_id(self):
         """Return the homestay (owner) ID for this booking"""
-        return self.room.owner_id if self.room else None
+        return self.home.owner_id if self.home else None
     
     def __repr__(self):
         return f'<Booking {self.id}>'
@@ -526,11 +549,11 @@ class Review(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
+    home_id = db.Column(db.Integer, db.ForeignKey('home.id'))
     renter_id = db.Column(db.Integer, db.ForeignKey('renter.id'))
     
     def __repr__(self):
-        return f'<Review {self.id} for Room {self.room_id}>'
+        return f'<Review {self.id} for Home {self.home_id}>'
 
 class Statistics(db.Model):
     __tablename__ = 'statistics'
@@ -541,9 +564,9 @@ class Statistics(db.Model):
     total_users = db.Column(db.Integer, default=0)
     total_owners = db.Column(db.Integer, default=0)
     total_renters = db.Column(db.Integer, default=0)
-    total_rooms = db.Column(db.Integer, default=0)
+    total_homes = db.Column(db.Integer, default=0)
     
-    # Thống kê đặt phòng
+    # Thống kê đặt nhà
     total_bookings = db.Column(db.Integer, default=0)
     hourly_bookings = db.Column(db.Integer, default=0)
     overnight_bookings = db.Column(db.Integer, default=0)
@@ -558,31 +581,31 @@ class Statistics(db.Model):
     hourly_stats = db.Column(db.Text)
     overnight_stats = db.Column(db.Text)
     
-    # Thống kê phòng nổi bật
-    top_rooms = db.Column(db.Text)
+    # Thống kê nhà nổi bật
+    top_homes = db.Column(db.Text)
     
     def __repr__(self):
         return f'<Statistics for {self.date}>'
 
-class RoomDeletionLog(db.Model):
-    __tablename__ = 'room_deletion_log'
+class HomeDeletionLog(db.Model):
+    __tablename__ = 'home_deletion_log'
     id = db.Column(db.Integer, primary_key=True)
-    room_id = db.Column(db.Integer, nullable=False)  # ID phòng đã bị xóa
-    room_title = db.Column(db.String(100), nullable=False)  # Tên phòng
+    home_id = db.Column(db.Integer, nullable=False)  # ID nhà đã bị xóa
+    home_title = db.Column(db.String(100), nullable=False)  # Tên nhà
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
     owner_name = db.Column(db.String(100), nullable=False)  # Tên owner
     delete_reason = db.Column(db.Text, nullable=False)  # Lý do xóa
     deleted_at = db.Column(db.DateTime, default=datetime.utcnow)  # Thời gian xóa
     
     # Additional info
-    room_address = db.Column(db.String(200), nullable=True)
-    room_price = db.Column(db.Float, nullable=True)
+    home_address = db.Column(db.String(200), nullable=True)
+    home_price = db.Column(db.Float, nullable=True)
     
     # Relationship
-    owner = db.relationship('Owner', backref=db.backref('deleted_rooms_log', lazy=True))
+    owner = db.relationship('Owner', backref=db.backref('deleted_homes_log', lazy=True))
     
     def __repr__(self):
-        return f'<RoomDeletionLog {self.room_title} deleted by {self.owner_name}>'
+        return f'<HomeDeletionLog {self.home_title} deleted by {self.owner_name}>'
 
 class PaymentConfig(db.Model):
     __tablename__ = 'payment_config'

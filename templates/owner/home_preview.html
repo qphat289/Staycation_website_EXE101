@@ -1,0 +1,1795 @@
+{% extends 'base.html' %}
+{% block title %}Thông tin Nhà{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    body {
+        background: #f8fdf4;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .preview-container {
+        max-width: none; /* Allow full width to match global changes */
+        margin: -50px auto 0 auto;
+        padding: 20px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .back-link {
+        display: flex;
+        align-items: center;
+        color: #666;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .back-link i {
+        margin-right: 8px;
+    }
+
+    .confirm-btn {
+        background: #9ed649;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(158, 214, 73, 0.3);
+    }
+
+    .confirm-btn:hover {
+        background: #8bc441;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(158, 214, 73, 0.4);
+    }
+
+    .confirm-btn i {
+        font-size: 16px;
+    }
+
+    .main-content {
+        display: grid;
+        grid-template-columns: 6fr 4fr;
+        gap: 30px;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .form-group:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #f8f9fa;
+        color: #666;
+        pointer-events: none;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #f8f9fa;
+        color: #666;
+        pointer-events: none;
+    }
+
+    .counter-group {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 20px;
+    }
+
+    .counter-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .counter-label {
+        font-size: 14px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    .counter-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        background: #f8f9fa;
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .amenities-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .amenity-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .toggle {
+        width: 44px;
+        height: 24px;
+        background: #9ed649;
+        border-radius: 12px;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .toggle::after {
+        content: '';
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        transition: all 0.3s ease;
+    }
+
+    .price-input-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .price-input {
+        flex: 1;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #f8f9fa;
+        color: #666;
+        pointer-events: none;
+    }
+
+    .currency-label {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .textarea {
+        width: 100%;
+        min-height: 80px;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        resize: vertical;
+        background: #f8f9fa;
+        color: #666;
+        pointer-events: none;
+    }
+
+    .image-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        height: fit-content;
+    }
+
+    .location-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-top: 20px;
+    }
+
+    .location-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .location-info {
+        margin-bottom: 16px;
+    }
+
+    .address-display {
+        display: flex;
+        align-items: flex-start;
+        padding: 12px 16px;
+        background: #f8fdf4;
+        border: 1px solid #e5f3d3;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #2d3748;
+        line-height: 1.5;
+    }
+
+    .address-display i {
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .map-container {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    #map {
+        border: 1px solid #e9ecef;
+    }
+
+    .image-counter {
+        text-align: right;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 16px;
+    }
+
+
+
+
+
+    /* Image Gallery Styles */
+    .image-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .image-gallery {
+        width: 100%;
+    }
+
+    .main-image-container {
+        position: relative;
+        width: 100%;
+        height: 280px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .main-image {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .main-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: opacity 0.3s ease-in-out, transform 0.2s ease;
+    }
+
+    .main-image img.fade-out {
+        opacity: 0;
+    }
+
+    .main-image img.fade-in {
+        opacity: 1;
+    }
+
+    .main-image-badge {
+        background: #9ed649;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 10;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .nav-btn:hover {
+        background: rgba(0, 0, 0, 0.7);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .nav-btn:active {
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    .prev-btn {
+        left: 12px;
+    }
+
+    .next-btn {
+        right: 12px;
+    }
+
+    .image-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ddd;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .dot.active {
+        background: #9ed649;
+        transform: scale(1.2);
+    }
+
+    .dot:hover {
+        background: #9ed649;
+        opacity: 0.7;
+    }
+
+    .no-images-placeholder {
+        width: 100%;
+        height: 280px;
+        background: #f8f9fa;
+        border: 2px dashed #ddd;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .no-images-content {
+        text-align: center;
+    }
+
+    /* Details Grid Styling */
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 12px;
+    }
+
+    .detail-card {
+        background: linear-gradient(135deg, #f8fdf4 0%, #f0f9e6 100%);
+        border: 1px solid #e5f3d3;
+        border-radius: 8px;
+        padding: 12px 10px;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(158, 214, 73, 0.1);
+    }
+
+    .detail-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(158, 214, 73, 0.15);
+        border-color: #9ed649;
+    }
+
+    .detail-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #9ed649, #7cb342);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 8px;
+        box-shadow: 0 1px 4px rgba(158, 214, 73, 0.3);
+    }
+
+    .detail-icon i {
+        font-size: 14px;
+        color: white;
+    }
+
+    .detail-number {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d3748;
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        color: #6b7280;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    /* Rules and Amenities Preview Styling */
+    .rules-preview, .amenities-preview {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .rule-preview-item, .amenity-preview-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background: #f8fdf4;
+        border: 1px solid #e5f3d3;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #2d3748;
+        transition: all 0.2s ease;
+    }
+
+    .rule-preview-item:hover, .amenity-preview-item:hover {
+        background: #f0f9e6;
+        border-color: #9ed649;
+    }
+
+    .more-rules-preview, .more-amenities-preview {
+        grid-column: span 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border: 1px dashed #d1d5db;
+        border-radius: 6px;
+        font-size: 13px;
+        font-style: italic;
+    }
+
+    /* Modal styles */
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .image-modal.show {
+        display: flex;
+    }
+
+    .modal-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        animation: zoomIn 0.3s ease;
+    }
+
+    .modal-image {
+        width: 100%;
+        height: auto;
+        max-height: 80vh;
+        object-fit: contain;
+        display: block;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 1001;
+    }
+
+    .modal-close:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.1);
+    }
+
+    .modal-close:active {
+        transform: scale(0.95);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes zoomIn {
+        from { 
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        to { 
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Cursor pointer cho ảnh có thể click */
+    .gallery-image {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .gallery-image:hover {
+        transform: scale(1.02);
+    }
+
+    /* Modal navigation buttons */
+    .modal-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        transition: all 0.3s ease;
+        z-index: 1002;
+    }
+
+    .modal-nav-btn:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .modal-nav-btn:active {
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    .modal-prev-btn {
+        left: 20px;
+    }
+
+    .modal-next-btn {
+        right: 20px;
+    }
+
+    /* Modal counter */
+    .modal-counter {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 1002;
+    }
+
+    /* Modal main image badge */
+    .modal-main-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: #9ed649;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 1002;
+        transition: opacity 0.3s ease;
+    }
+
+    /* Responsive cho details grid */
+    @media (max-width: 768px) {
+        .details-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .detail-card {
+            padding: 10px 8px;
+        }
+        
+        .detail-icon {
+            width: 28px;
+            height: 28px;
+        }
+        
+        .detail-icon i {
+            font-size: 12px;
+        }
+        
+        .detail-number {
+            font-size: 18px;
+        }
+        
+        .detail-label {
+            font-size: 11px;
+        }
+
+        .rules-preview, .amenities-preview {
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+
+        .more-rules-preview, .more-amenities-preview {
+            grid-column: span 1;
+        }
+
+        .rule-preview-item, .amenity-preview-item {
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .main-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+    }
+
+    /* Rules and Amenities Modal Styles */
+    .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal .modal-content {
+        background-color: white;
+        margin: auto;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .close:hover {
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    /* Rules Modal Styles */
+    .rule-category {
+        margin-bottom: 24px;
+    }
+
+    .rule-category:last-child {
+        margin-bottom: 0;
+    }
+
+    .category-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .category-title i {
+        color: #9ed649;
+    }
+
+    .rules-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .rule-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .rule-item i {
+        color: #9ed649;
+        font-size: 12px;
+    }
+
+    .rule-item span {
+        color: #555;
+        font-size: 14px;
+    }
+
+    /* Amenities Modal Styles */
+    .amenity-category {
+        margin-bottom: 24px;
+    }
+
+    .amenity-category:last-child {
+        margin-bottom: 0;
+    }
+
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .amenity-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    .amenity-item i {
+        color: #9ed649;
+        font-size: 14px;
+        min-width: 16px;
+    }
+
+    .amenity-item span {
+        color: #555;
+        font-size: 14px;
+    }
+
+    /* Custom Leaflet marker styles */
+    .custom-marker {
+        background: none !important;
+        border: none !important;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .custom-marker div {
+        transform: translateY(-50%);
+    }
+
+    /* Map container responsive */
+    .map-container {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    /* Leaflet popup custom styling */
+    .leaflet-popup-content-wrapper {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .leaflet-popup-content {
+        margin: 12px 16px;
+        font-family: inherit;
+    }
+
+    /* Map loading animation */
+    @keyframes mapLoadPulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+
+    #map-loading {
+        animation: mapLoadPulse 1.5s ease-in-out infinite;
+    }
+
+    /* Responsive map */
+    @media (max-width: 768px) {
+        #map {
+            height: 300px !important;
+            border-radius: 8px;
+        }
+        
+        .leaflet-popup-content {
+            margin: 8px 12px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #map {
+            height: 250px !important;
+        }
+    }
+</style>
+
+<!-- Mapbox GL CSS và JS -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+<!-- Pass backend images to JavaScript -->
+<script>
+// Pass backend images data to the external JavaScript file
+window.backendImages = [
+    {% if home_data.main_image %}
+    {
+        src: '{{ home_data.main_image }}',
+        is_main: true,
+        filename: 'main_image'
+    },
+    {% endif %}
+    {% if home_data.images %}
+    {% for image_path in home_data.images %}
+    {
+        src: '{{ image_path }}',
+        is_main: false,
+        filename: 'backend_image_{{ loop.index }}'
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+    {% endif %}
+];
+</script>
+
+<!-- Load external home preview JavaScript -->
+<script src="{{ url_for('static', filename='js/home_preview.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="preview-container">
+    <div class="header">
+        <a href="{{ url_for('owner.back_to_edit') }}" class="back-link">
+            <i class="fas fa-chevron-left"></i>
+            Chỉnh sửa nhà
+        </a>
+        <form method="POST" action="{{ url_for('owner.confirm_home') }}" style="display: inline;" onsubmit="return validateImageCount()">
+            <button type="submit" class="confirm-btn" id="confirmBtn">
+                <i class="fas fa-check"></i>
+                Xác nhận tạo nhà
+            </button>
+        </form>
+    </div>
+
+    <div class="main-content">
+        <div class="form-section">
+            <h2 class="section-title">Thông tin Nhà</h2>
+
+            
+            <!-- Thông tin cơ bản -->
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">Thông tin cơ bản</h3>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Tên nhà</label>
+                        <input type="text" class="form-input" value="{{ home_data.home_title or '' }}" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Hình thức lưu trú</label>
+                        <select class="form-select" disabled>
+                            <option>
+                                {% if home_data.accommodation_type == 'entire_home' %}
+                                    Toàn bộ nhà
+                                {% elif home_data.accommodation_type == 'private_room' %}
+                                    Phòng riêng
+                                {% else %}
+                                    Toàn bộ nhà
+                                {% endif %}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Mô hình</label>
+                        <select class="form-select" disabled>
+                            <option>
+                                {% if home_data.property_type == 'townhouse' %}
+                                    Nhà phố
+                                {% elif home_data.property_type == 'apartment' %}
+                                    Chung cư
+                                {% elif home_data.property_type == 'villa' %}
+                                    Villa
+                                {% elif home_data.property_type == 'penthouse' %}
+                                    Penthouse
+                                {% elif home_data.property_type == 'farmstay' %}
+                                    Farmstay
+                                {% elif home_data.property_type == 'resort' %}
+                                    Resort
+                                {% else %}
+                                    Chưa chọn
+                                {% endif %}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Hình thức cho thuê</label>
+                        <select class="form-select" disabled>
+                            <option>
+                                {% if home_data.selected_rental_type == 'hourly' %}
+                                    Theo giờ
+                                {% elif home_data.selected_rental_type == 'daily' %}
+                                    Theo ngày
+                                {% elif home_data.selected_rental_type == 'both' %}
+                                    Cả 2 (Theo giờ và ngày)
+                                {% else %}
+                                    Chưa chọn
+                                {% endif %}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Tỉnh/Thành phố</label>
+                        <select class="form-select" disabled>
+                            <option>{{ location_names.province_name or 'Chưa chọn' }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Quận/Huyện</label>
+                        <select class="form-select" disabled>
+                            <option>{{ location_names.district_name or 'Chưa chọn' }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Phường/Xã</label>
+                        <select class="form-select" disabled>
+                            <option>{{ location_names.ward_name or 'Chưa chọn' }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Tên đường, Tòa nhà, Số nhà</label>
+                    <input type="text" class="form-input" value="{{ home_data.street or '' }}" readonly>
+                </div>
+            </div>
+
+            <!-- Chi tiết -->
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-info-circle" style="color: #9ed649; margin-right: 8px;"></i>Chi tiết
+                </h3>
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <div class="detail-icon">
+                            <i class="fas fa-bed"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-number">{{ home_data.bed_count or 1 }}</div>
+                            <div class="detail-label">Giường</div>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-icon">
+                            <i class="fas fa-bath"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-number">{{ home_data.bathroom_count or 1 }}</div>
+                            <div class="detail-label">Nhà tắm</div>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-number">{{ home_data.guest_count or 1 }}</div>
+                            <div class="detail-label">Khách</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nội quy -->
+            {% if home_data.rules and home_data.rules|length > 0 %}
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-clipboard-list" style="color: #9ed649; margin-right: 8px;"></i>Nội quy
+                </h3>
+                <div class="rules-preview">
+                    {% for rule in home_data.rules[:4] %}
+                    <div class="rule-preview-item">
+                        <i class="fas fa-check-circle" style="color: #9ed649; margin-right: 8px; font-size: 12px;"></i>
+                        <span>{{ rule.name }}</span>
+                    </div>
+                    {% endfor %}
+                    {% if home_data.rules|length > 4 %}
+                    <div class="more-rules-preview" onclick="showAllRulesModal()" style="cursor: pointer;">
+                        <i class="fas fa-eye" style="color: #9ed649; margin-right: 8px; font-size: 12px;"></i>
+                        <span style="color: #9ed649;">Xem tất cả</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-clipboard-list" style="color: #9ed649; margin-right: 8px;"></i>Nội quy
+                </h3>
+                <p style="color: #6b7280; font-style: italic; margin: 0;">Chưa thêm nội quy nào</p>
+            </div>
+            {% endif %}
+
+            <!-- Tiện nghi -->
+            {% if home_data.amenities %}
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-star" style="color: #9ed649; margin-right: 8px;"></i>Tiện nghi
+                </h3>
+                <div class="amenities-preview">
+                    {% for amenity in home_data.amenities[:6] %}
+                    <div class="amenity-preview-item">
+                        <i class="{{ amenity.icon or 'fas fa-check' }}" style="color: #9ed649; margin-right: 8px; font-size: 12px;"></i>
+                        <span>{{ amenity.name }}</span>
+                    </div>
+                    {% endfor %}
+                    {% if home_data.amenities|length > 6 %}
+                    <div class="more-amenities-preview" onclick="showAllAmenitiesModal()" style="cursor: pointer;">
+                        <i class="fas fa-eye" style="color: #9ed649; margin-right: 8px; font-size: 12px;"></i>
+                        <span style="color: #9ed649;">Xem tất cả</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-star" style="color: #9ed649; margin-right: 8px;"></i>Tiện nghi
+                </h3>
+                <p style="color: #6b7280; font-style: italic; margin: 0;">Chưa thêm tiện nghi nào</p>
+            </div>
+            {% endif %}
+
+            <!-- Enhanced Pricing -->
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">
+                    {% if home_data.selected_rental_type == 'hourly' %}
+                        Giá thuê theo giờ
+                    {% elif home_data.selected_rental_type == 'daily' %}
+                        Giá thuê theo ngày
+                    {% elif home_data.selected_rental_type == 'both' %}
+                        Giá thuê theo giờ và ngày
+                    {% else %}
+                        Giá
+                    {% endif %}
+                </h3>
+                
+                <!-- Hourly Pricing Display -->
+                {% if home_data.selected_rental_type == 'hourly' %}
+                <div class="pricing-preview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    {% if home_data.price_first_2_hours %}
+                    <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá 2 giờ đầu</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_first_2_hours|int }} VND</div>
+                    </div>
+                    {% endif %}
+                    {% if home_data.price_per_additional_hour %}
+                    <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá 1 giờ sau</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_per_additional_hour|int }} VND</div>
+                    </div>
+                    {% endif %}
+                    {% if home_data.price_overnight %}
+                    <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá qua đêm (21h-8h)</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_overnight|int }} VND</div>
+                    </div>
+                    {% endif %}
+                    {% if home_data.price_daytime %}
+                    <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá qua ngày (9h-20h)</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_daytime|int }} VND</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Daily Pricing Display -->
+                {% elif home_data.selected_rental_type == 'daily' %}
+                {% if home_data.price_per_day %}
+                <div class="price-preview-item" style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef; max-width: 250px;">
+                    <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Giá theo ngày</div>
+                    <div style="font-size: 14px; font-weight: 600; color: #333;">{{ home_data.price_per_day|int }} VND</div>
+                </div>
+                {% endif %}
+                
+                <!-- Both Pricing Display -->
+                {% elif home_data.selected_rental_type == 'both' %}
+                <div class="pricing-preview-sections" style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Hourly Section -->
+                    {% if home_data.price_first_2_hours or home_data.price_per_additional_hour or home_data.price_overnight or home_data.price_daytime %}
+                    <div class="pricing-section-preview">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #555; margin-bottom: 10px;">Giá thuê theo giờ</h4>
+                        <div class="pricing-preview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                            {% if home_data.price_first_2_hours %}
+                            <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá 2 giờ đầu</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_first_2_hours|int }} VND</div>
+                            </div>
+                            {% endif %}
+                            {% if home_data.price_per_additional_hour %}
+                            <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá 1 giờ sau</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_per_additional_hour|int }} VND</div>
+                            </div>
+                            {% endif %}
+                            {% if home_data.price_overnight %}
+                            <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá qua đêm (21h-8h)</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_overnight|int }} VND</div>
+                            </div>
+                            {% endif %}
+                            {% if home_data.price_daytime %}
+                            <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá qua ngày (9h-20h)</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_daytime|int }} VND</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Daily Section -->
+                    {% if home_data.price_per_day %}
+                    <div class="pricing-section-preview">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #555; margin-bottom: 10px;">Giá thuê theo ngày</h4>
+                        <div class="price-preview-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef; max-width: 200px;">
+                            <div style="font-size: 11px; color: #666; margin-bottom: 3px;">Giá theo ngày</div>
+                            <div style="font-size: 13px; font-weight: 600; color: #333;">{{ home_data.price_per_day|int }} VND</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Fallback for legacy or missing pricing -->
+                {% else %}
+                <div class="price-input-group">
+                    <span class="currency-label">VND</span>
+                    <input type="text" class="price-input" 
+                           value="{% if home_data.hourly_price %}{{ home_data.hourly_price }}{% elif home_data.nightly_price %}{{ home_data.nightly_price }}{% endif %}" 
+                           readonly>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Mô tả -->
+            <div class="form-group">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333;">Mô tả</h3>
+                <textarea class="textarea" readonly>{{ home_data.home_description or '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="image-section">
+            <!-- Native JavaScript image preview block -->
+            <div id="imagePreviewContainer">
+                <div class="image-header">
+                    <h3 class="section-title">Ảnh</h3>
+                    <div class="image-counter" id="imageCounter">0/0</div>
+                </div>
+                
+                <div id="imageGalleryContainer">
+                    <!-- Will be populated by JavaScript -->
+                    <div class="image-gallery" id="imageGallery">
+                        <div class="main-image-container">
+                            <div class="main-image" id="mainImage">
+                                <img src="" alt="Home Image" class="gallery-image" style="opacity:0; display:none;">
+                                <div class="main-image-badge" style="display:none;">Ảnh bìa</div>
+                            </div>
+                                                         <button class="nav-btn prev-btn" style="display:none;"><i class="fas fa-chevron-left"></i></button>
+                             <button class="nav-btn next-btn" style="display:none;"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="image-dots" style="display:none;"></div>
+                    </div>
+                    
+                    <div class="no-images-placeholder" id="noImagesPlaceholder" style="display:none;">
+                        <div class="no-images-content">
+                            <i class="fas fa-camera" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+                            <p style="color: #666; margin: 0;">Chưa có ảnh nào được thêm</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Native JavaScript image preview block -->
+            
+            <!-- Location Section -->
+            <div class="location-section">
+                <div class="location-header">
+                    <h3 class="section-title">Vị trí</h3>
+                </div>
+                
+                <div class="location-info">
+                    <div class="address-display">
+                        <i class="fas fa-map-marker-alt" style="color: #ff0101; margin-right: 8px;"></i>
+                        <span>
+                            {% if home_data.street %}{{ home_data.street }}, {% endif %}
+                            {{ location_names.ward_name }}, {{ location_names.district_name }}, {{ location_names.province_name }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="map-container" style="margin-top: 16px; position: relative;">
+                    <div id="map" style="width: 100%; height: 400px; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; position: relative; background: #f8f9fa; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <!-- Map sẽ được render tại đây -->
+                        <div id="map-loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 14px;">
+                            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
+                            Đang tải bản đồ...
+                        </div>
+                    </div>
+                    
+                    <!-- Nút mở trên Google Maps -->
+                    <div class="position-absolute top-0 end-0 m-2" style="z-index: 1000;">
+                        {% set map_address = home_data.street + ', ' + location_names.ward_name + ', ' + location_names.district_name + ', ' + location_names.province_name + ', Vietnam' %}
+                        {% set encoded_map_address = map_address|urlencode %}
+                        {% set directions_url = 'https://www.google.com/maps/search/?api=1&query=' + encoded_map_address %}
+                        <a href="{{ directions_url }}" class="btn btn-light btn-sm shadow-sm" target="_blank" title="Mở trên Google Maps">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal hiển thị tất cả nội quy -->
+<div id="allRulesModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-clipboard-list" style="color: #9ed649; margin-right: 8px;"></i>Tất cả nội quy</h3>
+            <span class="close" onclick="closeAllRulesModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            {% if home_data.rules and home_data.rules|length > 0 %}
+                {% set rules_by_category = {} %}
+                {% for rule in home_data.rules %}
+                    {% set category = rule.category %}
+                    {% if category not in rules_by_category %}
+                        {% set _ = rules_by_category.update({category: []}) %}
+                    {% endif %}
+                    {% set _ = rules_by_category[category].append(rule) %}
+                {% endfor %}
+
+                {% for category, rules in rules_by_category.items() %}
+                <div class="rule-category">
+                    <h4 class="category-title">
+                        {% if category == 'smoking' %}
+                            <i class="fas fa-smoking-ban"></i> Hút thuốc
+                        {% elif category == 'pets' %}
+                            <i class="fas fa-paw"></i> Thú cưng
+                        {% elif category == 'children' %}
+                            <i class="fas fa-child"></i> Trẻ em
+                        {% elif category == 'party' %}
+                            <i class="fas fa-music"></i> Tiệc tùng
+                        {% elif category == 'time' %}
+                            <i class="fas fa-clock"></i> Thời gian
+                        {% elif category == 'behavior' %}
+                            <i class="fas fa-user-check"></i> Hành vi
+                        {% else %}
+                            <i class="fas fa-list"></i> {{ category|title }}
+                        {% endif %}
+                    </h4>
+                    <div class="rules-list">
+                        {% for rule in rules %}
+                        <div class="rule-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>{{ rule.name }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #666;">Chưa có nội quy nào được thiết lập.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal hiển thị tất cả tiện nghi -->
+<div id="allAmenitiesModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-star" style="color: #9ed649; margin-right: 8px;"></i>Tất cả tiện nghi</h3>
+            <span class="close" onclick="closeAllAmenitiesModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            {% if home_data.amenities and home_data.amenities|length > 0 %}
+                {% set amenities_by_category = {} %}
+                {% for amenity in home_data.amenities %}
+                    {% set category = amenity.category_name %}
+                    {% if category not in amenities_by_category %}
+                        {% set _ = amenities_by_category.update({category: []}) %}
+                    {% endif %}
+                    {% set _ = amenities_by_category[category].append(amenity) %}
+                {% endfor %}
+
+                {% for category, amenities in amenities_by_category.items() %}
+                <div class="amenity-category">
+                    <h4 class="category-title">
+                        {% if 'phổ biến' in category.lower() %}
+                            <i class="fas fa-star"></i>
+                        {% elif 'nhà' in category.lower() %}
+                            <i class="fas fa-bed"></i>
+                        {% elif 'độc đáo' in category.lower() %}
+                            <i class="fas fa-gem"></i>
+                        {% else %}
+                            <i class="fas fa-check-circle"></i>
+                        {% endif %}
+                        {{ category }}
+                    </h4>
+                    <div class="amenities-grid">
+                        {% for amenity in amenities %}
+                        <div class="amenity-item">
+                            <i class="{{ amenity.icon or 'fas fa-check' }}"></i>
+                            <span>{{ amenity.name }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #666;">Chưa có tiện nghi nào được thêm.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="image-modal" onclick="closeImageModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeImageModal()">&times;</button>
+        <img id="modalImage" class="modal-image" src="" alt="Ảnh nhà">
+        
+        <!-- Navigation buttons in modal -->
+        <button class="modal-nav-btn modal-prev-btn" onclick="prevImageInModal(event)" id="modalPrevBtn">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="modal-nav-btn modal-next-btn" onclick="nextImageInModal(event)" id="modalNextBtn">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
+        <!-- Image counter in modal -->
+        <div class="modal-counter" id="modalCounter">1/1</div>
+        
+        <!-- Main image badge in modal -->
+        <div class="modal-main-badge" id="modalMainBadge" style="display: none;">Ảnh bìa</div>
+    </div>
+</div>
+
+<!-- Map initialization script -->
+<script>
+// Map initialization for home preview
+let previewMapInitialized = false;
+
+function checkPreviewMapVisibility() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer || previewMapInitialized) return;
+    
+    const rect = mapContainer.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    
+    // Initialize map when user scrolls near it (200px away)
+    if (rect.top < windowHeight + 200) {
+        previewMapInitialized = true;
+        initializePreviewMap();
+        // Remove listener after initialization
+        window.removeEventListener('scroll', checkPreviewMapVisibility);
+    }
+}
+
+// Wait for DOM to be fully loaded before initializing
+document.addEventListener('DOMContentLoaded', function() {
+    // Check immediately on load (if map is already visible)
+    setTimeout(checkPreviewMapVisibility, 100);
+    
+    // Check when user scrolls
+    window.addEventListener('scroll', checkPreviewMapVisibility, { passive: true });
+});
+
+function initializePreviewMap() {
+    try {
+        // Check if Mapbox GL is available
+        if (typeof mapboxgl === 'undefined') {
+            console.error('Mapbox GL JS not loaded');
+            return;
+        }
+        
+        // Hide loading placeholder
+        const loadingElement = document.getElementById('map-loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+        
+        // Mapbox access token
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYmVja2Nvcm4iLCJhIjoiY21ib3k1ZXZyMXVmMjJtcXR2a2gxYjQwciJ9.nvLXNWoct7Cdc4BDJiQRzw';
+
+    // Custom style for popup
+    const customPopupStyle = `
+        .mapboxgl-popup {
+            max-width: 300px !important;
+        }
+        .mapboxgl-popup-content {
+            padding: 0 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+            overflow: hidden !important;
+        }
+        .mapboxgl-popup-close-button {
+            padding: 8px !important;
+            color: #666 !important;
+            font-size: 20px !important;
+            line-height: 14px !important;
+            right: 4px !important;
+            top: 4px !important;
+            z-index: 10 !important;
+        }
+        .mapboxgl-popup-close-button:hover {
+            background: none !important;
+            color: #333 !important;
+        }
+        .custom-popup-header {
+            background: #8bc34a;
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .custom-popup-content {
+            padding: 15px;
+            background: rgba(248, 249, 250, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .custom-popup-address {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .custom-popup-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .custom-popup-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .custom-popup-btn.primary {
+            background: #8bc34a;
+            color: white;
+        }
+        .custom-popup-btn.primary:hover {
+            background: #7cb342;
+        }
+        .custom-popup-btn.secondary {
+            background: rgba(139, 195, 74, 0.1);
+            color: #333;
+            border: 1px solid rgba(139, 195, 74, 0.3);
+        }
+        .custom-popup-btn.secondary:hover {
+            background: #e9ecef;
+        }
+        .custom-popup-btn i {
+            margin-right: 6px;
+        }
+    `;
+
+    // Add style to head
+    const styleElement = document.createElement('style');
+    styleElement.textContent = customPopupStyle;
+    document.head.appendChild(styleElement);
+    
+    // Create Mapbox map
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [106.6297, 10.8231], // Default to Ho Chi Minh City
+        zoom: 13,
+        attributionControl: true,
+        scrollZoom: false // Disable scroll zoom by default
+    });
+
+    // Add event listeners for hover
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+        mapContainer.addEventListener('mouseenter', () => {
+            map.scrollZoom.enable(); // Enable scroll zoom on hover
+        });
+        
+        mapContainer.addEventListener('mouseleave', () => {
+            map.scrollZoom.disable(); // Disable scroll zoom when not hovering
+        });
+    }
+    
+    // Add controls
+    map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+    
+    // Geocoding with Mapbox Geocoding API
+    var address = "{{ map_address }}";
+    var geocodeUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(address) + '.json?access_token=' + mapboxgl.accessToken + '&country=vn&limit=1&types=address,poi';
+    
+    fetch(geocodeUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data.features && data.features.length > 0) {
+                var coordinates = data.features[0].center; // [lng, lat]
+                var placeName = data.features[0].place_name;
+                
+                // Fly to location
+                map.flyTo({
+                    center: coordinates,
+                    zoom: 15,
+                    duration: 800,
+                    essential: false
+                });
+                
+                // Create custom marker element
+                var markerEl = document.createElement('div');
+                markerEl.innerHTML = `
+                    <div style="
+                        color: #8bc34a;
+                        font-size: 32px;
+                        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                        cursor: pointer;
+                    ">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                `;
+                
+                // Add marker with popup
+                var marker = new mapboxgl.Marker(markerEl)
+                    .setLngLat(coordinates)
+                    .setPopup(new mapboxgl.Popup({ 
+                        offset: 30,
+                        closeButton: true,
+                        closeOnClick: false
+                    }).setHTML(`
+                        <div>
+                            <div class="custom-popup-header">
+                                {{ home_data.title or 'Homestay Preview' }}
+                            </div>
+                            <div class="custom-popup-content">
+                                <div class="custom-popup-address">
+                                    <i class="fas fa-map-marker-alt" style="margin-right: 6px;"></i>
+                                    {% if home_data.street %}{{ home_data.street }}, {% endif %}{{ location_names.ward_name }}, {{ location_names.district_name }}, {{ location_names.province_name }}
+                                </div>
+                                <div class="custom-popup-actions">
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
+                                       target="_blank" 
+                                       class="custom-popup-btn primary">
+                                        <i class="fas fa-directions"></i>
+                                        Chỉ đường
+                                    </a>
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
+                                       target="_blank" 
+                                       class="custom-popup-btn secondary">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `))
+                    .addTo(map);
+                
+                // Open popup immediately
+                marker.getPopup().addTo(map);
+                
+            }
+        })
+        .catch(error => {
+            console.log('Geocoding error, using fallback:', error);
+            // Fallback: display default coordinates
+            var fallbackCoords = [106.6297, 10.8231]; // Ho Chi Minh City
+            
+            map.flyTo({ center: fallbackCoords, zoom: 13, duration: 600 });
+            
+            var markerEl = document.createElement('div');
+            markerEl.innerHTML = `
+                <div style="
+                    color: #8bc34a;
+                    font-size: 32px;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                    cursor: pointer;
+                ">
+                    <i class="bi bi-geo-alt-fill"></i>
+                </div>
+            `;
+            
+            new mapboxgl.Marker(markerEl)
+                .setLngLat(fallbackCoords)
+                .setPopup(new mapboxgl.Popup({ offset: 30 })
+                    .setHTML(`
+                        <div>
+                            <div class="custom-popup-header">
+                                {{ home_data.title or 'Homestay Preview' }}
+                            </div>
+                            <div class="custom-popup-content">
+                                <div class="custom-popup-address">
+                                    <i class="fas fa-map-marker-alt" style="margin-right: 6px;"></i>
+                                    {% if home_data.street %}{{ home_data.street }}, {% endif %}{{ location_names.ward_name }}, {{ location_names.district_name }}, {{ location_names.province_name }}
+                                </div>
+                                <div class="custom-popup-actions">
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ encoded_map_address }}" 
+                                       target="_blank" 
+                                       class="custom-popup-btn primary">
+                                        <i class="fas fa-directions"></i>
+                                        Chỉ đường
+                                    </a>
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ encoded_map_address }}" 
+                                       target="_blank" 
+                                       class="custom-popup-btn secondary">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `))
+                .addTo(map);
+        });
+    } catch (error) {
+        console.error('Error initializing map:', error);
+        // Show error message in map container
+        const mapContainer = document.getElementById('map');
+        if (mapContainer) {
+            mapContainer.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 14px;">
+                    <div style="text-align: center;">
+                        <i class="bi bi-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px; color: #ffc107;"></i><br>
+                        Không thể tải bản đồ. Vui lòng thử lại sau.
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+</script>
+
+</div>
+
+{% endblock %}

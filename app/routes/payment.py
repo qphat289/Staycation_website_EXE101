@@ -9,6 +9,7 @@ import os
 import uuid
 import time
 from dotenv import load_dotenv
+from app.utils.notification_service import notification_service
 
 payment_bp = Blueprint('payment', __name__, url_prefix='/payment')
 
@@ -57,7 +58,7 @@ def process_payment():
         return redirect(url_for('renter.booking_details', booking_id=booking_id))
     
     if booking.status == 'cancelled':
-        flash('Đơn đặt phòng này đã bị hủy.', 'warning')
+        flash('Đơn đặt nhà này đã bị hủy.', 'warning')
         return redirect(url_for('renter.dashboard'))
     
     try:
@@ -73,9 +74,9 @@ def process_payment():
             db.session.commit()
         
         # Lấy payment config
-        payment_config = PaymentConfig.query.filter_by(owner_id=booking.room.owner_id).first()
+        payment_config = PaymentConfig.query.filter_by(owner_id=booking.home.owner_id).first()
         if not payment_config:
-            flash('Chưa cấu hình thanh toán cho chủ phòng.', 'danger')
+            flash('Chưa cấu hình thanh toán cho chủ nhà.', 'danger')
             return redirect(url_for('payment.checkout', booking_id=booking_id))
         
         # Tạo payment record với orderCode số nguyên
@@ -95,7 +96,7 @@ def process_payment():
             customer_email=current_user.email,
             customer_phone=current_user.phone,
             booking_id=booking.id,
-            owner_id=booking.room.owner_id,
+            owner_id=booking.home.owner_id,
             renter_id=current_user.id
         )
         db.session.add(payment)
@@ -119,7 +120,7 @@ def process_payment():
             return_url=url_for('payment.payment_success', payment_id=payment.id, _external=True),
             cancel_url=url_for('payment.payment_cancelled', payment_id=payment.id, _external=True),
             items=[{
-                'name': f"Phong {booking.room.title}"[:25],
+                'name': f"Nha {booking.home.title}"[:25],
                 'quantity': 1,
                 'price': int(payment.amount)
             }]
@@ -217,6 +218,11 @@ def payment_success(payment_id):
     payment = Payment.query.get_or_404(payment_id)
     booking = payment.booking
     
+    # DEBUG: Log payment success
+    print(f"DEBUG SUCCESS: Payment success page accessed for payment {payment_id}")
+    print(f"DEBUG SUCCESS: Payment status: {payment.status}")
+    print(f"DEBUG SUCCESS: Customer email: {payment.customer_email}")
+    
     # Kiểm tra quyền
     if payment.renter_id != current_user.id:
         flash('Bạn không có quyền truy cập thông tin này.', 'danger')
@@ -224,6 +230,7 @@ def payment_success(payment_id):
     
     # Cập nhật trạng thái nếu chưa được cập nhật
     if payment.status == 'pending':
+        print(f"DEBUG SUCCESS: Updating payment status to success...")
         payment.mark_as_successful()
         booking.payment_status = 'paid'
         booking.payment_date = datetime.utcnow()
@@ -231,6 +238,36 @@ def payment_success(payment_id):
         booking.status = 'confirmed'
         db.session.commit()
         current_app.logger.info(f'[PAYMENT] Payment {payment.payment_code} thành công cho booking {booking.id}, user {current_user.id}.')
+    
+    # Gửi email nếu payment thành công và có email
+    if payment.status in ['success', 'completed', 'paid'] and payment.customer_email:
+        print(f"DEBUG SUCCESS: Attempting to send email...")
+        
+        try:
+            # Gửi email xác nhận cho renter
+            print(f"DEBUG SUCCESS: Calling send_payment_success_email...")
+            email_result = notification_service.send_payment_success_email(payment)
+            print(f"DEBUG SUCCESS: Email result: {email_result}")
+            
+            # Gửi thông báo cho owner
+            print(f"DEBUG SUCCESS: Calling send_payment_success_notification_to_owner...")
+            owner_result = notification_service.send_payment_success_notification_to_owner(payment)
+            print(f"DEBUG SUCCESS: Owner notification result: {owner_result}")
+            
+            if email_result:
+                print(f"DEBUG SUCCESS: Email sent successfully!")
+                current_app.logger.info(f'[PAYMENT] Email confirmation sent for payment {payment.payment_code}')
+            else:
+                print(f"DEBUG SUCCESS: Email failed!")
+                current_app.logger.error(f'[PAYMENT] Failed to send email for payment {payment.payment_code}')
+                
+        except Exception as e:
+            print(f"DEBUG SUCCESS: Email exception: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            current_app.logger.error(f'[PAYMENT] Exception sending email for payment {payment.payment_code}: {str(e)}')
+    else:
+        print(f"DEBUG SUCCESS: Skipping email - Status: {payment.status}, Email: {payment.customer_email}")
     
     return render_template('payment/success.html', payment=payment, booking=booking)
 

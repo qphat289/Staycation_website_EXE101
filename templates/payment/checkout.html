@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Thanh toán - {{ booking.room.title }}{% endblock %}
+{% block title %}Thanh toán - {{ booking.home.title }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -59,14 +59,14 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <h5>{{ booking.room.title }}</h5>
+                            <h5>{{ booking.home.title }}</h5>
                             <p class="text-muted">
                                 <i class="fas fa-map-marker-alt me-2"></i>
-                                {{ booking.room.address }}
+                                {{ booking.home.address }}
                             </p>
                             <p class="text-muted">
                                 <i class="fas fa-user me-2"></i>
-                                Chủ phòng: {{ booking.room.owner.full_name }}
+                                Chủ nhà: {{ booking.home.owner.full_name }}
                             </p>
                         </div>
                         <div class="col-md-6">
@@ -122,7 +122,7 @@
                 <div class="card-body">
                     <div class="price-breakdown mb-3">
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Giá phòng:</span>
+                            <span>Giá nhà:</span>
                             <span>{{ "{:,.0f}".format(booking.total_price) }} VND</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">

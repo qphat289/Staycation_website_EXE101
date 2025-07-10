@@ -32,7 +32,7 @@ body {
     height: calc(100vh - 80px);
     padding: 1.5rem;
     position: fixed;
-    left: 85px;
+    left: 2rem; /* Align with container padding */
     top: 80px;
     z-index: 1051;
 }
@@ -90,7 +90,7 @@ body {
 
 /* Main Content */
 .admin-main {
-    margin-left: 250px;
+    margin-left: calc(250px + 2rem); /* Account for sidebar width + left positioning */
     padding: 1rem 2rem 2rem 2rem;
     height: 100vh;
     margin-top: 0;
@@ -1973,7 +1973,7 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng tài khoản</h6>
-                                <h5 class="mb-1">{{   (stats.total_owners|default(0, true) + stats.total_renters|default(0, true)) if stats else 0 }}</h5>
+                                <h5 class="mb-1">{{ (stats.total_owners + stats.total_renters) if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ (weekly_stats.new_owners_month + weekly_stats.new_renters_month) if weekly_stats else 0 }} trong tháng này</small>
                             </div>
                         </div>
@@ -1982,7 +1982,7 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng Owner</h6>
-                                <h5 class="mb-1">{{ stats.total_owners|default(0, true) if stats else 0 }}</h5>
+                                <h5 class="mb-1">{{ stats.total_owners if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_owners_month if weekly_stats else 0 }} trong tháng này</small>
                             </div>
                         </div>
@@ -1991,7 +1991,7 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng Renter</h6>
-                                <h5 class="mb-1">{{ stats.total_renters|default(0, true) if stats else 0 }}</h5>
+                                <h5 class="mb-1">{{ stats.total_renters if stats else 0 }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_renters_month if weekly_stats else 0 }} trong tháng này</small>
                             </div>
                         </div>
@@ -2001,8 +2001,8 @@ nav[aria-label="Page navigation"] {
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tài khoản thêm trong tuần</h6>
                                 <h5 class="mb-1">{{ (weekly_stats.new_owners + weekly_stats.new_renters) if weekly_stats else 0 }}</h5>                                <small class="text-success">
-                                                                {% if stats and (stats.total_owners|default(0, true) + stats.total_renters|default(0, true)) > 0 %}
-                            +{{ (((weekly_stats.new_owners + weekly_stats.new_renters) / (stats.total_owners|default(0, true) + stats.total_renters|default(0, true))) * 100)|round(1) if weekly_stats else 0 }}% so với tuần trước
+                                    {% if stats and (stats.total_owners + stats.total_renters) > 0 %}
+                                        +{{ (((weekly_stats.new_owners + weekly_stats.new_renters) / (stats.total_owners + stats.total_renters)) * 100)|round(1) if weekly_stats else 0 }}% so với tuần trước
                                     {% else %}
                                         +0% so với tuần trước
                                     {% endif %}
@@ -2015,8 +2015,8 @@ nav[aria-label="Page navigation"] {
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Renter thêm trong tháng</h6>
                                 <h5 class="mb-1">{{ weekly_stats.new_renters_month if weekly_stats else 0 }}</h5>                                <small class="text-success">
-                                                                {% if stats and stats.total_renters|default(0, true) > 0 %}
-                            +{{ ((weekly_stats.new_renters_month / stats.total_renters|default(0, true)) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
+                                    {% if stats and stats.total_renters > 0 %}
+                                        +{{ ((weekly_stats.new_renters_month / stats.total_renters) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
                                     {% else %}
                                         +0% so với tháng trước
                                     {% endif %}
@@ -2029,8 +2029,8 @@ nav[aria-label="Page navigation"] {
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Owner thêm trong tháng</h6>
                                 <h5 class="mb-1">{{ weekly_stats.new_owners_month if weekly_stats else 0 }}</h5>                                <small class="text-success">
-                                                                {% if stats and stats.total_owners|default(0, true) > 0 %}
-                            +{{ ((weekly_stats.new_owners_month / stats.total_owners|default(0, true)) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
+                                    {% if stats and stats.total_owners > 0 %}
+                                        +{{ ((weekly_stats.new_owners_month / stats.total_owners) * 100)|round(1) if weekly_stats else 0 }}% so với tháng trước
                                     {% else %}
                                         +0% so với tháng trước
                                     {% endif %}
@@ -2241,14 +2241,14 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng số chủ nhà</h6>
-                                <h5 class="mb-1">{{ stats.total_owners|default(0, true) }}</h5>
+                                <h5 class="mb-1">{{ stats.total_owners }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_owners if weekly_stats.new_owners else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng người thuê</h6>
-                                <h5 class="mb-1">{{ stats.total_renters|default(0, true) }}</h5>
+                                <h5 class="mb-1">{{ stats.total_renters }}</h5>
                                 <small class="text-muted">+{{ weekly_stats.new_renters if weekly_stats.new_renters else 0 }} trong tuần</small>
                             </div>
                         </div>
@@ -2825,46 +2825,46 @@ nav[aria-label="Page navigation"] {
                                             </div>
                                         </div>
 
-                                        <!-- Danh sách phòng -->
-                                        <div class="tab-pane fade" id="rooms{{ owner.id }}">
-                                            <div class="table-responsive">
-                                                <table class="table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Tên phòng</th>
-                                                            <th>Địa chỉ</th>
-                                                            <th>Giá/giờ</th>
-                                                            <th>Trạng thái</th>
-                                                            <th>Đánh giá</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for room in owner.rooms %}
-                                                        <tr>
-                                                            <td>{{ room.title }}</td>
-                                                            <td>{{ room.address }}</td>
-                                                            <td>{{ '{:,.0f}'.format(room.price_per_hour|float * 1000) }} VNĐ</td>
-                                                            <td>
-                                                                <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
-                                                                    {{ 'Còn trống' if room.is_available else 'Đã đặt' }}
-                                                                </span>
-                                                            </td>
-                                                            <td>
-                                                                <div class="d-flex align-items-center">
-                                                                    <i class="fas fa-star text-warning me-1"></i>
-                                                                    <span>{{ room.average_rating|default('Chưa có đánh giá', true) }}</span>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        {% else %}
-                                                        <tr>
-                                                            <td colspan="5" class="text-center">Chưa có phòng nào được đăng</td>
-                                                        </tr>
-                                                        {% endfor %}
-                                                    </tbody>
-                                                </table>
+                    <!-- Danh sách phòng -->
+                    <div class="tab-pane fade" id="rooms{{ owner.id }}">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên phòng</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Giá/đêm</th>
+                                        <th>Trạng thái</th>
+                                        <th>Đánh giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for room in owner.rooms %}
+                                    <tr>
+                                        <td>{{ room.name }}</td>
+                                        <td>{{ room.address }}</td>
+                                        <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VNĐ</td>
+                                        <td>
+                                            <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ 'Còn trống' if room.is_available else 'Đã đặt' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-star text-warning me-1"></i>
+                                                <span>{{ room.average_rating|default('Chưa có đánh giá', true) }}</span>
                                             </div>
-                                        </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">Chưa có phòng nào được đăng</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
                                         <!-- Doanh thu & Hoa hồng -->
                                         <div class="tab-pane fade" id="commission{{ owner.id }}">

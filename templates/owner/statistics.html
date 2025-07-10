@@ -519,15 +519,15 @@
                 
                 <div class="master-filter-right">
                     <div class="chart-type-toggle">
-                        <button class="chart-type-btn active" data-chart="hourly">
+                        <button class="chart-type-btn" data-chart="hourly">
                             <i class="fas fa-clock"></i>
                             Theo giờ
                         </button>
-                        <button class="chart-type-btn" data-chart="nightly">
+                        <button class="chart-type-btn" data-chart="daily">
                             <i class="fas fa-moon"></i>
                             Theo ngày
                         </button>
-                        <button class="chart-type-btn" data-chart="both">
+                        <button class="chart-type-btn active" data-chart="both">
                             <i class="fas fa-chart-line"></i>
                             Cả hai
                         </button>
@@ -639,7 +639,7 @@
         <div class="chart-container">
             <div class="chart-title" id="chartTitle">
                 <i class="fas fa-chart-line" style="color: #E0EC9B;"></i>
-                Doanh thu thuê theo giờ
+                So sánh doanh thu theo giờ và theo ngày
             </div>
             <div id="d3Chart" class="d3-chart"></div>
         </div>
@@ -658,16 +658,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for room in stats.top_rooms[:5] %}
+                    {% for home in stats.top_homes[:5] %}
                     <tr>
-                        <td>{{ room.name }}</td>
-                        <td>{{ room.type }}</td>
-                        <td>{{ "{:,}".format(room.revenue) }}đ</td>
-                        <td>{{ room.bookings }}</td>
-                        <td>{{ room.booking_rate }}</td>
+                        <td>{{ home.name }}</td>
+                        <td>{{ home.type }}</td>
+                        <td>{{ "{:,}".format(home.revenue) }}đ</td>
+                        <td>{{ home.bookings }}</td>
+                        <td>{{ home.booking_rate }}</td>
                         <td>
                             <span class="rating-stars">
-                                {{ room.rating }}
+                                {{ home.rating }}
                                 <i class="fas fa-star"></i>
                             </span>
                         </td>
@@ -687,7 +687,7 @@
 let chartDataCache = {};
 let statsDataCache = {};
 let currentPeriod = 'total';
-let currentChart = 'hourly';
+let currentChart = 'both';
 let d3Chart = null;
 let tooltip = null;
 
@@ -783,15 +783,95 @@ function updateD3Chart(chartData, chartType) {
 // Update single bar chart
 function updateSingleBarChart(data, chartType, g, width, height) {
     if (!data || data.length === 0) {
+        // Show empty state
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
         g.append('text')
             .attr('x', width / 2)
-            .attr('y', height / 2)
+            .attr('y', height / 2 - 10)
             .attr('text-anchor', 'middle')
-            .style('font-size', '14px')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
             .style('color', '#7C7C7C')
-            .text('📊 Không có dữ liệu');
+            .text('📊 Chưa có dữ liệu');
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('color', '#7C7C7C')
+            .text('Dữ liệu sẽ hiển thị khi có booking');
         return;
     }
+    
+    // Check if all data is zero
+    const hasRealData = data.some(d => d.revenue > 0);
+    if (!hasRealData) {
+        // Show empty state
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 - 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .style('color', '#7C7C7C')
+            .text('📊 Chưa có dữ liệu');
+            
+                 g.append('text')
+             .attr('x', width / 2)
+             .attr('y', height / 2 + 10)
+             .attr('text-anchor', 'middle')
+             .style('font-size', '12px')
+             .style('color', '#7C7C7C')
+             .text('Dữ liệu sẽ hiển thị khi có booking');
+         return;
+     }
+     
+     // Continue with normal chart rendering
+     updateSingleBarChartWithData(data, chartType, g, width, height);
+}
+
+function generateSampleData(days, chartType) {
+    const sampleData = [];
+    const today = new Date();
+    
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        
+        // Generate random but realistic sample revenue
+        const baseRevenue = chartType === 'hourly' ? 50000 : 200000;
+        const randomMultiplier = 0.3 + Math.random() * 0.7; // 30% to 100% of base
+        const revenue = Math.floor(baseRevenue * randomMultiplier);
+        
+        sampleData.push({
+            date: date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+            revenue: revenue
+        });
+    }
+    
+    return sampleData;
+}
+
+// Update single bar chart with data
+function updateSingleBarChartWithData(data, chartType, g, width, height, isPlaceholder = false) {
     
     // Set up scales
     const xScale = d3.scaleBand()
@@ -799,8 +879,9 @@ function updateSingleBarChart(data, chartType, g, width, height) {
         .range([0, width])
         .padding(0.1);
     
+    const maxRevenue = d3.max(data, d => d.revenue) || 0;
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.revenue)])
+        .domain([0, Math.max(maxRevenue, 100)]) // Ensure minimum domain of 100
         .range([height, 0]);
     
     // Create grid lines
@@ -898,31 +979,93 @@ function updateSingleBarChart(data, chartType, g, width, height) {
 // Update stacked bar chart
 function updateStackedBarChart(chartData, g, width, height) {
     const hourlyData = chartData.hourly || [];
-    const nightlyData = chartData.nightly || [];
+    const nightlyData = chartData.daily || [];
     
     if (hourlyData.length === 0 && nightlyData.length === 0) {
+        // Show empty state with background
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
         g.append('text')
             .attr('x', width / 2)
-            .attr('y', height / 2)
+            .attr('y', height / 2 - 10)
             .attr('text-anchor', 'middle')
-            .style('font-size', '14px')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
             .style('color', '#7C7C7C')
-            .text('📊 Không có dữ liệu');
+            .text('📊 Chưa có dữ liệu');
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('color', '#7C7C7C')
+            .text('Dữ liệu sẽ hiển thị khi có booking');
         return;
     }
     
-    // Prepare stacked data
+    // Prepare stacked data with correct bottom-to-top ordering
     const dates = [...new Set([...hourlyData.map(d => d.date), ...nightlyData.map(d => d.date)])];
     const stackedData = dates.map(date => {
         const hourly = hourlyData.find(d => d.date === date)?.revenue || 0;
         const nightly = nightlyData.find(d => d.date === date)?.revenue || 0;
+        
+        // Determine which value should be at bottom (smaller) and top (larger)
+        const bottomValue = Math.min(hourly, nightly);
+        const topValue = Math.max(hourly, nightly);
+        const bottomType = hourly <= nightly ? 'hourly' : 'nightly';
+        const topType = hourly > nightly ? 'hourly' : 'nightly';
+        
         return {
             date: date,
             hourly: hourly,
             nightly: nightly,
-            total: hourly + nightly
+            total: hourly + nightly,
+            bottomValue: bottomValue,
+            topValue: topValue,
+            bottomType: bottomType,
+            topType: topType
         };
     });
+    
+    // Check if all data is zero
+    const hasRealData = stackedData.some(d => d.total > 0);
+    if (!hasRealData) {
+        // Show empty state with background
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 - 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .style('color', '#7C7C7C')
+            .text('📊 Chưa có dữ liệu');
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('color', '#7C7C7C')
+            .text('Dữ liệu sẽ hiển thị khi có booking');
+        return;
+    }
     
     // Set up scales
     const xScale = d3.scaleBand()
@@ -930,8 +1073,9 @@ function updateStackedBarChart(chartData, g, width, height) {
         .range([0, width])
         .padding(0.1);
     
+    const maxTotal = d3.max(stackedData, d => d.total) || 0;
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(stackedData, d => d.total)])
+        .domain([0, Math.max(maxTotal, 100)]) // Ensure minimum domain of 100
         .range([height, 0]);
     
     // Create grid lines
@@ -980,17 +1124,17 @@ function updateStackedBarChart(chartData, g, width, height) {
         .style('font-size', '11px')
         .style('fill', '#7C7C7C');
     
-    // Create nightly bars (bottom)
-    g.selectAll('.bar-nightly')
+    // Create bottom bars (smaller value)
+    g.selectAll('.bar-bottom')
         .data(stackedData)
         .enter()
         .append('rect')
-        .attr('class', 'bar bar-nightly')
+        .attr('class', 'bar bar-bottom')
         .attr('x', d => xScale(d.date))
         .attr('width', xScale.bandwidth())
         .attr('y', height)
         .attr('height', 0)
-        .attr('fill', '#A8D5BA')
+        .attr('fill', d => d.bottomType === 'hourly' ? '#E0EC9B' : '#A8D5BA')
         .attr('stroke', 'rgba(16, 25, 23, 0.1)')
         .attr('stroke-width', 1)
         .attr('rx', 3)
@@ -1009,20 +1153,20 @@ function updateStackedBarChart(chartData, g, width, height) {
         .transition()
         .duration(800)
         .ease(d3.easeElastic)
-        .attr('y', d => yScale(d.nightly))
-        .attr('height', d => height - yScale(d.nightly));
+        .attr('y', d => yScale(d.bottomValue))
+        .attr('height', d => height - yScale(d.bottomValue));
     
-    // Create hourly bars (top)
-    g.selectAll('.bar-hourly')
+    // Create top bars (larger value)
+    g.selectAll('.bar-top')
         .data(stackedData)
         .enter()
         .append('rect')
-        .attr('class', 'bar bar-hourly')
+        .attr('class', 'bar bar-top')
         .attr('x', d => xScale(d.date))
         .attr('width', xScale.bandwidth())
-        .attr('y', d => yScale(d.nightly))
+        .attr('y', d => yScale(d.bottomValue))
         .attr('height', 0)
-        .attr('fill', '#E0EC9B')
+        .attr('fill', d => d.topType === 'hourly' ? '#E0EC9B' : '#A8D5BA')
         .attr('stroke', 'rgba(16, 25, 23, 0.1)')
         .attr('stroke-width', 1)
         .attr('rx', 3)
@@ -1043,185 +1187,161 @@ function updateStackedBarChart(chartData, g, width, height) {
         .ease(d3.easeElastic)
         .delay(200)
         .attr('y', d => yScale(d.total))
-        .attr('height', d => yScale(d.nightly) - yScale(d.total));
+        .attr('height', d => yScale(d.bottomValue) - yScale(d.total));
     
-    // Add legend
-    const legend = g.append('g')
-        .attr('class', 'legend')
-        .attr('transform', `translate(${width - 200}, 20)`);
+    // Create legend on the title bar (outside chart area)
+    createTitleBarLegend();
+}
+
+// Create legend on title bar
+function createTitleBarLegend() {
+    // Remove existing legend if any
+    d3.select('.chart-title-legend').remove();
     
+    // Get title container
+    const titleContainer = document.querySelector('.chart-title');
+    if (!titleContainer) return;
+    
+    // Create legend container
+    const legendDiv = document.createElement('div');
+    legendDiv.className = 'chart-title-legend';
+    legendDiv.style.cssText = `
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        z-index: 10;
+    `;
+    
+    // Legend data
     const legendData = [
         { label: 'Theo giờ', color: '#E0EC9B' },
         { label: 'Theo ngày', color: '#A8D5BA' }
     ];
     
-    const legendItems = legend.selectAll('.legend-item')
-        .data(legendData)
-        .enter()
-        .append('g')
-        .attr('class', 'legend-item')
-        .attr('transform', (d, i) => `translate(0, ${i * 20})`);
-    
-    legendItems.append('rect')
-        .attr('width', 12)
-        .attr('height', 12)
-        .attr('fill', d => d.color)
-        .attr('rx', 2);
-    
-    legendItems.append('text')
-        .attr('x', 18)
-        .attr('y', 9)
-        .attr('dy', '0.35em')
-        .style('font-size', '12px')
-        .style('font-weight', '500')
-        .style('fill', '#101917')
-        .text(d => d.label);
-}
-
-// Setup chart type filters
-function setupChartTypeFilters() {
-    document.querySelectorAll('.chart-type-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Update active state
-            document.querySelectorAll('.chart-type-btn').forEach(sibling => {
-                sibling.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            // Get chart type from data attribute
-            const chartType = this.getAttribute('data-chart');
-            currentChart = chartType;
-            
-            // Update chart title
-            const titles = {
-                'hourly': 'Doanh thu thuê theo giờ',
-                'nightly': 'Doanh thu thuê theo ngày',
-                'both': 'Doanh thu thuê (Tổng hợp)'
-            };
-            document.getElementById('chartTitle').innerHTML = `
-                <i class="fas fa-chart-line" style="color: #E0EC9B;"></i>
-                ${titles[chartType]}
-            `;
-            
-            // Reload chart data with new chart type
-            loadAllDataWithChartType(currentPeriod, chartType);
-        });
+    // Create legend items
+    legendData.forEach(item => {
+        const legendItem = document.createElement('div');
+        legendItem.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #101917;
+        `;
+        
+        const colorBox = document.createElement('div');
+        colorBox.style.cssText = `
+            width: 12px;
+            height: 12px;
+            background-color: ${item.color};
+            border-radius: 2px;
+            border: 1px solid rgba(16, 25, 23, 0.1);
+        `;
+        
+        const label = document.createElement('span');
+        label.textContent = item.label;
+        
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(label);
+        legendDiv.appendChild(legendItem);
     });
+    
+    // Make title container relative positioned
+    titleContainer.style.position = 'relative';
+    titleContainer.appendChild(legendDiv);
 }
 
-// Setup master filter functionality
+// Setup master filter buttons
 function setupMasterFilters() {
-    // Period filter buttons
-    document.querySelectorAll('.master-filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const period = this.dataset.period;
-            const dropdown = document.getElementById('masterCustomDropdown');
-            
-            // Handle custom period toggle
-            if (period === 'custom') {
-                const isCurrentlyActive = this.classList.contains('active');
-                const isDropdownVisible = dropdown.style.display === 'block';
-                
-                if (isCurrentlyActive && isDropdownVisible) {
-                    // Close dropdown if clicking active custom button
-                    dropdown.classList.remove('show');
-                    setTimeout(() => dropdown.style.display = 'none', 300);
-                    
-                    // Reset to previous period or default to total
-                    const previousPeriod = currentPeriod !== 'custom' ? currentPeriod : 'total';
-                    document.querySelectorAll('.master-filter-btn').forEach(sibling => {
-                        sibling.classList.remove('active');
-                        if (sibling.dataset.period === previousPeriod) {
-                            sibling.classList.add('active');
-                        }
-                    });
-                    currentPeriod = previousPeriod;
-                    return;
-                }
-                
-                // Show dropdown
-                dropdown.style.display = 'block';
-                setTimeout(() => dropdown.classList.add('show'), 10);
-            } else {
-                // Hide dropdown for other periods
-                dropdown.classList.remove('show');
-                setTimeout(() => dropdown.style.display = 'none', 300);
-                
-                // Update current period BEFORE loading data
-                currentPeriod = period;
-                loadAllData(period);
-            }
-            
-            // Update active state
-            document.querySelectorAll('.master-filter-btn').forEach(sibling => {
-                sibling.classList.remove('active');
-            });
-            this.classList.add('active');
-        });
-    });
-    
-    // Chart type toggle buttons
-    document.querySelectorAll('.chart-type-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Update active state
-            document.querySelectorAll('.chart-type-btn').forEach(sibling => {
-                sibling.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            const chartType = this.dataset.chart;
-            currentChart = chartType;
-            
-            // Update chart title
-            const chartTitle = document.getElementById('chartTitle');
-            
-            if (chartType === 'hourly') {
-                chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo giờ';
-            } else if (chartType === 'nightly') {
-                chartTitle.innerHTML = '<i class="fas fa-chart-bar" style="color: #E0EC9B; margin-right: 8px;"></i>Doanh thu thuê theo ngày';
-            } else if (chartType === 'both') {
-                chartTitle.innerHTML = '<i class="fas fa-chart-line" style="color: #E0EC9B; margin-right: 8px;"></i>So sánh doanh thu theo giờ và theo ngày';
-            }
-            
-            // Reload both chart and stats data with new chart type
-            loadAllDataWithChartType(currentPeriod, chartType);
-        });
-    });
-}
-
-// Setup filter buttons
-function setupFilterButtons() {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Update active state
-            this.parentNode.querySelectorAll('.filter-btn').forEach(sibling => {
-                sibling.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            // Get period from data attribute
+    const filterButtons = document.querySelectorAll('.master-filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
             const period = this.getAttribute('data-period');
             
-            // Show/hide date picker for custom option
-            const customDropdown = document.getElementById('customDateDropdown');
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
             
             if (period === 'custom') {
-                customDropdown.style.display = 'block';
-                // Add smooth animation
-                setTimeout(() => {
-                    customDropdown.style.opacity = '1';
-                    customDropdown.style.transform = 'translateY(0)';
-                }, 10);
+                // Show custom date picker
+                showMasterCustomDatePicker();
             } else {
-                customDropdown.style.display = 'none';
-                // Load new data if different period
-                if (period !== currentPeriod) {
-                    currentPeriod = period;
-                    loadChartData(period);
-                }
+                // Hide custom date picker
+                hideMasterCustomDatePicker();
+                // Update current period and load data
+                currentPeriod = period;
+                loadAllDataWithChartType(period, currentChart);
             }
         });
     });
+}
+
+// Setup chart type filter buttons
+function setupChartTypeFilters() {
+    const chartButtons = document.querySelectorAll('.chart-type-btn');
+    chartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const chartType = this.getAttribute('data-chart');
+            
+            // Remove active class from all buttons
+            chartButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Update current chart type and load data
+            currentChart = chartType;
+            loadAllDataWithChartType(currentPeriod, chartType);
+            
+            // Update chart title
+            updateChartTitle(chartType);
+        });
+    });
+}
+
+// Show custom date picker
+function showMasterCustomDatePicker() {
+    const dropdown = document.getElementById('masterCustomDropdown');
+    dropdown.style.display = 'block';
+    setTimeout(() => {
+        dropdown.classList.add('show');
+    }, 10);
+}
+
+// Hide custom date picker
+function hideMasterCustomDatePicker() {
+    const dropdown = document.getElementById('masterCustomDropdown');
+    dropdown.classList.remove('show');
+    setTimeout(() => {
+        dropdown.style.display = 'none';
+    }, 300);
+}
+
+// Update chart title based on chart type
+function updateChartTitle(chartType) {
+    const chartTitle = document.getElementById('chartTitle');
+    const icon = '<i class="fas fa-chart-line" style="color: #E0EC9B;"></i>';
+    
+    let title;
+    switch(chartType) {
+        case 'hourly':
+            title = 'Doanh thu theo giờ';
+            break;
+        case 'daily':
+            title = 'Doanh thu theo ngày';
+            break;
+        case 'both':
+        default:
+            title = 'So sánh doanh thu theo giờ và theo ngày';
+            break;
+    }
+    
+    chartTitle.innerHTML = `${icon} ${title}`;
 }
 
 // Load all data (stats + chart)
@@ -1299,7 +1419,7 @@ function updateAllUI(statsData, chartData, period = null) {
     updateChart(chartData, period);
     
     // Update table
-    updateTable(statsData.top_rooms);
+    updateTable(statsData.top_homes);
     
     hideLoadingState();
 }
@@ -1427,29 +1547,29 @@ function updateStatChange(elementId, percentage, increaseText, decreaseText) {
     }
 }
 
-// Update table with top rooms
-function updateTable(topRooms) {
+// Update table with top homes
+function updateTable(topHomes) {
     const tbody = document.querySelector('.stats-table tbody');
     if (!tbody) return;
     
     tbody.innerHTML = '';
     
-    if (!topRooms || topRooms.length === 0) {
+    if (!topHomes || topHomes.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #7C7C7C;">Chưa có dữ liệu</td></tr>';
         return;
     }
     
-    topRooms.slice(0, 5).forEach(room => {
+    topHomes.slice(0, 5).forEach(home => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${room.name}</td>
-            <td>${room.type}</td>
-            <td>${room.revenue.toLocaleString()}đ</td>
-            <td>${room.bookings}</td>
-            <td>${room.booking_rate}</td>
+            <td>${home.name}</td>
+            <td>${home.type}</td>
+            <td>${home.revenue.toLocaleString()}đ</td>
+            <td>${home.bookings}</td>
+            <td>${home.booking_rate}</td>
             <td>
                 <span class="rating-stars">
-                    ${room.rating}
+                    ${home.rating}
                     <i class="fas fa-star"></i>
                 </span>
             </td>

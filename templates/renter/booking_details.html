@@ -7,7 +7,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header" style="background-color: #e2b77b; color: white;">
-                    <h4 class="mb-0">Chi Tiết Đặt Phòng</h4>
+                    <h4 class="mb-0">Chi Tiết Booking</h4>
                 </div>
                 
                 <!-- Notification Section -->
@@ -141,16 +141,16 @@
                                             <div class="card-body">
                                                 <table class="table table-bordered table-striped text-center align-middle detail-table">
                                                     <tr>
-                                                        <th class="align-middle" style="width: 20%">Homestay:</th>
-                                                        <td class="align-middle">{{ booking.room.title }}</td>
-                                                        <th class="align-middle" style="width: 20%">Room:</th>
-                                                        <td class="align-middle">Room {{ booking.room.room_number }}</td>
+                                                        <th class="align-middle" style="width: 20%">Home:</th>
+                                                        <td class="align-middle">{{ booking.home.title }}</td>
+                                                        <th class="align-middle" style="width: 20%">Type:</th>
+                                                        <td class="align-middle">{{ booking.home.home_type }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th class="align-middle">Room Type:</th>
-                                                        <td class="align-middle">{{ booking.room.room_type }}</td>
+                                                        <th class="align-middle">Max Guests:</th>
+                                                        <td class="align-middle">{{ booking.home.max_guests }}</td>
                                                         <th class="align-middle">Address:</th>
-                                                        <td class="align-middle">{{ format_full_address(booking.room.address, None, booking.room.district, booking.room.city) }}</td>
+                                                        <td class="align-middle">{{ format_full_address(booking.home.address, None, booking.home.district, booking.home.city) }}</td>
                                                     </tr>
                                                 </table>
                                             </div>
@@ -161,14 +161,14 @@
                                 <div class="row mt-4">
                                     <div class="col-md-12 text-center">
                                         <div class="action-buttons-container">
-                                            {% if booking.status == 'confirmed' and booking.payment_status != 'paid' %}
+                                            {% if booking.payment_status != 'paid' %}
                                                 <a href="{{ url_for('payment.checkout', booking_id=booking.id) }}" class="detail-action-button payment-btn">
                                                     <i class="bi bi-credit-card"></i> Thanh toán ngay
                                                 </a>
                                             {% endif %}
                                             
-                                            {% if booking.room is not none %}
-                                                <a href="{{ url_for('renter.book_room', room_id=booking.room.id) }}" class="detail-action-button book-again-btn">
+                                            {% if booking.home is not none %}
+                                                <a href="{{ url_for('renter.book_home', home_id=booking.home.id) }}" class="detail-action-button book-again-btn">
                                                     <i class="bi bi-calendar-plus"></i> Đặt phòng lại
                                                 </a>
                                             {% endif %}
@@ -179,7 +179,7 @@
                                                 </a>
                                             {% endif %}
                                             
-                                            {% if booking.status not in ['cancelled', 'completed', 'rejected'] %}
+                                            {% if booking.status not in ['cancelled', 'completed'] and booking.payment_status != 'paid' %}
                                                 <a href="{{ url_for('renter.cancel_booking', id=booking.id) }}" class="detail-action-button cancel-btn">
                                                     <i class="bi bi-x-circle"></i> Hủy đặt phòng
                                                 </a>

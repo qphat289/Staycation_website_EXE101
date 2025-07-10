@@ -1,0 +1,5224 @@
+{% extends 'base.html' %}
+{% block title %}<span data-translate="add-home">Thêm nhà mới</span>{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/add-home.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="add-home-wizard">
+
+
+                <div class="wizard-layout">
+            <!-- Sidebar Steps -->
+            <div class="steps-sidebar">
+                <div class="step {% if (last_step or 1) == 1 %}active{% endif %}" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Thông tin cơ bản</div>
+                </div>
+                <div class="step {% if (last_step or 1) == 2 %}active{% endif %}" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Thông tin chi tiết</div>
+                </div>
+                <div class="step {% if (last_step or 1) == 3 %}active{% endif %}" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Thêm hình ảnh và giá</div>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <div class="wizard-content">
+                <form method="post" enctype="multipart/form-data" class="wizard-form" onsubmit="return prepareFormData()">
+            <!-- Hidden inputs for counter values -->
+            <input type="hidden" name="bathroom_count" id="bathroom_count_input" value="{{ home_data.bathroom_count or 2 }}">
+            <input type="hidden" name="bed_count" id="bed_count_input" value="{{ home_data.bed_count or 1 }}">
+            <input type="hidden" name="guest_count" id="guest_count_input" value="{{ home_data.guest_count or 1 }}">
+            <input type="hidden" name="selected_rental_type" id="selected_rental_type" value="">
+            <!-- Step 1: Basic Information -->
+            <div class="step-content {% if (last_step or 1) == 1 %}active{% endif %}" id="step-1">
+                <div class="form-section">
+                    <h3>Tên Homestay</h3>
+                    <div class="form-content">
+                        <input type="text" name="home_title" id="home_title" placeholder="Thêm tiêu đề" class="form-input" value="{{ home_data.home_title or '' }}" required>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Mô tả Homestay</h3>
+                    <div class="form-content">
+                        <div class="textarea-container">
+                            <textarea name="home_description" id="home_description" placeholder="Thêm miêu tả homestay" class="form-textarea" required>{{ home_data.home_description or '' }}</textarea>
+                            <div class="char-count">0/500</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Hình thức lưu trú</h3>
+                    <div class="form-content">
+                        <div class="accommodation-type-selection">
+                            <div class="accommodation-option">
+                                <input type="radio" id="entire_home" name="accommodation_type" value="entire_home" class="accommodation-radio" {% if home_data.accommodation_type == 'entire_home' or not home_data.accommodation_type %}checked{% endif %}>
+                                <label for="entire_home" class="accommodation-label">
+                                    <div class="accommodation-icon">
+                                        <i class="bi bi-house-fill"></i>
+                                    </div>
+                                    <div class="accommodation-text">Toàn bộ nhà</div>
+                                </label>
+                            </div>
+                            <div class="accommodation-option">
+                                <input type="radio" id="private_room" name="accommodation_type" value="private_room" class="accommodation-radio" {% if home_data.accommodation_type == 'private_room' %}checked{% endif %}>
+                                <label for="private_room" class="accommodation-label">
+                                    <div class="accommodation-icon">
+                                        <i class="bi bi-door-open-fill"></i>
+                                    </div>
+                                    <div class="accommodation-text">Phòng riêng</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Mô hình Homestay</h3>
+                    <div class="form-content">
+                        <div class="property-type-selection">
+                            <div class="property-option">
+                                <input type="radio" id="townhouse" name="property_type" value="townhouse" class="property-radio" {% if home_data.property_type == 'townhouse' %}checked{% endif %}>
+                                <label for="townhouse" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-house-door"></i>
+                                    </div>
+                                    <div class="property-text">Nhà phố</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="apartment" name="property_type" value="apartment" class="property-radio" {% if home_data.property_type == 'apartment' %}checked{% endif %}>
+                                <label for="apartment" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-building"></i>
+                                    </div>
+                                    <div class="property-text">Chung cư</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="villa" name="property_type" value="villa" class="property-radio" {% if home_data.property_type == 'villa' %}checked{% endif %}>
+                                <label for="villa" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-house-fill"></i>
+                                    </div>
+                                    <div class="property-text">Villa</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="penthouse" name="property_type" value="penthouse" class="property-radio" {% if home_data.property_type == 'penthouse' %}checked{% endif %}>
+                                <label for="penthouse" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-building-up"></i>
+                                    </div>
+                                    <div class="property-text">Penthouse</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="farmstay" name="property_type" value="farmstay" class="property-radio" {% if home_data.property_type == 'farmstay' %}checked{% endif %}>
+                                <label for="farmstay" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-tree"></i>
+                                    </div>
+                                    <div class="property-text">Farmstay</div>
+                                </label>
+                            </div>
+                            <div class="property-option">
+                                <input type="radio" id="resort" name="property_type" value="resort" class="property-radio" {% if home_data.property_type == 'resort' %}checked{% endif %}>
+                                <label for="resort" class="property-label">
+                                    <div class="property-icon">
+                                        <i class="bi bi-water"></i>
+                                    </div>
+                                    <div class="property-text">Resort</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Địa chỉ Homestay</h3>
+                    <div class="form-content">
+                        <div class="location-inputs">
+                            <select name="province" id="province" class="form-select" onchange="updateDistricts()">
+                                <option value="" disabled {% if not home_data.province %}selected{% endif %}>Tỉnh/Thành phố</option>
+                                <!-- Các tỉnh sẽ được load từ API -->
+                            </select>
+                            <select name="district" id="district" class="form-select" onchange="updateWards()" disabled>
+                                <option value="" disabled selected>Quận/Huyện</option>
+                            </select>
+                            <select name="ward" id="ward" class="form-select" disabled>
+                                <option value="" disabled selected>Phường/Xã</option>
+                            </select>
+                            <input type="text" name="street" id="street" class="form-input" placeholder="Tên đường, số nhà/tòa nhà" value="{{ home_data.street or '' }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="goBack()">Quay lại</button>
+                    <button type="button" class="btn-primary" onclick="nextStep()">Tiếp theo</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Detailed Information -->
+            <div class="step-content {% if (last_step or 1) == 2 %}active{% endif %}" id="step-2">
+                <div class="form-section">
+                    <h3>Sức chứa của nhà</h3>
+                    <div class="form-content">
+                        <div class="home-details">
+                            <div class="detail-row">
+                                <span>Số lượng nhà tắm trong nhà</span>
+                                <div class="counter">
+                                    <button type="button" class="counter-btn" onclick="decreaseCount('bathroom')">-</button>
+                                    <span id="bathroom-count">{{ home_data.bathroom_count or 1 }}</span>
+                                    <button type="button" class="counter-btn" onclick="increaseCount('bathroom')">+</button>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <span>Số lượng giường trong nhà</span>
+                                <div class="counter">
+                                    <button type="button" class="counter-btn" onclick="decreaseCount('bed')">-</button>
+                                    <span id="bed-count">{{ home_data.bed_count or 1 }}</span>
+                                    <button type="button" class="counter-btn" onclick="increaseCount('bed')">+</button>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <span>Số lượng khách tối đa</span>
+                                <div class="counter">
+                                    <button type="button" class="counter-btn" onclick="decreaseCount('guest')">-</button>
+                                    <span id="guest-count">{{ home_data.guest_count or 1 }}</span>
+                                    <button type="button" class="counter-btn" onclick="increaseCount('guest')">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Nội quy tại nhà</h3>
+                    <div class="form-content">
+                        <div class="rules-row">
+                            <div class="selected-rules" id="selectedRules">
+                                <!-- Selected rules will appear here -->
+                            </div>
+                            <button type="button" class="add-rule-btn" onclick="showRulesModal()">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>Thêm nội quy</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Hình thức cho thuê</h3>
+                    <div class="form-content">
+                        <div class="rental-type-selection">
+                            <div class="rental-option">
+                                <input type="radio" id="hourly" name="rental_type" value="hourly" class="rental-radio" {% if home_data.selected_rental_type == 'hourly' %}checked{% endif %}>
+                                <label for="hourly" class="rental-label">
+                                    <i class="rental-icon bi bi-clock"></i>
+                                    <span class="rental-text">Theo giờ</span>
+                                </label>
+                            </div>
+                            <div class="rental-option">
+                                <input type="radio" id="daily" name="rental_type" value="daily" class="rental-radio" {% if home_data.selected_rental_type == 'daily' %}checked{% endif %}>
+                                <label for="daily" class="rental-label">
+                                    <i class="rental-icon bi bi-calendar-day"></i>
+                                    <span class="rental-text">Theo ngày</span>
+                                </label>
+                            </div>
+                            <div class="rental-option">
+                                <input type="radio" id="both" name="rental_type" value="both" class="rental-radio" {% if home_data.selected_rental_type == 'both' %}checked{% endif %}>
+                                <label for="both" class="rental-label">
+                                    <i class="rental-icon bi bi-calendar-range"></i>
+                                    <span class="rental-text">Cả 2</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                <div class="form-section">
+                    <h3>Thêm tiện nghi</h3>
+                    <div class="form-content">
+                        <div class="amenities-row">
+                            <div class="selected-amenities" id="selectedAmenities">
+                                <!-- Selected amenities will appear here -->
+                            </div>
+                            <button type="button" class="add-amenity-btn" onclick="showAmenityModal()">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>Thêm tiện nghi</span>
+                            </button>
+                        </div>
+                        <!-- Hidden inputs cho selected amenities -->
+                        <div id="amenityInputs"></div>
+                        <!-- Hidden inputs cho selected rules -->
+                        <div id="ruleInputs"></div>
+                    </div>
+  </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="prevStep()">Quay lại</button>
+                    <button type="button" class="btn-primary" onclick="nextStep()">Tiếp theo</button>
+                </div>
+  </div>
+
+            <!-- Step 3: Images and Pricing -->
+            <div class="step-content {% if (last_step or 1) == 3 %}active{% endif %}" id="step-3">
+                                <div class="form-section">
+                    <h3>Thêm ảnh nhà</h3>
+                    <div class="form-content">
+                        <div class="upload-grid">
+                            <div class="upload-item">
+                                <span class="upload-label">Ảnh bìa</span>
+                                <input type="file" id="main-image" name="main_image" accept="image/*">
+                                <div class="upload-placeholder">
+                                    <i class="bi bi-camera"></i>
+                                </div>
+                            </div>
+                            <div class="upload-item">
+                                <input type="file" name="images[]" accept="image/*" multiple>
+                                <div class="upload-placeholder">
+                                    <i class="bi bi-camera"></i>
+                                </div>
+                            </div>
+                            <div class="upload-item">
+                                <input type="file" name="images[]" accept="image/*" multiple>
+                                <div class="upload-placeholder">
+                                    <i class="bi bi-camera"></i>
+                                </div>
+                            </div>
+                            <div class="upload-item">
+                                <input type="file" name="images[]" accept="image/*" multiple>
+                                <div class="upload-placeholder">
+                                    <i class="bi bi-camera"></i>
+                                </div>
+                            </div>
+                            <div class="upload-item">
+                                <input type="file" name="images[]" accept="image/*" multiple>
+                                <div class="upload-placeholder">
+                                    <i class="bi bi-camera"></i>
+                                </div>
+                            </div>
+                            <div class="upload-item add-more">
+                                <div class="upload-placeholder">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <span>Thêm ảnh</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+  </div>
+
+                                <div class="form-section">
+                    <h3>Thêm giá dịch vụ</h3>
+                    <div class="form-content">
+                        <div class="pricing-section">
+                            <!-- Enhanced Hourly Pricing -->
+                            <div class="pricing-option" id="hourly-pricing" style="display: none;">
+                                <h4>Giá thuê theo giờ</h4>
+                                <div class="pricing-grid">
+                                    <div class="price-input-group">
+                                        <label class="price-label">Giá 2 giờ đầu</label>
+                                        <div class="price-input">
+                                            <span class="currency">VND</span>
+                                            <input type="text" name="price_first_2_hours" placeholder="Nhập giá 2 giờ đầu (VD: 400000)" class="price-field" value="{{ home_data.price_first_2_hours or '' }}" 
+                                                   oninput="formatPriceInput(this)" onblur="validatePrice(this, 'first_2_hours')">
+                                        </div>
+                                    </div>
+                                    <div class="price-input-group">
+                                        <label class="price-label">Giá 1 giờ sau</label>
+                                        <div class="price-input">
+                                            <span class="currency">VND</span>
+                                            <input type="text" name="price_per_additional_hour" placeholder="Nhập giá 1 giờ sau (VD: 150000)" class="price-field" value="{{ home_data.price_per_additional_hour or '' }}" 
+                                                   oninput="formatPriceInput(this)" onblur="validatePrice(this, 'additional_hour')">
+                                        </div>
+                                    </div>
+                                    <div class="price-input-group">
+                                        <label class="price-label">Giá qua đêm (21h-8h)</label>
+                                        <div class="price-input">
+                                            <span class="currency">VND</span>
+                                            <input type="text" name="price_overnight" placeholder="Nhập giá qua đêm (VD: 800000)" class="price-field" value="{{ home_data.price_overnight or '' }}" 
+                                                   oninput="formatPriceInput(this)" onblur="validatePrice(this, 'overnight')">
+                                        </div>
+                                    </div>
+                                    <div class="price-input-group">
+                                        <label class="price-label">Giá qua ngày (9h-20h)</label>
+                                        <div class="price-input">
+                                            <span class="currency">VND</span>
+                                            <input type="text" name="price_daytime" placeholder="Nhập giá qua ngày (VD: 1200000)" class="price-field" value="{{ home_data.price_daytime or '' }}" 
+                                                   oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daytime')">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Daily Pricing -->
+                            <div class="pricing-option" id="daily-pricing" style="display: none;">
+                                <h4>Giá thuê theo ngày</h4>
+                                <div class="price-input-group">
+                                    <label class="price-label">Giá theo ngày</label>
+                                    <div class="price-input">
+                                        <span class="currency">VND</span>
+                                        <input type="text" name="price_per_day" placeholder="Nhập giá theo ngày (VD: 10000, không nhập dấu chấm hoặc phẩy)" class="price-field" value="{{ home_data.price_per_day or '' }}" 
+                                               oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daily')">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Both Types Pricing -->
+                            <div class="pricing-option" id="both-pricing" style="display: none;">
+                                <h4>Giá thuê theo giờ và ngày</h4>
+                                <div class="pricing-sections">
+                                    <div class="pricing-section-item">
+                                        <h5>Giá thuê theo giờ</h5>
+                                        <div class="pricing-grid">
+                                            <div class="price-input-group">
+                                                <label class="price-label">Giá 2 giờ đầu</label>
+                                                <div class="price-input">
+                                                    <span class="currency">VND</span>
+                                                    <input type="text" name="price_first_2_hours_both" placeholder="Nhập giá 2 giờ đầu (VD: 400000)" class="price-field" value="{{ home_data.price_first_2_hours or '' }}" 
+                                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'first_2_hours_both')">
+                                                </div>
+                                            </div>
+                                            <div class="price-input-group">
+                                                <label class="price-label">Giá 1 giờ sau</label>
+                                                <div class="price-input">
+                                                    <span class="currency">VND</span>
+                                                    <input type="text" name="price_per_additional_hour_both" placeholder="Nhập giá 1 giờ sau (VD: 150000)" class="price-field" value="{{ home_data.price_per_additional_hour or '' }}" 
+                                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'additional_hour_both')">
+                                                </div>
+                                            </div>
+                                            <div class="price-input-group">
+                                                <label class="price-label">Giá qua đêm (21h-8h)</label>
+                                                <div class="price-input">
+                                                    <span class="currency">VND</span>
+                                                    <input type="text" name="price_overnight_both" placeholder="Nhập giá qua đêm (VD: 800000)" class="price-field" value="{{ home_data.price_overnight or '' }}" 
+                                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'overnight_both')">
+                                                </div>
+                                            </div>
+                                            <div class="price-input-group">
+                                                <label class="price-label">Giá qua ngày (9h-20h)</label>
+                                                <div class="price-input">
+                                                    <span class="currency">VND</span>
+                                                    <input type="text" name="price_daytime_both" placeholder="Nhập giá qua ngày (VD: 1200000)" class="price-field" value="{{ home_data.price_daytime or '' }}" 
+                                                           oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daytime_both')">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="pricing-section-item">
+                                        <h5>Giá thuê theo ngày</h5>
+                                        <div class="price-input-group">
+                                            <label class="price-label">Giá theo ngày</label>
+                                            <div class="price-input">
+                                                <span class="currency">VND</span>
+                                                <input type="text" name="price_per_day_both" placeholder="Nhập giá theo ngày (VD: 10000, không nhập dấu chấm hoặc phẩy)" class="price-field" value="{{ home_data.price_per_day or '' }}" 
+                                                       oninput="formatPriceInput(this)" onblur="validatePrice(this, 'daily_both')">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="no-rental-type-selected" id="no-pricing-selected">
+                                <p style="color: #666; font-style: italic; text-align: center;">
+                                    <i class="bi bi-arrow-left me-2"></i>
+                                    Vui lòng chọn hình thức cho thuê ở bước trước để thiết lập giá
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+  </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="prevStep()">Quay lại</button>
+                    <button type="submit" class="btn-primary">Hoàn thành</button>
+                </div>
+            </div>
+        </form>
+  </div>
+
+        <!-- Amenity Modal -->
+    <div id="amenityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <i class="bi bi-star-fill me-3"></i>
+                        <div>
+                            <h3>Chọn tiện nghi cho nhà</h3>
+                            <p class="header-subtitle">Thêm các tiện nghi để thu hút khách hàng</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="amenity-categories">
+                    <div class="amenity-sections">
+                        <!-- Amenity sections will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="rulesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <i class="bi bi-shield-check me-3"></i>
+                        <div>
+                            <h3>Chọn nội quy cho nhà</h3>
+                            <p class="header-subtitle">Thiết lập các quy định để đảm bảo trải nghiệm tốt nhất</p>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="close-modal-btn" onclick="closeRulesModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="rules-categories">
+                    <div class="rules-sections">
+                        <div class="rule-section" data-category="smoking">
+                            <h4 class="section-title">
+                                <i class="bi bi-sign-no-smoking-fill me-2"></i>Hút thuốc
+                            </h4>
+                            <div class="rules-grid" id="smokingRules">
+                                <!-- Smoking rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="pets">
+                            <h4 class="section-title">
+                                <i class="bi bi-heart-fill me-2"></i>Thú cưng
+                            </h4>
+                            <div class="rules-grid" id="petsRules">
+                                <!-- Pet rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="children">
+                            <h4 class="section-title">
+                                <i class="bi bi-people-fill me-2"></i>Trẻ em
+                            </h4>
+                            <div class="rules-grid" id="childrenRules">
+                                <!-- Children rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="party">
+                            <h4 class="section-title">
+                                <i class="bi bi-music-note-beamed me-2"></i>Tiệc tùng
+                            </h4>
+                            <div class="rules-grid" id="partyRules">
+                                <!-- Party rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="time">
+                            <h4 class="section-title">
+                                <i class="bi bi-clock-fill me-2"></i>Thời gian
+                            </h4>
+                            <div class="rules-grid" id="timeRules">
+                                <!-- Time rules will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="rule-section" data-category="behavior">
+                            <h4 class="section-title">
+                                <i class="bi bi-person-check-fill me-2"></i>Hành vi
+                            </h4>
+                            <div class="rules-grid" id="behaviorRules">
+                                <!-- Behavior rules will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeRulesModal()">Hủy</button>
+                <button type="button" class="btn-primary" onclick="saveSelectedRules()">Lưu nội quy</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
+<style>
+.add-home-wizard {
+    max-width: none; /* Allow full width to match global changes */
+    margin: 0 auto;
+    padding: 10px 20px;
+    background: transparent;
+    height: calc(100vh - 70px); /* 70px là chiều cao header */
+    overflow: hidden;
+}
+body.add-home-no-scroll, html.add-home-no-scroll {
+    overflow: hidden;
+    height: 100vh;
+}
+
+.wizard-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    height: calc(100vh - 20px);
+    max-height: calc(100vh - 20px);
+}
+
+.steps-sidebar {
+    flex: 0 0 250px;
+    background: transparent;
+    padding: 20px;
+    height: 100%;
+}
+
+.steps-sidebar .step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+    position: relative;
+}
+
+/* .steps-sidebar .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 32px;
+    top: 50px;
+    width: 2px;
+    height: 40px;
+    background: #ddd;
+    z-index: 0;
+} */
+
+.steps-sidebar .step.active {
+    opacity: 3;
+}
+
+.steps-sidebar .step.active:not(:last-child)::after {
+    background: #9ed649;
+}
+
+.step-number {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #ddd;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 0;
+}
+
+.step.active .step-number {
+    background: #9ed649;
+}
+
+.step-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.wizard-content {
+    flex: 1;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #9ed649 #f1f1f1;
+    margin-top: -35px;
+}
+
+.wizard-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.wizard-content::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.wizard-content::-webkit-scrollbar-thumb {
+    background: #9ed649;
+    border-radius: 5px;
+    border: 2px solid #f8f9fa;
+}
+
+.wizard-content::-webkit-scrollbar-thumb:hover {
+    background: #8bc441;
+}
+
+.wizard-content::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+.wizard-form {
+    background: transparent;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: none;
+    min-height: 100%;
+}
+
+.step-content {
+    display: none;
+}
+
+.step-content.active {
+    display: block;
+    padding-bottom: 50px;
+}
+
+.form-section {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    margin-bottom: 0;
+    color: #333;
+    font-size: 14px;
+    flex: 0 0 130px;
+    padding-top: 5px;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.rules-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+
+.selected-rules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+    margin-left:25px;
+}
+
+.selected-rule-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f0f9e8;
+    border: 1px solid #9ed649;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #2d5a2d;
+}
+
+.selected-rule-item .remove-rule {
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.selected-rule-item .remove-rule:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.more-rules-badge {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: #e9ecef;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.more-rules-badge:hover {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+.add-rule-btn {
+    background: transparent;
+    color: #333;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.add-rule-btn:hover {
+    color: #9ed649;
+}
+
+/* Amenities Row Styles - tương tự như Rules */
+.amenities-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.selected-amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+    margin-left: 25px;
+}
+
+.add-amenity-btn {
+    background: transparent;
+    color: #333;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.add-amenity-btn:hover {
+    color: #9ed649;
+}
+
+.form-section .form-content {
+    flex: 1;
+    background: transparent;
+}
+
+
+
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.form-textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+.textarea-container {
+    position: relative;
+}
+
+.char-count {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 11px;
+    color: #000000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.home-specs {
+    display: flex;
+    gap: 12px;
+}
+
+.spec-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.spec-item:hover {
+    border-color: #9ed649;
+}
+
+.location-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-select {
+    padding: 8px 12px;
+    /* border: 1px solid #ddd; */
+    border-radius: 6px;
+    /* background: white; */
+    font-size: 13px;
+}
+
+.home-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: transparent;
+    margin-top: -20px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #a7a3a3;
+    font-size: 13px;
+}
+
+.counter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.counter-btn {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+}
+
+.counter-btn:hover {
+    background: #f5f5f5;
+}
+
+.rules-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rule-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 22px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 25px;
+    transition: 0.4s;
+}
+
+.toggle-switch label:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
+}
+
+.toggle-switch input:checked + label {
+    background-color: #9ed649;
+}
+
+.toggle-switch input:checked + label:before {
+    transform: translateX(22px);
+}
+
+.amenities-section {
+    display: flex;
+    gap: 12px;
+}
+
+.amenity-category {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+
+
+
+
+.upload-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 100%;
+    width: 100%;
+}
+
+.upload-item {
+    position: relative;
+    aspect-ratio: 1;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 140px;
+    max-width: 160px;
+}
+
+.upload-label {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(158, 214, 73, 0.9);
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    z-index: 2;
+    font-weight: 500;
+}
+
+.upload-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    z-index: 5;
+    pointer-events: auto;
+}
+
+.upload-placeholder i {
+    font-size: 28px;
+    color: #9ed649;
+}
+
+.upload-placeholder span {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.upload-item input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.upload-item.add-more {
+    background: #f9f9f9;
+    border-color: #9ed649;
+    border-style: dashed;
+    cursor: pointer;
+}
+
+.upload-item.add-more .upload-placeholder {
+    background: transparent;
+}
+
+.upload-item.add-more .upload-placeholder i {
+    font-size: 24px;
+    color: #9ed649;
+}
+
+.upload-item:hover {
+    border-color: #9ed649;
+    background-color: #f8fff0;
+}
+
+.upload-grid.drag-over {
+    border: 2px dashed #9ed649 !important;
+    background-color: #f8fff0 !important;
+}
+
+.upload-grid.drag-over .upload-item {
+    border-color: #9ed649;
+    background-color: rgba(158, 214, 73, 0.1);
+}
+
+.upload-item.has-image {
+    border-style: solid;
+    border-color: #9ed649;
+}
+
+.upload-item .remove-btn:hover {
+    background: rgba(220, 53, 69, 1) !important;
+    transform: scale(1.1);
+}
+
+.pricing-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pricing-option {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.pricing-option h4 {
+    margin-bottom: 6px;
+    color: #333;
+    font-size: 15px;
+}
+
+.pricing-option p {
+    margin-bottom: 12px;
+    color: #666;
+    font-size: 13px;
+}
+
+.price-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.currency {
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-right: 1px solid #ddd;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.price-field {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    outline: none;
+    font-size: 13px;
+}
+
+.price-hint {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0f9ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+}
+
+.price-hint small {
+    color: #1e40af;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.price-error {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    color: #dc2626;
+    font-size: 12px;
+    display: none;
+}
+
+.price-input.error {
+    border-color: #dc3545;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    gap: 10px;
+}
+
+.form-actions .btn-danger {
+    margin: 0 auto;
+}
+
+.btn-secondary, .btn-primary, .btn-danger {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-secondary {
+    background: white;
+    color: #030303;
+    border-color: #000000;
+}
+
+.btn-secondary:hover {
+    background: #d6f2c3;
+    border-color: #bbb;
+}
+
+.btn-primary {
+    background: #9ed649;
+    color: rgb(0, 0, 0);
+    border-color: #000000;
+}
+
+.btn-primary:hover {
+    background: #8bc441;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    border-color: #bd2130;
+    color: white;
+    text-decoration: none;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: fixed;
+    top: 70px;
+    right: 0;
+    transform: none;
+    background: white;
+    border-radius: 12px 0 0 12px;
+    padding: 30px;
+    max-width: 700px;
+    width: 650px;
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #9ed649;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #8bc441;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.close-modal-btn:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 30px;
+    border-top: 1px solid #eee;
+    background: white;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 30px 30px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.header-content {
+    flex: 1;
+}
+
+.modal-content .modal-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    padding: 15px 0;
+    margin: -30px -30px 15px -30px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border-bottom: 1px solid #e5e5e5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-title i {
+    font-size: 24px;
+    color: #9ed649;
+}
+
+.header-title h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.header-subtitle {
+    margin: 2px 0 0 0;
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+
+
+.rules-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.rule-section {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fafafa;
+}
+
+.section-title {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #9ed649;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    color: #9ed649;
+}
+
+.rules-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.rule-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.rule-item:hover {
+    border-color: #9ed649;
+    background: #f8fff0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(158, 214, 73, 0.15);
+}
+
+.rule-item.selected {
+    background: #e8f5e8;
+    border-color: #9ed649;
+    box-shadow: 0 2px 6px rgba(158, 214, 73, 0.25);
+}
+
+.rule-item.selected::before {
+    content: "✓";
+    position: absolute;
+    right: 12px;
+    color: #9ed649;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.rule-text {
+    font-size: 14px;
+    color: #333;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.rule-item.selected .rule-text {
+    color: #2d5a2d;
+    font-weight: 500;
+}
+
+.no-rules-text {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Amenity Modal specific styles */
+.amenity-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.amenity-section {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fafafa;
+}
+
+.amenity-section .section-title {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #9ed649;
+    display: flex;
+    align-items: center;
+}
+
+.amenity-section .section-title i {
+    color: #9ed649;
+}
+
+.amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.amenity-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+}
+
+.amenity-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #9ed649;
+}
+
+.amenity-item.selected {
+    background-color: #e8f5e8;
+    border-color: #9ed649;
+}
+
+.amenity-item.selected::after {
+    content: '✔';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ed649;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.amenity-item i {
+    font-size: 18px;
+    color: #9ed649;
+    min-width: 20px;
+    margin-right: 10px;
+}
+
+.amenity-text {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.no-amenities-text {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+/* Selected amenity items - tương tự như selected rule items */
+.selected-amenity-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f0f9e8;
+    border: 1px solid #9ed649;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #2d5a2d;
+}
+
+.selected-amenity-item .remove-amenity {
+    color: #817d7d;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.selected-amenity-item .remove-amenity:hover {
+    background: #9ed649;
+    color: white;
+}
+
+.more-amenities-badge {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: #e9ecef;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.more-amenities-badge:hover {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+.amenity-item input[type="checkbox"] {
+    margin: 0;
+}
+
+/* Property Type Selection Styles */
+.property-type-selection {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 8px;
+    max-width: 450px;
+    margin-left: 0;
+}
+
+.property-option {
+    position: relative;
+}
+
+.property-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.property-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 70px;
+    text-align: center;
+}
+
+.property-label:hover {
+    border-color: #9ed649;
+    background-color: #f8fff0;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.2);
+}
+
+.property-icon {
+    margin-bottom: 4px;
+    font-size: 20px;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.property-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.property-radio:checked + .property-label {
+    border-color: #9ed649;
+    background-color: #f0f9e8;
+    box-shadow: 0 2px 8px rgba(158, 214, 73, 0.3);
+}
+
+.property-radio:checked + .property-label .property-icon {
+    color: #9ed649;
+}
+
+.property-radio:checked + .property-label .property-text {
+    color: #9ed649;
+    font-weight: 600;
+}
+
+/* Hide disabled options in dropdown */
+.form-select option:disabled {
+    display: none !important;
+}
+
+/* Placeholder styling for select elements */
+.form-select {
+    color: #6c757d; /* Màu mờ cho placeholder */
+}
+
+.form-select:focus {
+    color: #333; /* Màu đậm khi focus */
+}
+
+.form-select option {
+    color: #333; /* Màu đậm cho các option thật */
+}
+
+/* Styling khi có option được chọn */
+.form-select:valid {
+    color: #333;
+}
+
+/* Rental Type Selection Styles */
+.rental-type-selection {
+    display: flex;
+    gap: 15px;
+    margin-top: 5px;
+    margin-left: 20px;
+}
+
+.rental-option {
+    position: relative;
+}
+
+.rental-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.rental-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 13px;
+    min-width: 100px;
+    justify-content: center;
+}
+
+.rental-label:hover {
+    border-color: #9ed649;
+    background-color: #f8fff0;
+}
+
+.rental-icon {
+    font-size: 16px;
+    color: #666;
+}
+
+.rental-text {
+    font-weight: 500;
+    color: #333;
+}
+
+.rental-radio:checked + .rental-label {
+    border-color: #9ed649;
+    background-color: #f0f9e8;
+    box-shadow: 0 1px 4px rgba(158, 214, 73, 0.3);
+}
+
+.rental-radio:checked + .rental-label .rental-text {
+    color: #9ed649;
+    font-weight: 600;
+}
+
+/* Rules Section Styles */
+.selected-rules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+    min-height: 40px;
+    padding: 8px 0;
+}
+
+.selected-rule-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f0f9e8;
+    border: 1px solid #9ed649;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #2d5a2d;
+}
+
+
+
+.selected-rule-item .remove-rule {
+    color: #817d7d;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.selected-rule-item .remove-rule:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.add-rule-btn {
+    padding: 8px 16px;
+    border: 2px dashed #ddd;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.add-rule-btn i {
+    font-size: 16px;
+}
+
+/* Rules Modal Styles */
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.rule-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    text-align: center;
+    min-height: 45px;
+}
+
+.rule-option:hover {
+    border-color: #9ed649;
+    background: #f8fff0;
+}
+
+.rule-option.selected {
+    border-color: #9ed649;
+    background: #9ed649;
+    color: white;
+}
+
+.rule-option input[type="checkbox"] {
+    display: none;
+}
+
+.rule-option .rule-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.rule-option.selected .rule-name {
+    color: white;
+}
+
+.modal-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .property-type-selection {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        max-width: 280px;
+    }
+    
+    .property-label {
+        padding: 10px 8px;
+        min-height: 60px;
+    }
+    
+    .property-icon {
+        font-size: 18px;
+    }
+    
+    .property-text {
+        font-size: 11px;
+    }
+}
+</style>
+
+<script>
+let currentStep = {{ last_step or 1 }};
+const totalSteps = 3;
+
+// Function to initialize the correct step based on the last_step parameter
+function initializeCorrectStep() {
+    // Hide all steps first
+    for (let i = 1; i <= totalSteps; i++) {
+        document.getElementById(`step-${i}`).classList.remove('active');
+        document.querySelector(`.step[data-step="${i}"]`).classList.remove('active');
+    }
+    
+    // Show the correct step
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+    
+    // If we're on step 3, update pricing display
+    if (currentStep === 3) {
+        setTimeout(() => {
+            updatePricingDisplay();
+        }, 100); // Small delay to ensure DOM is ready
+    }
+}
+
+// Function to go directly to a specific step (for clicking step buttons)
+function goToStep(stepNumber) {
+    if (stepNumber === currentStep) {
+        return; // Already on this step
+    }
+    
+    // Save current form data
+    saveFormDataToSession();
+    console.log(`💾 Saved form data before jumping to step ${stepNumber}`);
+    
+    // Hide current step
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+    
+    // Update current step
+    currentStep = stepNumber;
+    
+    // Show target step
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+    
+    // Restore form data for the new step
+    setTimeout(() => {
+        restoreFormDataForCurrentStep();
+        console.log(`🔄 Restored form data for step ${currentStep}`);
+    }, 100);
+    
+    // Save current step to session
+    saveCurrentStepToSession();
+    
+    // Update pricing display when entering step 3
+    if (currentStep === 3) {
+        updatePricingDisplay();
+    }
+}
+
+// Function to save current step to session via AJAX
+function saveCurrentStepToSession() {
+    fetch('/owner/save-current-step', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            current_step: currentStep
+        })
+    }).catch(error => {
+        // Silently handle errors - step tracking is not critical
+        console.log('Step tracking error:', error);
+    });
+}
+
+// Ngăn cuộn trang khi tải trang và load dữ liệu địa chỉ
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('add-home-no-scroll');
+    document.documentElement.classList.add('add-home-no-scroll');
+    
+    // Initialize the correct step when coming back from preview
+    initializeCorrectStep();
+    
+    // Add click handlers to step buttons for direct navigation
+    const stepButtons = document.querySelectorAll('.step[data-step]');
+    stepButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetStep = parseInt(this.getAttribute('data-step'));
+            if (targetStep !== currentStep) {
+                goToStep(targetStep);
+            }
+        });
+        
+        // Add cursor pointer style
+        button.style.cursor = 'pointer';
+    });
+    
+    // Setup auto-save immediately for immediate form interactions
+    setupAutoSave();
+    
+    // Load dữ liệu từ API
+    loadLocationData();
+    loadRulesData();
+    loadAmenitiesData();
+    updateSelectedAmenitiesDisplay();
+});
+
+// Cho phép cuộn trở lại khi rời khỏi trang
+window.addEventListener('beforeunload', function() {
+    document.body.classList.remove('add-home-no-scroll');
+    document.documentElement.classList.remove('add-home-no-scroll');
+});
+
+function nextStep() {
+    if (currentStep < totalSteps) {
+        // Validate current step before proceeding
+        if (currentStep === 1) {
+            // Validate Step 1: Basic Information
+            if (!validateStep1()) {
+                return; // Stop if validation fails
+            }
+        } else if (currentStep === 2) {
+            // Check if rental type is selected
+            const hourlyRadio = document.getElementById('hourly');
+            const dailyRadio = document.getElementById('daily');
+            const bothRadio = document.getElementById('both');
+            
+            if (!hourlyRadio.checked && !dailyRadio.checked && !bothRadio.checked) {
+                showValidationAlert('Vui lòng chọn hình thức cho thuê (theo giờ, theo ngày, hoặc cả 2)');
+                return;
+            }
+        }
+        
+        // Save current form data before changing steps
+        saveFormDataToSession();
+        console.log('💾 Saved form data before moving to next step');
+        
+        // Hide current step
+        document.getElementById(`step-${currentStep}`).classList.remove('active');
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        
+        currentStep++;
+        
+        // Show next step
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+        
+        // Restore form data for the new step
+        setTimeout(() => {
+            restoreFormDataForCurrentStep();
+            console.log('🔄 Restored form data for step', currentStep);
+        }, 100);
+        
+        // Save current step to session for back-to-edit functionality
+        saveCurrentStepToSession();
+        
+        // Update pricing display when entering step 3
+        if (currentStep === 3) {
+            updatePricingDisplay();
+        }
+    }
+}
+
+// Validate Step 1: Basic Information
+function validateStep1() {
+    const errors = [];
+    
+    // 1. Check home title
+    const homeTitle = document.getElementById('home_title').value.trim();
+    if (!homeTitle) {
+        errors.push('Vui lòng nhập Tên Homestay');
+    } else if (homeTitle.length < 5) {
+        errors.push('Tên Homestay phải có ít nhất 5 ký tự');
+    }
+    
+    // 2. Check home description
+    const homeDescription = document.getElementById('home_description').value.trim();
+    if (!homeDescription) {
+        errors.push('Vui lòng nhập Mô tả Homestay');
+    } else if (homeDescription.length < 20) {
+        errors.push('Mô tả Homestay phải có ít nhất 20 ký tự');
+    }
+    
+    // 3. Check property type
+    const propertyType = document.querySelector('input[name="property_type"]:checked');
+    if (!propertyType) {
+        errors.push('Vui lòng chọn Mô hình Homestay (Nhà, Căn hộ, hoặc Khách sạn)');
+    }
+    
+    // 4. Check location fields
+    const province = document.getElementById('province').value;
+    const district = document.getElementById('district').value;
+    const ward = document.getElementById('ward').value;
+    const street = document.getElementById('street').value.trim();
+    
+    if (!province) {
+        errors.push('Vui lòng chọn Tỉnh/Thành phố');
+    }
+    if (!district) {
+        errors.push('Vui lòng chọn Quận/Huyện');
+    }
+    if (!ward) {
+        errors.push('Vui lòng chọn Phường/Xã');
+    }
+    if (!street) {
+        errors.push('Vui lòng nhập tên đường và số nhà');
+    } else if (street.length < 5) {
+        errors.push('Địa chỉ đường phải có ít nhất 5 ký tự');
+    }
+    
+    // Show errors if any
+    if (errors.length > 0) {
+        highlightInvalidFields();
+        showStep1ValidationAlert(errors);
+        return false;
+    }
+    
+    // Clear any previous highlights
+    clearFieldHighlights();
+    
+    // Auto-save form data when validation passes
+    saveFormDataToSession();
+    
+    return true;
+}
+
+// Show Step 1 validation alert with all errors
+function showStep1ValidationAlert(errors) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    // Create error list HTML
+    const errorListHTML = errors.map(error => 
+        `<div style="display: flex; align-items: center; margin-bottom: 8px; text-align: left;">
+            <i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 8px; font-size: 14px;"></i>
+            <span style="color: #666; font-size: 14px;">${error}</span>
+        </div>`
+    ).join('');
+    
+    modal.innerHTML = `
+        <div style="color: #ef4444; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Vui lòng hoàn thiện thông tin</h3>
+        <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+            Bạn cần điền đầy đủ thông tin sau để tiếp tục:
+        </p>
+        <div style="margin-bottom: 24px;">
+            ${errorListHTML}
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closeValidationAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Add animation CSS if not already added
+    if (!document.getElementById('modal-animations')) {
+        const style = document.createElement('style');
+        style.id = 'modal-animations';
+        style.textContent = `
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Store reference for closing
+    window.currentValidationAlert = backdrop;
+}
+
+// Show simple validation alert for single messages
+function showValidationAlert(message) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modal.innerHTML = `
+        <div style="color: #f59e0b; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Thông tin chưa đầy đủ</h3>
+        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
+            ${message}
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closeValidationAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Store reference for closing
+    window.currentValidationAlert = backdrop;
+}
+
+function closeValidationAlert() {
+    if (window.currentValidationAlert) {
+        document.body.removeChild(window.currentValidationAlert);
+        window.currentValidationAlert = null;
+    }
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(event) {
+    if (window.currentValidationAlert && event.target === window.currentValidationAlert) {
+        closeValidationAlert();
+    }
+});
+
+// Highlight invalid fields with red border
+function highlightInvalidFields() {
+    // Remove existing highlights first
+    clearFieldHighlights();
+    
+    // Check and highlight each field
+    const homeTitle = document.getElementById('home_title');
+    if (!homeTitle.value.trim() || homeTitle.value.trim().length < 10) {
+        addFieldHighlight(homeTitle);
+    }
+    
+    const homeDescription = document.getElementById('home_description');
+    if (!homeDescription.value.trim() || homeDescription.value.trim().length < 20) {
+        addFieldHighlight(homeDescription);
+    }
+    
+    const propertyType = document.querySelector('input[name="property_type"]:checked');
+    if (!propertyType) {
+        // Highlight property type section
+        const propertySection = document.querySelector('.property-type-selection');
+        if (propertySection) {
+            propertySection.style.border = '2px solid #ef4444';
+            propertySection.style.borderRadius = '8px';
+            propertySection.style.padding = '8px';
+        }
+    }
+    
+    const province = document.getElementById('province');
+    const district = document.getElementById('district');
+    const ward = document.getElementById('ward');
+    const street = document.getElementById('street');
+    
+    if (!province.value) addFieldHighlight(province);
+    if (!district.value) addFieldHighlight(district);
+    if (!ward.value) addFieldHighlight(ward);
+    if (!street.value.trim() || street.value.trim().length < 5) addFieldHighlight(street);
+}
+
+// Add red border highlight to a field
+function addFieldHighlight(field) {
+    field.style.border = '2px solid #ef4444';
+    field.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+    
+    // Add event listener to remove highlight when user starts typing
+    const removeHighlight = function() {
+        field.style.border = '';
+        field.style.boxShadow = '';
+        field.removeEventListener('input', removeHighlight);
+        field.removeEventListener('change', removeHighlight);
+    };
+    
+    field.addEventListener('input', removeHighlight);
+    field.addEventListener('change', removeHighlight);
+}
+
+// Clear all field highlights
+function clearFieldHighlights() {
+    // Clear input/select/textarea highlights
+    const fields = document.querySelectorAll('#step-1 input, #step-1 select, #step-1 textarea');
+    fields.forEach(field => {
+        field.style.border = '';
+        field.style.boxShadow = '';
+    });
+    
+    // Clear property type section highlight
+    const propertySection = document.querySelector('.property-type-selection');
+    if (propertySection) {
+        propertySection.style.border = '';
+        propertySection.style.borderRadius = '';
+        propertySection.style.padding = '';
+    }
+}
+
+// Add real-time character count for description
+document.addEventListener('DOMContentLoaded', function() {
+    const homeDescription = document.getElementById('home_description');
+    const charCount = document.querySelector('.char-count');
+    
+    if (homeDescription && charCount) {
+        function updateCharCount() {
+            const currentLength = homeDescription.value.length;
+            charCount.textContent = `${currentLength}/500`;
+            
+            // Change color based on length
+            if (currentLength < 20) {
+                charCount.style.color = '#ef4444'; // Red if too short
+            } else if (currentLength > 450) {
+                charCount.style.color = '#f59e0b'; // Orange if near limit
+            } else {
+                charCount.style.color = '#9ed649'; // Green if good
+            }
+        }
+        
+        // Update on input
+        homeDescription.addEventListener('input', updateCharCount);
+        
+        // Initial update
+        updateCharCount();
+    }
+});
+
+function prevStep() {
+    if (currentStep > 1) {
+        // Save current form data before changing steps
+        saveFormDataToSession();
+        console.log('💾 Saved form data before moving to previous step');
+        
+        // Hide current step
+        document.getElementById(`step-${currentStep}`).classList.remove('active');
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        
+        currentStep--;
+        
+        // Show previous step
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+        
+        // Restore form data for the new step
+        setTimeout(() => {
+            restoreFormDataForCurrentStep();
+            console.log('🔄 Restored form data for step', currentStep);
+        }, 100);
+        
+        // Save current step to session for back-to-edit functionality
+        saveCurrentStepToSession();
+    }
+}
+
+function goBack() {
+    // Cho phép cuộn trở lại trước khi rời khỏi trang
+    document.body.classList.remove('add-home-no-scroll');
+    document.documentElement.classList.remove('add-home-no-scroll');
+    window.history.back();
+}
+
+function increaseCount(type) {
+    const element = document.getElementById(`${type}-count`);
+    let count = parseInt(element.textContent);
+    count++;
+    element.textContent = count;
+    // Update hidden input
+    document.getElementById(`${type}_count_input`).value = count;
+}
+
+function decreaseCount(type) {
+    const element = document.getElementById(`${type}-count`);
+    let count = parseInt(element.textContent);
+    if (count > 1) {
+        count--;
+        element.textContent = count;
+        // Update hidden input
+        document.getElementById(`${type}_count_input`).value = count;
+    }
+}
+
+function prepareFormData() {
+    // Validate minimum image requirement first
+    const imageCount = countUploadedImages();
+    const minRequiredImages = 5;
+    
+    if (imageCount < minRequiredImages) {
+        showImageRequirementAlert(imageCount, minRequiredImages);
+        return false; // Prevent form submission
+    }
+    
+    // Validate pricing requirement
+    if (!validatePricingRequirement()) {
+        return false; // Prevent form submission
+    }
+    
+    // Make sure all counter values are updated in hidden inputs
+    const bathroomCount = document.getElementById('bathroom-count').textContent;
+    const bedCount = document.getElementById('bed-count').textContent;
+    const guestCount = document.getElementById('guest-count').textContent;
+    
+            document.getElementById('bathroom_count_input').value = bathroomCount;
+    document.getElementById('bed_count_input').value = bedCount;
+    document.getElementById('guest_count_input').value = guestCount;
+    
+    // Đảm bảo giá tiền được gửi đúng (chỉ số, không có format) cho tất cả pricing fields
+    const priceFields = [
+        'price_first_2_hours',
+        'price_per_additional_hour', 
+        'price_overnight',
+        'price_daytime',
+        'price_per_day',
+        // Add "_both" fields for when "cả 2" option is selected
+        'price_first_2_hours_both',
+        'price_per_additional_hour_both',
+        'price_overnight_both',
+        'price_daytime_both',
+        'price_per_day_both'
+    ];
+    
+    priceFields.forEach(fieldName => {
+        const priceInput = document.querySelector(`input[name="${fieldName}"]`);
+        if (priceInput) {
+            const numericValue = getNumericPrice(priceInput);
+            if (numericValue) {
+                priceInput.value = numericValue; // Gửi số thuần
+                console.log(`✅ Prepared ${fieldName}:`, numericValue);
+            }
+        }
+    });
+    
+    // Convert base64 images từ sessionStorage thành file inputs
+    convertSessionStorageImagesToFiles();
+    
+    // Debug log tất cả form data trước khi submit
+    const formData = new FormData(document.querySelector('.wizard-form'));
+    console.log('🚀 SUBMITTING FORM DATA:');
+    for (let [key, value] of formData.entries()) {
+        if (key.includes('price')) {
+            console.log(`${key}:`, value, '(type:', typeof value, ')');
+        }
+    }
+    
+    return true;
+}
+
+// Validate pricing requirement with minimum 10,000 VND
+function validatePricingRequirement() {
+    const minPrice = 10000; // Minimum 10,000 VND
+    const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
+    const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
+    
+    let priceToCheck = null;
+    let priceType = '';
+    let currentPrice = 0;
+    
+    // Check which rental type is selected and get corresponding price
+    const hourlyRadio = document.getElementById('hourly');
+    const dailyRadio = document.getElementById('daily');
+    const bothRadio = document.getElementById('both');
+    
+    if (hourlyRadio && hourlyRadio.checked) {
+        // For hourly rental, check price_first_2_hours
+        const priceFirst2Hours = document.querySelector('input[name="price_first_2_hours"]');
+        if (priceFirst2Hours) {
+            priceToCheck = priceFirst2Hours;
+            priceType = 'theo giờ (2 giờ đầu)';
+            currentPrice = parseInt(getNumericPrice(priceFirst2Hours)) || 0;
+        }
+    } else if (dailyRadio && dailyRadio.checked) {
+        // For daily rental, check price_per_day
+        const pricePerDay = document.querySelector('input[name="price_per_day"]');
+        if (pricePerDay) {
+            priceToCheck = pricePerDay;
+            priceType = 'theo ngày';
+            currentPrice = parseInt(getNumericPrice(pricePerDay)) || 0;
+        }
+    } else if (bothRadio && bothRadio.checked) {
+        // For both rental types, check both prices - use the correct "_both" field names
+        const priceFirst2Hours = document.querySelector('input[name="price_first_2_hours_both"]');
+        const pricePerDay = document.querySelector('input[name="price_per_day_both"]');
+        
+        let hourlyPrice = parseInt(getNumericPrice(priceFirst2Hours)) || 0;
+        let dailyPrice = parseInt(getNumericPrice(pricePerDay)) || 0;
+        
+        if (hourlyPrice < minPrice && dailyPrice < minPrice) {
+            showPriceValidationAlert('Vui lòng nhập ít nhất một giá hợp lệ (theo giờ hoặc theo ngày) ≥ 10,000đ');
+            return false;
+        }
+        return true; // At least one price is valid
+    }
+    
+    // If no rental type selected (shouldn't happen due to step 2 validation)
+    if (!priceToCheck) {
+        showPriceValidationAlert('Vui lòng chọn hình thức cho thuê và nhập giá.');
+        return false;
+    }
+    
+    // Check if price is entered and meets minimum requirement
+    if (currentPrice < minPrice) {
+        const formattedMinPrice = minPrice.toLocaleString('vi-VN');
+        const formattedCurrentPrice = currentPrice > 0 ? currentPrice.toLocaleString('vi-VN') : '0';
+        
+        showPriceValidationAlert(
+            `Giá ${priceType} phải ít nhất ${formattedMinPrice}đ.<br>` +
+            `Hiện tại: ${formattedCurrentPrice}đ`
+        );
+        
+        // Highlight the price field
+        highlightPriceField(priceToCheck);
+        
+        return false;
+    }
+    
+    return true;
+}
+
+// Show price validation alert
+function showPriceValidationAlert(message) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modal.innerHTML = `
+        <div style="color: #f59e0b; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Giá chưa hợp lệ</h3>
+        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
+            ${message}
+        </p>
+        <p style="color: #9ed649; margin-bottom: 24px; font-size: 14px;">
+            <i class="fas fa-lightbulb" style="margin-right: 8px;"></i>
+            Vui lòng nhập giá hợp lệ để tiếp tục đăng homestay.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closePriceAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Add animation CSS if not already added
+    if (!document.getElementById('modal-animations')) {
+        const style = document.createElement('style');
+        style.id = 'modal-animations';
+        style.textContent = `
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Store reference for closing
+    window.currentPriceAlert = backdrop;
+}
+
+// Highlight price field with error styling
+function highlightPriceField(priceInput) {
+    if (!priceInput) return;
+    
+    const priceInputContainer = priceInput.closest('.price-input');
+    if (priceInputContainer) {
+        priceInputContainer.style.border = '2px solid #ef4444';
+        priceInputContainer.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+        
+        // Remove highlight when user starts typing
+        const removeHighlight = function() {
+            priceInputContainer.style.border = '';
+            priceInputContainer.style.boxShadow = '';
+            priceInput.removeEventListener('input', removeHighlight);
+        };
+        
+        priceInput.addEventListener('input', removeHighlight);
+    }
+}
+
+function closePriceAlert() {
+    if (window.currentPriceAlert) {
+        document.body.removeChild(window.currentPriceAlert);
+        window.currentPriceAlert = null;
+    }
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(event) {
+    if (window.currentPriceAlert && event.target === window.currentPriceAlert) {
+        closePriceAlert();
+    }
+});
+
+// Enhanced count uploaded images with better accuracy
+function countUploadedImages() {
+    let count = 0;
+    
+    // Count images in file inputs and visible previews
+    const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+    uploadItems.forEach((item, index) => {
+        const fileInput = item.querySelector('input[type="file"]');
+        const hasVisibleImage = item.querySelector('img'); // Visual indicator
+        const placeholder = item.querySelector('.upload-placeholder');
+        
+        // Count if there's a file in input OR a visible image preview
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            count++;
+        } else if (hasVisibleImage && placeholder && placeholder.style.display === 'none') {
+            // Count images that are displayed (placeholder is hidden)
+            count++;
+        }
+    });
+    
+    console.log('📸 Total uploaded images:', count);
+    return count;
+}
+
+function showImageRequirementAlert(currentCount, requiredCount) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modal.innerHTML = `
+        <div style="color: #f59e0b; font-size: 48px; margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 16px; font-size: 20px;">Cần thêm ảnh</h3>
+        <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
+            Nhà cần có ít nhất <strong>${requiredCount} ảnh</strong> để có thể đăng.<br>
+            Hiện tại bạn có <strong>${currentCount} ảnh</strong>.
+        </p>
+        <p style="color: #9ed649; margin-bottom: 24px; font-size: 14px;">
+            <i class="fas fa-lightbulb" style="margin-right: 8px;"></i>
+            Hãy thêm ${requiredCount - currentCount} ảnh nữa để tiếp tục.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="closeImageAlert()" style="
+                background: #9ed649;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#8bc441'" onmouseout="this.style.background='#9ed649'">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Đã hiểu
+            </button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Add animation CSS if not already added
+    if (!document.getElementById('modal-animations')) {
+        const style = document.createElement('style');
+        style.id = 'modal-animations';
+        style.textContent = `
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Store reference for closing
+    window.currentImageAlert = backdrop;
+}
+
+function closeImageAlert() {
+    if (window.currentImageAlert) {
+        document.body.removeChild(window.currentImageAlert);
+        window.currentImageAlert = null;
+    }
+}
+
+// Close modal when clicking backdrop
+document.addEventListener('click', function(event) {
+    if (window.currentImageAlert && event.target === window.currentImageAlert) {
+        closeImageAlert();
+    }
+});
+
+// Enhanced convert images from sessionStorage to file inputs with better error handling
+function convertSessionStorageImagesToFiles() {
+    const sessionData = loadFormDataFromSession();
+    if (!sessionData || !sessionData.uploadedImages || sessionData.uploadedImages.length === 0) {
+        console.log('ℹ️ No images in sessionStorage to convert');
+        return;
+    }
+    
+    console.log('🔄 Converting sessionStorage images to file inputs...', sessionData.uploadedImages.length, 'images');
+    
+    let convertedCount = 0;
+    let errorCount = 0;
+    
+    sessionData.uploadedImages.forEach((imageData, index) => {
+        try {
+            // Validate image data
+            if (!imageData || !imageData.src || !imageData.src.startsWith('data:image/')) {
+                console.warn(`⚠️ Invalid image data at index ${index}`);
+                errorCount++;
+                return;
+            }
+            
+            // Tìm upload item tương ứng
+            const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+            if (index >= uploadItems.length) {
+                console.warn(`⚠️ No upload item found for image at index ${index}`);
+                errorCount++;
+                return;
+            }
+            
+            const uploadItem = uploadItems[index];
+            const fileInput = uploadItem.querySelector('input[type="file"]');
+            const img = uploadItem.querySelector('img');
+            
+            // Chỉ convert nếu có ảnh hiển thị nhưng file input trống
+            if (img && fileInput && (!fileInput.files || fileInput.files.length === 0)) {
+                // Convert base64 to blob
+                const base64Data = imageData.src.split(',')[1];
+                if (!base64Data) {
+                    console.warn(`⚠️ Invalid base64 data at index ${index}`);
+                    errorCount++;
+                    return;
+                }
+                
+                const byteCharacters = atob(base64Data);
+                const byteNumbers = new Array(byteCharacters.length);
+                
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                
+                const byteArray = new Uint8Array(byteNumbers);
+                
+                // Determine correct MIME type from base64 header
+                let mimeType = 'image/jpeg'; // default
+                if (imageData.src.includes('data:image/png')) mimeType = 'image/png';
+                else if (imageData.src.includes('data:image/gif')) mimeType = 'image/gif';
+                else if (imageData.src.includes('data:image/webp')) mimeType = 'image/webp';
+                
+                const blob = new Blob([byteArray], { type: mimeType });
+                
+                // Create file object with proper extension
+                const extension = mimeType.split('/')[1];
+                const fileName = imageData.fileName || `restored_image_${index}.${extension}`;
+                
+                const file = new File([blob], fileName, {
+                    type: mimeType,
+                    lastModified: Date.now()
+                });
+                
+                // Validate converted file
+                if (file.size === 0) {
+                    console.warn(`⚠️ Converted file is empty at index ${index}`);
+                    errorCount++;
+                    return;
+                }
+                
+                // Assign to file input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                console.log('✅ Converted image to file:', fileName, `(${(file.size / 1024).toFixed(1)}KB)`);
+                convertedCount++;
+            }
+        } catch (error) {
+            console.error(`❌ Error converting image at index ${index}:`, error);
+            errorCount++;
+        }
+    });
+    
+    console.log(`🎯 Conversion complete: ${convertedCount} success, ${errorCount} errors`);
+    
+    if (errorCount > 0) {
+        showToast(`Đã khôi phục ${convertedCount} ảnh, ${errorCount} ảnh lỗi`, 'warning');
+    } else if (convertedCount > 0) {
+        showToast(`Đã khôi phục ${convertedCount} ảnh thành công`, 'success');
+    }
+}
+
+function showAmenityModal() {
+    document.getElementById('amenityModal').style.display = 'block';
+    // Đảm bảo body vẫn không cuộn được khi modal mở
+    document.body.classList.add('add-home-no-scroll');
+    document.documentElement.classList.add('add-home-no-scroll');
+    
+    // Load amenities cho tất cả categories
+    loadAllAmenities();
+}
+
+function closeAmenityModal() {
+    document.getElementById('amenityModal').style.display = 'none';
+    // Giữ nguyên trạng thái không cuộn của trang chính
+    document.body.classList.add('add-home-no-scroll');
+    document.documentElement.classList.add('add-home-no-scroll');
+}
+
+function loadAllAmenities() {
+    const amenitySections = document.querySelector('.amenity-sections');
+    amenitySections.innerHTML = '';
+    
+    if (!amenitiesData) {
+        amenitySections.innerHTML = '<p class="no-amenities-text">Đang tải dữ liệu tiện nghi...</p>';
+        return;
+    }
+    
+    // Tạo section cho mỗi category
+    Object.keys(amenitiesData).forEach(categoryCode => {
+        const categoryData = amenitiesData[categoryCode];
+        const categoryInfo = categoryData.category_info;
+        const amenities = categoryData.amenities;
+        
+        const sectionElement = document.createElement('div');
+        sectionElement.className = 'amenity-section';
+        sectionElement.setAttribute('data-category', categoryCode);
+        
+        sectionElement.innerHTML = `
+            <h4 class="section-title">
+                <i class="${categoryInfo.icon} me-2"></i>${categoryInfo.name}
+            </h4>
+            <div class="amenities-grid" id="${categoryCode}Amenities">
+                ${amenities.map(amenity => `
+                    <div class="amenity-item ${selectedAmenities.some(a => a.id === amenity.id) ? 'selected' : ''}" data-amenity-id="${amenity.id}">
+                        <i class="${amenity.icon}"></i>
+                        <span class="amenity-text">${amenity.name}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        amenitySections.appendChild(sectionElement);
+        
+        // Thêm event listeners cho amenity items
+        const amenityItems = sectionElement.querySelectorAll('.amenity-item');
+        amenityItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const amenityId = parseInt(this.getAttribute('data-amenity-id'));
+                const amenity = amenities.find(a => a.id === amenityId);
+                const isCurrentlySelected = this.classList.contains('selected');
+                
+                toggleAmenitySelection(amenity, !isCurrentlySelected);
+                
+                // Cập nhật visual state
+                if (!isCurrentlySelected) {
+                    this.classList.add('selected');
+                } else {
+                    this.classList.remove('selected');
+                }
+            });
+        });
+    });
+}
+
+function toggleAmenitySelection(amenity, isSelected) {
+    const existingIndex = selectedAmenities.findIndex(a => a.id === amenity.id);
+    
+    if (isSelected && existingIndex === -1) {
+        selectedAmenities.push(amenity);
+    } else if (!isSelected && existingIndex > -1) {
+        selectedAmenities.splice(existingIndex, 1);
+    }
+    
+    updateSelectedAmenitiesDisplay();
+    console.log('Selected amenities:', selectedAmenities);
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
+}
+
+function updateSelectedAmenitiesDisplay() {
+    const container = document.getElementById('selectedAmenities');
+    const inputsContainer = document.getElementById('amenityInputs');
+    
+    // Clear existing content
+    container.innerHTML = '';
+    inputsContainer.innerHTML = '';
+    
+    if (selectedAmenities.length === 0) {
+        container.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">Chưa chọn tiện nghi nào</p>';
+        return;
+    }
+    
+    const maxDisplayAmenities = 4;
+    const displayedAmenities = selectedAmenities.slice(0, maxDisplayAmenities);
+    const hiddenCount = selectedAmenities.length - maxDisplayAmenities;
+    
+    // Hiển thị các amenity đầu tiên
+    displayedAmenities.forEach(amenity => {
+        const amenityElement = document.createElement('div');
+        amenityElement.className = 'selected-amenity-item';
+        amenityElement.innerHTML = `
+            <span>${amenity.name}</span>
+            <span class="remove-amenity" onclick="removeAmenity(${amenity.id})">&times;</span>
+        `;
+        container.appendChild(amenityElement);
+    });
+    
+    // Hiển thị badge "+X tiện nghi khác" nếu có nhiều hơn maxDisplayAmenities
+    if (hiddenCount > 0) {
+        const moreElement = document.createElement('div');
+        moreElement.className = 'more-amenities-badge';
+        moreElement.innerHTML = `+${hiddenCount} tiện nghi khác`;
+        moreElement.onclick = () => showAmenityModal(); // Click để mở modal
+        container.appendChild(moreElement);
+    }
+    
+    // Thêm hidden inputs cho tất cả amenities
+    selectedAmenities.forEach(amenity => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'amenities[]';
+        hiddenInput.value = amenity.id;
+        inputsContainer.appendChild(hiddenInput);
+    });
+}
+
+function removeAmenity(amenityId) {
+    selectedAmenities = selectedAmenities.filter(a => a.id !== amenityId);
+    updateSelectedAmenitiesDisplay();
+    
+    // Update modal display if open
+    const modalItem = document.querySelector(`[data-amenity-id="${amenityId}"]`);
+    if (modalItem) {
+        modalItem.classList.remove('selected');
+    }
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
+}
+
+// Biến global để lưu dữ liệu từ API
+let locationData = null;
+let rulesData = null;
+let amenitiesData = null;
+let selectedRules = [];
+let selectedAmenities = [];
+let currentRuleCategory = 'smoking';
+
+// Load dữ liệu địa chỉ từ API khi trang load
+async function loadLocationData() {
+    try {
+        const response = await fetch('/api/locations/all');
+        const result = await response.json();
+        
+        if (result.success) {
+            locationData = result.data;
+            console.log('Đã load dữ liệu địa chỉ từ API');
+            
+            // Populate provinces vào select box
+            populateProvinces();
+        } else {
+            console.error('Lỗi khi load dữ liệu địa chỉ:', result.message);
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối API:', error);
+    }
+}
+
+// Populate provinces vào select box
+function populateProvinces() {
+    const provinceSelect = document.getElementById('province');
+    if (!provinceSelect || !locationData) return;
+    
+    // Clear existing options except the first one
+    const firstOption = provinceSelect.querySelector('option[value=""]');
+    provinceSelect.innerHTML = '';
+    if (firstOption) {
+        provinceSelect.appendChild(firstOption);
+    }
+    
+    // Add provinces from API data
+    Object.keys(locationData).forEach(provinceCode => {
+        const province = locationData[provinceCode];
+        const option = document.createElement('option');
+        option.value = provinceCode;
+        option.textContent = province.name;
+        
+        // Check if this province was previously selected
+        {% if home_data.province %}
+        if (provinceCode === '{{ home_data.province }}') {
+            option.selected = true;
+        }
+        {% endif %}
+        
+        provinceSelect.appendChild(option);
+    });
+    
+    console.log('✅ Populated provinces into select box');
+    
+    // Trigger update districts if a province was pre-selected
+    {% if home_data.province %}
+    setTimeout(() => {
+        updateDistricts();
+    }, 100);
+    {% endif %}
+}
+
+// Load dữ liệu nội quy từ API
+async function loadRulesData() {
+    try {
+        const response = await fetch('/api/rules');
+        const result = await response.json();
+        
+        if (result.success) {
+            rulesData = result.data;
+            console.log('Đã load dữ liệu nội quy từ API');
+        } else {
+            console.error('Lỗi khi load dữ liệu nội quy:', result.message);
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối API nội quy:', error);
+    }
+}
+
+// Load dữ liệu tiện nghi từ API
+async function loadAmenitiesData() {
+    try {
+        const response = await fetch('/api/amenities');
+        const result = await response.json();
+        
+        if (result.success) {
+            amenitiesData = result.data;
+            console.log('Đã load dữ liệu tiện nghi từ API');
+        } else {
+            console.error('Lỗi khi load dữ liệu tiện nghi:', result.message);
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối API tiện nghi:', error);
+    }
+}
+
+function updateDistricts() {
+    const provinceSelect = document.getElementById('province');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
+    
+    // Reset districts and wards
+    districtSelect.innerHTML = '<option value="" disabled selected>Quận/Huyện</option>';
+    wardSelect.innerHTML = '<option value="" disabled selected>Phường/Xã</option>';
+    wardSelect.disabled = true;
+    
+    const selectedProvince = provinceSelect.value;
+    
+    if (selectedProvince && locationData && locationData[selectedProvince]) {
+        // Enable district dropdown
+        districtSelect.disabled = false;
+        
+        // Populate districts với sắp xếp theo thứ tự
+        const districts = locationData[selectedProvince].districts;
+        const sortedDistricts = Object.entries(districts).sort((a, b) => {
+            const nameA = a[1].name;
+            const nameB = b[1].name;
+            
+            // Tách số ra khỏi tên (ví dụ: "Quận 1" -> 1)
+            const getNumber = (name) => {
+                const match = name.match(/(\d+)/);
+                return match ? parseInt(match[1]) : 999; // 999 cho các quận không có số
+            };
+            
+            const numA = getNumber(nameA);
+            const numB = getNumber(nameB);
+            
+            // Nếu cả hai đều có số, sắp xếp theo số
+            if (numA !== 999 && numB !== 999) {
+                return numA - numB;
+            }
+            
+            // Nếu một trong hai không có số, sắp xếp theo alphabet
+            return nameA.localeCompare(nameB, 'vi');
+        });
+        
+        sortedDistricts.forEach(([key, district]) => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = district.name;
+            districtSelect.appendChild(option);
+        });
+    } else {
+        districtSelect.disabled = true;
+    }
+}
+
+function updateWards() {
+    const provinceSelect = document.getElementById('province');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
+    
+    // Reset wards
+    wardSelect.innerHTML = '<option value="" disabled selected>Phường/Xã</option>';
+    
+    const selectedProvince = provinceSelect.value;
+    const selectedDistrict = districtSelect.value;
+    
+    if (selectedProvince && selectedDistrict && 
+        locationData && locationData[selectedProvince] && 
+        locationData[selectedProvince].districts[selectedDistrict]) {
+        
+        // Enable ward dropdown
+        wardSelect.disabled = false;
+        
+        // Populate wards với sắp xếp theo thứ tự
+        const wards = locationData[selectedProvince].districts[selectedDistrict].wards;
+        const sortedWards = wards.slice().sort((a, b) => {
+            // Tách số ra khỏi tên (ví dụ: "Phường 1" -> 1)
+            const getNumber = (name) => {
+                const match = name.match(/(\d+)/);
+                return match ? parseInt(match[1]) : 999; // 999 cho các phường không có số
+            };
+            
+            const numA = getNumber(a);
+            const numB = getNumber(b);
+            
+            // Nếu cả hai đều có số, sắp xếp theo số
+            if (numA !== 999 && numB !== 999) {
+                return numA - numB;
+            }
+            
+            // Nếu một trong hai không có số, sắp xếp theo alphabet
+            return a.localeCompare(b, 'vi');
+        });
+        
+        sortedWards.forEach(ward => {
+            const option = document.createElement('option');
+            option.value = ward;
+            option.textContent = ward;
+            wardSelect.appendChild(option);
+        });
+    } else {
+        wardSelect.disabled = true;
+    }
+}
+
+// Tab switching in amenity modal
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+// Character count for textarea
+document.querySelector('.form-textarea').addEventListener('input', function() {
+    const count = this.value.length;
+    document.querySelector('.char-count').textContent = `${count}/500`;
+});
+
+// ================================
+// Rental Type & Pricing Functions
+// ================================
+
+function updatePricingDisplay() {
+    const hourlyRadio = document.getElementById('hourly');
+    const dailyRadio = document.getElementById('daily');
+    const bothRadio = document.getElementById('both');
+    const hourlyPricing = document.getElementById('hourly-pricing');
+    const dailyPricing = document.getElementById('daily-pricing');
+    const bothPricing = document.getElementById('both-pricing');
+    const noPricingSelected = document.getElementById('no-pricing-selected');
+    const selectedRentalTypeInput = document.getElementById('selected_rental_type');
+    
+    // Hide all pricing options first
+    hourlyPricing.style.display = 'none';
+    dailyPricing.style.display = 'none';
+    bothPricing.style.display = 'none';
+    noPricingSelected.style.display = 'block';
+    
+    // Show appropriate pricing based on selected rental type
+    if (hourlyRadio && hourlyRadio.checked) {
+        hourlyPricing.style.display = 'block';
+        noPricingSelected.style.display = 'none';
+        selectedRentalTypeInput.value = 'hourly';
+        // Clear other pricing inputs
+        clearNonHourlyPricing();
+    } else if (dailyRadio && dailyRadio.checked) {
+        dailyPricing.style.display = 'block';
+        noPricingSelected.style.display = 'none';
+        selectedRentalTypeInput.value = 'daily';
+        // Clear other pricing inputs
+        clearNonDailyPricing();
+    } else if (bothRadio && bothRadio.checked) {
+        bothPricing.style.display = 'block';
+        noPricingSelected.style.display = 'none';
+        selectedRentalTypeInput.value = 'both';
+        // Sync values between both and individual pricing
+        syncBothPricingValues();
+    } else {
+        selectedRentalTypeInput.value = '';
+        clearAllPricingInputs();
+    }
+}
+
+function clearNonHourlyPricing() {
+    // Clear daily pricing
+    const dailyPriceInput = document.querySelector('input[name="price_per_day"]');
+    if (dailyPriceInput) dailyPriceInput.value = '';
+    
+    // Clear both pricing inputs for daily
+    const dailyPriceBothInput = document.querySelector('input[name="price_per_day_both"]');
+    if (dailyPriceBothInput) dailyPriceBothInput.value = '';
+}
+
+function clearNonDailyPricing() {
+    // Clear hourly pricing
+    const priceFields = ['price_first_2_hours', 'price_per_additional_hour', 'price_overnight', 'price_daytime'];
+    priceFields.forEach(field => {
+        const input = document.querySelector(`input[name="${field}"]`);
+        if (input) input.value = '';
+    });
+    
+    // Clear both pricing inputs for hourly
+    const hourlyBothFields = ['price_first_2_hours_both', 'price_per_additional_hour_both', 'price_overnight_both', 'price_daytime_both'];
+    hourlyBothFields.forEach(field => {
+        const input = document.querySelector(`input[name="${field}"]`);
+        if (input) input.value = '';
+    });
+}
+
+function clearAllPricingInputs() {
+    const allPriceFields = [
+        'price_first_2_hours', 'price_per_additional_hour', 'price_overnight', 'price_daytime', 'price_per_day',
+        'price_first_2_hours_both', 'price_per_additional_hour_both', 'price_overnight_both', 'price_daytime_both', 'price_per_day_both'
+    ];
+    allPriceFields.forEach(field => {
+        const input = document.querySelector(`input[name="${field}"]`);
+        if (input) input.value = '';
+    });
+}
+
+function syncBothPricingValues() {
+    // Sync hourly pricing values
+    const hourlyFields = [
+        'price_first_2_hours', 'price_per_additional_hour', 'price_overnight', 'price_daytime'
+    ];
+    
+    hourlyFields.forEach(field => {
+        const singleInput = document.querySelector(`input[name="${field}"]`);
+        const bothInput = document.querySelector(`input[name="${field}_both"]`);
+        
+        if (singleInput && bothInput) {
+            if (singleInput.value && !bothInput.value) {
+                bothInput.value = singleInput.value;
+            } else if (bothInput.value && !singleInput.value) {
+                singleInput.value = bothInput.value;
+            }
+        }
+    });
+    
+    // Sync daily pricing value
+    const dailyInput = document.querySelector('input[name="price_per_day"]');
+    const dailyBothInput = document.querySelector('input[name="price_per_day_both"]');
+    
+    if (dailyInput && dailyBothInput) {
+        if (dailyInput.value && !dailyBothInput.value) {
+            dailyBothInput.value = dailyInput.value;
+        } else if (dailyBothInput.value && !dailyInput.value) {
+            dailyInput.value = dailyBothInput.value;
+        }
+    }
+}
+
+// Add event listeners for rental type radio buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const hourlyRadio = document.getElementById('hourly');
+    const dailyRadio = document.getElementById('daily');
+    const bothRadio = document.getElementById('both');
+    
+    if (hourlyRadio) {
+        hourlyRadio.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricingDisplay();
+            }
+        });
+    }
+    
+    if (dailyRadio) {
+        dailyRadio.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricingDisplay();
+            }
+        });
+    }
+    
+    if (bothRadio) {
+        bothRadio.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricingDisplay();
+            }
+        });
+    }
+    
+    // Setup upload functionality
+    setupUploadHandlers();
+    setupDragAndDrop();
+});
+
+// Setup upload click handlers
+function setupUploadHandlers() {
+    // Handle upload item clicks
+    document.querySelectorAll('.upload-item').forEach(item => {
+        const fileInput = item.querySelector('input[type="file"]');
+        const placeholder = item.querySelector('.upload-placeholder');
+        
+        if (fileInput && placeholder) {
+            // When clicking on placeholder, trigger file input
+            placeholder.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    handleFilePreview(this, item);
+                }
+            });
+        } else if (item.classList.contains('add-more')) {
+            // Handle "Thêm ảnh" button - create new file input
+            placeholder.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Check current image count before allowing more uploads
+                const currentImageCount = countUploadedImages();
+                const maxImages = 10;
+                
+                if (currentImageCount >= maxImages) {
+                    showToast(`Đã đạt giới hạn tối đa ${maxImages} ảnh`, 'warning');
+                    return;
+                }
+                
+                // Create temporary file input
+                const tempInput = document.createElement('input');
+                tempInput.type = 'file';
+                tempInput.accept = 'image/*';
+                tempInput.multiple = true;
+                tempInput.style.display = 'none';
+                
+                tempInput.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        const files = Array.from(this.files);
+                        let successCount = 0;
+                        let errorCount = 0;
+                        
+                        // Check if adding all files would exceed limit
+                        const remainingSlots = maxImages - currentImageCount;
+                        const filesToProcess = files.slice(0, remainingSlots);
+                        
+                        if (files.length > remainingSlots) {
+                            showToast(`Chỉ có thể thêm ${remainingSlots} ảnh nữa (${files.length - remainingSlots} ảnh bị bỏ qua)`, 'warning');
+                        }
+                        
+                        // Add files to existing upload items or create new ones
+                        filesToProcess.forEach((file, index) => {
+                            const success = addImageToUploadGrid(file);
+                            if (success) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
+                        });
+                        
+                        // Show summary message
+                        if (successCount > 0 && errorCount === 0) {
+                            showToast(`Đã thêm ${successCount} ảnh thành công`, 'success');
+                        } else if (successCount > 0 && errorCount > 0) {
+                            showToast(`Đã thêm ${successCount} ảnh, ${errorCount} ảnh lỗi`, 'warning');
+                        } else if (errorCount > 0) {
+                            showToast(`Không thể thêm ảnh (${errorCount} ảnh lỗi)`, 'error');
+                        }
+                    }
+                    // Remove temporary input
+                    tempInput.remove();
+                });
+                
+                document.body.appendChild(tempInput);
+                tempInput.click();
+            });
+        }
+    });
+}
+
+// Handle file preview
+function handleFilePreview(input, uploadItem) {
+    const files = Array.from(input.files);
+    
+    if (files.length === 0) return;
+    
+    // Handle the first file for the current upload item
+    const firstFile = files[0];
+    
+    // Validate file before processing
+    if (!validateImageFile(firstFile)) {
+        input.value = ''; // Clear invalid file
+        return;
+    }
+    
+    if (firstFile && firstFile.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Remove any existing preview first
+            const existingImg = uploadItem.querySelector('img');
+            const existingBtn = uploadItem.querySelector('button[type="button"]');
+            if (existingImg) existingImg.remove();
+            if (existingBtn) existingBtn.remove();
+            
+            // Create preview image
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 1;
+                border-radius: 8px;
+            `;
+            
+            // Add remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '×';
+            removeBtn.type = 'button';
+            removeBtn.title = 'Xóa ảnh này';
+            removeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: 24px;
+                height: 24px;
+                border: none;
+                background: rgba(220, 53, 69, 0.9);
+                color: white;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                z-index: 15;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            `;
+            
+            // Add hover effects for remove button
+            removeBtn.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(220, 53, 69, 1)';
+                this.style.transform = 'scale(1.1)';
+            });
+            
+            removeBtn.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(220, 53, 69, 0.9)';
+                this.style.transform = 'scale(1)';
+            });
+            
+            removeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Show confirmation for image removal
+                if (confirm('Bạn có chắc muốn xóa ảnh này không?')) {
+                    // Clear the input
+                    input.value = '';
+                    // Remove preview elements
+                    img.remove();
+                    removeBtn.remove();
+                    // Show placeholder again
+                    uploadItem.querySelector('.upload-placeholder').style.display = 'flex';
+                    // Auto-save after removing image
+                    saveFormDataToSession();
+                    
+                    // Show success message
+                    showToast('Đã xóa ảnh thành công', 'success');
+                }
+            });
+            
+            // Hide placeholder and add preview
+            uploadItem.querySelector('.upload-placeholder').style.display = 'none';
+            uploadItem.appendChild(img);
+            uploadItem.appendChild(removeBtn);
+            
+            // Auto-save after adding image
+            saveFormDataToSession();
+            
+            // Show success message
+            showToast('Đã thêm ảnh thành công', 'success');
+        };
+        
+        reader.onerror = function() {
+            showToast('Lỗi khi đọc file ảnh', 'error');
+            input.value = ''; // Clear the problematic file
+        };
+        
+        reader.readAsDataURL(firstFile);
+    }
+    
+    // Handle additional files by creating new upload items
+    if (files.length > 1) {
+        for (let i = 1; i < files.length; i++) {
+            const additionalFile = files[i];
+            if (validateImageFile(additionalFile) && additionalFile.type.startsWith('image/')) {
+                addImageToUploadGrid(additionalFile);
+            }
+        }
+    }
+}
+
+// Enhanced file validation function
+function validateImageFile(file) {
+    // Check if file exists
+    if (!file) {
+        showToast('Không có file được chọn', 'error');
+        return false;
+    }
+    
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const fileType = file.type.toLowerCase();
+    
+    if (!allowedTypes.includes(fileType)) {
+        showToast('Chỉ cho phép upload file ảnh (JPG, PNG, GIF, WebP)', 'error');
+        return false;
+    }
+    
+    // Check file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        showToast(`Kích thước file (${fileSizeMB}MB) vượt quá giới hạn 10MB`, 'error');
+        return false;
+    }
+    
+    // Check minimum file size (avoid corrupted files)
+    const minSize = 1024; // 1KB
+    if (file.size < minSize) {
+        showToast('File ảnh quá nhỏ, có thể bị lỗi', 'error');
+        return false;
+    }
+    
+    // Check file name
+    if (file.name.length > 255) {
+        showToast('Tên file quá dài, vui lòng đổi tên file', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+// Enhanced toast notification system
+function showToast(message, type = 'info', duration = 3000) {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll('.custom-toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = 'custom-toast';
+    
+    const colors = {
+        success: { bg: '#d4edda', border: '#c3e6cb', text: '#155724', icon: 'bi-check-circle-fill' },
+        error: { bg: '#f8d7da', border: '#f5c6cb', text: '#721c24', icon: 'bi-exclamation-triangle-fill' },
+        warning: { bg: '#fff3cd', border: '#ffeaa7', text: '#856404', icon: 'bi-exclamation-triangle-fill' },
+        info: { bg: '#d1ecf1', border: '#bee5eb', text: '#0c5460', icon: 'bi-info-circle-fill' }
+    };
+    
+    const color = colors[type] || colors.info;
+    
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${color.bg};
+        border: 1px solid ${color.border};
+        color: ${color.text};
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 500;
+        max-width: 300px;
+        word-wrap: break-word;
+        animation: slideInRight 0.3s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    `;
+    
+    toast.innerHTML = `
+        <i class="bi ${color.icon}"></i>
+        <span>${message}</span>
+    `;
+    
+    // Add animation CSS if not exists
+    if (!document.getElementById('toast-animations')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animations';
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after duration
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 300);
+    }, duration);
+    
+    // Click to dismiss
+    toast.addEventListener('click', () => {
+        toast.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 300);
+    });
+}
+
+// Restore image to upload item from sessionStorage
+function restoreImageToUploadItem(imageData) {
+    const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+    
+    if (imageData.index < uploadItems.length) {
+        const uploadItem = uploadItems[imageData.index];
+        const placeholder = uploadItem.querySelector('.upload-placeholder');
+        
+        if (placeholder && placeholder.style.display !== 'none') {
+            // Create preview image
+            const img = document.createElement('img');
+            img.src = imageData.src;
+            img.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 1;
+            `;
+            
+            // Add remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '×';
+            removeBtn.type = 'button';
+            removeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: 20px;
+                height: 20px;
+                border: none;
+                background: rgba(220, 53, 69, 0.8);
+                color: white;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 12px;
+                z-index: 15;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            const fileInput = uploadItem.querySelector('input[type="file"]');
+            removeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Clear the input
+                if (fileInput) fileInput.value = '';
+                // Remove preview elements
+                img.remove();
+                removeBtn.remove();
+                // Show placeholder again
+                placeholder.style.display = 'flex';
+                // Auto-save after removing image
+                saveFormDataToSession();
+            });
+            
+            // Hide placeholder and add preview
+            placeholder.style.display = 'none';
+            uploadItem.appendChild(img);
+            uploadItem.appendChild(removeBtn);
+            
+            console.log('✅ Restored image:', imageData.fileName);
+        }
+    }
+}
+
+// Enhanced add image to upload grid with better error handling
+function addImageToUploadGrid(file) {
+    // Validate file first
+    if (!validateImageFile(file)) {
+        return false;
+    }
+    
+    // Check maximum images limit (10 images max)
+    const currentImageCount = countUploadedImages();
+    const maxImages = 10;
+    
+    if (currentImageCount >= maxImages) {
+        showToast(`Chỉ được phép upload tối đa ${maxImages} ảnh`, 'warning');
+        return false;
+    }
+    
+    // Find first empty upload slot (not including the "add-more" button)
+    const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+    let emptySlot = null;
+    
+    for (let item of uploadItems) {
+        const fileInput = item.querySelector('input[type="file"]');
+        const placeholder = item.querySelector('.upload-placeholder');
+        
+        if (fileInput && (!fileInput.files || fileInput.files.length === 0) && 
+            placeholder && placeholder.style.display !== 'none') {
+            emptySlot = item;
+            break;
+        }
+    }
+    
+    if (emptySlot) {
+        // Use existing empty slot
+        const fileInput = emptySlot.querySelector('input[type="file"]');
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        
+        // Trigger preview
+        handleFilePreview(fileInput, emptySlot);
+        return true;
+    } else {
+        // Create new upload item if no empty slots and under limit
+        const uploadGrid = document.querySelector('.upload-grid');
+        const addMoreButton = uploadGrid.querySelector('.add-more');
+        
+        if (!uploadGrid || !addMoreButton) {
+            showToast('Lỗi: Không tìm thấy khu vực upload', 'error');
+            return false;
+        }
+        
+        const newUploadItem = document.createElement('div');
+        newUploadItem.className = 'upload-item';
+        newUploadItem.innerHTML = `
+            <input type="file" name="images[]" accept="image/*">
+            <div class="upload-placeholder">
+                <i class="bi bi-camera"></i>
+            </div>
+        `;
+        
+        // Insert before the "add more" button
+        uploadGrid.insertBefore(newUploadItem, addMoreButton);
+        
+        // Set up the file for the new item
+        const fileInput = newUploadItem.querySelector('input[type="file"]');
+        if (fileInput) {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            
+            // Trigger preview
+            handleFilePreview(fileInput, newUploadItem);
+            
+            // Setup handlers for the new item
+            setupUploadHandlersForItem(newUploadItem);
+            
+            // Auto-save after adding new image
+            saveFormDataToSession();
+            
+            return true;
+        } else {
+            showToast('Lỗi: Không thể tạo input file mới', 'error');
+            return false;
+        }
+    }
+}
+
+// Setup handlers for a specific upload item
+function setupUploadHandlersForItem(item) {
+    const fileInput = item.querySelector('input[type="file"]');
+    const placeholder = item.querySelector('.upload-placeholder');
+    
+    if (fileInput && placeholder) {
+        placeholder.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                handleFilePreview(this, item);
+            }
+        });
+    }
+}
+
+// Setup drag and drop functionality
+function setupDragAndDrop() {
+    const uploadGrid = document.querySelector('.upload-grid');
+    if (!uploadGrid) return;
+    
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadGrid.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadGrid.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadGrid.addEventListener(eventName, unhighlight, false);
+    });
+    
+    // Handle dropped files
+    uploadGrid.addEventListener('drop', handleDrop, false);
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    function highlight(e) {
+        uploadGrid.classList.add('drag-over');
+        uploadGrid.style.borderColor = '#9ed649';
+        uploadGrid.style.backgroundColor = '#f8fff0';
+    }
+    
+    function unhighlight(e) {
+        uploadGrid.classList.remove('drag-over');
+        uploadGrid.style.borderColor = '';
+        uploadGrid.style.backgroundColor = '';
+    }
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length === 0) return;
+        
+        // Check current image count
+        const currentImageCount = countUploadedImages();
+        const maxImages = 10;
+        const remainingSlots = maxImages - currentImageCount;
+        
+        if (currentImageCount >= maxImages) {
+            showToast(`Đã đạt giới hạn tối đa ${maxImages} ảnh`, 'warning');
+            return;
+        }
+        
+        const fileArray = Array.from(files);
+        const imagesToProcess = fileArray.filter(file => file.type.startsWith('image/'));
+        
+        if (imagesToProcess.length === 0) {
+            showToast('Không có file ảnh hợp lệ trong các file được kéo thả', 'warning');
+            return;
+        }
+        
+        // Limit files to remaining slots
+        const filesToUpload = imagesToProcess.slice(0, remainingSlots);
+        
+        if (imagesToProcess.length > remainingSlots) {
+            showToast(`Chỉ có thể thêm ${remainingSlots} ảnh nữa (${imagesToProcess.length - remainingSlots} ảnh bị bỏ qua)`, 'warning');
+        }
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        // Process each file
+        filesToUpload.forEach(file => {
+            const success = addImageToUploadGrid(file);
+            if (success) {
+                successCount++;
+            } else {
+                errorCount++;
+            }
+        });
+        
+        // Show result message
+        if (successCount > 0 && errorCount === 0) {
+            showToast(`Đã thêm ${successCount} ảnh thành công bằng kéo thả`, 'success');
+        } else if (successCount > 0 && errorCount > 0) {
+            showToast(`Đã thêm ${successCount} ảnh, ${errorCount} ảnh lỗi`, 'warning');
+        } else if (errorCount > 0) {
+            showToast(`Không thể thêm ảnh (${errorCount} ảnh lỗi)`, 'error');
+        }
+    }
+}
+
+// ================================
+// Rules Modal Functions
+// ================================
+
+function showRulesModal() {
+    console.log('🔨 showRulesModal called');
+    const modal = document.getElementById('rulesModal');
+    
+    if (!modal) {
+        console.error('❌ rulesModal element not found!');
+        return;
+    }
+    
+    console.log('✅ Modal found, showing...');
+    modal.style.display = 'block';
+    modal.style.position = 'fixed';
+    modal.style.zIndex = '9999';
+    
+    document.body.classList.add('add-home-no-scroll');
+    document.documentElement.classList.add('add-home-no-scroll');
+    
+    console.log('🔄 Loading rules data...');
+    // Load tất cả rules cho mọi category
+    loadAllRules();
+    
+    console.log('✅ Rules modal should be visible now');
+}
+
+function closeRulesModal() {
+    console.log('🔒 closeRulesModal called');
+    const modal = document.getElementById('rulesModal');
+    
+    if (modal) {
+        modal.style.display = 'none';
+        console.log('✅ Modal hidden');
+    }
+    
+    // Restore scroll ability
+    document.body.classList.remove('add-home-no-scroll');
+    document.documentElement.classList.remove('add-home-no-scroll');
+    console.log('✅ Scroll restored');
+}
+
+function loadAllRules() {
+    const categories = ['smoking', 'pets', 'children', 'party', 'time', 'behavior'];
+    
+    categories.forEach(category => {
+        loadRulesForCategory(category);
+    });
+}
+
+function loadRulesForCategory(category) {
+    const rulesGrid = document.getElementById(`${category}Rules`);
+    if (!rulesGrid) return;
+    
+    rulesGrid.innerHTML = '';
+    
+    if (!rulesData || !rulesData[category]) {
+        rulesGrid.innerHTML = '<p class="no-rules-text">Không có nội quy nào trong danh mục này.</p>';
+        return;
+    }
+    
+    rulesData[category].forEach(rule => {
+        const isSelected = selectedRules.some(r => r.id === rule.id);
+        const ruleElement = document.createElement('div');
+        ruleElement.className = `rule-item ${isSelected ? 'selected' : ''}`;
+        ruleElement.innerHTML = `
+            <span class="rule-text">${rule.name}</span>
+        `;
+        
+        // Thêm event listener cho toàn bộ rule item
+        ruleElement.addEventListener('click', function() {
+            const isCurrentlySelected = ruleElement.classList.contains('selected');
+            toggleRuleSelection(rule.id, !isCurrentlySelected);
+            // Cập nhật visual state
+            if (!isCurrentlySelected) {
+                ruleElement.classList.add('selected');
+            } else {
+                ruleElement.classList.remove('selected');
+            }
+        });
+        
+        rulesGrid.appendChild(ruleElement);
+    });
+}
+
+function toggleRuleSelection(ruleId, isChecked) {
+    const existingIndex = selectedRules.findIndex(r => r.id === ruleId);
+    
+    if (isChecked && existingIndex === -1) {
+        // Add rule - find in all categories
+        let ruleToAdd = null;
+        for (const category in rulesData) {
+            const rule = rulesData[category].find(r => r.id === ruleId);
+            if (rule) {
+                ruleToAdd = rule;
+                break;
+            }
+        }
+        if (ruleToAdd) {
+            selectedRules.push(ruleToAdd);
+        }
+    } else if (!isChecked && existingIndex > -1) {
+        // Remove rule
+        selectedRules.splice(existingIndex, 1);
+    }
+    
+    // Update selected rules display
+    updateSelectedRulesDisplay();
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
+}
+
+function saveSelectedRules() {
+    updateSelectedRulesDisplay();
+    closeRulesModal();
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
+}
+
+function updateSelectedRulesDisplay() {
+    const container = document.getElementById('selectedRules');
+    container.innerHTML = '';
+    
+    const maxDisplayRules = 4;
+    const displayedRules = selectedRules.slice(0, maxDisplayRules);
+    const hiddenCount = selectedRules.length - maxDisplayRules;
+    
+    // Hiển thị các rule đầu tiên
+    displayedRules.forEach(rule => {
+        const ruleElement = document.createElement('div');
+        ruleElement.className = 'selected-rule-item';
+        ruleElement.innerHTML = `
+            <span>${rule.name}</span>
+            <span class="remove-rule" onclick="removeSelectedRule(${rule.id})">&times;</span>
+            <input type="hidden" name="rules[]" value="${rule.id}">
+        `;
+        container.appendChild(ruleElement);
+    });
+    
+    // Hiển thị badge "+X nội quy khác" nếu có nhiều hơn maxDisplayRules
+    if (hiddenCount > 0) {
+        const moreElement = document.createElement('div');
+        moreElement.className = 'more-rules-badge';
+        moreElement.innerHTML = `+${hiddenCount} nội quy khác`;
+        moreElement.onclick = () => showRulesModal(); // Click để mở modal
+        container.appendChild(moreElement);
+    }
+    
+    // Thêm hidden inputs cho tất cả rules
+    selectedRules.forEach(rule => {
+        if (!displayedRules.includes(rule)) {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'rules[]';
+            hiddenInput.value = rule.id;
+            container.appendChild(hiddenInput);
+        }
+    });
+}
+
+function removeSelectedRule(ruleId) {
+    selectedRules = selectedRules.filter(r => r.id !== ruleId);
+    updateSelectedRulesDisplay();
+    
+    // Tự động lưu vào session
+    saveFormDataToSession();
+}
+
+// Load saved data from sessionStorage or server
+function loadSavedData() {
+    let homeData = null;
+    
+    console.log('🔍 LOADING SAVED DATA...');
+    
+    // Ưu tiên sessionStorage trước (dữ liệu mới nhất từ browser)
+    const sessionData = loadFormDataFromSession();
+    if (sessionData && sessionData.home_title) {
+        homeData = sessionData;
+        console.log('✅ Using SESSIONSTORAGE data (priority):', {
+            title: homeData.home_title,
+            amenitiesCount: (homeData.selectedAmenities || []).length,
+            rulesCount: (homeData.selectedRules || []).length
+        });
+    } else {
+        // Fallback về server session data
+        {% if home_data and home_data.home_title %}
+        homeData = {{ home_data|tojson }};
+        console.log('✅ Using SERVER session data (fallback):', {
+            title: homeData.home_title,
+            amenitiesCount: (homeData.amenities || []).length,
+            rulesCount: (homeData.rules || []).length
+        });
+        {% else %}
+        console.log('❌ No data available from both sources');
+        return;
+        {% endif %}
+    }
+    
+    if (!homeData || !homeData.home_title) {
+        console.log('❌ No valid home data to load');
+        return;
+    }
+    
+    // Fill basic info
+    console.log('🔄 Starting to fill form fields...');
+    
+    if (homeData.home_title) {
+        const titleInput = document.getElementById('home_title');
+        if (titleInput) {
+            titleInput.value = homeData.home_title;
+            console.log('✅ Filled home title:', homeData.home_title);
+        } else {
+            console.log('❌ home_title input not found');
+        }
+    }
+    
+    if (homeData.home_description) {
+        const descInput = document.getElementById('home_description');
+        if (descInput) {
+            descInput.value = homeData.home_description;
+            console.log('✅ Filled home description');
+        } else {
+            console.log('❌ home_description textarea not found');
+        }
+    }
+    
+    // Fill street first
+    if (homeData.street) {
+        const streetInput = document.getElementById('street');
+        if (streetInput) {
+            streetInput.value = homeData.street;
+            console.log('✅ Filled street:', homeData.street);
+        } else {
+            console.log('❌ street input not found');
+        }
+    }
+    
+    // Fill counters immediately
+    console.log('🔄 Filling counters...');
+    if (homeData.bed_count) {
+        updateCounterValue('bed_count', homeData.bed_count);
+        console.log('✅ Set bed count:', homeData.bed_count);
+    }
+                if (homeData.bathroom_count) {
+                updateCounterValue('bathroom_count', homeData.bathroom_count);
+                console.log('✅ Set bathroom count:', homeData.bathroom_count);
+    }
+    if (homeData.guest_count) {
+        updateCounterValue('guest_count', homeData.guest_count);
+        console.log('✅ Set guest count:', homeData.guest_count);
+    }
+    
+    // Fill property type
+    if (homeData.property_type) {
+        const propertyTypeInput = document.querySelector(`input[name="property_type"][value="${homeData.property_type}"]`);
+        if (propertyTypeInput) {
+            propertyTypeInput.checked = true;
+            console.log('✅ Set property type:', homeData.property_type);
+        } else {
+            console.log('❌ property_type input not found for value:', homeData.property_type);
+        }
+    }
+
+    // Fill rental type
+    if (homeData.selected_rental_type) {
+        const rentalTypeInput = document.querySelector(`input[name="rental_type"][value="${homeData.selected_rental_type}"]`);
+        if (rentalTypeInput) {
+            rentalTypeInput.checked = true;
+            console.log('✅ Set rental type:', homeData.selected_rental_type);
+            // Trigger pricing display update
+            setTimeout(() => {
+                updatePricingDisplay();
+                
+                // Fill prices after pricing display is updated
+                if (homeData.hourly_price && homeData.selected_rental_type === 'hourly') {
+                    const hourlyPriceInput = document.querySelector('input[name="hourly_price"]');
+                    if (hourlyPriceInput) {
+                        hourlyPriceInput.value = homeData.hourly_price;
+                        console.log('Filled hourly price:', homeData.hourly_price);
+                    }
+                }
+                if (homeData.nightly_price && homeData.selected_rental_type === 'nightly') {
+                    const nightlyPriceInput = document.querySelector('input[name="nightly_price"]');
+                    if (nightlyPriceInput) {
+                        nightlyPriceInput.value = homeData.nightly_price;
+                        console.log('Filled nightly price:', homeData.nightly_price);
+                    }
+                }
+            }, 300);
+        }
+    }
+    
+    // Fill location with proper cascade
+    fillLocationData(homeData);
+    
+    // Load rules and amenities if available
+    loadRulesAndAmenities(homeData);
+}
+
+function fillLocationData(homeData) {
+    console.log('🔄 Filling location data...', {
+        province: homeData.province,
+        district: homeData.district,
+        ward: homeData.ward
+    });
+    
+    // Check if location data is loaded
+    if (!locationData) {
+        console.log('⏳ Location data not loaded yet, retrying in 1 second...');
+        setTimeout(() => fillLocationData(homeData), 1000);
+        return;
+    }
+    
+    // Fill province
+    if (homeData.province) {
+        const provinceSelect = document.getElementById('province');
+        if (provinceSelect && locationData[homeData.province]) {
+            provinceSelect.value = homeData.province;
+            console.log('✅ Set province:', homeData.province);
+            
+            // Trigger change event to load districts
+            updateDistricts();
+            
+            // Wait for districts to load, then set district
+            setTimeout(() => {
+                if (homeData.district) {
+                    const districtSelect = document.getElementById('district');
+                    if (districtSelect && districtSelect.options.length > 1) {
+                        // Check if district option exists
+                        let districtFound = false;
+                        for (let option of districtSelect.options) {
+                            if (option.value === homeData.district) {
+                                districtFound = true;
+                                break;
+                            }
+                        }
+                        
+                        if (districtFound) {
+                            districtSelect.value = homeData.district;
+                            console.log('✅ Set district:', homeData.district);
+                            
+                            // Trigger change to load wards
+                            updateWards();
+                            
+                            // Wait for wards to load, then set ward
+                            setTimeout(() => {
+                                if (homeData.ward) {
+                                    const wardSelect = document.getElementById('ward');
+                                    if (wardSelect && wardSelect.options.length > 1) {
+                                        // Check if ward option exists
+                                        let wardFound = false;
+                                        for (let option of wardSelect.options) {
+                                            if (option.value === homeData.ward) {
+                                                wardFound = true;
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if (wardFound) {
+                                            wardSelect.value = homeData.ward;
+                                            console.log('✅ Set ward:', homeData.ward);
+                                        } else {
+                                            console.log('❌ Ward option not found:', homeData.ward);
+                                        }
+                                    } else {
+                                        console.log('❌ Ward select not ready or empty');
+                                    }
+                                }
+                            }, 800); // Increased timeout for wards
+                        } else {
+                            console.log('❌ District option not found:', homeData.district);
+                        }
+                    } else {
+                        console.log('❌ District select not ready or empty');
+                    }
+                }
+            }, 600); // Increased timeout for districts
+        } else {
+            console.log('❌ Province select not found or province data missing');
+        }
+    }
+    
+    // Restore ảnh từ sessionStorage
+    if (homeData.uploadedImages && homeData.uploadedImages.length > 0) {
+        console.log('🔄 Restoring uploaded images:', homeData.uploadedImages.length);
+        
+        setTimeout(() => {
+            homeData.uploadedImages.forEach(imageData => {
+                restoreImageToUploadItem(imageData);
+            });
+        }, 100);
+    }
+}
+
+function updateCounterValue(counterId, value) {
+    // Update hidden input
+    const input = document.getElementById(counterId + '_input');
+    if (input) {
+        input.value = value;
+    }
+    
+    // Update display value - map counterId to actual element ID
+    let displayId;
+    if (counterId === 'bed_count') {
+        displayId = 'bed-count';
+                    } else if (counterId === 'bathroom_count') {
+            displayId = 'bathroom-count';
+    } else if (counterId === 'guest_count') {
+        displayId = 'guest-count';
+    }
+    
+    const display = document.getElementById(displayId);
+    if (display) {
+        display.textContent = value;
+    }
+    
+    console.log(`Updated counter ${counterId} to ${value}`);
+}
+
+
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const amenityModal = document.getElementById('amenityModal');
+    const rulesModal = document.getElementById('rulesModal');
+    
+    if (event.target == amenityModal) {
+        amenityModal.style.display = 'none';
+        document.body.classList.add('add-home-no-scroll');
+        document.documentElement.classList.add('add-home-no-scroll');
+    }
+    
+    if (event.target == rulesModal) {
+        rulesModal.style.display = 'none';
+        document.body.classList.add('add-home-no-scroll');
+        document.documentElement.classList.add('add-home-no-scroll');
+    }
+}
+
+// ================================
+// Session Storage Management
+// ================================
+
+// Save form data to sessionStorage
+function saveFormDataToSession() {
+    // Lưu thông tin ảnh hiện tại với base64 data để preview hoạt động đúng
+    const uploadedImages = [];
+    const uploadItems = document.querySelectorAll('.upload-item:not(.add-more)');
+    
+    uploadItems.forEach((item, index) => {
+        const fileInput = item.querySelector('input[type="file"]');
+        const img = item.querySelector('img');
+        
+        if (img && img.src && img.src.startsWith('data:')) {
+            // Ảnh đã có base64 data - lưu trực tiếp
+            const isMainImage = index === 0 && item.querySelector('.upload-label')?.textContent.includes('Ảnh bìa');
+            uploadedImages.push({
+                index: index,
+                src: img.src,
+                dataUrl: img.src, // Đảm bảo có dataUrl cho compatibility
+                fileName: fileInput?.files?.[0]?.name || `image_${index + 1}`,
+                isMain: isMainImage,
+                isMainImage: isMainImage // Compatibility field
+            });
+        } else if (fileInput && fileInput.files && fileInput.files[0]) {
+            // Ảnh mới upload - cần convert sang base64
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const isMainImage = index === 0 && item.querySelector('.upload-label')?.textContent.includes('Ảnh bìa');
+                uploadedImages.push({
+                    index: index,
+                    src: e.target.result,
+                    dataUrl: e.target.result,
+                    fileName: file.name,
+                    isMain: isMainImage,
+                    isMainImage: isMainImage
+                });
+                
+                // Re-save after async conversion
+                const currentFormData = {
+                    home_title: document.getElementById('home_title')?.value || '',
+                    home_description: document.getElementById('home_description')?.value || '',
+                    property_type: document.querySelector('input[name="property_type"]:checked')?.value || '',
+                    province: document.getElementById('province')?.value || '',
+                    district: document.getElementById('district')?.value || '',
+                    ward: document.getElementById('ward')?.value || '',
+                    street: document.getElementById('street')?.value || '',
+                    bed_count: parseInt(document.getElementById('bed-count')?.textContent || document.getElementById('bed_count_input')?.value || 1),
+                    bathroom_count: parseInt(document.getElementById('bathroom-count')?.textContent || document.getElementById('bathroom_count_input')?.value || 2),
+                    guest_count: parseInt(document.getElementById('guest-count')?.textContent || document.getElementById('guest_count_input')?.value || 1),
+                    selected_rental_type: document.querySelector('input[name="rental_type"]:checked')?.value || '',
+                    hourly_price: getNumericPrice(document.querySelector('input[name="hourly_price"]')) || '',
+                    nightly_price: getNumericPrice(document.querySelector('input[name="nightly_price"]')) || '',
+                    selectedAmenities: selectedAmenities || [],
+                    selectedRules: selectedRules || [],
+                    uploadedImages: uploadedImages
+                };
+                
+                sessionStorage.setItem('home_form_data', JSON.stringify(currentFormData));
+                console.log('💾 Re-saved with base64 data:', uploadedImages.length, 'images');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Save current form data (images will be updated async if needed)
+    const formData = {
+        home_title: document.getElementById('home_title')?.value || '',
+        home_description: document.getElementById('home_description')?.value || '',
+        property_type: document.querySelector('input[name="property_type"]:checked')?.value || '',
+        province: document.getElementById('province')?.value || '',
+        district: document.getElementById('district')?.value || '',
+        ward: document.getElementById('ward')?.value || '',
+        street: document.getElementById('street')?.value || '',
+        bed_count: parseInt(document.getElementById('bed-count')?.textContent || document.getElementById('bed_count_input')?.value || 1),
+                        bathroom_count: parseInt(document.getElementById('bathroom-count')?.textContent || document.getElementById('bathroom_count_input')?.value || 2),
+        guest_count: parseInt(document.getElementById('guest-count')?.textContent || document.getElementById('guest_count_input')?.value || 1),
+        selected_rental_type: document.querySelector('input[name="rental_type"]:checked')?.value || '',
+        hourly_price: getNumericPrice(document.querySelector('input[name="hourly_price"]')) || '',
+        nightly_price: getNumericPrice(document.querySelector('input[name="nightly_price"]')) || '',
+        // Lưu dữ liệu tiện nghi và nội quy đã chọn
+        selectedAmenities: selectedAmenities || [],
+        selectedRules: selectedRules || [],
+        // Lưu thông tin ảnh
+        uploadedImages: uploadedImages
+    };
+    
+    sessionStorage.setItem('home_form_data', JSON.stringify(formData));
+    console.log('💾 Saved form data to sessionStorage:', {
+        images: uploadedImages.length,
+        title: formData.home_title,
+        amenities: formData.selectedAmenities.length,
+        rules: formData.selectedRules.length
+    });
+}
+
+// Load form data from sessionStorage
+function loadFormDataFromSession() {
+    const savedData = sessionStorage.getItem('home_form_data');
+    console.log('🔍 RAW sessionStorage data:', savedData);
+    
+    if (savedData) {
+        try {
+            const formData = JSON.parse(savedData);
+            console.log('📦 PARSED sessionStorage data:', {
+                title: formData.home_title,
+                amenitiesCount: (formData.selectedAmenities || []).length,
+                rulesCount: (formData.selectedRules || []).length,
+                hasAmenities: !!formData.selectedAmenities,
+                hasRules: !!formData.selectedRules
+            });
+            return formData;
+        } catch (e) {
+            console.error('❌ Error parsing saved form data:', e);
+            sessionStorage.removeItem('home_form_data');
+        }
+    } else {
+        console.log('❌ No sessionStorage data found');
+    }
+    return null;
+}
+
+// Restore form data specifically for the current step during navigation
+function restoreFormDataForCurrentStep() {
+    const formData = loadFormDataFromSession();
+    if (!formData) {
+        console.log('❌ No form data to restore');
+        return;
+    }
+    
+    console.log(`🔄 Restoring data for step ${currentStep}...`);
+    
+    if (currentStep === 1) {
+        // Restore Step 1: Basic Information
+        if (formData.home_title) {
+            const titleInput = document.getElementById('home_title');
+            if (titleInput) titleInput.value = formData.home_title;
+        }
+        
+        if (formData.home_description) {
+            const descInput = document.getElementById('home_description');
+            if (descInput) descInput.value = formData.home_description;
+        }
+        
+        if (formData.property_type) {
+            const propertyTypeInput = document.querySelector(`input[name="property_type"][value="${formData.property_type}"]`);
+            if (propertyTypeInput) propertyTypeInput.checked = true;
+        }
+        
+        // Restore location fields
+        if (formData.street) {
+            const streetInput = document.getElementById('street');
+            if (streetInput) streetInput.value = formData.street;
+        }
+        
+        // Restore location selects with proper timing
+        if (formData.province) {
+            const provinceSelect = document.getElementById('province');
+            if (provinceSelect) {
+                provinceSelect.value = formData.province;
+                updateDistricts();
+                
+                setTimeout(() => {
+                    if (formData.district) {
+                        const districtSelect = document.getElementById('district');
+                        if (districtSelect) {
+                            districtSelect.value = formData.district;
+                            updateWards();
+                            
+                            setTimeout(() => {
+                                if (formData.ward) {
+                                    const wardSelect = document.getElementById('ward');
+                                    if (wardSelect) wardSelect.value = formData.ward;
+                                }
+                            }, 300);
+                        }
+                    }
+                }, 300);
+            }
+        }
+        
+    } else if (currentStep === 2) {
+        // Restore Step 2: Detailed Information
+        
+        // Restore counters
+        if (formData.bed_count) {
+            updateCounterValue('bed_count', formData.bed_count);
+        }
+                    if (formData.bathroom_count) {
+                updateCounterValue('bathroom_count', formData.bathroom_count);
+        }
+        if (formData.guest_count) {
+            updateCounterValue('guest_count', formData.guest_count);
+        }
+        
+        // Restore rental type
+        if (formData.selected_rental_type) {
+            const rentalTypeInput = document.querySelector(`input[name="rental_type"][value="${formData.selected_rental_type}"]`);
+            if (rentalTypeInput) rentalTypeInput.checked = true;
+        }
+        
+        // Restore rules and amenities
+        if (formData.selectedRules && Array.isArray(formData.selectedRules)) {
+            selectedRules = formData.selectedRules;
+            updateSelectedRulesDisplay();
+        }
+        
+        if (formData.selectedAmenities && Array.isArray(formData.selectedAmenities)) {
+            selectedAmenities = formData.selectedAmenities;
+            updateSelectedAmenitiesDisplay();
+        }
+        
+    } else if (currentStep === 3) {
+        // Restore Step 3: Images and Pricing
+        
+        // Restore pricing fields
+        if (formData.hourly_price) {
+            const hourlyInput = document.querySelector('input[name="hourly_price"]');
+            if (hourlyInput) {
+                const numericValue = parseInt(formData.hourly_price);
+                if (!isNaN(numericValue) && numericValue > 0) {
+                    hourlyInput.value = numericValue.toLocaleString('vi-VN');
+                    hourlyInput.setAttribute('data-value', formData.hourly_price);
+                }
+            }
+        }
+        
+        if (formData.nightly_price) {
+            const nightlyInput = document.querySelector('input[name="nightly_price"]');
+            if (nightlyInput) {
+                const numericValue = parseInt(formData.nightly_price);
+                if (!isNaN(numericValue) && numericValue > 0) {
+                    nightlyInput.value = numericValue.toLocaleString('vi-VN');
+                    nightlyInput.setAttribute('data-value', formData.nightly_price);
+                }
+            }
+        }
+        
+        // Restore uploaded images
+        if (formData.uploadedImages && formData.uploadedImages.length > 0) {
+            setTimeout(() => {
+                formData.uploadedImages.forEach(imageData => {
+                    restoreImageToUploadItem(imageData);
+                });
+            }, 200);
+        }
+        
+        // Update pricing display
+        updatePricingDisplay();
+    }
+    
+    console.log(`✅ Form data restored for step ${currentStep}`);
+}
+
+// Restore upload grid from sessionStorage
+function restoreUploadGridFromSession() {
+    const formData = loadFormDataFromSession();
+    if (!formData || !formData.uploadedImages) return;
+
+    const uploadGrid = document.querySelector('.upload-grid');
+    if (!uploadGrid) return;
+
+    // Remove all upload-item except the "add-more" button
+    uploadGrid.querySelectorAll('.upload-item:not(.add-more)').forEach(item => item.remove());
+
+    // For each image in session, create a new upload-item and restore the image
+    formData.uploadedImages.forEach((imageData, idx) => {
+        // Create upload-item
+        const uploadItem = document.createElement('div');
+        uploadItem.className = 'upload-item';
+
+        // Create file input (hidden, for compatibility)
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.name = 'images[]';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+
+        // Create placeholder (hidden)
+        const placeholder = document.createElement('div');
+        placeholder.className = 'upload-placeholder';
+        placeholder.innerHTML = '<i class="bi bi-camera"></i>';
+        placeholder.style.display = 'none';
+
+        // Create preview image
+        const img = document.createElement('img');
+        img.src = imageData.src;
+        img.style.cssText = `
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        `;
+
+        // Create remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '×';
+        removeBtn.type = 'button';
+        removeBtn.style.cssText = `
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        removeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadItem.remove();
+            saveFormDataToSession();
+        });
+
+        // Assemble upload item
+        uploadItem.appendChild(fileInput);
+        uploadItem.appendChild(placeholder);
+        uploadItem.appendChild(img);
+        uploadItem.appendChild(removeBtn);
+
+        // Insert before the "add-more" button
+        const addMoreBtn = uploadGrid.querySelector('.upload-item.add-more');
+        uploadGrid.insertBefore(uploadItem, addMoreBtn);
+    });
+}
+
+// Clear session storage
+function clearFormSession() {
+    sessionStorage.removeItem('home_form_data');
+    console.log('Cleared form session data');
+}
+
+// Setup auto-save listeners
+function setupAutoSave() {
+    console.log('🔧 Setting up auto-save listeners...');
+    
+    // Save on input changes
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        // Skip file inputs to prevent issues with image handling
+        if (input.type !== 'file') {
+            input.addEventListener('input', debounce(saveFormDataToSession, 500));
+            input.addEventListener('change', saveFormDataToSession);
+        }
+    });
+    
+    // Save on counter changes
+    const counterButtons = document.querySelectorAll('.counter-btn');
+    counterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            setTimeout(saveFormDataToSession, 100);
+        });
+    });
+    
+    // Special handling for location dropdowns with delayed save
+    const locationSelects = ['province', 'district', 'ward'];
+    locationSelects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (select) {
+            select.addEventListener('change', () => {
+                setTimeout(saveFormDataToSession, 300);
+            });
+        }
+    });
+    
+    // Save when radio buttons change (property type, rental type)
+    const radioButtons = document.querySelectorAll('input[type="radio"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', saveFormDataToSession);
+    });
+    
+    // Save when price inputs change
+    const priceInputs = document.querySelectorAll('input[name="hourly_price"], input[name="nightly_price"]');
+    priceInputs.forEach(priceInput => {
+        priceInput.addEventListener('input', debounce(saveFormDataToSession, 500));
+        priceInput.addEventListener('blur', saveFormDataToSession);
+    });
+    
+    console.log('✅ Auto-save listeners setup complete');
+}
+
+// Debounce function to limit save frequency
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Call loadSavedData when everything is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM Content Loaded - Starting initialization...');
+    
+    // Debug sessionStorage ngay khi load
+    const sessionData = sessionStorage.getItem('home_form_data');
+    console.log('🔍 RAW sessionStorage at page load:', sessionData);
+    
+    // Try to load saved data immediately for basic fields
+    loadSavedData();
+    
+    // Load tất cả dữ liệu khi trang load
+    Promise.all([loadProvinces(), loadAmenities(), loadRules()]).then(() => {
+        console.log('✅ All API data loaded successfully');
+        
+        // Setup rental type change listeners
+        const rentalTypeInputs = document.querySelectorAll('input[name="rental_type"]');
+        rentalTypeInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                updatePricingDisplay();
+                saveFormDataToSession(); // Save after rental type change
+            });
+        });
+        
+        // Location change listeners sẽ được setup trong setupAutoSave
+        
+        // Load saved data again after APIs are loaded (for location selects)
+        setTimeout(() => {
+            console.log('🔄 Re-loading saved data after API data loaded...');
+            loadSavedData();
+            
+            // Load lại rules và amenities sau khi API data đã sẵn sàng
+            console.log('🔄 Re-loading rules and amenities after API data loaded...');
+            
+            // Chỉ load lại nếu chưa có dữ liệu được load từ sessionStorage
+            if (selectedRules.length === 0 && selectedAmenities.length === 0) {
+                // Load từ server session data nếu có
+                {% if home_data and (home_data.rules or home_data.amenities) %}
+                const serverData = {{ home_data|tojson }};
+                loadRulesAndAmenities(serverData);
+                {% else %}
+                // Load từ sessionStorage
+                const sessionData = loadFormDataFromSession();
+                if (sessionData) {
+                    loadRulesAndAmenities(sessionData);
+                }
+                {% endif %}
+            } else {
+                console.log('✅ Rules and amenities already loaded from sessionStorage');
+            }
+            
+            // Setup auto-save after loading data
+            setupAutoSave();
+        }, 500);
+    }).catch(error => {
+        console.error('❌ Error loading API data:', error);
+        // Still try to load saved data even if APIs fail
+        setTimeout(() => {
+            loadSavedData();
+            setupAutoSave();
+        }, 500);
+    });
+    
+    // Setup upload functionality
+    setupUploadHandlers();
+});
+
+// Clear both sessionStorage and server session
+function clearAllHomeData() {
+    // Clear sessionStorage
+    clearFormSession();
+    
+    // Clear server session via AJAX
+    fetch('/owner/clear-home-session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        console.log('✅ Cleared server session data');
+    }).catch(error => {
+        console.error('❌ Error clearing server session:', error);
+    });
+}
+
+// Auto-clear when navigating away from add-home (not to preview)
+window.addEventListener('beforeunload', function(e) {
+    // Save current form data before leaving
+    saveFormDataToSession();
+    console.log('💾 Saved form data before page unload');
+});
+
+// ================================
+// Price Input Functions
+// ================================
+
+// Format giá tiền khi nhập
+function formatPriceInput(input) {
+    // Chỉ cho phép số và xóa ký tự không phải số
+    let value = input.value.replace(/[^\d]/g, '');
+    
+    // Format với dấu chấm ngăn cách hàng nghìn theo chuẩn Việt Nam
+    if (value) {
+        // Chuyển thành số và format lại
+        const numValue = parseInt(value);
+        const formatted = numValue.toLocaleString('vi-VN');
+        input.value = formatted;
+        
+        // Lưu giá trị gốc để sử dụng khi submit
+        input.setAttribute('data-value', value);
+    }
+    
+    // Xóa error state nếu có
+    const priceInput = input.closest('.price-input');
+    const errorDiv = input.closest('.pricing-option').querySelector('.price-error');
+    
+    if (priceInput) {
+        priceInput.classList.remove('error');
+    }
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+// Validate giá tiền
+function validatePrice(input, type) {
+    const value = input.value.replace(/[^\d]/g, ''); // Lấy số thuần
+    const numValue = parseInt(value);
+    
+    const priceInput = input.closest('.price-input');
+    const pricingOption = input.closest('.pricing-option');
+    let errorDiv = pricingOption.querySelector('.price-error');
+    
+    // Tạo error div nếu chưa có
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'price-error';
+        pricingOption.appendChild(errorDiv);
+    }
+    
+    let isValid = true;
+    let errorMessage = '';
+    
+    if (!value || numValue <= 0) {
+        isValid = false;
+        errorMessage = 'Vui lòng nhập giá tiền hợp lệ';
+    } else if (numValue < 10000) {
+        isValid = false;
+        errorMessage = 'Giá tối thiểu là 10.000đ';
+    } else if (type === 'hourly') {
+        if (numValue > 500000) {
+            isValid = false;
+            errorMessage = 'Giá theo giờ tối đa là 500.000đ';
+        }
+    } else if (type === 'nightly') {
+        if (numValue > 2000000) {
+            isValid = false;
+                            errorMessage = 'Giá theo ngày tối đa là 2.000.000đ';
+        }
+    }
+    
+    if (!isValid) {
+        priceInput.classList.add('error');
+        errorDiv.textContent = errorMessage;
+        errorDiv.style.display = 'block';
+    } else {
+        priceInput.classList.remove('error');
+        errorDiv.style.display = 'none';
+        
+        // Lưu giá trị số thuần vào data attribute
+        input.setAttribute('data-value', value);
+        
+        // Hiển thị lại với format đẹp
+        if (value && parseInt(value) > 0) {
+            const formatted = parseInt(value).toLocaleString('vi-VN');
+            input.value = formatted;
+        }
+    }
+    
+    return isValid;
+}
+
+// Lấy giá trị số thuần từ input đã format
+function getNumericPrice(input) {
+    if (!input) return '';
+    
+    // Ưu tiên lấy từ data-value đã lưu
+    const dataValue = input.getAttribute('data-value');
+    if (dataValue) {
+        return dataValue;
+    }
+    
+    // Fallback: lấy từ value và loại bỏ ký tự không phải số
+    return input.value.replace(/[^\d]/g, '');
+}
+
+// Clear when successfully creating home
+window.addEventListener('load', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('created') === 'success') {
+        clearAllHomeData();
+        console.log('🗑️ Home created successfully - cleared data');
+    }
+});
+
+// Load data when page is ready
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Page loaded, loading data...');
+    
+    // Load all required data
+    await Promise.all([
+        loadLocationData(),
+        loadRulesData(),
+        loadAmenitiesData()
+    ]);
+    
+    console.log('✅ All data loaded successfully');
+    
+    // Restore form data if exists
+    const savedData = loadFormDataFromSession();
+    if (savedData) {
+        console.log('🔄 Restoring form data from session');
+        fillFormFromData(savedData);
+    }
+});
+
+// Load rules and amenities from saved data
+function loadRulesAndAmenities(homeData) {
+    if (!homeData) return;
+    
+    console.log('🔄 Loading rules and amenities...', homeData);
+    
+    // Clear current selections
+    selectedRules = [];
+    selectedAmenities = [];
+    
+    // Ưu tiên load từ selectedAmenities và selectedRules trong sessionStorage
+    if (homeData.selectedAmenities && Array.isArray(homeData.selectedAmenities)) {
+        selectedAmenities = homeData.selectedAmenities;
+        console.log('✅ LOADED amenities from sessionStorage:', selectedAmenities.length, selectedAmenities.map(a => a.name));
+    } else if (homeData.amenities && Array.isArray(homeData.amenities)) {
+        // Fallback: Load từ server data (array ID)
+        homeData.amenities.forEach(amenityId => {
+            if (amenitiesData) {
+                Object.keys(amenitiesData).forEach(category => {
+                    const categoryData = amenitiesData[category];
+                    if (categoryData.amenities) {
+                        const amenity = categoryData.amenities.find(a => a.id == amenityId);
+                        if (amenity && !selectedAmenities.find(sa => sa.id === amenity.id)) {
+                            selectedAmenities.push(amenity);
+                        }
+                    }
+                });
+            }
+        });
+        console.log('✅ Loaded amenities from server data:', selectedAmenities.length);
+    }
+    
+    if (homeData.selectedRules && Array.isArray(homeData.selectedRules)) {
+        selectedRules = homeData.selectedRules;
+        console.log('✅ LOADED rules from sessionStorage:', selectedRules.length, selectedRules.map(r => r.name));
+    } else if (homeData.rules && Array.isArray(homeData.rules)) {
+        // Fallback: Load từ server data (array ID)
+        homeData.rules.forEach(ruleId => {
+            if (rulesData) {
+                Object.keys(rulesData).forEach(category => {
+                    const rule = rulesData[category].find(r => r.id == ruleId);
+                    if (rule && !selectedRules.find(sr => sr.id === rule.id)) {
+                        selectedRules.push(rule);
+                    }
+                });
+            }
+        });
+        console.log('✅ Loaded rules from server data:', selectedRules.length);
+    }
+    
+    // Update displays
+    updateSelectedRulesDisplay();
+    updateSelectedAmenitiesDisplay();
+}
+
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/add-home.js') }}"></script>
+{% endblock %}

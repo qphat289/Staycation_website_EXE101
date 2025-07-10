@@ -588,7 +588,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                 <div class="hero-content">
                     {% if current_user.is_authenticated and current_user.role == 'admin' %}
                     <h1 class="hero-title" data-translate="admin-management-interface">Giao diện quản lí cho<br> Admin</h1>
-                    <p class="hero-subtitle" data-translate="admin-subtitle">Quản lý toàn bộ hệ thống homestay, người dùng và đặt phòng một cách hiệu quả</p>
+                    <p class="hero-subtitle" data-translate="admin-subtitle">Quản lý toàn bộ hệ thống homestay, người dùng và đặt nhà một cách hiệu quả</p>
                     {% elif current_user.is_authenticated and current_user.role == 'renter' %}
                     <h1 class="hero-title" data-translate="welcome-back-renter">Chào mừng<br>{{ current_user.full_name }}!</h1>
                     <p class="hero-subtitle" data-translate="renter-subtitle">Khám phá những homestay tuyệt vời và tạo nên những chuyến đi đáng nhớ của bạn</p>
@@ -635,7 +635,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
             <!-- Hidden inputs for guest counts -->
             <input type="hidden" name="adults" id="adults-input-hourly" value="1">
             <input type="hidden" name="children" id="children-input-hourly" value="0">
-            <input type="hidden" name="rooms" id="rooms-input-hourly" value="1">
+            <input type="hidden" name="homes" id="homes-input-hourly" value="1">
             
             <div class="row g-2 align-items-end">
                 <div class="col-xxl-3 col-xl-3 col-lg-4 col-md-6">
@@ -659,19 +659,19 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                     <label for="checkin-time-hourly" class="form-label">Giờ nhận phòng</label>
                     <div class="time-input-wrapper">
                         <input type="time" class="form-control" id="checkin-time-hourly" name="checkin_time">
-                        <div class="custom-placeholder" data-for="checkin-time-hourly">Chọn giờ nhận</div>
+                        <div class="custom-placeholder" data-for="checkin-time-hourly">Chọn giờ nhận phòng</div>
                     </div>
                 </div>
                 <div class="col-xxl-1 col-xl-1 col-lg-2 col-md-3">
                     <label for="checkout-time-hourly" class="form-label">Giờ trả phòng</label>
                     <div class="time-input-wrapper">
                         <input type="time" class="form-control" id="checkout-time-hourly" name="checkout_time">
-                        <div class="custom-placeholder" data-for="checkout-time-hourly">Chọn giờ trả</div>
+                        <div class="custom-placeholder" data-for="checkout-time-hourly">Chọn giờ trả phòng</div>
                     </div>
                 </div>
                 <div class="col-xxl-4 col-xl-4 col-lg-3 col-md-3">
-                    <label for="guests-rooms-hourly" class="form-label">Khách</label>
-                    <input type="text" class="form-control guest-display" id="guests-rooms-hourly" 
+                    <label for="guests-homes-hourly" class="form-label">Khách</label>
+                    <input type="text" class="form-control guest-display" id="guests-homes-hourly" 
                            value="1 người lớn, 0 Trẻ em" readonly>
                     <div class="guest-dropdown" id="guest-dropdown-hourly">
                         <div class="guest-row">
@@ -734,9 +734,9 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                     </div>
                 </div>
                 <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
-                    <label for="guests-rooms-daily" class="form-label">Khách</label>
+                    <label for="guests-homes-daily" class="form-label">Khách</label>
                     <div class="guest-selector">
-                        <input type="text" class="form-control guest-display" id="guests-rooms-daily" name="guests_rooms" 
+                        <input type="text" class="form-control guest-display" id="guests-homes-daily" name="guests_homes" 
                                value="1 người lớn, 0 Trẻ em" readonly>
                         <div class="guest-dropdown" id="guest-dropdown-daily">
                             <div class="guest-row">
@@ -801,7 +801,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
         
         <div class="row g-4">
             {% for homestay in homestays %}
-            <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="col-xl-5cols col-lg-5cols col-md-6">
                 <div class="card homestay-card h-100">
                     <div class="card-img-container">
                         {% if homestay.images and homestay.images|length > 0 %}
@@ -812,14 +812,14 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                                 <img src="{{ url_for('static', filename=homestay.images[0].image_path) }}" class="card-img-top" alt="{{ homestay.title }}">
                             {% endif %}
                         {% else %}
-                            <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
+                            <img src="{{ url_for('static', filename='data/system/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
                         {% endif %}
                     </div>
                     <div class="card-body">
                         <!-- Title and detail button -->
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 class="card-title mb-0">{{ homestay.title }}</h5>
-                            <a href="{{ url_for('renter.view_room', id=homestay.id) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ url_for('renter.view_home', id=homestay.id) }}" class="btn btn-outline-primary btn-sm">
                                 Chi tiết
                             </a>
                         </div>
@@ -835,7 +835,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                             <span class="text-muted">từ </span>
                             <span class="fw-bold text-dark">
                                 {% if homestay.display_price_per_night %}
-                                    {{ "{:,}".format(homestay.display_price_per_night) }} VND/đêm
+                                    {{ "{:,.0f}".format(homestay.display_price_per_night) }} VND/ngày
                                 {% else %}
                                     {{ "{:,}".format(homestay.display_price) }} VND/h
                                 {% endif %}
@@ -856,7 +856,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
         <div class="row">
             <div class="col-12 text-center mb-5">
                 <h3 class="section-title" data-translate="quick-actions">Truy Cập Nhanh</h3>
-                <p class="text-muted" data-translate="manage-your-bookings">Quản lý các đặt phòng và khám phá tính năng mới</p>
+                <p class="text-muted" data-translate="manage-your-bookings">Quản lý các đặt nhà và khám phá tính năng mới</p>
             </div>
         </div>
         <div class="row g-4 justify-content-center">
@@ -865,7 +865,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                     <div class="feature-icon mb-3">
                         <i class="bi bi-clock-history" style="font-size: 2.5rem; color: #8bc34a;"></i>
                     </div>
-                    <h5 class="feature-title mb-2" data-translate="booking-history">Lịch Sử Đặt Phòng</h5>
+                    <h5 class="feature-title mb-2" data-translate="booking-history">Lịch Sử Đặt Nhà</h5>
                     <p class="feature-desc text-muted mb-3" data-translate="view-past-bookings">Xem lại các chuyến đi đã qua</p>
                     <a href="{{ url_for('renter.booking_history') }}" class="btn btn-outline-success btn-sm">
                         <i class="bi bi-arrow-right me-1"></i>Xem Ngay
@@ -1210,7 +1210,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let guestCounts = {
         adults: 1,
         children: 0,
-        rooms: 1
+        homes: 1
     };
     
     // Toggle dropdown
@@ -1433,7 +1433,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function setupGuestSelector(formType) {
-        const guestDisplay = document.getElementById(`guests-rooms-${formType}`);
+        const guestDisplay = document.getElementById(`guests-homes-${formType}`);
         const guestDropdown = document.getElementById(`guest-dropdown-${formType}`);
         
         if (!guestDisplay || !guestDropdown) return;

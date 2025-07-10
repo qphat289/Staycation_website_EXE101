@@ -200,19 +200,6 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
         }
 
-        /* View room specific styles */
-        .view-room-style {
-            color: #000 !important;
-        }
-        
-        .view-room-text {
-            color: #000 !important;
-        }
-        
-        .view-room-icon {
-            color: #000 !important;
-        }
-
         .user-dropdown-container:hover {
             background: rgba(255, 255, 255, 0.2) !important;
             transform: translateY(-1px);
@@ -227,6 +214,315 @@
         .dropdown-menu {
             border: 1px solid rgba(51, 51, 51, 0.1) !important;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Global Search Form Styling */
+        .global-search-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .search-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 0;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .search-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 12px;
+            font-weight: 500;
+            font-size: 15px;
+            color: #6c757d;
+            cursor: pointer !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border-radius: 12px 12px 0 0;
+            pointer-events: auto !important;
+            z-index: 100;
+        }
+        
+        .search-tab:hover {
+            background: rgba(139, 195, 74, 0.08);
+            color: #8bc34a;
+            transform: translateY(-1px);
+        }
+        
+        .search-tab.active {
+            background: white;
+            color: #8bc34a;
+            font-weight: 600;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .search-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, #8bc34a, #689f38);
+            border-radius: 2px;
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                width: 0;
+                opacity: 0;
+            }
+            to {
+                width: 40px;
+                opacity: 1;
+            }
+        }
+        
+        .search-form {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            display: none;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .search-form.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .search-btn {
+            background: linear-gradient(135deg, #8bc34a, #689f38);
+            border: none;
+            color: white;
+            font-weight: 600;
+            border-radius: 8px;
+            height: 100%;
+            padding-left: 20px;
+            padding-right: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: linear-gradient(135deg, #689f38, #558b2f);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(104, 159, 56, 0.3);
+        }
+        
+        /* Guest selector dropdown */
+        .guest-selector {
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .guest-display {
+            cursor: pointer;
+            background: #fafafa !important;
+        }
+        
+        .guest-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            padding: 20px;
+            z-index: 1050;
+            margin-top: 8px;
+        }
+        
+        .guest-dropdown.show {
+            display: block;
+        }
+        
+        .guest-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .guest-row:last-of-type {
+            border-bottom: none;
+        }
+        
+        .guest-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .btn-decrease, .btn-increase {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-decrease:hover, .btn-increase:hover {
+            background: #f8f9fa;
+        }
+        
+        .guest-count {
+            font-weight: 500;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        /* Date and time input styling */
+        .date-input-wrapper, .time-input-wrapper {
+            position: relative;
+        }
+        
+        .custom-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #fff;
+        }
+        
+        input[type="date"]:not(:placeholder-shown) + .custom-placeholder,
+        input[type="time"]:not(:placeholder-shown) + .custom-placeholder {
+            display: none;
+        }
+        
+        input[type="date"], input[type="time"] {
+            color: #212529 !important; /* Always show text */
+            background-color: #fafafa;
+            opacity: 1; /* Ensure visibility in Safari/iOS */
+        }
+        
+        input[type="date"]:focus, input[type="time"]:focus {
+            color: #212529 !important; /* Always show text */
+            background-color: #fff;
+        }
+        
+        /* Fix for placeholder showing through */
+        input[type="date"]::placeholder, input[type="time"]::placeholder {
+            color: transparent;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            opacity: 1;
+        }
+        
+        input[type="date"]:not(:placeholder-shown),
+        input[type="time"]:not(:placeholder-shown) {
+            color: #212529 !important;
+        }
+        
+        /* Location dropdown */
+        .location-selector {
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .location-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            margin-top: 2px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1050;
+        }
+        
+        .location-dropdown.show {
+            display: block;
+        }
+        
+        .location-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        
+        .location-option:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .location-option:last-child {
+            border-bottom: none;
+        }
+        
+        .location-option.highlighted {
+            background-color: #8bc34a;
+            color: white;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .search-form {
+                padding: 15px;
+            }
+            
+            .search-form .row > * {
+                margin-bottom: 10px;
+            }
+            
+            .search-btn {
+                width: 100%;
+            }
+        }
+        
+        /* Hide on homepage */
+        body.homepage .global-search-container {
+            display: none;
         }
     </style>
     
@@ -260,12 +556,12 @@
         <div class="container">
             {% if current_user.is_authenticated and current_user.is_owner() %}
                 <span class="navbar-brand fw-bold" style="color: #333333;">
-                    <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
+                    <img src="{{ url_for('static', filename='data/system/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
                     <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Horin</span>
                 </span>
             {% else %}
                 <a class="navbar-brand fw-bold" href="{{ url_for('home') }}" style="color: #333333;">
-                    <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
+                    <img src="{{ url_for('static', filename='data/system/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
                     <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Horin</span>
                 </a>
             {% endif %}
@@ -300,21 +596,21 @@
                         <!-- Language Toggle Button -->
                         <li class="nav-item">
                             <button id="languageToggle" class="btn ms-2 rounded-pill" onclick="toggleLanguage(event)">
-                                <img src="{{ url_for('static', filename='images/flags/vn.svg') }}" alt="VN" class="flag-img">
+                                <img src="{{ url_for('static', filename='data/system/flags/vn.svg') }}" alt="VN" class="flag-img">
                                 <span>VI</span>
                             </button>
                         </li>
 
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown ms-3">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container{% if request.endpoint == 'renter.view_room' %} view-room-style{% endif %}" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid rgb(255, 255, 255) !important; border-radius: 25px !important; padding: 4px 12px !important; background: rgba(255, 255, 255, 0.1) !important;">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid rgb(255, 255, 255) !important; border-radius: 25px !important; padding: 4px 12px !important; background: rgba(255, 255, 255, 0.1) !important; {% if request.endpoint == 'renter.view_home' %}color: #000 !important;{% endif %}">
                                 {% if current_user.avatar %}
                                     <img src="{{ url_for('static', filename=current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% else %}
-                                    <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
+                                    <img src="{{ url_for('static', filename='data/system/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% endif %}
-                                <span class="{% if request.endpoint == 'renter.view_room' %}view-room-text{% endif %}">{{ current_user.username }}</span>
-                                <i class="fas fa-bars ms-2 view-room-icon{% if request.endpoint == 'renter.view_room' %} view-room-text{% endif %}" style="font-size: 14px;"></i>
+                                <span {% if request.endpoint == 'renter.view_home' %}style="color: #000 !important;"{% endif %}>{{ current_user.username }}</span>
+                                <i class="fas fa-bars ms-2" style="font-size: 14px; {% if request.endpoint == 'renter.view_home' %}color: #000 !important;{% endif %}"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 {% if current_user.role == 'admin' %}
@@ -361,7 +657,7 @@
                         </li>
                         <li class="nav-item">
                             <button id="languageToggle" class="btn ms-2 rounded-pill" onclick="toggleLanguage(event)">
-                                <img src="{{ url_for('static', filename='images/flags/vn.svg') }}" alt="VN" class="flag-img">
+                                <img src="{{ url_for('static', filename='data/system/flags/vn.svg') }}" alt="VN" class="flag-img">
                                 <span>VI</span>
                             </button>
                         </li>
@@ -388,6 +684,175 @@
         {% endwith %}
     </div>
     
+    <!-- Global search bar (displays only on search results and home detail pages) -->
+    {% if request.endpoint in ['renter.search', 'renter.view_home'] and (not current_user.is_authenticated or (current_user.is_authenticated and current_user.is_renter())) %}
+    <div class="container global-search-container">
+        <div class="search-tabs-container">
+            <!-- Search Tabs -->
+            <div class="search-tabs">
+                <button type="button" class="search-tab {% if request.args.get('booking_type') != 'daily' %}active{% endif %}" id="hourly-tab" data-tab="hourly" onclick="switchTabGlobal('hourly')">Theo giờ</button>
+                <button type="button" class="search-tab {% if request.args.get('booking_type') == 'daily' %}active{% endif %}" id="daily-tab" data-tab="daily" onclick="switchTabGlobal('daily')">Theo ngày</button>
+            </div>
+            
+            <!-- Search Forms Container -->
+            <div class="search-forms-container">
+                <!-- Hourly Search Form -->
+                <form class="search-form hourly-form {% if request.args.get('booking_type') != 'daily' %}active{% endif %}" id="global-hourly-form" action="{{ url_for('renter.search') }}" method="GET">
+                    <input type="hidden" name="booking_type" value="hourly">
+                    <!-- Hidden inputs for guest counts -->
+                    <input type="hidden" name="adults" id="global-adults-input-hourly" value="{{ request.args.get('adults', '1') }}">
+                    <input type="hidden" name="children" id="global-children-input-hourly" value="{{ request.args.get('children', '0') }}">
+                    <input type="hidden" name="rooms" id="global-rooms-input-hourly" value="{{ request.args.get('rooms', '1') }}">
+                    
+                    <div class="row g-2 align-items-end">
+                        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-6">
+                            <label for="global-location-hourly" class="form-label">Địa điểm hoặc tên homestay</label>
+                            <div class="location-selector">
+                                <input type="text" class="form-control location-input" id="global-location-hourly" name="location" 
+                                       value="{{ request.args.get('location', '') }}"
+                                       placeholder="Nhập hoặc chọn địa điểm" autocomplete="off">
+                                <div class="location-dropdown" id="global-location-dropdown-hourly">
+                                    <!-- Options will be loaded dynamically from API -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-2 col-xl-2 col-lg-3 col-md-6">
+                            <label for="global-checkin-hourly" class="form-label">Ngày nhận phòng</label>
+                            <div class="date-input-wrapper">
+                                <input type="date" class="form-control" id="global-checkin-hourly" name="checkin_date" 
+                                       value="{{ request.args.get('checkin_date', '') }}">
+                                <div class="custom-placeholder" data-for="global-checkin-hourly">Chọn ngày nhận phòng</div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
+                            <label for="global-checkin-time-hourly" class="form-label">Giờ nhận phòng</label>
+                            <div class="time-input-wrapper">
+                                <input type="time" class="form-control" id="global-checkin-time-hourly" name="checkin_time"
+                                       value="{{ request.args.get('checkin_time', '') }}">
+                                <div class="custom-placeholder" data-for="global-checkin-time-hourly">Chọn giờ nhận</div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
+                            <label for="global-checkout-time-hourly" class="form-label">Giờ trả phòng</label>
+                            <div class="time-input-wrapper">
+                                <input type="time" class="form-control" id="global-checkout-time-hourly" name="checkout_time"
+                                       value="{{ request.args.get('checkout_time', '') }}">
+                                <div class="custom-placeholder" data-for="global-checkout-time-hourly">Chọn giờ trả</div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
+                            <label for="global-guests-rooms-hourly" class="form-label">Khách</label>
+                            <div class="guest-selector">
+                                <input type="text" class="form-control guest-display" id="global-guests-rooms-hourly" 
+                                       value="{{ request.args.get('adults', '1') }} người lớn, {{ request.args.get('children', '0') }} Trẻ em" readonly>
+                                <div class="guest-dropdown" id="global-guest-dropdown-hourly">
+                                    <div class="guest-row">
+                                        <div class="guest-info">
+                                            <i class="bi bi-person-fill text-success"></i>
+                                            <span>Người lớn</span>
+                                        </div>
+                                        <div class="guest-controls">
+                                            <button type="button" class="btn-decrease" data-form="global-hourly" data-target="adults">−</button>
+                                            <span class="guest-count" id="global-adults-count-hourly">{{ request.args.get('adults', '1') }}</span>
+                                            <button type="button" class="btn-increase" data-form="global-hourly" data-target="adults">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="guest-row">
+                                        <div class="guest-info">
+                                            <i class="bi bi-person text-success"></i>
+                                            <span>Trẻ em</span>
+                                        </div>
+                                        <div class="guest-controls">
+                                            <button type="button" class="btn-decrease" data-form="global-hourly" data-target="children">−</button>
+                                            <span class="guest-count" id="global-children-count-hourly">{{ request.args.get('children', '0') }}</span>
+                                            <button type="button" class="btn-increase" data-form="global-hourly" data-target="children">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-12 search-btn-col">
+                            <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Daily Search Form -->
+                <form class="search-form daily-form {% if request.args.get('booking_type') == 'daily' %}active{% endif %}" id="global-daily-form" action="{{ url_for('renter.search') }}" method="GET">
+                    <input type="hidden" name="booking_type" value="daily">
+                    <input type="hidden" name="adults" id="global-adults-input-daily" value="{{ request.args.get('adults', '1') }}">
+                    <input type="hidden" name="children" id="global-children-input-daily" value="{{ request.args.get('children', '0') }}">
+                    <input type="hidden" name="rooms" id="global-rooms-input-daily" value="{{ request.args.get('rooms', '1') }}">
+                    
+                    <div class="row g-2 align-items-end">
+                        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-6">
+                            <label for="global-location-daily" class="form-label">Địa điểm hoặc tên homestay</label>
+                            <div class="location-selector">
+                                <input type="text" class="form-control location-input" id="global-location-daily" name="location" 
+                                       value="{{ request.args.get('location', '') }}"
+                                       placeholder="Nhập hoặc chọn địa điểm" autocomplete="off">
+                                <div class="location-dropdown" id="global-location-dropdown-daily">
+                                    <!-- Options will be loaded dynamically from API -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-6">
+                            <label for="global-checkin-daily" class="form-label">Ngày nhận phòng</label>
+                            <div class="date-input-wrapper">
+                                <input type="date" class="form-control" id="global-checkin-daily" name="checkin_date"
+                                       value="{{ request.args.get('checkin_date', '') }}">
+                                <div class="custom-placeholder" data-for="global-checkin-daily">Chọn ngày nhận phòng</div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-2 col-lg-3 col-md-6">
+                            <label for="global-checkout-daily" class="form-label">Ngày trả phòng</label>
+                            <div class="date-input-wrapper">
+                                <input type="date" class="form-control" id="global-checkout-daily" name="checkout_date"
+                                       value="{{ request.args.get('checkout_date', '') }}">
+                                <div class="custom-placeholder" data-for="global-checkout-daily">Chọn ngày trả phòng</div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-2 col-xl-2 col-lg-3 col-md-6">
+                            <label for="global-guests-rooms-daily" class="form-label">Khách</label>
+                            <div class="guest-selector">
+                                <input type="text" class="form-control guest-display" id="global-guests-rooms-daily" 
+                                       value="{{ request.args.get('adults', '1') }} người lớn, {{ request.args.get('children', '0') }} Trẻ em" readonly>
+                                <div class="guest-dropdown" id="global-guest-dropdown-daily">
+                                    <div class="guest-row">
+                                        <div class="guest-info">
+                                            <i class="bi bi-person-fill text-success"></i>
+                                            <span>Người lớn</span>
+                                        </div>
+                                        <div class="guest-controls">
+                                            <button type="button" class="btn-decrease" data-form="global-daily" data-target="adults">−</button>
+                                            <span class="guest-count" id="global-adults-count-daily">{{ request.args.get('adults', '1') }}</span>
+                                            <button type="button" class="btn-increase" data-form="global-daily" data-target="adults">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="guest-row">
+                                        <div class="guest-info">
+                                            <i class="bi bi-person text-success"></i>
+                                            <span>Trẻ em</span>
+                                        </div>
+                                        <div class="guest-controls">
+                                            <button type="button" class="btn-decrease" data-form="global-daily" data-target="children">−</button>
+                                            <span class="guest-count" id="global-children-count-daily">{{ request.args.get('children', '0') }}</span>
+                                            <button type="button" class="btn-increase" data-form="global-daily" data-target="children">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-1 col-xl-2 col-lg-12 col-md-12 search-btn-col">
+                            <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     <!-- Main content -->
     <main class="container mt-4">
         {% block content %}
@@ -406,7 +871,6 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/translation.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/notification.js') }}"></script>
     
     <script>
         // Prevent zooming on double tap
@@ -433,8 +897,34 @@
         document.addEventListener('gesturestart', function(event) {
             event.preventDefault();
         }, { passive: false });
-
-        // Auto-hide flash messages after 8 seconds
+        
+        // Global search tab switching function
+        function switchTabGlobal(tabType) {
+            const hourlyTab = document.getElementById('hourly-tab');
+            const dailyTab = document.getElementById('daily-tab');
+            const hourlyForm = document.getElementById('global-hourly-form');
+            const dailyForm = document.getElementById('global-daily-form');
+            
+            if (!hourlyTab || !dailyTab || !hourlyForm || !dailyForm) {
+                return; // Elements not found
+            }
+            
+            // Remove active class from all tabs
+            hourlyTab.classList.remove('active');
+            dailyTab.classList.remove('active');
+            
+            // Hide all forms
+            hourlyForm.classList.remove('active');
+            dailyForm.classList.remove('active');
+            
+            if (tabType === 'daily') {
+                dailyTab.classList.add('active');
+                dailyForm.classList.add('active');
+            } else {
+                hourlyTab.classList.add('active');
+                hourlyForm.classList.add('active');
+            }
+        }        // Auto-hide flash messages after 8 seconds
         document.addEventListener('DOMContentLoaded', function() {
             const alerts = document.querySelectorAll('.flash-message');
             alerts.forEach(function(alert) {
@@ -445,7 +935,7 @@
                     // Remove the element after animation completes
                     setTimeout(function() {
                         alert.remove();
-                        }, 500); // Match the animation duration
+                    }, 500); // Match the animation duration
                 }, 8000); // 8 seconds
             });
         });
@@ -469,7 +959,7 @@
             removeURLParameter('login_error');
         } else if (message === 'Profile updated successfully!') {
             showNotification('success', 'Thông tin của bạn đã được cập nhật');
-            }
+        }
         
         // Function to remove URL parameter without page reload
         function removeURLParameter(param) {

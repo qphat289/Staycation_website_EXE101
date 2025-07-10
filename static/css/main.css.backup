@@ -1,0 +1,1343 @@
+/* =========================
+   0. NEW COLOR SCHEME
+   ========================= */
+   :root {
+    /* Bảng màu bổ túc bộ bốn */
+    --primary-color: #9ed649;       /* Màu chủ đạo (xanh lá nhạt) */
+    --primary-light: #b2e254;       /* Màu nhạt hơn */
+    --primary-dark: #8bc441;        /* Màu đậm hơn */
+    --accent-color: #9ed649;        /* Màu tương phản (xanh lá nhạt) */
+    --accent-dark: #7cb342;         /* Màu tương phản đậm */
+    --warning-color: #A86400;       /* Màu cảnh báo (cam nâu) */
+    --warning-dark: #9A610E;        /* Màu cảnh báo đậm */
+    --muted-color: #9A970E;         /* Màu thứ cấp */
+    --text-primary: #333333;        /* Màu chữ chính */
+    --text-secondary: #666666;      /* Màu chữ phụ */
+    --text-light: #FFFDFA;          /* Màu chữ sáng */
+    --border-color: #e0e0e0;        /* Màu viền */
+    --background-light: #f8fdf4;    /* Màu nền sáng */
+    --background-warning: #FFDBA8;  /* Màu nền cảnh báo */
+    --white: #ffffff;               /* Màu trắng */
+    
+    /* Dynamic navbar text colors - sẽ được thay đổi bởi JavaScript */
+    --navbar-text-color: #ffffff;   /* Màu chữ navbar (mặc định trắng) */
+    --navbar-hover-color: #b2e254;  /* Màu hover navbar (xanh lá nhạt) */
+}
+
+/* =======================================================================
+   TABLE OF CONTENTS:
+   
+   1. CORE STYLES
+      1.1 Body and Layout
+      1.2 Card Effects
+      1.3 Button Styling
+      1.4 Navbar
+      1.5 Form Controls
+      1.6 Footer
+   
+   2. HOMESTAY LISTING STYLES
+      2.1 Homestay Cards
+      2.2 Price Display
+   
+   3. ROOM CARD STYLES
+      3.1 Room Card Base
+      3.2 Room Image Container
+      3.3 Room Details Layout
+      3.4 Room Specs Grid
+      3.5 Price Styling
+      3.6 Room Action Buttons
+   
+   4. ROOM DETAIL PAGE STYLES
+      4.1 Main Gallery Container
+      4.2 Main Image Styling
+      4.3 Thumbnail Gallery
+      4.4 Gallery Navigation
+      4.5 Feature Items
+      4.6 Room Description
+   
+   5. MODAL AND FULLSCREEN STYLES
+      5.1 Modal Base
+      5.2 Fullscreen Image
+      5.3 Navigation Buttons
+   
+   6. RESPONSIVE ADJUSTMENTS
+      6.1 Small Screens
+      6.2 Medium Screens
+   ======================================================================= */
+
+/* =======================================================================
+   1. CORE STYLES
+   ======================================================================= */
+
+/* 1.1 Body and Layout */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-primary);
+    background-color: var(--background-light);
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    padding-bottom: 0;
+}
+
+/* Padding cho navbar fixed - sẽ bị override bởi home.css cho homepage */
+body:not(.homepage) {
+    padding-top: 80px;
+}
+
+main {
+    flex: 1;
+}
+
+/* 1.2 Card Effects */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+/* 1.3 Button Styling */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: var(--text-light);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.btn-success {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--text-light);
+}
+
+.btn-success:hover {
+    background-color: var(--accent-dark);
+    border-color: var(--accent-dark);
+    color: var(--text-light);
+}
+
+.btn-warning {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.btn-warning:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: var(--text-primary);
+}
+
+.btn-danger {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: var(--text-light);
+}
+
+.btn-danger:hover {
+    background-color: var(--warning-dark);
+    border-color: var(--warning-dark);
+    color: var(--text-light);
+}
+
+/* 1.4 Navbar - Màu trong suốt ban đầu với bóng mờ - GLOBAL */
+html body .navbar-dark.bg-primary {
+    background: transparent !important; /* Trong suốt ban đầu */
+    backdrop-filter: none; /* Bỏ hiệu ứng blur */
+    -webkit-backdrop-filter: none; /* Bỏ hiệu ứng blur */
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1) !important; /* Bóng mờ nhẹ */
+    border-bottom: none; /* Không có border khi trong suốt */
+    transition: all 0.3s ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1050;
+}
+
+/* Navbar khi scroll - hiện màu chủ đạo - GLOBAL */
+html body .navbar-dark.bg-primary.scrolled {
+    background: linear-gradient(135deg, rgba(158, 214, 73, 0.95), rgba(139, 184, 65, 0.95)) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15) !important; /* Bóng đậm hơn khi scroll */
+}
+
+/* Dynamic navbar text colors using CSS variables - exclude user dropdown */
+html body .navbar .nav-link:not(.user-dropdown-container),
+html body .navbar .navbar-brand,
+html body .navbar .brand-text,
+html body .navbar-brand .brand-text,
+html body .navbar-dark .navbar-nav .nav-link,
+html body .navbar .dropdown-toggle,
+html body .navbar .nav-link.dropdown-toggle,
+html body .navbar .nav-item.dropdown .nav-link.dropdown-toggle,
+html body .navbar .nav-link.user-dropdown-container,
+html body .navbar .nav-link.user-dropdown-container span,
+html body #languageToggle,
+html body #languageToggle span,
+html body .navbar .auth-buttons-container .nav-link {
+    color: var(--navbar-text-color) !important;
+    font-weight: 500;
+    transition: all 0.3s ease !important;
+}
+
+html body .navbar .nav-link:hover,
+html body .navbar .auth-link:hover,
+html body .navbar .dropdown-toggle:hover,
+html body .navbar .nav-link.user-dropdown-container:hover,
+html body .navbar .nav-link.user-dropdown-container:hover span,
+html body .navbar .nav-item.dropdown .nav-link.dropdown-toggle:hover,
+html body #languageToggle:hover,
+html body .navbar-dark .navbar-nav .nav-link:hover {
+    color: var(--navbar-hover-color) !important;
+    transform: translateY(-1px);
+}
+
+/* Brand text - sử dụng CSS variables */
+html body .navbar-brand .brand-text {
+    color: var(--navbar-text-color) !important;
+    font-weight: 700;
+}
+
+/* Auth buttons container - Fix layout */
+.auth-buttons-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+.auth-buttons-container .nav-link {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    padding: 0.375rem 0.75rem !important;
+    margin: 0 !important;
+}
+
+/* Fix navbar responsive layout */
+.navbar-nav {
+    align-items: center !important;
+}
+
+.navbar-nav .nav-item {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Prevent text wrapping in auth buttons */
+.auth-link {
+    white-space: nowrap !important;
+    font-size: 0.9rem !important;
+}
+
+.auth-link i {
+    margin-right: 0.25rem !important;
+}
+
+/* Responsive design for auth buttons */
+@media (max-width: 991.98px) {
+    .auth-buttons-container {
+        gap: 0.25rem !important;
+    }
+    
+    .auth-link {
+        font-size: 0.8rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+    
+    .auth-link.register {
+        padding: 0.25rem 0.65rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .auth-buttons-container {
+        flex-direction: row !important;
+        gap: 0.125rem !important;
+    }
+    
+    .auth-link {
+        font-size: 0.75rem !important;
+        padding: 0.2rem 0.4rem !important;
+    }
+    
+    .auth-link.register {
+        padding: 0.2rem 0.5rem !important;
+    }
+    
+    .auth-link i {
+        display: none !important;
+    }
+}
+
+/* Navbar toggler - cập nhật cho navbar xanh */
+.navbar-toggler {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 4px 8px;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* 1.5 Form Controls */
+.form-control {
+    color: var(--text-primary);
+    background-color: var(--white);
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(241, 181, 95, 0.25);
+}
+
+/* Badge Styles */
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+    color: var(--text-primary);
+}
+
+.badge.bg-success {
+    background-color: var(--accent-color) !important;
+    color: var(--text-light);
+}
+
+.badge.bg-warning {
+    background-color: var(--primary-dark) !important;
+    color: var(--text-light);
+}
+
+.badge.bg-danger {
+    background-color: var(--warning-color) !important;
+    color: var(--text-light);
+}
+
+.badge.bg-info {
+    background-color: var(--muted-color) !important;
+    color: var(--text-light);
+}
+
+/* Alert Styles */
+.alert-warning {
+    background-color: var(--background-warning);
+    color: var(--warning-dark);
+    border-color: var(--primary-light);
+}
+
+.alert-success {
+    background-color: rgba(122, 188, 14, 0.15);
+    color: var(--accent-dark);
+    border-color: var(--accent-color);
+}
+
+.alert-danger {
+    background-color: rgba(168, 100, 0, 0.15);
+    color: var(--warning-dark);
+    border-color: var(--warning-color);
+}
+
+/* 1.6 Footer */
+/* =======================================================================
+   1.6 FOOTER STYLES
+   ======================================================================= */
+
+footer {
+    margin-top: auto;
+    background: var(--accent-color);
+    color: #ffffff;
+}
+
+footer .container {
+    padding-top: 0rem !important;
+    padding-bottom: 0rem !important;
+}
+
+footer h5, footer h6 {
+    color: #ffffff;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+footer .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 0.875rem;
+}
+
+footer p {
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+footer ul li {
+    margin-bottom: 0.25rem !important;
+}
+
+footer a {
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+}
+
+footer a:hover {
+    color: var(--primary-color) !important;
+    transform: translateY(-1px);
+}
+
+footer .social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+}
+
+footer .social-links a:hover {
+    background: var(--primary-color);
+    color: #333 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(241, 181, 95, 0.3);
+}
+
+footer .border-top {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+footer .border-top .container {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+footer .small {
+    font-size: 0.8rem !important;
+}
+
+footer .mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Footer responsive */
+@media (max-width: 768px) {
+    footer .col-lg-2, footer .col-lg-4 {
+        margin-bottom: 1.25rem;
+    }
+    
+    footer .text-md-end {
+        text-align: center !important;
+    }
+    
+    footer .d-flex.justify-content-md-end {
+        justify-content: center !important;
+    }
+    
+    footer .container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1rem !important;
+    }
+}
+
+/* =======================================================================
+   2. HOMESTAY LISTING STYLES
+   ======================================================================= */
+
+/* 2.1 Homestay Cards */
+.homestay-card {
+    height: 100%;
+}
+
+.homestay-card img {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* 2.2 Price Display */
+.price-display {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--primary-dark);
+}
+
+/* =======================================================================
+   3. ROOM CARD STYLES (view_homestay.html)
+   ======================================================================= */
+
+/* 3.1 Room Card Base */
+.room-card {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.room-card .card-header {
+    background-color: var(--primary-light);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 10px 15px;
+    border-bottom: none;
+}
+
+.room-card .card-body {
+    background-color: var(--white);
+}
+
+.room-card .card-footer {
+    background-color: var(--background-light);
+    border-top: 1px solid var(--border-color);
+    padding: 15px;
+}
+
+/* Tùy chỉnh cho trạng thái phòng */
+.room-status {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.room-status.available {
+    background-color: rgba(122, 188, 14, 0.15);
+    color: var(--accent-dark);
+}
+
+.room-status.booked {
+    background-color: rgba(168, 100, 0, 0.15);
+    color: var(--warning-dark);
+}
+
+/* Tùy chỉnh cho các nút hành động phòng */
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.action-button.primary {
+    background-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.action-button.primary:hover {
+    background-color: var(--primary-dark);
+    color: var(--text-light);
+}
+
+.action-button.success {
+    background-color: var(--accent-color);
+    color: var(--text-light);
+}
+
+.action-button.success:hover {
+    background-color: var(--accent-dark);
+}
+
+.action-button.danger {
+    background-color: var(--warning-color);
+    color: var(--text-light);
+}
+
+.action-button.danger:hover {
+    background-color: var(--warning-dark);
+}
+
+/* Tùy chỉnh cho các tab */
+.nav-tabs .nav-link {
+    color: var(--text-secondary);
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 15px;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    color: var(--primary-dark);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-dark);
+    background-color: transparent;
+    border-bottom: 2px solid var(--primary-dark);
+}
+
+/* 3.2 Room Image Container */
+.room-image-container {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+
+.room-image-container img,
+.room-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: transform 0.5s ease;
+}
+
+.room-card:hover .room-image-container img {
+    transform: scale(1.08);
+}
+
+/* 3.3 Room Details Layout */
+.room-details {
+    padding: 15px;
+    background-color: var(--white);
+}
+
+/* 3.4 Room Specs Grid */
+.room-specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.spec-item {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-light);
+    padding: 8px 10px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.spec-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.spec-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 3.5 Price Styling */
+.price-item {
+    grid-column: span 2;
+    background-color: #faf2e2; /* hoặc màu be nhạt hơn */
+    color: var(--primary-color);
+    margin-top: 5px;
+}
+
+.price-item .spec-label {
+    color: var(--primary-dark);
+}
+
+.price-item .spec-value {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+/* 3.6 Room Action Buttons */
+.room-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 15px 15px 15px;
+}
+
+.room-actions .btn {
+    padding: 8px 0;
+    font-weight: 500;
+}
+
+/* =======================================================================
+   4. ROOM DETAIL PAGE STYLES (view_room_detail.html)
+   ======================================================================= */
+
+/* 4.1 Main Gallery Container */
+.main-image-container {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--background-light);
+}
+
+/* 4.2 Main Image Styling */
+#mainImage {
+    width: 100%;
+    /* height: 400px;  BỎ: tránh bóp méo ảnh */
+    height: auto;
+    max-height: 800px;   /* Giới hạn tối đa */
+    object-fit: cover;
+    object-position: center;
+}
+
+#mainImage.loading {
+    opacity: 0.7;
+}
+
+/* Bỏ transform scale(1.02) khi hover card nếu muốn ảnh không phóng to */
+.card:hover #mainImage {
+    transform: scale(1.02);
+}
+
+.empty-gallery {
+    height: 400px;
+}
+
+/* 4.3 Thumbnail Gallery */
+.thumbnail-gallery {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    overflow-x: auto;
+}
+
+.thumbnail-gallery::-webkit-scrollbar {
+    height: 6px;
+}
+
+.thumbnail-gallery::-webkit-scrollbar-track {
+    background: var(--background-light);
+}
+
+.thumbnail-gallery::-webkit-scrollbar-thumb {
+    background-color: #dee2e6;
+    border-radius: 20px;
+}
+
+.thumbnail-img {
+    width: 80px;
+    height: 50px;
+    object-fit: cover;
+    border: 2px solid transparent;
+    border-radius: 0;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.thumbnail-img:hover {
+    transform: scale(1.05);
+    border-color: #ccc;
+}
+
+.thumbnail-img.active {
+    border-color: var(--primary-color);
+}
+
+/* 4.4 Gallery Navigation */
+.gallery-nav {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    z-index: 2;
+}
+
+.gallery-nav:hover {
+    opacity: 1;
+}
+
+.fs-modal-nav {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.fs-modal-nav:hover {
+    opacity: 1;
+}
+
+/* 4.5 Feature Items */
+.feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(233, 199, 127, 0.15); 
+    border-radius: 50%;
+    margin-right: 1rem;
+}
+
+.feature-icon i {
+    color: var(--primary-dark);
+}
+
+.feature-text h5 {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+/* 4.6 Room Description */
+.room-description h5 {
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+}
+
+.room-description p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* =======================================================================
+   5. MODAL AND FULLSCREEN STYLES
+   ======================================================================= */
+
+/* 5.1 Modal Base */
+#imageModal .modal-body {
+    background-color: #000;
+    padding: 0;
+}
+
+/* 5.2 Fullscreen Image */
+#fullscreenImage {
+    max-height: 90vh;
+    max-width: 100%;
+}
+
+/* 5.3 Navigation Buttons */
+.modal-fullscreen .modal-body {
+    padding: 0;
+    background-color: rgba(0,0,0,0.9);
+}
+
+.fullscreen-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255,255,255,0.7);
+    color: #000;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fullscreen-nav-btn:hover {
+    background-color: rgba(255,255,255,0.9);
+}
+
+.fullscreen-nav-btn.prev {
+    left: 20px;
+}
+
+.fullscreen-nav-btn.next {
+    right: 20px;
+}
+
+/* =======================================================================
+   6. RESPONSIVE ADJUSTMENTS
+   ======================================================================= */
+
+/* 6.1 Small Screens */
+@media (max-width: 768px) {
+    .jumbotron {
+        padding: 2rem 1rem;
+    }
+    .room-specs {
+        grid-template-columns: 1fr 1fr;
+    }
+    .price-item {
+        grid-column: span 2;
+    }
+    .room-actions {
+        grid-template-columns: 1fr;
+    }
+
+    /* Giảm chiều cao ảnh trên mobile để fit màn hình */
+    .main-image-container,
+    #mainImage,
+    .empty-gallery {
+        max-height: 300px;
+    }
+
+    .feature-item {
+        margin-bottom: 0.75rem;
+    }
+    .feature-icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* 6.2 Medium Screens */
+/* ... (nếu cần bổ sung) */
+
+/* Additional custom styles */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.img-thumbnail {
+    border-radius: 0 !important; /* force sharp corners */
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.4em 0.6em;
+}
+
+.progress {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    font-weight: 600;
+}
+
+.arrow-left,
+.arrow-right {
+    width: 0;
+    height: 0;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+}
+
+.arrow-left {
+    border-top: 25px solid transparent;
+    border-bottom: 25px solid transparent;
+    border-right: 25px solid #fff;
+    margin-left: 15px;
+    transition: transform 0.2s ease;
+}
+
+.arrow-left:hover {
+    transform: scale(1.1);
+}
+
+.arrow-right {
+    border-top: 25px solid transparent;
+    border-bottom: 25px solid transparent;
+    border-left: 25px solid #fff;
+    margin-right: 15px;
+    transition: transform 0.2s ease;
+}
+
+.arrow-right:hover {
+    transform: scale(1.1);
+}
+
+.avatar-circle {
+    border-radius: 50% !important;
+}
+
+/* Flag Image Styles - Improved */
+.flag-img {
+    width: 28px;
+    height: 20px;
+    border-radius: 2px;
+    object-fit: cover;
+    vertical-align: middle;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    display: inline-block;
+}
+
+#languageToggle .flag-img {
+    margin-right: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.language-option .flag-img {
+    margin-right: 10px;
+}
+
+/* Language Button Improved Styles */
+#languageToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 6px 14px;
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#languageToggle:hover {
+    transform: scale(1.05);
+    background-color: #f8f9fa;
+}
+
+#languageToggle:active {
+    transform: scale(0.98);
+}
+
+#languageToggle span {
+    font-weight: 500;
+}
+
+/* Language Dropdown Enhanced */
+.language-dropdown-menu {
+    min-width: 200px;
+    max-width: 250px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    border: none;
+    padding: 15px;
+    background-color: white;
+    z-index: 1050;
+}
+
+.language-option {
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.language-option:last-child {
+    margin-bottom: 0;
+}
+
+.language-option:hover {
+    background-color: #f8f9fa;
+    transform: translateX(3px);
+}
+
+.language-option.active {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+/* Dropdown menu styling - cho navbar xanh */
+.navbar .dropdown-menu {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(122, 188, 14, 0.2);  
+    box-shadow: 0 10px 30px rgba(122, 188, 14, 0.2);
+    border-radius: 10px;
+    padding: 10px 0;
+}
+
+.navbar .dropdown-item {
+    color: #333 !important;
+    padding: 8px 20px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.navbar .dropdown-item:hover {
+    background: rgba(122, 188, 14, 0.1);
+    color: var(--accent-color) !important;
+}
+
+.navbar .dropdown-item.text-danger {
+    color: #dc3545 !important;
+}
+
+.navbar .dropdown-item.text-danger:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545 !important;
+}
+
+/* Ensure all dropdown items have consistent styling */
+.dropdown-item,
+.navbar .dropdown-item,
+.dropdown-menu .dropdown-item {
+    color: #333 !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.dropdown-item:hover,
+.navbar .dropdown-item:hover,
+.dropdown-menu .dropdown-item:hover {
+    background: rgba(122, 188, 14, 0.1) !important;
+    color: var(--accent-color) !important;
+}
+
+/* Special styling for danger items (logout) */
+.dropdown-item.text-danger,
+.navbar .dropdown-item.text-danger,
+.dropdown-menu .dropdown-item.text-danger {
+    color: #dc3545 !important;
+}
+
+.dropdown-item.text-danger:hover,
+.navbar .dropdown-item.text-danger:hover,
+.dropdown-menu .dropdown-item.text-danger:hover {
+    background: rgba(220, 53, 69, 0.1) !important;
+    color: #dc3545 !important;
+}
+
+/* Language toggle button - phù hợp với navbar xanh */
+#languageToggle {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: all 0.3s ease;
+}
+
+#languageToggle:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    transform: translateY(-1px);
+    color: #ffffff !important;
+}
+
+#languageToggle span {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Avatar styling in navbar */
+.navbar .nav-link img.rounded-circle {
+    border: none !important;
+    background: transparent !important;
+    transition: all 0.3s ease;
+    box-shadow: none !important;
+    position: relative !important;
+    z-index: 1051 !important; /* Higher than navbar z-index */
+}
+
+.navbar .nav-link img.rounded-circle:hover {
+    border: none !important;
+    box-shadow: none !important;
+    transform: scale(1.05);
+}
+
+/* Avatar styling for home page - blend with transparent navbar */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link img.rounded-circle {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    position: relative !important;
+    z-index: 1051 !important; /* Higher than navbar z-index */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link img.rounded-circle:hover {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Avatar styling when navbar is scrolled */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link img.rounded-circle {
+    border: none !important;
+    box-shadow: none !important;
+    position: relative !important;
+    z-index: 1051 !important; /* Higher than navbar z-index */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link img.rounded-circle:hover {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Ensure dropdown toggle has proper z-index */
+.navbar .nav-link.dropdown-toggle {
+    position: relative !important;
+    z-index: 1051 !important;
+}
+
+/* Remove all background and styling from user dropdown toggle */
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+}
+
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* For home page specifically */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* When navbar is scrolled */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-item.dropdown .nav-link.dropdown-toggle:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Change dropdown arrow to hamburger menu for user dropdown */
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle::after {
+    display: none !important; /* Hide default Bootstrap arrow */
+}
+
+.navbar .nav-item.dropdown .nav-link.dropdown-toggle::before {
+    display: none !important; /* Hide the before pseudo-element */
+}
+
+/* For home page specifically */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle::after {
+    display: none !important; /* Hide default Bootstrap arrow */
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-item.dropdown .nav-link.dropdown-toggle::before {
+    display: none !important;
+}
+
+/* User dropdown container styling */
+.navbar .nav-link.user-dropdown-container {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 25px !important;
+    padding: 4px 12px !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link.user-dropdown-container:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* For home page specifically */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.user-dropdown-container {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary .nav-link.user-dropdown-container:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* When navbar is scrolled */
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.user-dropdown-container {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .nav-link.user-dropdown-container:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* ========================================
+   USER DROPDOWN SPECIFIC TEXT COLOR FIX
+   ======================================== */
+
+/* Specific styling for user dropdown - override auto-adjust color system */
+html body .navbar .nav-link.user-dropdown-container,
+html body .navbar .nav-link.user-dropdown-container span {
+    /* Other pages: black text */
+    color: #fffdfd !important;
+    text-shadow: none !important;
+}
+
+/* Homepage specific styling - white text on transparent navbar - HIGHEST PRIORITY */
+body.homepage html body .navbar .nav-link.user-dropdown-container,
+body.homepage html body .navbar .nav-link.user-dropdown-container span {
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* User dropdown hover - use appropriate hover color */
+html body .navbar .nav-link.user-dropdown-container:hover,
+html body .navbar .nav-link.user-dropdown-container:hover span {
+    color: #8bc34a !important; /* Green hover for non-homepage */
+}
+
+body.homepage html body .navbar .nav-link.user-dropdown-container:hover,
+body.homepage html body .navbar .nav-link.user-dropdown-container:hover span {
+    color: #b2e254 !important; /* Light green hover for homepage */
+}

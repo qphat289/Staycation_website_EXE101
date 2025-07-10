@@ -21,8 +21,7 @@ wheels/
 *.egg
 
 # Flask
-instance/
-*.db
+
 *.sqlite
 *.sqlite3
 

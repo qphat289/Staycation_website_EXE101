@@ -1,5 +1,21 @@
-from app import app
-from models import db, Rule
+    
+import sys
+import os
+
+# Add the project root to the Python path
+project_root = os.path.join(os.path.dirname(__file__), '..', '..')
+sys.path.insert(0, project_root)
+
+from flask import Flask
+from config.config import Config
+from app.models.models import db, Rule
+
+# Tạo ứng dụng Flask
+app = Flask(__name__)
+app.config.from_object(Config)
+
+# Khởi tạo database
+db.init_app(app)
 
 # Dữ liệu nội quy chuẩn - THỰC SỰ LÀ NỘI QUY CHỨ KHÔNG PHẢI TIỆN NGHI
 RULES_DATA = [

@@ -1,9 +1,9 @@
 {% extends 'owner/base_owner.html' %}
 
-{% block title %}Lịch đặt phòng{% endblock %}
+{% block title %}Lịch booking{% endblock %}
 
 {% block page_title %}Lịch{% endblock %}
-{% block page_subtitle %}Xem lịch đặt phòng của bạn{% endblock %}
+{% block page_subtitle %}Xem lịch booking của bạn{% endblock %}
 
 {% block page_css %}
 <style>
@@ -624,7 +624,7 @@
             </div>
             
             <div class="calendar-label">
-                Lịch đặt phòng
+                Lịch booking
             </div>
         </div>
 
@@ -689,7 +689,7 @@
 
             <!-- Booking Summary -->
             <div class="booking-summary">
-                <h4>Đặt phòng hôm nay</h4>
+                <h4>Lượt booking hôm nay</h4>
                 <div id="bookingSummary">
                     <!-- Today's bookings will be shown here -->
                 </div>
@@ -705,7 +705,7 @@
         <div class="modal-header">
             <h3 class="modal-title">
                 <i class="fas fa-calendar-check"></i>
-                Chi tiết đặt phòng
+                Chi tiết booking
             </h3>
         </div>
         <div class="modal-body">
@@ -763,7 +763,7 @@
 
 <script>
     // Get real data from server
-    const rooms = {% if rooms %}{{ rooms|tojson|safe }}{% else %}[]{% endif %};
+    const homes = {% if homes %}{{ homes|tojson|safe }}{% else %}[]{% endif %};
     const bookings = {% if bookings %}{{ bookings|tojson|safe }}{% else %}[]{% endif %};
     
     // Calendar functionality
@@ -782,6 +782,24 @@
     ];
     
     function initializeCalendar() {
+        // Initialize cache with all bookings loaded from server, grouped by date
+        const bookingsByDate = new Map();
+        bookings.forEach(booking => {
+            if (!booking.start_time) return;
+            const startTime = new Date(booking.start_time);
+            const dateStr = startTime.toISOString().split('T')[0];
+            
+            if (!bookingsByDate.has(dateStr)) {
+                bookingsByDate.set(dateStr, []);
+            }
+            bookingsByDate.get(dateStr).push(booking);
+        });
+        
+        // Populate the cache with all dates that have bookings
+        bookingsByDate.forEach((bookingsForDate, dateStr) => {
+            bookingCache.set(dateStr, bookingsForDate);
+        });
+        
         generateTimeLabels();
         generateRoomHeaders();
         generateRoomTimelines();
@@ -811,7 +829,7 @@
         // Debug: Check if all 24 hours are generated
         console.log('Hours array length:', hours.length);
         console.log('Time labels count:', document.querySelectorAll('.time-label').length);
-        console.log('Timeline rows per room:', document.querySelectorAll('.timeline-row').length / rooms.length);
+        console.log('Timeline rows per room:', document.querySelectorAll('.timeline-row').length / homes.length);
         
         // Debug: Check container dimensions
         setTimeout(() => {
@@ -980,12 +998,12 @@
         const roomsHeader = document.getElementById('roomsHeader');
         roomsHeader.innerHTML = '';
         
-        rooms.forEach(room => {
+        homes.forEach(home => {
             const roomHeader = document.createElement('div');
             roomHeader.className = 'room-header';
             roomHeader.innerHTML = `
-                <div class="room-title" title="${room.title}">${room.title}</div>
-                <div class="room-info">${room.room_type} • ${room.city}</div>
+                <div class="room-title" title="${home.title}">${home.title}</div>
+                <div class="room-info">${home.home_type} • ${home.city}</div>
             `;
             roomsHeader.appendChild(roomHeader);
         });
@@ -995,10 +1013,10 @@
         const roomsTimeline = document.getElementById('roomsTimeline');
         roomsTimeline.innerHTML = '';
         
-        rooms.forEach(room => {
+        homes.forEach(home => {
             const roomTimeline = document.createElement('div');
             roomTimeline.className = 'room-timeline';
-            roomTimeline.setAttribute('data-room-id', room.id);
+            roomTimeline.setAttribute('data-room-id', home.id);
             
             // Create 24 hour rows for each room
             hours.forEach(() => {
@@ -1020,7 +1038,7 @@
         });
         
         bookings.forEach(booking => {
-            if (!booking.start_time || !booking.end_time || !booking.room) return;
+            if (!booking.start_time || !booking.end_time || !booking.home) return;
             
             const startTime = new Date(booking.start_time);
             const endTime = new Date(booking.end_time);
@@ -1039,7 +1057,7 @@
             const duration = endPosition - startPosition;
             
             // Find the room timeline for this booking
-            const roomTimeline = document.querySelector(`[data-room-id="${booking.room.id}"]`);
+            const roomTimeline = document.querySelector(`[data-room-id="${booking.home.id}"]`);
             if (roomTimeline) {
                 const blockElement = document.createElement('div');
                 blockElement.className = 'booking-block';
@@ -1082,7 +1100,7 @@
 
         summaryContainer.innerHTML = '';
         todayBookings.forEach(booking => {
-            const room = rooms.find(r => r.id === booking.room.id);
+            const home = homes.find(h => h.id === booking.home.id);
             const startTime = new Date(booking.start_time);
             const endTime = new Date(booking.end_time);
             const customerName = booking.renter ? 
@@ -1093,7 +1111,7 @@
             bookingItem.className = 'booking-item';
             bookingItem.innerHTML = `
                 <div class="booking-item-customer">${customerName}</div>
-                <div class="booking-item-room">${room ? room.title : 'N/A'}</div>
+                <div class="booking-item-room">${home ? home.title : 'N/A'}</div>
                 <div class="booking-item-time">
                     ${startTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})} - 
                     ${endTime.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}
@@ -1156,22 +1174,35 @@
     }
 
     // Enhanced API functions for better calendar management
+    const bookingCache = new Map(); // Cache bookings by date to avoid re-loading
+    
     async function loadBookingsForDate(date) {
         try {
             const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+            
+            // Check if we already have bookings for this date
+            if (bookingCache.has(dateStr)) {
+                console.log(`Using cached bookings for ${dateStr}`);
+                return;
+            }
+            
             const response = await fetch(`/owner/calendar/api/bookings/${dateStr}`);
             const data = await response.json();
             
             if (data.success) {
-                // Update global bookings array with new data
-                bookings.length = 0; // Clear existing bookings
-                bookings.push(...data.bookings);
+                // Cache the bookings for this date
+                bookingCache.set(dateStr, data.bookings);
+                
+                // Add new bookings to the global array (don't clear existing ones)
+                const existingBookingIds = new Set(bookings.map(b => b.id));
+                const newBookings = data.bookings.filter(b => !existingBookingIds.has(b.id));
+                bookings.push(...newBookings);
                 
                 // Re-render the timeline
                 renderBookings();
                 updateBookingSummary();
                 
-                console.log(`Loaded ${data.bookings.length} bookings for ${dateStr}`);
+                console.log(`Loaded ${data.bookings.length} bookings for ${dateStr} (${newBookings.length} new)`);
             } else {
                 console.error('Failed to load bookings:', data.error);
             }
@@ -1216,7 +1247,7 @@
                 document.getElementById('modalUsername').textContent = 
                     detailedBooking.renter?.username || 'Chưa cung cấp';
                 document.getElementById('modalRoomTitle').textContent = 
-                    detailedBooking.room?.title || 'N/A';
+                    detailedBooking.home?.title || 'N/A';
                 
                 // Format dates and times
                 const startTime = new Date(detailedBooking.start_time);
@@ -1226,7 +1257,7 @@
                 document.getElementById('modalBookingDate').textContent = 
                     createdAt.toLocaleDateString('vi-VN');
                 document.getElementById('modalBookingType').textContent = 
-                    detailedBooking.booking_type === 'hourly' ? 'Theo giờ' : 'Qua đêm';
+                    detailedBooking.booking_type === 'hourly' ? 'Theo giờ' : 'Theo ngày';
                 document.getElementById('modalCheckin').textContent = 
                     startTime.toLocaleString('vi-VN');
                 document.getElementById('modalCheckout').textContent = 
@@ -1239,12 +1270,10 @@
                 // Status with color coding
                 const statusElement = document.getElementById('modalStatus');
                 const statusMap = {
-                    'pending': { text: 'Chờ xác nhận', class: 'text-warning' },
                     'confirmed': { text: 'Đã xác nhận', class: 'text-success' },
                     'active': { text: 'Đang sử dụng', class: 'text-primary' },
                     'completed': { text: 'Hoàn thành', class: 'text-info' },
-                    'cancelled': { text: 'Đã hủy', class: 'text-danger' },
-                    'rejected': { text: 'Từ chối', class: 'text-danger' }
+                    'cancelled': { text: 'Đã hủy', class: 'text-danger' }
                 };
                 
                 const status = statusMap[detailedBooking.status] || { text: detailedBooking.status, class: '' };
@@ -1348,7 +1377,7 @@
                 dayElement.appendChild(dot);
             }
             
-            dayElement.addEventListener('click', function() {
+            dayElement.addEventListener('click', async function() {
                 document.querySelectorAll('.calendar-day.selected').forEach(el => {
                     el.classList.remove('selected');
                 });
@@ -1357,6 +1386,10 @@
                 // Update selected date and refresh bookings
                 selectedDate = new Date(year, month, day);
                 updateDateDisplay();
+                
+                // Load bookings for this date if not already loaded
+                await loadBookingsForDate(selectedDate);
+                
                 renderBookings();
                 updateCurrentTimeIndicator();
                 updateBookingSummary();

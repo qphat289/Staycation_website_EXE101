@@ -554,12 +554,12 @@ const languages = [
     { 
         code: 'vi', 
         name: 'Việt Nam', 
-        flag: '<img src="/static/images/flags/vn.svg" alt="VN" class="flag-img">' 
+        flag: '<img src="/static/data/system/flags/vn.svg" alt="VN" class="flag-img">' 
     },
     { 
         code: 'en', 
         name: 'Global (English)', 
-        flag: '<img src="/static/images/flags/world.svg" alt="Global" class="flag-img">' 
+        flag: '<img src="/static/data/system/flags/world.svg" alt="Global" class="flag-img">' 
     }
 ];
 
@@ -673,7 +673,7 @@ function updateLanguageButton() {
     const lang = languages.find(l => l.code === currentLang);
     if (lang) {
         if (currentLang === 'en') {
-            langBtn.innerHTML = `<img src="/static/images/flags/world.svg" alt="Global" class="flag-img"><span>EN</span>`;
+            langBtn.innerHTML = `<img src="/static/data/system/flags/world.svg" alt="Global" class="flag-img"><span>EN</span>`;
         } else {
             langBtn.innerHTML = `${lang.flag} <span>${currentLang.toUpperCase()}</span>`;
         }

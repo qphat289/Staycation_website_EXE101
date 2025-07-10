@@ -21,7 +21,7 @@ class EmailConfig:
             'template': 'payment_success_email.html'
         },
         'payment_success_owner': {
-            'subject': 'Thanh toán thành công - Phòng {room_title}',
+            'subject': 'Thanh toán thành công - Nhà {room_title}',
             'template': 'payment_success_owner_email.html'
         }
     }

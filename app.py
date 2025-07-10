@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_migrate import Migrate
 from config.config import Config
-from app.models.models import db, Admin, Owner, Renter, Statistics, Room, Booking, Review, Amenity, RoomImage, Payment, PaymentConfig
+from app.models.models import db, Admin, Owner, Renter, Statistics, Booking, Review, Amenity, Home
 from app.utils.utils import get_rank_info, get_location_name
 from app.utils.address_formatter import format_district, format_city, format_full_address
 import json
@@ -60,9 +60,12 @@ def from_json_filter(value):
 def property_type_vn_filter(value):
     """Chuyển đổi property type sang tiếng Việt"""
     property_type_map = {
-        'house': 'Nhà',
-        'apartment': 'Căn hộ', 
-        'hotel': 'Khách sạn'
+        'townhouse': 'Nhà phố',
+        'apartment': 'Chung cư', 
+        'villa': 'Villa',
+        'penthouse': 'Penthouse',
+        'farmstay': 'Farmstay',
+        'resort': 'Resort'
     }
     return property_type_map.get(value, value)
 
@@ -153,7 +156,7 @@ with app.app_context():
                     'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
                     'data': [0, 0, 0, 0, 0, 0, 0]
                 }),
-                top_rooms=json.dumps([])
+                top_homes=json.dumps([])
             )
             db.session.add(stats)
             db.session.commit()
@@ -172,6 +175,7 @@ from app.routes.webhook_handler import webhook_bp
 from app.routes.notification_api import notification_api
 from app.routes.api import api_bp
 
+
 app.register_blueprint(auth_bp)
 app.register_blueprint(owner_bp)
 app.register_blueprint(renter_bp)
@@ -182,6 +186,7 @@ app.register_blueprint(webhook_bp)
 app.register_blueprint(notification_api)
 app.register_blueprint(api_bp)
 
+
 # Home route
 @app.route('/')
 def home():
@@ -191,13 +196,13 @@ def home():
     # If user is logged in and is admin, redirect to their dashboard instead of showing home page
     if current_user.is_authenticated and isinstance(current_user, Admin):
         return redirect(url_for('admin.dashboard'))
-    # Retrieve featured homestays to display on the homepage
+    # Retrieve featured homes to display on the homepage
     from sqlalchemy.orm import joinedload
-    homestays = Room.query.options(
-        joinedload(Room.images),
-        joinedload(Room.reviews)
+    featured_homes = Home.query.options(
+        joinedload(Home.images),
+        joinedload(Home.reviews)
     ).filter_by(is_active=True).limit(6).all()
-    return render_template('home.html', homestays=homestays)
+    return render_template('home.html', homestays=featured_homes)
 
 # Route to handle image uploads (legacy)
 @app.route('/static/uploads/<filename>')

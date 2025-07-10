@@ -31,7 +31,7 @@ class PayOSService:
         print(f"[DEBUG] PayOS SDK initialized for client: {client_id}")
     
     def create_payment_link(self, order_code, amount: int, description: str, 
-                          return_url: str, cancel_url: str, items=None, expired_at=None) -> Dict[str, Any]:
+                          return_url: str, cancel_url: str, webhook_url: str = None, items=None, expired_at=None) -> Dict[str, Any]:
         """
         Tạo link thanh toán PayOS với QR Code VietQR
         """
@@ -79,6 +79,13 @@ class PayOSService:
                 returnUrl=return_url
             )
             
+            # Nếu có webhook_url, set vào payment_data (nếu SDK hỗ trợ)
+            if webhook_url:
+                try:
+                    payment_data.webhookUrl = webhook_url
+                    print(f"[DEBUG] Đã set webhook_url cho payment: {webhook_url}")
+                except Exception as e:
+                    print(f"[DEBUG] Không thể set webhook_url cho payment_data: {e}")
             print(f"[DEBUG] PaymentData created: orderCode={payment_data.orderCode}, amount={payment_data.amount}")
             
             # Gọi SDK PayOS - method đúng
@@ -213,7 +220,7 @@ class PayOSService:
     def create_payment_items(self, booking):
         """Tạo items từ booking"""
         return [ItemData(
-            name=f"Phong {booking.room.title}"[:50],  # Giới hạn 50 ký tự
+                            name=f"Nha {booking.home.title}"[:50],  # Giới hạn 50 ký tự
             quantity=1,
             price=int(booking.total_price)
         )]

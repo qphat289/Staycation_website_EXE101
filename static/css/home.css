@@ -50,10 +50,10 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary {
 
 /* Adjust navbar container */
 .navbar .container {
-    max-width: 1400px;
+    max-width: none; /* Allow full width */
     width: 100%;
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 0 2rem; /* Consistent with main container padding */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -240,7 +240,7 @@ main.container {
 
 /* Hero Section Compact Styles - Like Traveloka */
 .hero-section-fullwidth {
-    background-image: url('/static/images/hero-bg.jpg');
+    background-image: url('/static/data/system/hero-bg.jpg');
     position: relative;
     background-size: cover;
     background-position: center;
@@ -278,7 +278,8 @@ main.container {
     height: auto;
     text-align: left;
     margin-top: 2rem;
-    margin-left: -15%;
+    margin-left: 2rem; /* Align with container padding instead of negative margin */
+    max-width: 50%; /* Prevent text from stretching too wide */
 }
 
 .hero-title {
@@ -313,7 +314,7 @@ main.container {
     justify-content: center;
     padding: 0 2rem;
     width: 100%;
-    max-width: 1400px;
+    max-width: none; /* Allow full width */
     margin-left: auto;
     margin-right: auto;
 }
@@ -613,7 +614,7 @@ main.container {
 }
 
 .featured-section .container {
-    max-width: 1400px !important; /* Tăng max-width để phù hợp với form tìm kiếm */
+    max-width: none !important; /* Full width to match global container changes */
     padding: 0 2rem !important;
     margin: 0 auto !important;
     width: 100% !important;
@@ -659,6 +660,7 @@ main.container {
     transition: all 0.3s ease;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     background: white;
+    min-height: 300px; /* Ensure consistent height for 5-column layout */
 }
 
 .homestay-card:hover {
@@ -669,7 +671,7 @@ main.container {
 .card-img-container {
     position: relative;
     overflow: hidden;
-    height: 180px;
+    height: 160px; /* Reduced height for 5-column layout */
 }
 
 .card-img-container img {
@@ -690,16 +692,16 @@ main.container {
 
 /* Card Body Styles */
 .homestay-card .card-body {
-    padding: 1rem;
+    padding: 0.875rem; /* Reduced padding for 5-column layout */
 }
 
 .homestay-card .card-title {
-    font-size: 1rem;
+    font-size: 0.9rem; /* Reduced for 5-column layout */
     color: #333;
     font-weight: 600;
     flex: 1;
     margin-right: 0.5rem;
-    line-height: 1.3;
+    line-height: 1.2; /* Tighter line height */
 }
 
 .homestay-card .rating-section {
@@ -711,7 +713,7 @@ main.container {
 }
 
 .homestay-card .location-info {
-    font-size: 0.85rem;
+    font-size: 0.8rem; /* Smaller for 5-column layout */
 }
 
 .homestay-card .price-info {
@@ -720,8 +722,8 @@ main.container {
 
 .homestay-card .btn-outline-primary {
     border-radius: 6px;
-    font-size: 0.85rem;
-    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem; /* Smaller for 5-column layout */
+    padding: 0.35rem 0.7rem; /* Reduced padding */
     font-weight: 500;
     white-space: nowrap;
     flex-shrink: 0;
@@ -854,6 +856,8 @@ main.container {
     .hero-content {
         text-align: left; /* Keep left alignment on mobile */
         align-items: flex-start; /* Keep left alignment */
+        margin-left: 1rem; /* Reduce margin on mobile */
+        max-width: 80%; /* Allow more width on mobile */
     }
     
     .search-form-wrapper {
@@ -923,9 +927,10 @@ main.container {
         margin-top: 5px; /* Giảm margin-top trên mobile */
     }
     
-    /* Điều chỉnh container trên mobile */
+    /* Remove the negative margin that was compensating for old container constraints */
     .featured-section .container {
-        margin-left: -10px !important; /* Giảm margin-left trên mobile */
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
 }
 
@@ -936,6 +941,8 @@ main.container {
     
     .hero-content {
         text-align: left; /* Keep left alignment on small mobile */
+        margin-left: 1rem; /* Consistent margin on small mobile */
+        max-width: 90%; /* Allow even more width on small mobile */
     }
     
     .search-form-wrapper {
@@ -1192,3 +1199,43 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .auth-link.re
     background: #9ed649;
     color: white !important;
 } 
+
+/* Custom 5-column layout for homestay cards */
+.col-5cols {
+    flex: 0 0 auto;
+    width: 20%; /* 20% width for 5 columns (100% / 5 = 20%) */
+}
+
+/* Responsive behavior for 5-column layout */
+@media (min-width: 1200px) {
+    .col-xl-5cols {
+        flex: 0 0 auto;
+        width: 20%; /* 5 cards per row on extra large screens */
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .col-lg-5cols {
+        flex: 0 0 auto;
+        width: 20%; /* 5 cards per row on large screens */
+    }
+}
+
+/* Fallback for smaller screens - keep existing responsive behavior */
+@media (max-width: 991.98px) {
+    .col-lg-5cols,
+    .col-xl-5cols {
+        flex: 0 0 auto;
+        width: 50%; /* 2 cards per row on medium screens (same as col-md-6) */
+    }
+}
+
+@media (max-width: 767.98px) {
+    .col-lg-5cols,
+    .col-xl-5cols {
+        flex: 0 0 auto;
+        width: 100%; /* 1 card per row on small screens */
+    }
+}
+
+/* Adjust existing homestay card styles for 5-column layout */ 

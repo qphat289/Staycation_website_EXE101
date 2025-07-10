@@ -64,8 +64,8 @@
                         <h5>Thông tin đặt phòng</h5>
                         <div class="row">
                             <div class="col-md-6">
-                                <p><strong>Phòng:</strong> {{ booking.room.title }}</p>
-                                <p><strong>Địa chỉ:</strong> {{ booking.room.address }}</p>
+                                                <p><strong>Nhà:</strong> {{ booking.home.title }}</p>
+                <p><strong>Địa chỉ:</strong> {{ booking.home.address }}</p>
                             </div>
                             <div class="col-md-6">
                                 <p><strong>Ngày đặt:</strong> {{ booking.start_time.strftime('%d/%m/%Y') }}</p>
@@ -84,7 +84,7 @@
                         <a href="{{ url_for('renter.booking_details', booking_id=booking.id) }}" 
                            class="btn btn-outline-primary me-2">
                             <i class="fas fa-eye me-2"></i>
-                            Xem chi tiết đặt phòng
+                            Xem chi tiết booking
                         </a>
                         <a href="{{ url_for('renter.dashboard') }}" 
                            class="btn btn-outline-secondary">

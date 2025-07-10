@@ -19,7 +19,7 @@ spec.loader.exec_module(app_module)
 
 app = app_module.app
 db = app_module.db
-from app.models.models import Payment, PaymentConfig, Owner, Renter, Booking, Room
+from app.models.models import Payment, PaymentConfig, Owner, Renter, Booking, Home
 
 def generate_payment_code():
     """Tạo mã giao dịch ngẫu nhiên"""
@@ -105,12 +105,12 @@ def create_sample_payments():
                     payment_method='bank_transfer',
                     created_at=booking.created_at,
                     paid_at=booking.created_at + timedelta(minutes=5),  # Thanh toán sau 5 phút
-                    description=f"Thanh toán cho booking phòng {booking.room.title}",
+                    description=f"Thanh toán cho booking nhà {booking.home.title}",
                     customer_name=booking.renter.full_name,
                     customer_email=booking.renter.email,
                     customer_phone=booking.renter.phone,
                     booking_id=booking.id,
-                    owner_id=booking.room.owner_id,
+                    owner_id=booking.home.owner_id,
                     renter_id=booking.renter_id
                 )
                 
@@ -154,12 +154,12 @@ def create_pending_payments():
                     status='pending',  # Đang chờ thanh toán
                     payment_method=None,
                     created_at=datetime.utcnow(),
-                    description=f"Thanh toán cho booking phòng {booking.room.title}",
+                    description=f"Thanh toán cho booking nhà {booking.home.title}",
                     customer_name=booking.renter.full_name,
                     customer_email=booking.renter.email,
                     customer_phone=booking.renter.phone,
                     booking_id=booking.id,
-                    owner_id=booking.room.owner_id,
+                    owner_id=booking.home.owner_id,
                     renter_id=booking.renter_id
                 )
                 

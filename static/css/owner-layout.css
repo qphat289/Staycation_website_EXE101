@@ -15,7 +15,7 @@ body {
     height: calc(100vh - 80px);
     padding: 1.5rem;
     position: fixed;
-    left: 85px;
+    left: 2rem; /* Align with container padding */
     top: 0px;
     z-index: 1051;
 }
@@ -74,7 +74,7 @@ body {
 
 /* Main Content */
 .admin-main {
-    margin-left: 250px;
+    margin-left: calc(250px + 2rem); /* Account for sidebar width + left positioning */
     padding: 0;
     min-height: 100vh;
     margin-top: -3rem;
@@ -112,10 +112,10 @@ body {
 @media (max-width: 768px) {
     .admin-sidebar {
         width: 200px;
-        left: 20px;
+        left: 1rem; /* Responsive left positioning */
     }
     
     .admin-main {
-        margin-left: 200px;
+        margin-left: calc(200px + 1rem); /* Account for smaller sidebar and mobile padding */
     }
 } 

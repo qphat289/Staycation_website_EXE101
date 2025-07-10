@@ -94,22 +94,22 @@ def get_location_name(location_code, location_type='city'):
     
     return location_code
 
-def get_user_upload_path(user_type, user_id, room_id=None):
+def get_user_upload_path(user_type, user_id, home_id=None):
     """
     Generate upload path for user files
-    Structure: static/data/{user_type}/{user_id}/ or static/data/owner/{user_id}/{room_id}/
+    Structure: static/data/{user_type}/{user_id}/ or static/data/owner/{user_id}/{home_id}/
     
     Args:
         user_type: 'owner', 'renter', or 'admin'
         user_id: ID of the user
-        room_id: ID of the room (only for owner room images)
+        home_id: ID of the home (only for owner home images)
     
     Returns:
         tuple: (relative_path, absolute_path)
     """
-    if user_type == 'owner' and room_id:
-        # For owner room images: data/owner/{owner_id}/{room_id}/
-        relative_path = f"data/owner/{user_id}/{room_id}"
+    if user_type == 'owner' and home_id:
+        # For owner home images: data/owner/{owner_id}/{home_id}/
+        relative_path = f"data/owner/{user_id}/{home_id}"
     elif user_type == 'owner':
         # For owner profile images: data/owner/{owner_id}/
         relative_path = f"data/owner/{user_id}"
@@ -192,7 +192,7 @@ def fix_image_orientation(image_path):
         print(f"Error fixing image orientation: {e}")
         return False
 
-def save_user_image(file, user_type, user_id, room_id=None, prefix=""):
+def save_user_image(file, user_type, user_id, home_id=None, prefix=""):
     """
     Save user uploaded image to the organized folder structure
     
@@ -200,8 +200,8 @@ def save_user_image(file, user_type, user_id, room_id=None, prefix=""):
         file: Uploaded file object
         user_type: 'owner', 'renter', or 'admin'
         user_id: ID of the user
-        room_id: ID of the room (only for owner room images)
-        prefix: Optional prefix for filename (e.g., 'avatar', 'main', 'room')
+        home_id: ID of the home (only for owner home images)
+        prefix: Optional prefix for filename (e.g., 'avatar', 'main', 'home')
     
     Returns:
         str: Relative path to saved image
@@ -210,7 +210,7 @@ def save_user_image(file, user_type, user_id, room_id=None, prefix=""):
         return None
     
     # Get upload path
-    relative_path, absolute_path = get_user_upload_path(user_type, user_id, room_id)
+    relative_path, absolute_path = get_user_upload_path(user_type, user_id, home_id)
     
     # Generate unique filename
     filename = generate_unique_filename(file.filename, prefix)
@@ -271,7 +271,7 @@ def migrate_old_images():
     """
     try:
         # Import here to avoid circular imports
-        from app.models.models import Admin, Owner, Renter, Room, RoomImage
+        from app.models.models import Admin, Owner, Renter, Home, HomeImage
         from app import db
         
         print("Starting image migration...")
@@ -330,26 +330,26 @@ def migrate_old_images():
                     renter.avatar = f"{new_relative_path}/{new_filename}"
                     print(f"Migrated renter {renter.id} avatar: {renter.avatar}")
         
-        # Migrate room images
-        room_images = RoomImage.query.all()
-        for room_image in room_images:
-            if room_image.image_path and room_image.image_path.startswith('uploads/'):
-                old_path = f"static/{room_image.image_path}"
+        # Migrate home images
+        home_images = HomeImage.query.all()
+        for home_image in home_images:
+            if home_image.image_path and home_image.image_path.startswith('uploads/'):
+                old_path = f"static/{home_image.image_path}"
                 if os.path.exists(old_path):
-                    room = room_image.room
-                    if room:
+                    home = home_image.home
+                    if home:
                         # Create new path
-                        new_relative_path, new_absolute_path = get_user_upload_path('owner', room.owner_id, room.id)
-                        prefix = 'main' if room_image.is_featured else 'room'
-                        new_filename = generate_unique_filename(os.path.basename(room_image.image_path), prefix)
+                        new_relative_path, new_absolute_path = get_user_upload_path('owner', home.owner_id, home.id)
+                        prefix = 'main' if home_image.is_featured else 'home'
+                        new_filename = generate_unique_filename(os.path.basename(home_image.image_path), prefix)
                         new_full_path = os.path.join(new_absolute_path, new_filename)
                         
                         # Move file
                         os.rename(old_path, new_full_path)
                         
                         # Update database
-                        room_image.image_path = f"{new_relative_path}/{new_filename}"
-                        print(f"Migrated room {room.id} image: {room_image.image_path}")
+                        home_image.image_path = f"{new_relative_path}/{new_filename}"
+                        print(f"Migrated home {home.id} image: {home_image.image_path}")
         
         # Commit all changes
         db.session.commit()
@@ -358,3 +358,22 @@ def migrate_old_images():
     except Exception as e:
         print(f"Error during image migration: {e}")
         db.session.rollback()
+
+def allowed_file(filename):
+    """
+    Check if the uploaded file has an allowed extension
+    
+    Args:
+        filename: Name of the uploaded file
+    
+    Returns:
+        bool: True if file extension is allowed, False otherwise
+    """
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    
+    if not filename:
+        return False
+    
+    # Get file extension and check if it's allowed
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

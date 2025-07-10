@@ -14,7 +14,7 @@
                          class="w-100 h-100 object-fit-cover" style="min-height: 200px;" 
                          alt="{{ homestay.title }}">
                     {% else %}
-                    <img src="{{ url_for('static', filename='images/default-homestay.jpg') }}" 
+                    <img src="{{ url_for('static', filename='data/system/default-homestay.jpg') }}" 
                          class="w-100 h-100 object-fit-cover" style="min-height: 200px;" 
                          alt="Default Image">
                     {% endif %}
@@ -106,7 +106,7 @@
                                      class="w-100 h-100 object-fit-cover" alt="Phòng {{ room.room_number }}">
                             {% endif %}
                         {% else %}
-                            <img src="{{ url_for('static', filename='images/default-room.jpg') }}" 
+                            <img src="{{ url_for('static', filename='data/system/default-room.jpg') }}" 
                                  class="w-100 h-100 object-fit-cover" alt="Chưa có ảnh">
                         {% endif %}
                         

@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
+import os
+
+# Add the project root to the Python path
+project_root = os.path.join(os.path.dirname(__file__), '..', '..')
+sys.path.insert(0, project_root)
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from config import Config
-from models import db, Admin, Owner, Renter, Home, Booking, Review, Amenity, HomeImage, Statistics, AmenityCategory
+from config.config import Config
+from app.models.models import db, Admin, Owner, Renter, Home, Booking, Review, Amenity, HomeImage, Statistics, AmenityCategory
 
 # Tạo ứng dụng Flask
 app = Flask(__name__)
