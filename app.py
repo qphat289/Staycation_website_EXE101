@@ -174,6 +174,7 @@ from app.routes.payment_api import payment_api
 from app.routes.webhook_handler import webhook_bp
 from app.routes.notification_api import notification_api
 from app.routes.api import api_bp
+from app.routes.email_verification import email_verification_bp
 
 
 app.register_blueprint(auth_bp)
@@ -185,6 +186,7 @@ app.register_blueprint(payment_api)
 app.register_blueprint(webhook_bp)
 app.register_blueprint(notification_api)
 app.register_blueprint(api_bp)
+app.register_blueprint(email_verification_bp)
 
 
 # Home route

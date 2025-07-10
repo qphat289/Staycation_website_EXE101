@@ -189,10 +189,28 @@ def owner_required(f):
 @owner_bp.route('/dashboard')
 @login_required
 def dashboard():
+    # Kiểm tra email verification cho Owner
+    if current_user.is_owner() and not current_user.email_verified and current_user.first_login:
+        return redirect(url_for('owner.verify_email'))
+    
     # Lấy tất cả nhà của owner hiện tại với relationship images, sắp xếp theo ngày tạo mới nhất
     homes = Home.query.options(joinedload(Home.images)).filter_by(owner_id=current_user.id).order_by(Home.created_at.desc()).all()
     
     return render_template('owner/dashboard.html', homes=homes)
+
+@owner_bp.route('/verify-email')
+@login_required
+def verify_email():
+    """Trang verify email cho Owner"""
+    if not current_user.is_owner():
+        flash('Chỉ Owner mới có thể truy cập trang này', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    if current_user.email_verified:
+        flash('Email đã được xác thực', 'info')
+        return redirect(url_for('owner.dashboard'))
+    
+    return render_template('owner/verify_email.html')
 
 
 
@@ -1511,6 +1529,9 @@ def booking_details(booking_id):
 @login_required
 @owner_required
 def settings():
+    # Kiểm tra email verification cho Owner
+    if current_user.is_owner() and not current_user.email_verified and current_user.first_login:
+        return redirect(url_for('owner.verify_email'))
     return render_template('owner/settings.html')
 
 @owner_bp.route('/change_password', methods=['POST'])
@@ -1578,6 +1599,9 @@ def update_profile():
 @owner_bp.route('/profile', methods=['GET', 'POST'])
 @owner_required
 def profile():
+    # Kiểm tra email verification cho Owner
+    if current_user.is_owner() and not current_user.email_verified and current_user.first_login:
+        return redirect(url_for('owner.verify_email'))
     if request.method == 'POST':
         print(f"🔍 DEBUG: Owner profile POST request received")
         print(f"🔍 DEBUG: Form data keys: {list(request.form.keys())}")
@@ -1810,6 +1834,9 @@ def toggle_home_status(home_id):
 @owner_bp.route('/statistics')
 @owner_required
 def statistics():
+    # Kiểm tra email verification cho Owner
+    if current_user.is_owner() and not current_user.email_verified and current_user.first_login:
+        return redirect(url_for('owner.verify_email'))
     """Owner statistics page showing revenue, bookings, and performance data"""
     try:
         # Get all homes owned by current user

@@ -524,6 +524,11 @@
         body.homepage .global-search-container {
             display: none;
         }
+        
+        /* Conditional styling for home page */
+        [data-home-page="true"] {
+            color: #000 !important;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -603,14 +608,14 @@
 
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown ms-3">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid rgb(255, 255, 255) !important; border-radius: 25px !important; padding: 4px 12px !important; background: rgba(255, 255, 255, 0.1) !important; {% if request.endpoint == 'renter.view_home' %}color: #000 !important;{% endif %}">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center user-dropdown-container" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid rgb(255, 255, 255) !important; border-radius: 25px !important; padding: 4px 12px !important; background: rgba(255, 255, 255, 0.1) !important;" {% if request.endpoint == 'renter.view_home' %}data-home-page="true"{% endif %}>
                                 {% if current_user.avatar %}
                                     <img src="{{ url_for('static', filename=current_user.avatar) }}" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% else %}
                                     <img src="{{ url_for('static', filename='data/system/default-avatar.png') }}" alt="Default Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; background: transparent;">
                                 {% endif %}
-                                <span {% if request.endpoint == 'renter.view_home' %}style="color: #000 !important;"{% endif %}>{{ current_user.username }}</span>
-                                <i class="fas fa-bars ms-2" style="font-size: 14px; {% if request.endpoint == 'renter.view_home' %}color: #000 !important;{% endif %}"></i>
+                                <span {% if request.endpoint == 'renter.view_home' %}data-home-page="true"{% endif %}>{{ current_user.username }}</span>
+                                <i class="fas fa-bars ms-2" style="font-size: 14px;" {% if request.endpoint == 'renter.view_home' %}data-home-page="true"{% endif %}></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 {% if current_user.role == 'admin' %}

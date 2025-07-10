@@ -104,6 +104,10 @@ class Owner(UserMixin, db.Model):
     bank_account = db.Column(db.String(50))  # Số tài khoản ngân hàng
     bank_name = db.Column(db.String(100))  # Tên ngân hàng
     
+    # Email verification fields
+    email_verified = db.Column(db.Boolean, default=False)
+    first_login = db.Column(db.Boolean, default=True)
+    
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
         

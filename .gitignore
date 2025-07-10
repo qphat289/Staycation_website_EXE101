@@ -61,6 +61,8 @@ Thumbs.db
 # Database
 migrations/versions/__pycache__/
 migrations/README
+instance/
+*.db
 
 # Cache
 .cache/

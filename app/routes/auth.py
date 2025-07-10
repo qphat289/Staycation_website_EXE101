@@ -144,7 +144,11 @@ def login():
                 
             elif isinstance(user, Owner):
                 session['user_role'] = 'owner'
-                next_page = url_for('owner.profile', login_success='1')
+                # Kiểm tra xác thực email cho owner
+                if not user.email_verified and user.first_login:
+                    next_page = url_for('owner.verify_email')
+                else:
+                    next_page = url_for('owner.profile', login_success='1')
                 
             else:  # Renter
                 session['user_role'] = 'renter'
