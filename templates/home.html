@@ -653,7 +653,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                     <label for="datetime-hourly" class="form-label">Nhận phòng</label>
                     <div class="datetime-selector-hourly">
                         <input type="text" class="form-control datetime-display" id="datetime-hourly" 
-                               value="Bất kỳ" readonly>
+                               value="Hãy chọn ngày và giờ" readonly>
                         <input type="hidden" name="checkin_date" id="checkin-date-hourly">
                         <input type="hidden" name="checkin_time" id="checkin-time-hourly">
                         <input type="hidden" name="hours_duration" id="hours-duration-hourly">
@@ -693,9 +693,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="step-actions">
-                                    <button type="button" class="btn btn-next" onclick="nextStep(2)">Tiếp theo</button>
-                                </div>
+
                             </div>
                             
                             <!-- Step 2: Time Selection -->
@@ -730,8 +728,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                                     </div>
                                 </div>
                                 <div class="step-actions">
-                                    <button type="button" class="btn btn-back" onclick="nextStep(1)">Quay lại</button>
-                                    <button type="button" class="btn btn-next" onclick="nextStep(3)">Tiếp theo</button>
+                                    <button type="button" class="btn btn-back" id="back-step-2">Quay lại</button>
                                 </div>
                             </div>
                             
@@ -753,7 +750,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                                     </div>
                                 </div>
                                 <div class="step-actions">
-                                    <button type="button" class="btn btn-back" onclick="nextStep(2)">Quay lại</button>
+                                    <button type="button" class="btn btn-back" id="back-step-3">Quay lại</button>
                                     <button type="button" class="btn btn-apply" id="apply-datetime-hourly">Hoàn tất</button>
                                 </div>
                             </div>
@@ -763,7 +760,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                 <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
                     <label for="checkout-display-hourly" class="form-label">Trả phòng</label>
                     <input type="text" class="form-control" id="checkout-display-hourly" 
-                           value="Bất kỳ" readonly>
+                           value="Hãy chọn ngày và giờ" readonly>
                     <input type="hidden" name="checkout_date" id="checkout-date-hourly">
                     <input type="hidden" name="checkout_time" id="checkout-time-hourly">
                 </div>
@@ -2085,24 +2082,6 @@ document.addEventListener('DOMContentLoaded', function() {
             renderCalendar();
         });
         
-        // Time slot selection
-        dropdown.addEventListener('click', function(e) {
-            if (e.target.classList.contains('time-slot')) {
-                dropdown.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('active'));
-                e.target.classList.add('active');
-                selectedTime = e.target.dataset.time;
-            }
-        });
-        
-        // Duration slot selection
-        dropdown.addEventListener('click', function(e) {
-            if (e.target.classList.contains('duration-slot')) {
-                dropdown.querySelectorAll('.duration-slot').forEach(slot => slot.classList.remove('active'));
-                e.target.classList.add('active');
-                selectedDuration = e.target.dataset.duration;
-            }
-        });
-        
         // Apply button
         applyBtn.addEventListener('click', function() {
             updateDisplay();
@@ -2157,12 +2136,28 @@ document.addEventListener('DOMContentLoaded', function() {
             
             calendarDays.innerHTML = calendarHTML;
             
+            // Remove old event listeners to avoid conflicts
+            const newCalendarDays = calendarDays.cloneNode(false);
+            calendarDays.parentNode.replaceChild(newCalendarDays, calendarDays);
+            newCalendarDays.innerHTML = calendarHTML;
+            
             // Add click handlers for calendar days
-            calendarDays.addEventListener('click', function(e) {
+            newCalendarDays.addEventListener('click', function(e) {
                 if (e.target.classList.contains('calendar-day') && !e.target.disabled) {
-                    calendarDays.querySelectorAll('.calendar-day').forEach(day => day.classList.remove('selected'));
+                    newCalendarDays.querySelectorAll('.calendar-day').forEach(day => day.classList.remove('selected'));
                     e.target.classList.add('selected');
                     selectedDate = e.target.dataset.date;
+                    console.log('Date selected:', selectedDate);
+                    
+                    // Update display immediately when date is selected
+                    updateDisplay();
+                    updateHiddenInputs();
+                    
+                    // Auto-proceed to next step after selecting date
+                    setTimeout(() => {
+                        console.log('Auto-proceeding to step 2 after date selection');
+                        window.nextStep(2);
+                    }, 300);
                 }
             });
         }
@@ -2249,81 +2244,169 @@ document.addEventListener('DOMContentLoaded', function() {
             return `${hours}:${minutes}${ampm}`;
         }
         
+        // Step Navigation Functions (inside function scope to access variables)
+        window.currentStep = 1;
+        
+        window.nextStep = function(stepNumber) {
+            console.log('nextStep called with:', stepNumber, 'current step:', window.currentStep);
+            console.log('selectedDate:', selectedDate, 'selectedTime:', selectedTime);
+            
+            // Validate current step before proceeding
+            if (window.currentStep === 1 && stepNumber > 1 && !selectedDate) {
+                alert('Vui lòng chọn ngày trước khi tiếp tục');
+                return;
+            }
+            if (window.currentStep === 2 && stepNumber > 2 && !selectedTime) {
+                alert('Vui lòng chọn giờ trước khi tiếp tục');
+                return;
+            }
+            
+            // Hide current step
+            const currentStepElement = document.getElementById(`step-${window.currentStep}-hourly`);
+            const currentStepProgress = document.querySelector(`.step[data-step="${window.currentStep}"]`);
+            
+            if (currentStepElement) {
+                currentStepElement.classList.remove('active');
+            }
+            if (currentStepProgress) {
+                currentStepProgress.classList.remove('active');
+            }
+            
+            // Show new step
+            window.currentStep = stepNumber;
+            const newStepElement = document.getElementById(`step-${window.currentStep}-hourly`);
+            const newStepProgress = document.querySelector(`.step[data-step="${window.currentStep}"]`);
+            
+            if (newStepElement) {
+                newStepElement.classList.add('active');
+            }
+            if (newStepProgress) {
+                newStepProgress.classList.add('active');
+            }
+            
+            console.log('Step changed to:', window.currentStep);
+            
+            // Setup specific step functionality
+            if (window.currentStep === 2) {
+                setupTimeSelection();
+            }
+            
+            if (window.currentStep === 3) {
+                setupDurationSelection();
+            }
+        }
+
         // Initialize with default values
         const today = new Date();
         selectedDate = today.toISOString().split('T')[0];
+        selectedTime = '14:00'; // Default time
+        selectedDuration = '3'; // Default duration
+        
         updateDisplay();
         updateHiddenInputs();
         renderCalendar();
-    }
-
-    // Step Navigation Functions  
-    window.currentStep = 1;
-    
-    window.nextStep = function(stepNumber) {
-        // Validate current step before proceeding
-        if (currentStep === 1 && stepNumber > 1 && !selectedDate) {
-            alert('Vui lòng chọn ngày trước khi tiếp tục');
-            return;
-        }
-        if (currentStep === 2 && stepNumber > 2 && !selectedTime) {
-            alert('Vui lòng chọn giờ trước khi tiếp tục');
-            return;
-        }
         
-        // Hide current step
-        document.getElementById(`step-${currentStep}-hourly`).classList.remove('active');
-        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        // Add event listeners for back buttons only
+        setTimeout(() => {
+            const backStep2 = document.getElementById('back-step-2');
+            const backStep3 = document.getElementById('back-step-3');
+            const applyButton = document.getElementById('apply-datetime-hourly');
+            
+            if (backStep2) {
+                backStep2.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Back to step 1 clicked');
+                    window.nextStep(1);
+                });
+            }
+            
+            if (backStep3) {
+                backStep3.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Back to step 2 clicked');
+                    window.nextStep(2);
+                });
+            }
+            
+            if (applyButton) {
+                applyButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Apply button clicked');
+                    
+                    // Validate all selections
+                    if (!selectedDate || !selectedTime || !selectedDuration) {
+                        alert('Vui lòng chọn đầy đủ thông tin');
+                        return;
+                    }
+                    
+                    // Update display and close dropdown
+                    updateDisplay();
+                    updateHiddenInputs();
+                    dropdown.classList.remove('show');
+                });
+            }
+        }, 100);
         
-        // Show new step
-        currentStep = stepNumber;
-        document.getElementById(`step-${currentStep}-hourly`).classList.add('active');
-        document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+        // Setup functions for time and duration selection (inside function scope)
+        let timeSelectionSetup = false;
+        let durationSelectionSetup = false;
         
-        // Auto-proceed from step 2 to step 3 when time is selected
-        if (currentStep === 2) {
-            setupTimeSelection();
-        }
-        
-        // Auto-proceed from step 3 when duration is selected
-        if (currentStep === 3) {
-            setupDurationSelection();
-        }
-    }
-    
-    function setupTimeSelection() {
-        const timeSlots = document.querySelectorAll('#step-2-hourly .time-slot');
-        timeSlots.forEach(slot => {
-            slot.addEventListener('click', function() {
-                // Remove active from all slots
-                timeSlots.forEach(s => s.classList.remove('active'));
-                // Add active to clicked slot
-                this.classList.add('active');
-                selectedTime = this.dataset.time;
-                
-                // Auto-proceed to next step after short delay
-                setTimeout(() => {
-                    nextStep(3);
-                }, 300);
+        function setupTimeSelection() {
+            if (timeSelectionSetup) return;
+            timeSelectionSetup = true;
+            
+            const timeSlots = document.querySelectorAll('#step-2-hourly .time-slot');
+            timeSlots.forEach(slot => {
+                slot.addEventListener('click', function() {
+                    // Remove active from all slots
+                    timeSlots.forEach(s => s.classList.remove('active'));
+                    // Add active to clicked slot
+                    this.classList.add('active');
+                    selectedTime = this.dataset.time;
+                    console.log('Time selected:', selectedTime);
+                    
+                    // Update display immediately when time is selected
+                    updateDisplay();
+                    updateHiddenInputs();
+                    
+                    // Auto-proceed to step 3 after selecting time
+                    setTimeout(() => {
+                        console.log('Auto-proceeding to step 3 after time selection');
+                        window.nextStep(3);
+                    }, 300);
+                });
             });
-        });
-    }
-    
-    function setupDurationSelection() {
-        const durationSlots = document.querySelectorAll('#step-3-hourly .duration-slot');
-        durationSlots.forEach(slot => {
-            slot.addEventListener('click', function() {
-                // Remove active from all slots
-                durationSlots.forEach(s => s.classList.remove('active'));
-                // Add active to clicked slot
-                this.classList.add('active');
-                selectedDuration = this.dataset.duration;
-                
-                // Update displays immediately
-                updateDisplay();
-                updateHiddenInputs();
+        }
+        
+        function setupDurationSelection() {
+            if (durationSelectionSetup) return;
+            durationSelectionSetup = true;
+            
+            const durationSlots = document.querySelectorAll('#step-3-hourly .duration-slot');
+            durationSlots.forEach(slot => {
+                slot.addEventListener('click', function() {
+                    // Remove active from all slots
+                    durationSlots.forEach(s => s.classList.remove('active'));
+                    // Add active to clicked slot
+                    this.classList.add('active');
+                    selectedDuration = this.dataset.duration;
+                    console.log('Duration selected:', selectedDuration);
+                    
+                    // Update display immediately when duration is selected
+                    updateDisplay();
+                    updateHiddenInputs();
+                    
+                    // Auto-apply after selecting duration
+                    setTimeout(() => {
+                        console.log('Auto-applying after duration selection');
+                        dropdown.classList.remove('show');
+                    }, 300);
+                });
             });
-        });
+        }
     }
 });
 </script>
