@@ -291,6 +291,7 @@ main.container {
     line-height: 1.2;
     color: #ffffff;
     position: relative;
+    right: 90px;
     z-index: 3;
 }
 
@@ -301,6 +302,7 @@ main.container {
     opacity: 0.95;
     color: #ffffff;
     position: relative;
+    right: 90px;
     z-index: 3;
 }
 
