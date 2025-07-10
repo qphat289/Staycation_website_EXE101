@@ -2190,7 +2190,7 @@ def get_stats_data(period, chart_type='both'):
         
         if not home_ids:
             return jsonify({
-                'total_profit': '0đ',
+                'total_profit': '0 VND',
                 'total_hours': '0 giờ',
                 'total_bookings': '0 lần',
                 'booking_rate': '0%',
@@ -2302,7 +2302,7 @@ def get_stats_data(period, chart_type='both'):
             })
         
         return jsonify({
-            'total_profit': f"{int(total_profit):,}đ",
+            'total_profit': f"{int(total_profit):,} VND",
             'total_hours': f"{int(total_hours):,} giờ",
             'total_bookings': f"{total_bookings} lần",
             'booking_rate': f"{booking_rate:.0f}%",
@@ -2339,7 +2339,7 @@ def get_custom_stats_data(chart_type='both'):
         
         if not home_ids:
             return jsonify({
-                'total_profit': '0đ',
+                'total_profit': '0 VND',
                 'total_hours': '0 giờ',
                 'total_bookings': '0 lần',
                 'booking_rate': '0%',
@@ -2434,7 +2434,7 @@ def get_custom_stats_data(chart_type='both'):
             })
         
         return jsonify({
-            'total_profit': f"{int(total_profit):,}đ",
+            'total_profit': f"{int(total_profit):,} VND",
             'total_hours': f"{int(total_hours):,} giờ",
             'total_bookings': f"{total_bookings} lần",
             'booking_rate': f"{booking_rate:.0f}%",

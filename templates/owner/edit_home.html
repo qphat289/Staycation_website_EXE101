@@ -1456,7 +1456,7 @@ function validateEditPriceInput(input, numValue) {
         `;
         errorDiv.innerHTML = `
             <i class="fas fa-exclamation-triangle"></i>
-            Giá tối thiểu là ${minPrice.toLocaleString('vi-VN')}đ
+            Giá tối thiểu là ${minPrice.toLocaleString('vi-VN')} VND
         `;
         
         priceContainer.appendChild(errorDiv);
@@ -2544,7 +2544,7 @@ function validateEditHomePricing() {
     
     // Only enforce pricing validation if rental type is selected but no valid price is found
     if (rentalTypeSelected && !hasValidPrice) {
-        showEditPriceValidationAlert('Vui lòng nhập ít nhất một giá hợp lệ (tối thiểu 10,000đ).');
+        showEditPriceValidationAlert('Vui lòng nhập ít nhất một giá hợp lệ (tối thiểu 10,000 VND).');
         return false;
     }
     

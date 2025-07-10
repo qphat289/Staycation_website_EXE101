@@ -566,7 +566,7 @@
                         <i class="fas fa-money-bill"></i>
                     </div>
                     <div class="stat-label">Lợi nhuận</div>
-                    <div class="stat-value" id="stat-profit">{{ "{:,}".format(stats.total_profit) }}đ</div>
+                    <div class="stat-value" id="stat-profit">{{ "{:,}".format(stats.total_profit) }} VND</div>
                     <div class="stat-change" id="change-profit">
                         <i class="fas fa-arrow-up"></i>
                         <span>+0%</span>
@@ -662,7 +662,7 @@
                     <tr>
                         <td>{{ home.name }}</td>
                         <td>{{ home.type }}</td>
-                        <td>{{ "{:,}".format(home.revenue) }}đ</td>
+                        <td>{{ "{:,}".format(home.revenue) }} VND</td>
                         <td>{{ home.bookings }}</td>
                         <td>{{ home.booking_rate }}</td>
                         <td>
@@ -1434,7 +1434,7 @@ function updateChart(data, period = null) {
 function updateStatsCards(data) {
     const cards = document.querySelectorAll('.stat-card');
     const values = [
-        data.total_profit || '0đ',
+        data.total_profit || '0 VND',
         data.total_hours || '0 giờ', 
         data.total_bookings || '0 lần',
         data.booking_rate || '0%',
@@ -1564,7 +1564,7 @@ function updateTable(topHomes) {
         row.innerHTML = `
             <td>${home.name}</td>
             <td>${home.type}</td>
-            <td>${home.revenue.toLocaleString()}đ</td>
+            <td>${home.revenue.toLocaleString()} VND</td>
             <td>${home.bookings}</td>
             <td>${home.booking_rate}</td>
             <td>

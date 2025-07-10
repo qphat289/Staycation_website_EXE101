@@ -2575,7 +2575,7 @@ function validatePricingRequirement() {
         let dailyPrice = parseInt(getNumericPrice(pricePerDay)) || 0;
         
         if (hourlyPrice < minPrice && dailyPrice < minPrice) {
-            showPriceValidationAlert('Vui lòng nhập ít nhất một giá hợp lệ (theo giờ hoặc theo ngày) ≥ 10,000đ');
+            showPriceValidationAlert('Vui lòng nhập ít nhất một giá hợp lệ (theo giờ hoặc theo ngày) ≥ 10,000 VND');
             return false;
         }
         return true; // At least one price is valid
@@ -2593,8 +2593,8 @@ function validatePricingRequirement() {
         const formattedCurrentPrice = currentPrice > 0 ? currentPrice.toLocaleString('vi-VN') : '0';
         
         showPriceValidationAlert(
-            `Giá ${priceType} phải ít nhất ${formattedMinPrice}đ.<br>` +
-            `Hiện tại: ${formattedCurrentPrice}đ`
+            `Giá ${priceType} phải ít nhất ${formattedMinPrice} VND.<br>` +
+            `Hiện tại: ${formattedCurrentPrice} VND`
         );
         
         // Highlight the price field
@@ -5082,16 +5082,16 @@ function validatePrice(input, type) {
         errorMessage = 'Vui lòng nhập giá tiền hợp lệ';
     } else if (numValue < 10000) {
         isValid = false;
-        errorMessage = 'Giá tối thiểu là 10.000đ';
+        errorMessage = 'Giá tối thiểu là 10.000 VND';
     } else if (type === 'hourly') {
         if (numValue > 500000) {
             isValid = false;
-            errorMessage = 'Giá theo giờ tối đa là 500.000đ';
+            errorMessage = 'Giá theo giờ tối đa là 500.000 VND';
         }
     } else if (type === 'nightly') {
         if (numValue > 2000000) {
             isValid = false;
-                            errorMessage = 'Giá theo ngày tối đa là 2.000.000đ';
+                            errorMessage = 'Giá theo ngày tối đa là 2.000.000 VND';
         }
     }
     

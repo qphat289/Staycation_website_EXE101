@@ -167,11 +167,11 @@
         <div class="filter-button">
             <i class="bi bi-cash"></i> 
             {% if search_params.min_price and search_params.max_price %}
-                {{ "{:,.0f}".format(search_params.min_price|float) }}đ - {{ "{:,.0f}".format(search_params.max_price|float) }}đ
+                {{ "{:,.0f}".format(search_params.min_price|float) }} VND - {{ "{:,.0f}".format(search_params.max_price|float) }} VND
             {% elif search_params.min_price %}
-                Từ {{ "{:,.0f}".format(search_params.min_price|float) }}đ
+                Từ {{ "{:,.0f}".format(search_params.min_price|float) }} VND
             {% elif search_params.max_price %}
-                Đến {{ "{:,.0f}".format(search_params.max_price|float) }}đ
+                Đến {{ "{:,.0f}".format(search_params.max_price|float) }} VND
             {% endif %}
         </div>
         {% endif %}
@@ -267,12 +267,12 @@
                     <div class="filter-content">
                         <div class="price-inputs">
                             <div class="mb-3">
-                                <label for="min_price_input" class="form-label">Giá tối thiểu (VNĐ)</label>
+                                <label for="min_price_input" class="form-label">Giá tối thiểu (VND)</label>
                                 <input type="number" class="form-control" id="min_price_input" 
                                     placeholder="0" value="{{ search_params.min_price|default(0)|int }}">
                             </div>
                             <div class="mb-3">
-                                <label for="max_price_input" class="form-label">Giá tối đa (VNĐ)</label>
+                                <label for="max_price_input" class="form-label">Giá tối đa (VND)</label>
                                 <input type="number" class="form-control" id="max_price_input" 
                                     placeholder="10000000" value="{{ search_params.max_price|default(10000000)|int }}">
                             </div>
@@ -280,9 +280,9 @@
                         
                         <small class="text-muted d-block text-center">
                             {% if search_params.booking_type == 'daily' %}
-                                Nhập giá theo đêm (VNĐ)
+                                Nhập giá theo đêm (VND)
                             {% else %}
-                                Nhập giá theo giờ (VNĐ)
+                                Nhập giá theo giờ (VND)
                             {% endif %}
                         </small>
                     </div>
@@ -407,9 +407,27 @@
                         </p>
                         <p class="card-text fw-bold">
                             {% if search_params.booking_type == 'daily' %}
-                                {{ "{:,.0f}".format(home.price_per_night) }}đ /ngày
+                                {% if home.price_per_night %}
+                                    {{ "{:,.0f}".format(home.price_per_night) }} VND /ngày
+                                {% elif home.price_per_day %}
+                                    {{ "{:,.0f}".format(home.price_per_day) }} VND /ngày
+                                {% elif home.price_overnight %}
+                                    {{ "{:,.0f}".format(home.price_overnight) }} VND /qua đêm
+                                {% elif home.price_daytime %}
+                                    {{ "{:,.0f}".format(home.price_daytime) }} VND /ban ngày
+                                {% else %}
+                                    Liên hệ để biết giá
+                                {% endif %}
                             {% else %}
-                                {{ "{:,.0f}".format(home.display_price) }}đ /giờ
+                                {% if home.price_per_hour %}
+                                    {{ "{:,.0f}".format(home.price_per_hour) }} VND /giờ
+                                {% elif home.price_first_2_hours %}
+                                    {{ "{:,.0f}".format(home.price_first_2_hours) }} VND /2 giờ đầu
+                                {% elif home.price_per_additional_hour %}
+                                    {{ "{:,.0f}".format(home.price_per_additional_hour) }} VND /giờ thêm
+                                {% else %}
+                                    Liên hệ để biết giá
+                                {% endif %}
                             {% endif %}
                         </p>
                     </div>

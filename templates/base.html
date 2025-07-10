@@ -216,16 +216,37 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
         }
         
-        /* Global Search Form Styling */
+        /* Global Search Form Styling - Enhanced from Home page with exact colors and positioning */
         .global-search-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            padding: 15px;
+            position: relative;
+            z-index: 10;
             margin-top: 20px;
             margin-bottom: 20px;
-            z-index: 10;
-            position: relative;
+            display: flex;
+            justify-content: center;
+            padding: 0 2rem;
+            width: 100%;
+            max-width: none;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .search-tabs-container {
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            overflow: visible;
+        }
+        
+        .form-control {
+            min-width: 120px;
+        }
+        
+        .form-label {
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .search-tabs {
@@ -293,51 +314,176 @@
             }
         }
         
-        .search-form {
-            background: white;
+        .search-forms-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 0 0 12px 12px;
-            padding: 20px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-            display: none;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            overflow: visible;
+            min-height: 100px;
+            z-index: 5;
+            width: 100%;
             position: relative;
+        }
+        
+        .search-form {
+            display: none;
+            background: transparent;
+            padding: 1.5rem 2rem;
             z-index: 10;
+            width: 100%;
         }
         
         .search-form.active {
-            display: block;
-            animation: fadeIn 0.3s ease-out;
+            display: block !important;
+            z-index: 20;
         }
         
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .search-form input,
+        .search-form select,
+        .search-form button {
+            pointer-events: auto !important;
+        }
+        
+        /* Enhanced form styling - exact match with home.css */
+        .search-form .form-control,
+        .search-form input,
+        .search-form select,
+        .search-form .guest-display,
+        .search-form input[type="date"],
+        .search-form input[type="time"] {
+            width: 100%;
+            height: 46px;
+            padding: 0 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #333;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        
+        .search-form .form-control:focus,
+        .search-form input:focus,
+        .search-form select:focus {
+            border-color: #8bc34a;
+            box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.1);
+            background: white;
+            transform: translateY(-1px);
+            outline: none;
+        }
+        
+        .search-form .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .search-btn {
             background: linear-gradient(135deg, #8bc34a, #689f38);
             border: none;
-            color: white;
+            border-radius: 6px;
+            padding: 12px 20px;
             font-weight: 600;
-            border-radius: 8px;
-            height: 100%;
-            padding-left: 20px;
-            padding-right: 20px;
+            color: white;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(139, 195, 74, 0.3);
+            height: 46px;
+            white-space: nowrap;
+            min-width: 100px;
+            font-size: 0.85rem;
         }
         
         .search-btn:hover {
-            background: linear-gradient(135deg, #689f38, #558b2f);
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(104, 159, 56, 0.3);
+            box-shadow: 0 4px 15px rgba(139, 195, 74, 0.4);
+            background: linear-gradient(135deg, #689f38, #558b2f);
         }
         
-        /* Guest selector dropdown */
+        .search-btn-col {
+            display: flex;
+            align-items: end;
+        }
+        
+        /* Custom 16-column grid system for search forms - exact match */
+        .search-form .row {
+            --bs-gutter-x: 1.5rem;
+            --bs-gutter-y: 0;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: end;
+            margin-top: calc(-1 * var(--bs-gutter-y));
+            margin-right: calc(-0.5 * var(--bs-gutter-x));
+            margin-left: calc(-0.5 * var(--bs-gutter-x));
+        }
+        
+        .search-form .row > * {
+            flex-shrink: 0;
+            width: 100%;
+            max-width: 100%;
+            padding-right: calc(var(--bs-gutter-x) * 0.5);
+            padding-left: calc(var(--bs-gutter-x) * 0.5);
+            margin-top: var(--bs-gutter-y);
+        }
+        
+        /* 16-column classes */
+        @media (min-width: 1400px) {
+            .search-form .col-xxl-1 { flex: 0 0 auto; width: 6.25%; }
+            .search-form .col-xxl-2 { flex: 0 0 auto; width: 12.5%; }
+            .search-form .col-xxl-3 { flex: 0 0 auto; width: 18.75%; }
+            .search-form .col-xxl-4 { flex: 0 0 auto; width: 25%; }
+            .search-form .col-xxl-5 { flex: 0 0 auto; width: 31.25%; }
+            .search-form .col-xxl-6 { flex: 0 0 auto; width: 37.5%; }
+            .search-form .col-xxl-7 { flex: 0 0 auto; width: 43.75%; }
+            .search-form .col-xxl-8 { flex: 0 0 auto; width: 50%; }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1399px) {
+            .search-form .row {
+                flex-wrap: wrap;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .global-search-container {
+                margin: 0 15px;
+            }
+            
+            .search-form {
+                padding: 1.5rem 1rem;
+            }
+            
+            .search-form .row {
+                margin: 0 -8px;
+            }
+            
+            .search-form .row > * {
+                padding: 0 8px;
+                margin-bottom: 16px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .search-form .col-lg-3,
+            .search-form .col-lg-2,
+            .search-form .col-md-4,
+            .search-form .col-md-3,
+            .search-form .col-md-2 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+        
+        /* Guest selector dropdown positioning */
         .guest-selector {
             position: relative;
             z-index: 1000;
@@ -348,19 +494,52 @@
             background: #fafafa !important;
         }
         
+        .guest-display:focus {
+            background: white !important;
+        }
+        
         .guest-dropdown {
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 9999 !important;
+            background: white !important;
+            border: 2px solid #e9ecef !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+            margin-top: 8px !important;
+            overflow: visible !important;
             display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
             padding: 20px;
-            z-index: 1050;
-            margin-top: 8px;
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.3s ease-out;
+            min-width: 300px;
+            transform: translateX(0);
+        }
+        
+        /* Ensure search form rows have proper overflow */
+        .search-form .row {
+            overflow: visible !important;
+        }
+        
+        .search-forms-container {
+            overflow: visible !important;
+        }
+        
+        .search-tabs-container {
+            overflow: visible !important;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
         
         .guest-dropdown.show {
@@ -379,6 +558,12 @@
             border-bottom: none;
         }
         
+        .guest-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
         .guest-controls {
             display: flex;
             align-items: center;
@@ -388,89 +573,67 @@
         .btn-decrease, .btn-increase {
             width: 32px;
             height: 32px;
-            border-radius: 50%;
             border: 1px solid #ddd;
             background: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
         
         .btn-decrease:hover, .btn-increase:hover {
             background: #f8f9fa;
+            border-color: #007bff;
+        }
+        
+        .btn-decrease:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         .guest-count {
             font-weight: 500;
-            min-width: 24px;
+            min-width: 20px;
             text-align: center;
         }
         
-        /* Date and time input styling */
-        .date-input-wrapper, .time-input-wrapper {
-            position: relative;
+        .guest-actions {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            text-align: right;
         }
         
-        .custom-placeholder {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            padding: 0 12px;
-            color: #6c757d;
-            pointer-events: none;
-            background-color: #fff;
+        .search-form .row {
+            overflow: visible !important;
         }
         
-        input[type="date"]:not(:placeholder-shown) + .custom-placeholder,
-        input[type="time"]:not(:placeholder-shown) + .custom-placeholder {
-            display: none;
+        .search-forms-container {
+            overflow: visible !important;
         }
         
-        input[type="date"], input[type="time"] {
-            color: #212529 !important; /* Always show text */
-            background-color: #fafafa;
-            opacity: 1; /* Ensure visibility in Safari/iOS */
+        .search-tabs-container {
+            overflow: visible !important;
         }
         
-        input[type="date"]:focus, input[type="time"]:focus {
-            color: #212529 !important; /* Always show text */
-            background-color: #fff;
-        }
-        
-        /* Fix for placeholder showing through */
-        input[type="date"]::placeholder, input[type="time"]::placeholder {
-            color: transparent;
-        }
-        
-        input[type="date"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-calendar-picker-indicator {
-            opacity: 1;
-        }
-        
-        input[type="date"]:not(:placeholder-shown),
-        input[type="time"]:not(:placeholder-shown) {
-            color: #212529 !important;
-        }
-        
-        /* Location dropdown */
+        /* Location autocomplete dropdown */
         .location-selector {
             position: relative;
             z-index: 1000;
         }
         
+        .location-selector * {
+            pointer-events: auto !important;
+        }
+        
         .location-dropdown {
-            display: none;
             position: absolute;
             top: 100%;
             left: 0;
             right: 0;
+            z-index: 99999;
             background: white;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -478,7 +641,8 @@
             margin-top: 2px;
             max-height: 200px;
             overflow-y: auto;
-            z-index: 1050;
+            display: none;
+            pointer-events: auto;
         }
         
         .location-dropdown.show {
@@ -490,6 +654,9 @@
             cursor: pointer;
             border-bottom: 1px solid #f0f0f0;
             transition: background-color 0.2s;
+            pointer-events: auto;
+            position: relative;
+            z-index: 100000;
         }
         
         .location-option:hover {
@@ -505,19 +672,114 @@
             color: white;
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .search-form {
-                padding: 15px;
-            }
-            
-            .search-form .row > * {
-                margin-bottom: 10px;
-            }
-            
-            .search-btn {
-                width: 100%;
-            }
+        /* Ensure location options are always interactive */
+        .search-form .location-option {
+            pointer-events: auto !important;
+            user-select: none;
+        }
+        
+        .search-form.active .location-option {
+            pointer-events: auto !important;
+        }
+        
+        .location-input {
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Custom placeholder for date/time inputs */
+        .date-input-wrapper, .time-input-wrapper {
+            position: relative;
+        }
+        
+        .custom-placeholder {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            pointer-events: none;
+            z-index: 1;
+            background: white;
+            padding: 0 4px;
+        }
+        
+        .custom-placeholder.hidden {
+            display: none;
+        }
+        
+        input[type="date"], input[type="time"] {
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Remove focus outline and background colors */
+        input[type="date"]:focus,
+        input[type="time"]:focus {
+            background-color: white !important;
+            border-color: #ced4da !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+        
+        /* Remove blue highlight/selection on date/time fields */
+        input[type="date"]::-webkit-datetime-edit-text:focus,
+        input[type="date"]::-webkit-datetime-edit-month-field:focus,
+        input[type="date"]::-webkit-datetime-edit-day-field:focus,
+        input[type="date"]::-webkit-datetime-edit-year-field:focus,
+        input[type="time"]::-webkit-datetime-edit-text:focus,
+        input[type="time"]::-webkit-datetime-edit-hour-field:focus,
+        input[type="time"]::-webkit-datetime-edit-minute-field:focus,
+        input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
+            background-color: transparent !important;
+            outline: none !important;
+        }
+        
+        /* Remove all selection highlighting */
+        input[type="date"]::selection,
+        input[type="time"]::selection {
+            background: transparent !important;
+        }
+        
+        input[type="date"]::-moz-selection,
+        input[type="time"]::-moz-selection {
+            background: transparent !important;
+        }
+        
+        /* Hide default ugly format */
+        input[type="date"]::-webkit-datetime-edit-text,
+        input[type="date"]::-webkit-datetime-edit-month-field,
+        input[type="date"]::-webkit-datetime-edit-day-field,
+        input[type="date"]::-webkit-datetime-edit-year-field,
+        input[type="time"]::-webkit-datetime-edit-text,
+        input[type="time"]::-webkit-datetime-edit-hour-field,
+        input[type="time"]::-webkit-datetime-edit-minute-field,
+        input[type="time"]::-webkit-datetime-edit-ampm-field {
+            color: transparent;
+        }
+        
+        input[type="date"]:focus::-webkit-datetime-edit-text,
+        input[type="date"]:focus::-webkit-datetime-edit-month-field,
+        input[type="date"]:focus::-webkit-datetime-edit-day-field,
+        input[type="date"]:focus::-webkit-datetime-edit-year-field,
+        input[type="time"]:focus::-webkit-datetime-edit-text,
+        input[type="time"]:focus::-webkit-datetime-edit-hour-field,
+        input[type="time"]:focus::-webkit-datetime-edit-minute-field,
+        input[type="time"]:focus::-webkit-datetime-edit-ampm-field {
+            color: #212529;
+            background-color: transparent !important;
+        }
+        
+        input[type="date"][data-has-value="true"]::-webkit-datetime-edit-text,
+        input[type="date"][data-has-value="true"]::-webkit-datetime-edit-month-field,
+        input[type="date"][data-has-value="true"]::-webkit-datetime-edit-day-field,
+        input[type="date"][data-has-value="true"]::-webkit-datetime-edit-year-field,
+        input[type="time"][data-has-value="true"]::-webkit-datetime-edit-text,
+        input[type="time"][data-has-value="true"]::-webkit-datetime-edit-hour-field,
+        input[type="time"][data-has-value="true"]::-webkit-datetime-edit-minute-field,
+        input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
+            color: #212529;
+            background-color: transparent !important;
         }
         
         /* Hide on homepage */
@@ -528,6 +790,280 @@
         /* Conditional styling for home page */
         [data-home-page="true"] {
             color: #000 !important;
+        }
+        
+        /* DateTime Selector Styling */
+        .datetime-selector-hourly {
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .datetime-display {
+            cursor: pointer;
+            background: #fafafa !important;
+        }
+        
+        .datetime-display:focus {
+            background: white !important;
+        }
+        
+        .datetime-dropdown {
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 9999 !important;
+            background: white !important;
+            border: 1px solid #ddd !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+            margin-top: 5px !important;
+            overflow: visible !important;
+            display: none;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.3s ease-out;
+            min-width: 400px;
+            max-width: 500px;
+        }
+        
+        .datetime-dropdown.show {
+            display: block;
+        }
+        
+        /* Step Progress */
+        .step-progress {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+        
+        .step.active {
+            opacity: 1;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-number {
+            background: #8bc34a;
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .step.active .step-label {
+            color: #8bc34a;
+        }
+        
+        /* Step Content */
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        /* Calendar Styling */
+        .calendar-section {
+            margin-bottom: 20px;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .calendar-nav {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-nav:hover {
+            background: #f8f9fa;
+            border-color: #8bc34a;
+        }
+        
+        .calendar-title {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .calendar-grid {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #f8f9fa;
+            padding: 10px 0;
+        }
+        
+        .calendar-weekdays span {
+            text-align: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #f8f9fa;
+        }
+        
+        .calendar-day {
+            background: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .calendar-day:hover {
+            background: #e8f5e8;
+            color: #8bc34a;
+        }
+        
+        .calendar-day.selected {
+            background: #8bc34a;
+            color: white;
+        }
+        
+        .calendar-day.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+            background: #f8f9fa;
+        }
+        
+        .calendar-day.other-month {
+            color: #ccc;
+            background: #f8f9fa;
+        }
+        
+        /* Time and Duration Grid */
+        .time-grid-compact, .duration-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .time-slot, .duration-slot {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .time-slot:hover, .duration-slot:hover {
+            border-color: #8bc34a;
+            background: #e8f5e8;
+        }
+        
+        .time-slot.active, .duration-slot.active {
+            background: #8bc34a;
+            border-color: #8bc34a;
+            color: white;
+        }
+        
+        /* Step Actions */
+        .step-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .btn-back, .btn-apply {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .btn-apply {
+            background: #8bc34a;
+        }
+        
+        .btn-back:hover {
+            background: #5a6268;
+        }
+        
+        .btn-apply:hover {
+            background: #689f38;
+        }
+        
+        /* Responsive adjustments for datetime selector */
+        @media (max-width: 768px) {
+            .datetime-dropdown {
+                min-width: 300px;
+                left: -50% !important;
+                right: auto !important;
+            }
+            
+            .time-grid-compact, .duration-grid-compact {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        /* Ensure dropdowns stay visible */
+        .search-form .datetime-dropdown,
+        .search-form .guest-dropdown,
+        .search-form .location-dropdown {
+            z-index: 99999 !important;
         }
     </style>
     
@@ -695,22 +1231,22 @@
         <div class="search-tabs-container">
             <!-- Search Tabs -->
             <div class="search-tabs">
-                <button type="button" class="search-tab {% if request.args.get('booking_type') != 'daily' %}active{% endif %}" id="hourly-tab" data-tab="hourly" onclick="switchTabGlobal('hourly')">Theo giờ</button>
-                <button type="button" class="search-tab {% if request.args.get('booking_type') == 'daily' %}active{% endif %}" id="daily-tab" data-tab="daily" onclick="switchTabGlobal('daily')">Theo ngày</button>
+                <button type="button" class="search-tab {% if request.args.get('booking_type') == 'hourly' or not request.args.get('booking_type') %}active{% endif %}" data-tab="hourly" onclick="switchTabGlobal('hourly')">Theo giờ</button>
+                <button type="button" class="search-tab {% if request.args.get('booking_type') == 'daily' or request.args.get('booking_type') == 'overnight' %}active{% endif %}" data-tab="daily" onclick="switchTabGlobal('daily')">Theo ngày</button>
             </div>
             
             <!-- Search Forms Container -->
             <div class="search-forms-container">
                 <!-- Hourly Search Form -->
-                <form class="search-form hourly-form {% if request.args.get('booking_type') != 'daily' %}active{% endif %}" id="global-hourly-form" action="{{ url_for('renter.search') }}" method="GET">
+                <form class="search-form hourly-form {% if request.args.get('booking_type') == 'hourly' or not request.args.get('booking_type') %}active{% endif %}" id="global-hourly-form" action="{{ url_for('renter.search') }}" method="GET">
                     <input type="hidden" name="booking_type" value="hourly">
                     <!-- Hidden inputs for guest counts -->
                     <input type="hidden" name="adults" id="global-adults-input-hourly" value="{{ request.args.get('adults', '1') }}">
                     <input type="hidden" name="children" id="global-children-input-hourly" value="{{ request.args.get('children', '0') }}">
-                    <input type="hidden" name="rooms" id="global-rooms-input-hourly" value="{{ request.args.get('rooms', '1') }}">
+                    <input type="hidden" name="homes" id="global-homes-input-hourly" value="{{ request.args.get('homes', '1') }}">
                     
                     <div class="row g-2 align-items-end">
-                        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-6">
+                        <div class="col-xxl-3 col-xl-3 col-lg-4 col-md-6">
                             <label for="global-location-hourly" class="form-label">Địa điểm hoặc tên homestay</label>
                             <div class="location-selector">
                                 <input type="text" class="form-control location-input" id="global-location-hourly" name="location" 
@@ -721,76 +1257,164 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-xxl-2 col-xl-2 col-lg-3 col-md-6">
-                            <label for="global-checkin-hourly" class="form-label">Ngày nhận phòng</label>
-                            <div class="date-input-wrapper">
-                                <input type="date" class="form-control" id="global-checkin-hourly" name="checkin_date" 
-                                       value="{{ request.args.get('checkin_date', '') }}">
-                                <div class="custom-placeholder" data-for="global-checkin-hourly">Chọn ngày nhận phòng</div>
-                            </div>
-                        </div>
-                        <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
-                            <label for="global-checkin-time-hourly" class="form-label">Giờ nhận phòng</label>
-                            <div class="time-input-wrapper">
-                                <input type="time" class="form-control" id="global-checkin-time-hourly" name="checkin_time"
-                                       value="{{ request.args.get('checkin_time', '') }}">
-                                <div class="custom-placeholder" data-for="global-checkin-time-hourly">Chọn giờ nhận</div>
-                            </div>
-                        </div>
-                        <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
-                            <label for="global-checkout-time-hourly" class="form-label">Giờ trả phòng</label>
-                            <div class="time-input-wrapper">
-                                <input type="time" class="form-control" id="global-checkout-time-hourly" name="checkout_time"
-                                       value="{{ request.args.get('checkout_time', '') }}">
-                                <div class="custom-placeholder" data-for="global-checkout-time-hourly">Chọn giờ trả</div>
-                            </div>
-                        </div>
-                        <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
-                            <label for="global-guests-rooms-hourly" class="form-label">Khách</label>
-                            <div class="guest-selector">
-                                <input type="text" class="form-control guest-display" id="global-guests-rooms-hourly" 
-                                       value="{{ request.args.get('adults', '1') }} người lớn, {{ request.args.get('children', '0') }} Trẻ em" readonly>
-                                <div class="guest-dropdown" id="global-guest-dropdown-hourly">
-                                    <div class="guest-row">
-                                        <div class="guest-info">
-                                            <i class="bi bi-person-fill text-success"></i>
-                                            <span>Người lớn</span>
+                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
+                            <label for="global-datetime-hourly" class="form-label">Nhận phòng</label>
+                            <div class="datetime-selector-hourly">
+                                <input type="text" class="form-control datetime-display" id="global-datetime-hourly" 
+                                       value="Hãy chọn ngày và giờ" readonly>
+                                <input type="hidden" name="checkin_date" id="global-checkin-date-hourly" value="{{ request.args.get('checkin_date', '') }}">
+                                <input type="hidden" name="checkin_time" id="global-checkin-time-hourly" value="{{ request.args.get('checkin_time', '') }}">
+                                <input type="hidden" name="hours_duration" id="global-hours-duration-hourly" value="{{ request.args.get('hours_duration', '') }}">
+                                
+                                <!-- Custom Dropdown -->
+                                <div class="datetime-dropdown" id="global-datetime-dropdown-hourly">
+                                    <!-- Step Progress -->
+                                    <div class="step-progress">
+                                        <div class="step active" data-step="1">
+                                            <span class="step-number">1</span>
+                                            <span class="step-label">Ngày</span>
                                         </div>
-                                        <div class="guest-controls">
-                                            <button type="button" class="btn-decrease" data-form="global-hourly" data-target="adults">−</button>
-                                            <span class="guest-count" id="global-adults-count-hourly">{{ request.args.get('adults', '1') }}</span>
-                                            <button type="button" class="btn-increase" data-form="global-hourly" data-target="adults">+</button>
+                                        <div class="step" data-step="2">
+                                            <span class="step-number">2</span>
+                                            <span class="step-label">Giờ</span>
+                                        </div>
+                                        <div class="step" data-step="3">
+                                            <span class="step-number">3</span>
+                                            <span class="step-label">Thời gian</span>
                                         </div>
                                     </div>
-                                    <div class="guest-row">
-                                        <div class="guest-info">
-                                            <i class="bi bi-person text-success"></i>
-                                            <span>Trẻ em</span>
+
+                                    <!-- Step 1: Calendar -->
+                                    <div class="step-content active" id="global-step-1-hourly">
+                                        <div class="calendar-section">
+                                            <div class="calendar-header">
+                                                <button type="button" class="calendar-nav" id="global-prev-month-hourly">&lt;</button>
+                                                <span class="calendar-title" id="global-calendar-title-hourly">Tháng 7, 2025</span>
+                                                <button type="button" class="calendar-nav" id="global-next-month-hourly">&gt;</button>
+                                            </div>
+                                            <div class="calendar-grid">
+                                                <div class="calendar-weekdays">
+                                                    <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+                                                </div>
+                                                <div class="calendar-days" id="global-calendar-days-hourly">
+                                                    <!-- Days will be generated by JavaScript -->
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="guest-controls">
-                                            <button type="button" class="btn-decrease" data-form="global-hourly" data-target="children">−</button>
-                                            <span class="guest-count" id="global-children-count-hourly">{{ request.args.get('children', '0') }}</span>
-                                            <button type="button" class="btn-increase" data-form="global-hourly" data-target="children">+</button>
+                                    </div>
+                                    
+                                    <!-- Step 2: Time Selection -->
+                                    <div class="step-content" id="global-step-2-hourly">
+                                        <div class="time-section">
+                                            <h4>Chọn giờ nhận phòng</h4>
+                                            <div class="time-grid-compact">
+                                                <button type="button" class="time-slot" data-time="01:00">01:00</button>
+                                                <button type="button" class="time-slot" data-time="02:00">02:00</button>
+                                                <button type="button" class="time-slot" data-time="03:00">03:00</button>
+                                                <button type="button" class="time-slot" data-time="04:00">04:00</button>
+                                                <button type="button" class="time-slot" data-time="05:00">05:00</button>
+                                                <button type="button" class="time-slot" data-time="06:00">06:00</button>
+                                                <button type="button" class="time-slot" data-time="07:00">07:00</button>
+                                                <button type="button" class="time-slot" data-time="08:00">08:00</button>
+                                                <button type="button" class="time-slot" data-time="09:00">09:00</button>
+                                                <button type="button" class="time-slot" data-time="10:00">10:00</button>
+                                                <button type="button" class="time-slot" data-time="11:00">11:00</button>
+                                                <button type="button" class="time-slot" data-time="12:00">12:00</button>
+                                                <button type="button" class="time-slot" data-time="13:00">13:00</button>
+                                                <button type="button" class="time-slot active" data-time="14:00">14:00</button>
+                                                <button type="button" class="time-slot" data-time="15:00">15:00</button>
+                                                <button type="button" class="time-slot" data-time="16:00">16:00</button>
+                                                <button type="button" class="time-slot" data-time="17:00">17:00</button>
+                                                <button type="button" class="time-slot" data-time="18:00">18:00</button>
+                                                <button type="button" class="time-slot" data-time="19:00">19:00</button>
+                                                <button type="button" class="time-slot" data-time="20:00">20:00</button>
+                                                <button type="button" class="time-slot" data-time="21:00">21:00</button>
+                                                <button type="button" class="time-slot" data-time="22:00">22:00</button>
+                                                <button type="button" class="time-slot" data-time="23:00">23:00</button>
+                                                <button type="button" class="time-slot" data-time="24:00">24:00</button>
+                                            </div>
+                                        </div>
+                                        <div class="step-actions">
+                                            <button type="button" class="btn btn-back" id="global-back-step-2">Quay lại</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Step 3: Duration Selection -->
+                                    <div class="step-content" id="global-step-3-hourly">
+                                        <div class="duration-section">
+                                            <h4>Chọn số giờ sử dụng</h4>
+                                            <div class="duration-grid-compact">
+                                                <button type="button" class="duration-slot" data-duration="1">1 giờ</button>
+                                                <button type="button" class="duration-slot" data-duration="2">2 giờ</button>
+                                                <button type="button" class="duration-slot active" data-duration="3">3 giờ</button>
+                                                <button type="button" class="duration-slot" data-duration="4">4 giờ</button>
+                                                <button type="button" class="duration-slot" data-duration="5">5 giờ</button>
+                                                <button type="button" class="duration-slot" data-duration="6">6 giờ</button>
+                                                <button type="button" class="duration-slot" data-duration="7">7 giờ</button>
+                                                <button type="button" class="duration-slot" data-duration="8">8 giờ</button>
+                                                <button type="button" class="duration-slot" data-duration="9">9 giờ</button>
+                                                <button type="button" class="duration-slot" data-duration="10">10 giờ</button>
+                                            </div>
+                                        </div>
+                                        <div class="step-actions">
+                                            <button type="button" class="btn btn-back" id="global-back-step-3">Quay lại</button>
+                                            <button type="button" class="btn btn-apply" id="global-apply-datetime-hourly">Hoàn tất</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-12 search-btn-col">
-                            <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
+                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
+                            <label for="global-checkout-display-hourly" class="form-label">Trả phòng</label>
+                            <input type="text" class="form-control" id="global-checkout-display-hourly" 
+                                   value="Hãy chọn ngày và giờ" readonly>
+                            <input type="hidden" name="checkout_date" id="global-checkout-date-hourly" value="{{ request.args.get('checkout_date', '') }}">
+                            <input type="hidden" name="checkout_time" id="global-checkout-time-hourly" value="{{ request.args.get('checkout_time', '') }}">
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-6">
+                            <label for="global-guests-homes-hourly" class="form-label">Khách</label>
+                            <input type="text" class="form-control guest-display" id="global-guests-homes-hourly" 
+                                   value="{{ request.args.get('adults', '1') }} người lớn, {{ request.args.get('children', '0') }} Trẻ em" readonly>
+                            <div class="guest-dropdown" id="global-guest-dropdown-hourly">
+                                <div class="guest-row">
+                                    <div class="guest-info">
+                                        <i class="bi bi-person-fill text-success"></i>
+                                        <span>Người lớn</span>
+                                    </div>
+                                    <div class="guest-controls">
+                                        <button type="button" class="btn-decrease" data-form="global-hourly" data-target="adults">−</button>
+                                        <span class="guest-count" id="global-adults-count-hourly">{{ request.args.get('adults', '1') }}</span>
+                                        <button type="button" class="btn-increase" data-form="global-hourly" data-target="adults">+</button>
+                                    </div>
+                                </div>
+                                <div class="guest-row">
+                                    <div class="guest-info">
+                                        <i class="bi bi-person text-success"></i>
+                                        <span>Trẻ em</span>
+                                    </div>
+                                    <div class="guest-controls">
+                                        <button type="button" class="btn-decrease" data-form="global-hourly" data-target="children">−</button>
+                                        <span class="guest-count" id="global-children-count-hourly">{{ request.args.get('children', '0') }}</span>
+                                        <button type="button" class="btn-increase" data-form="global-hourly" data-target="children">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-6 search-btn-col d-flex justify-content-center">
+                            <button type="submit" class="btn search-btn" style="white-space: nowrap; min-width: 100px;">Tìm kiếm</button>
                         </div>
                     </div>
                 </form>
                 
                 <!-- Daily Search Form -->
-                <form class="search-form daily-form {% if request.args.get('booking_type') == 'daily' %}active{% endif %}" id="global-daily-form" action="{{ url_for('renter.search') }}" method="GET">
+                <form class="search-form daily-form {% if request.args.get('booking_type') == 'daily' or request.args.get('booking_type') == 'overnight' %}active{% endif %}" id="global-daily-form" action="{{ url_for('renter.search') }}" method="GET">
                     <input type="hidden" name="booking_type" value="daily">
                     <input type="hidden" name="adults" id="global-adults-input-daily" value="{{ request.args.get('adults', '1') }}">
                     <input type="hidden" name="children" id="global-children-input-daily" value="{{ request.args.get('children', '0') }}">
                     <input type="hidden" name="rooms" id="global-rooms-input-daily" value="{{ request.args.get('rooms', '1') }}">
                     
                     <div class="row g-2 align-items-end">
-                        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-6">
+                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
                             <label for="global-location-daily" class="form-label">Địa điểm hoặc tên homestay</label>
                             <div class="location-selector">
                                 <input type="text" class="form-control location-input" id="global-location-daily" name="location" 
@@ -801,7 +1425,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-6">
+                        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-3">
                             <label for="global-checkin-daily" class="form-label">Ngày nhận phòng</label>
                             <div class="date-input-wrapper">
                                 <input type="date" class="form-control" id="global-checkin-daily" name="checkin_date"
@@ -809,7 +1433,7 @@
                                 <div class="custom-placeholder" data-for="global-checkin-daily">Chọn ngày nhận phòng</div>
                             </div>
                         </div>
-                        <div class="col-xxl-3 col-xl-2 col-lg-3 col-md-6">
+                        <div class="col-xxl-3 col-xl-2 col-lg-3 col-md-3">
                             <label for="global-checkout-daily" class="form-label">Ngày trả phòng</label>
                             <div class="date-input-wrapper">
                                 <input type="date" class="form-control" id="global-checkout-daily" name="checkout_date"
@@ -903,31 +1527,676 @@
             event.preventDefault();
         }, { passive: false });
         
-        // Global search tab switching function
+        // Global search tab switching function - Enhanced from Home page
         function switchTabGlobal(tabType) {
-            const hourlyTab = document.getElementById('hourly-tab');
-            const dailyTab = document.getElementById('daily-tab');
-            const hourlyForm = document.getElementById('global-hourly-form');
-            const dailyForm = document.getElementById('global-daily-form');
+            console.log('SWITCH TAB CALLED: ' + tabType);
             
-            if (!hourlyTab || !dailyTab || !hourlyForm || !dailyForm) {
-                return; // Elements not found
-            }
+            var hourlyTab = document.querySelector('[data-tab="hourly"]');
+            var dailyTab = document.querySelector('[data-tab="daily"]');
+            var hourlyForm = document.getElementById('global-hourly-form');
+            var dailyForm = document.getElementById('global-daily-form');
             
-            // Remove active class from all tabs
-            hourlyTab.classList.remove('active');
-            dailyTab.classList.remove('active');
+            console.log('Found elements:', {
+                hourlyTab: !!hourlyTab,
+                dailyTab: !!dailyTab, 
+                hourlyForm: !!hourlyForm,
+                dailyForm: !!dailyForm
+            });
             
-            // Hide all forms
-            hourlyForm.classList.remove('active');
-            dailyForm.classList.remove('active');
+            // Remove active from all tabs
+            if (hourlyTab) hourlyTab.classList.remove('active');
+            if (dailyTab) dailyTab.classList.remove('active');
+            
+            // Remove active from all forms
+            if (hourlyForm) hourlyForm.classList.remove('active');
+            if (dailyForm) dailyForm.classList.remove('active');
             
             if (tabType === 'daily') {
-                dailyTab.classList.add('active');
-                dailyForm.classList.add('active');
-            } else {
-                hourlyTab.classList.add('active');
-                hourlyForm.classList.add('active');
+                if (dailyTab) dailyTab.classList.add('active');
+                if (dailyForm) {
+                    dailyForm.classList.add('active');
+                    console.log('SUCCESS: DAILY FORM IS NOW ACTIVE');
+                }
+            } else if (tabType === 'hourly') {
+                if (hourlyTab) hourlyTab.classList.add('active');
+                if (hourlyForm) {
+                    hourlyForm.classList.add('active');
+                    console.log('SUCCESS: HOURLY FORM IS NOW ACTIVE');
+                }
+            }
+            
+            return false; // Prevent default behavior
+        }
+        
+        // Enhanced global search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Setting up enhanced search functionality...');
+            
+            // Setup guest selectors for all global forms
+            setupGlobalGuestSelector('hourly');
+            setupGlobalGuestSelector('daily');
+            
+            // Setup datetime selector for hourly form
+            setupGlobalDateTimeSelector();
+            
+            // Setup location autocomplete for all global forms
+            setTimeout(function() {
+                setupGlobalLocationAutocomplete('hourly');
+                setupGlobalLocationAutocomplete('daily');
+            }, 100);
+            
+            // Setup custom placeholders for date/time inputs
+            setupGlobalCustomPlaceholders();
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                try {
+                    if (!e.target.closest('.guest-selector')) {
+                        document.querySelectorAll('.guest-dropdown').forEach(dropdown => {
+                            if (dropdown && dropdown.classList) {
+                                dropdown.classList.remove('show');
+                            }
+                        });
+                    }
+                    
+                    if (!e.target.closest('.location-selector')) {
+                        document.querySelectorAll('.location-dropdown').forEach(dropdown => {
+                            if (dropdown && dropdown.classList) {
+                                dropdown.classList.remove('show');
+                            }
+                        });
+                    }
+                    
+                    if (!e.target.closest('.datetime-selector-hourly')) {
+                        document.querySelectorAll('.datetime-dropdown').forEach(dropdown => {
+                            if (dropdown && dropdown.classList) {
+                                dropdown.classList.remove('show');
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error in outside click handler:', e);
+                }
+            });
+        });
+        
+        // Setup guest selector for global forms
+        function setupGlobalGuestSelector(formType) {
+            const guestDisplay = document.getElementById(`global-guests-homes-${formType}`) || document.getElementById(`global-guests-rooms-${formType}`);
+            const guestDropdown = document.getElementById(`global-guest-dropdown-${formType}`);
+            
+            if (!guestDisplay || !guestDropdown) return;
+            
+            let guestCounts = {
+                adults: parseInt(document.getElementById(`global-adults-count-${formType}`).textContent) || 1,
+                children: parseInt(document.getElementById(`global-children-count-${formType}`).textContent) || 0
+            };
+            
+            // Toggle dropdown
+            guestDisplay.addEventListener('click', function(e) {
+                e.stopPropagation();
+                guestDropdown.classList.toggle('show');
+            });
+            
+            // Handle increase/decrease buttons
+            guestDropdown.querySelectorAll('.btn-increase, .btn-decrease').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const target = this.dataset.target;
+                    const isIncrease = this.classList.contains('btn-increase');
+                    
+                    if (isIncrease) {
+                        guestCounts[target]++;
+                    } else {
+                        if (target === 'adults' && guestCounts[target] > 1) {
+                            guestCounts[target]--;
+                        } else if (target === 'children' && guestCounts[target] > 0) {
+                            guestCounts[target]--;
+                        }
+                    }
+                    
+                    // Update display
+                    document.getElementById(`global-${target}-count-${formType}`).textContent = guestCounts[target];
+                    document.getElementById(`global-${target}-input-${formType}`).value = guestCounts[target];
+                    
+                    updateGlobalGuestDisplayForForm(formType, guestCounts, guestDisplay);
+                    updateGlobalButtonStates(formType, guestCounts);
+                });
+            });
+
+            // Initialize display
+            updateGlobalGuestDisplayForForm(formType, guestCounts, guestDisplay);
+            updateGlobalButtonStates(formType, guestCounts);
+        }
+        
+        function updateGlobalGuestDisplayForForm(formType, guestCounts, guestDisplay) {
+            const adultsText = guestCounts.adults + ' người lớn';
+            const childrenText = guestCounts.children + ' Trẻ em';
+            
+            guestDisplay.value = `${adultsText}, ${childrenText}`;
+        }
+        
+        function updateGlobalButtonStates(formType, guestCounts) {
+            const adultsDecreaseBtn = document.querySelector(`#global-guest-dropdown-${formType} [data-target="adults"].btn-decrease`);
+            const childrenDecreaseBtn = document.querySelector(`#global-guest-dropdown-${formType} [data-target="children"].btn-decrease`);
+            
+            // Adults minimum is 1
+            if (adultsDecreaseBtn) {
+                adultsDecreaseBtn.disabled = guestCounts.adults <= 1;
+            }
+            
+            // Children minimum is 0
+            if (childrenDecreaseBtn) {
+                childrenDecreaseBtn.disabled = guestCounts.children <= 0;
+            }
+        }
+        
+        // Setup location autocomplete for global forms
+        function setupGlobalLocationAutocomplete(formType) {
+            console.log('Setting up global location autocomplete for:', formType);
+            
+            const locationInput = document.getElementById(`global-location-${formType}`);
+            const locationDropdown = document.getElementById(`global-location-dropdown-${formType}`);
+            
+            if (!locationInput || !locationDropdown) {
+                console.error('Missing location elements for form:', formType);
+                return;
+            }
+            
+            let currentFocus = -1;
+            let provinces = [];
+            
+            // Load provinces from API
+            loadGlobalProvinces();
+            
+            function loadGlobalProvinces() {
+                fetch('/api/provinces')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            provinces = data.data;
+                            renderGlobalOptions();
+                            setupGlobalEventListeners();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading provinces:', error);
+                    });
+            }
+            
+            function renderGlobalOptions() {
+                locationDropdown.innerHTML = '';
+                
+                if (!provinces || provinces.length === 0) {
+                    return;
+                }
+                
+                provinces.forEach(province => {
+                    const option = document.createElement('div');
+                    option.className = 'location-option';
+                    option.dataset.value = province.name;
+                    option.textContent = province.name;
+                    option.style.pointerEvents = 'auto';
+                    option.style.cursor = 'pointer';
+                    
+                    option.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        selectGlobalOption(this);
+                    });
+                    
+                    locationDropdown.appendChild(option);
+                });
+            }
+            
+            function setupGlobalEventListeners() {
+                // Show dropdown on focus/click
+                locationInput.addEventListener('focus', function() {
+                    showGlobalAllOptions();
+                });
+                
+                locationInput.addEventListener('click', function() {
+                    showGlobalAllOptions();
+                });
+                
+                // Filter dropdown on input
+                locationInput.addEventListener('input', function() {
+                    const value = this.value.toLowerCase();
+                    let visibleCount = 0;
+                    
+                    const options = locationDropdown.querySelectorAll('.location-option');
+                    options.forEach(option => {
+                        if (option && option.textContent && option.style) {
+                            const text = option.textContent.toLowerCase();
+                            if (text.includes(value)) {
+                                option.style.display = 'block';
+                                visibleCount++;
+                            } else {
+                                option.style.display = 'none';
+                            }
+                        }
+                    });
+                    
+                    if (visibleCount > 0 && value.length > 0) {
+                        locationDropdown.classList.add('show');
+                    } else if (value.length === 0) {
+                        showGlobalAllOptions();
+                    } else {
+                        locationDropdown.classList.remove('show');
+                    }
+                    
+                    currentFocus = -1;
+                    clearGlobalHighlight();
+                });
+            }
+            
+            function showGlobalAllOptions() {
+                const options = locationDropdown.querySelectorAll('.location-option');
+                
+                options.forEach(option => {
+                    if (option && option.style) {
+                        option.style.display = 'block';
+                    }
+                });
+                
+                locationDropdown.classList.add('show');
+                currentFocus = -1;
+                clearGlobalHighlight();
+            }
+            
+            function selectGlobalOption(option) {
+                if (!option || !option.dataset) return;
+                
+                locationInput.value = option.dataset.value;
+                locationDropdown.classList.remove('show');
+                currentFocus = -1;
+                clearGlobalHighlight();
+            }
+            
+            function clearGlobalHighlight() {
+                try {
+                    const options = locationDropdown.querySelectorAll('.location-option');
+                    if (options && options.forEach) {
+                        options.forEach(option => {
+                            if (option && option.classList && typeof option.classList.remove === 'function') {
+                                option.classList.remove('highlighted');
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error in clearGlobalHighlight:', e);
+                }
+            }
+        }
+        
+        // Setup custom placeholders for global forms
+        function setupGlobalCustomPlaceholders() {
+            const inputs = document.querySelectorAll('.global-search-container input[type="date"], .global-search-container input[type="time"]');
+            
+            inputs.forEach(function(input) {
+                const placeholder = document.querySelector('.custom-placeholder[data-for="' + input.id + '"]');
+                if (!placeholder) return;
+                
+                // Show/hide placeholder based on input value
+                function updatePlaceholder() {
+                    if (input.value) {
+                        placeholder.classList.add('hidden');
+                        input.setAttribute('data-has-value', 'true');
+                    } else {
+                        placeholder.classList.remove('hidden');
+                        input.removeAttribute('data-has-value');
+                    }
+                }
+                
+                // Initial check
+                updatePlaceholder();
+                
+                // Hide placeholder on focus
+                input.addEventListener('focus', function() {
+                    placeholder.classList.add('hidden');
+                    this.showPicker && this.showPicker();
+                });
+                
+                // Show placeholder on blur if empty
+                input.addEventListener('blur', function() {
+                    updatePlaceholder();
+                });
+                
+                // Update on change
+                input.addEventListener('change', function() {
+                    updatePlaceholder();
+                });
+                
+                // Click on placeholder = focus input
+                placeholder.addEventListener('click', function() {
+                    input.focus();
+                });
+            });
+        }
+        
+        // Setup DateTime Selector for Global Hourly Form
+        function setupGlobalDateTimeSelector() {
+            const display = document.getElementById('global-datetime-hourly');
+            const dropdown = document.getElementById('global-datetime-dropdown-hourly');
+            
+            if (!display || !dropdown) {
+                console.log('DateTime selector elements not found');
+                return;
+            }
+            
+            const prevMonth = document.getElementById('global-prev-month-hourly');
+            const nextMonth = document.getElementById('global-next-month-hourly');
+            const calendarTitle = document.getElementById('global-calendar-title-hourly');
+            const calendarDays = document.getElementById('global-calendar-days-hourly');
+            const applyBtn = document.getElementById('global-apply-datetime-hourly');
+            
+            let currentDate = new Date();
+            let selectedDate = null;
+            let selectedTime = '14:00';
+            let selectedDuration = '3';
+            
+            // Month names in Vietnamese
+            const monthNames = [
+                'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+            ];
+            
+            // Toggle dropdown
+            display.addEventListener('click', function() {
+                dropdown.classList.toggle('show');
+                if (dropdown.classList.contains('show')) {
+                    renderGlobalCalendar();
+                }
+            });
+            
+            // Calendar navigation
+            if (prevMonth) {
+                prevMonth.addEventListener('click', function() {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    renderGlobalCalendar();
+                });
+            }
+            
+            if (nextMonth) {
+                nextMonth.addEventListener('click', function() {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    renderGlobalCalendar();
+                });
+            }
+            
+            // Apply button
+            if (applyBtn) {
+                applyBtn.addEventListener('click', function() {
+                    updateGlobalDisplay();
+                    updateGlobalHiddenInputs();
+                    dropdown.classList.remove('show');
+                });
+            }
+            
+            // Render calendar
+            function renderGlobalCalendar() {
+                if (!calendarTitle || !calendarDays) return;
+                
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                
+                calendarTitle.textContent = monthNames[month] + ', ' + year;
+                
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const today = new Date();
+                
+                let calendarHTML = '';
+                
+                // Add empty cells for days before first day of month
+                for (let i = 0; i < firstDay.getDay(); i++) {
+                    const prevDate = new Date(year, month, 1 - (firstDay.getDay() - i));
+                    calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${prevDate.toISOString().split('T')[0]}">${prevDate.getDate()}</button>`;
+                }
+                
+                // Add days of current month
+                for (let day = 1; day <= lastDay.getDate(); day++) {
+                    const date = new Date(year, month, day);
+                    const dateStr = year + '-' + (month + 1).toString().padStart(2, '0') + '-' + day.toString().padStart(2, '0');
+                    
+                    const todayStr = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + today.getDate().toString().padStart(2, '0');
+                    const isToday = dateStr === todayStr;
+                    const isPast = dateStr < todayStr;
+                    const isSelected = selectedDate === dateStr;
+                    
+                    let classes = 'calendar-day';
+                    if (isPast) classes += ' disabled';
+                    if (isSelected) classes += ' selected';
+                    
+                    calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" ${isPast ? 'disabled' : ''}>${day}</button>`;
+                }
+                
+                // Add empty cells for days after last day of month
+                const cellsUsed = firstDay.getDay() + lastDay.getDate();
+                const totalCells = Math.ceil(cellsUsed / 7) * 7;
+                for (let i = cellsUsed; i < totalCells; i++) {
+                    const nextDate = new Date(year, month + 1, i - cellsUsed + 1);
+                    calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${nextDate.toISOString().split('T')[0]}">${nextDate.getDate()}</button>`;
+                }
+                
+                calendarDays.innerHTML = calendarHTML;
+                
+                // Add click handlers for calendar days
+                calendarDays.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('calendar-day') && !e.target.disabled) {
+                        calendarDays.querySelectorAll('.calendar-day').forEach(day => day.classList.remove('selected'));
+                        e.target.classList.add('selected');
+                        selectedDate = e.target.dataset.date;
+                        
+                        updateGlobalDisplay();
+                        updateGlobalHiddenInputs();
+                        
+                        // Auto-proceed to next step
+                        setTimeout(() => {
+                            window.nextGlobalStep(2);
+                        }, 300);
+                    }
+                });
+            }
+            
+            // Update display text
+            function updateGlobalDisplay() {
+                if (selectedDate && selectedTime && selectedDuration) {
+                    const dateParts = selectedDate.split('-');
+                    const year = parseInt(dateParts[0]);
+                    const month = parseInt(dateParts[1]) - 1;
+                    const day = parseInt(dateParts[2]);
+                    
+                    const date = new Date(year, month, day);
+                    const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+                    const dayName = dayNames[date.getDay()];
+                    
+                    const timeFormatted = formatGlobalTime12Hour(selectedTime);
+                    
+                    display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeFormatted}`;
+                    
+                    updateGlobalCheckoutDisplay();
+                }
+            }
+            
+            // Update checkout display
+            function updateGlobalCheckoutDisplay() {
+                if (selectedDate && selectedTime && selectedDuration) {
+                    const dateParts = selectedDate.split('-');
+                    const year = parseInt(dateParts[0]);
+                    const month = parseInt(dateParts[1]) - 1;
+                    const day = parseInt(dateParts[2]);
+                    
+                    const timeParts = selectedTime.split(':');
+                    const hours = parseInt(timeParts[0]);
+                    const minutes = parseInt(timeParts[1]) || 0;
+                    
+                    const checkinDateTime = new Date(year, month, day, hours, minutes);
+                    const checkoutDateTime = new Date(checkinDateTime.getTime() + (parseInt(selectedDuration) * 60 * 60 * 1000));
+                    
+                    const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+                    const checkoutDayName = dayNames[checkoutDateTime.getDay()];
+                    const checkoutTimeStr = checkoutDateTime.getHours().toString().padStart(2, '0') + ':' + 
+                                           checkoutDateTime.getMinutes().toString().padStart(2, '0');
+                    
+                    const checkoutTimeFormatted = formatGlobalTime12Hour(checkoutTimeStr);
+                    
+                    const checkoutDisplay = document.getElementById('global-checkout-display-hourly');
+                    if (checkoutDisplay) {
+                        checkoutDisplay.value = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeFormatted}`;
+                    }
+                    
+                    const checkoutDateFormatted = checkoutDateTime.getFullYear() + '-' + 
+                                                (checkoutDateTime.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                                checkoutDateTime.getDate().toString().padStart(2, '0');
+                    
+                    const checkoutDateInput = document.getElementById('global-checkout-date-hourly');
+                    const checkoutTimeInput = document.getElementById('global-checkout-time-hourly');
+                    
+                    if (checkoutDateInput) checkoutDateInput.value = checkoutDateFormatted;
+                    if (checkoutTimeInput) checkoutTimeInput.value = checkoutTimeStr;
+                }
+            }
+            
+            // Update hidden inputs
+            function updateGlobalHiddenInputs() {
+                const checkinDateInput = document.getElementById('global-checkin-date-hourly');
+                const checkinTimeInput = document.getElementById('global-checkin-time-hourly');
+                const hoursDurationInput = document.getElementById('global-hours-duration-hourly');
+                
+                if (checkinDateInput) checkinDateInput.value = selectedDate || '';
+                if (checkinTimeInput) checkinTimeInput.value = selectedTime || '';
+                if (hoursDurationInput) hoursDurationInput.value = selectedDuration || '';
+            }
+            
+            // Format time from 24h to 12h AM/PM
+            function formatGlobalTime12Hour(time24) {
+                const timeParts = time24.split(':');
+                let hours = parseInt(timeParts[0]);
+                const minutes = timeParts[1] || '00';
+                
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                
+                return `${hours}:${minutes}${ampm}`;
+            }
+            
+            // Step Navigation Functions
+            window.currentGlobalStep = 1;
+            
+            window.nextGlobalStep = function(stepNumber) {
+                console.log('nextGlobalStep called with:', stepNumber);
+                
+                // Hide current step
+                const currentStepElement = document.getElementById(`global-step-${window.currentGlobalStep}-hourly`);
+                const currentStepProgress = document.querySelector(`.step[data-step="${window.currentGlobalStep}"]`);
+                
+                if (currentStepElement) {
+                    currentStepElement.classList.remove('active');
+                }
+                if (currentStepProgress) {
+                    currentStepProgress.classList.remove('active');
+                }
+                
+                // Show new step
+                window.currentGlobalStep = stepNumber;
+                const newStepElement = document.getElementById(`global-step-${window.currentGlobalStep}-hourly`);
+                const newStepProgress = document.querySelector(`.step[data-step="${window.currentGlobalStep}"]`);
+                
+                if (newStepElement) {
+                    newStepElement.classList.add('active');
+                }
+                if (newStepProgress) {
+                    newStepProgress.classList.add('active');
+                }
+                
+                // Setup specific step functionality
+                if (window.currentGlobalStep === 2) {
+                    setupGlobalTimeSelection();
+                }
+                
+                if (window.currentGlobalStep === 3) {
+                    setupGlobalDurationSelection();
+                }
+            }
+            
+            // Initialize with default values
+            const today = new Date();
+            selectedDate = today.toISOString().split('T')[0];
+            selectedTime = '14:00';
+            selectedDuration = '3';
+            
+            updateGlobalDisplay();
+            updateGlobalHiddenInputs();
+            renderGlobalCalendar();
+            
+            // Setup back buttons and apply button
+            setTimeout(() => {
+                const backStep2 = document.getElementById('global-back-step-2');
+                const backStep3 = document.getElementById('global-back-step-3');
+                
+                if (backStep2) {
+                    backStep2.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.nextGlobalStep(1);
+                    });
+                }
+                
+                if (backStep3) {
+                    backStep3.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.nextGlobalStep(2);
+                    });
+                }
+            }, 100);
+            
+            // Setup functions for time and duration selection
+            let globalTimeSelectionSetup = false;
+            let globalDurationSelectionSetup = false;
+            
+            function setupGlobalTimeSelection() {
+                if (globalTimeSelectionSetup) return;
+                globalTimeSelectionSetup = true;
+                
+                const timeSlots = document.querySelectorAll('#global-step-2-hourly .time-slot');
+                timeSlots.forEach(slot => {
+                    slot.addEventListener('click', function() {
+                        timeSlots.forEach(s => s.classList.remove('active'));
+                        this.classList.add('active');
+                        selectedTime = this.dataset.time;
+                        
+                        updateGlobalDisplay();
+                        updateGlobalHiddenInputs();
+                        
+                        setTimeout(() => {
+                            window.nextGlobalStep(3);
+                        }, 300);
+                    });
+                });
+            }
+            
+            function setupGlobalDurationSelection() {
+                if (globalDurationSelectionSetup) return;
+                globalDurationSelectionSetup = true;
+                
+                const durationSlots = document.querySelectorAll('#global-step-3-hourly .duration-slot');
+                durationSlots.forEach(slot => {
+                    slot.addEventListener('click', function() {
+                        durationSlots.forEach(s => s.classList.remove('active'));
+                        this.classList.add('active');
+                        selectedDuration = this.dataset.duration;
+                        
+                        updateGlobalDisplay();
+                        updateGlobalHiddenInputs();
+                        
+                        setTimeout(() => {
+                            dropdown.classList.remove('show');
+                        }, 300);
+                    });
+                });
             }
         }        // Auto-hide flash messages after 8 seconds
         document.addEventListener('DOMContentLoaded', function() {
@@ -1089,7 +2358,7 @@
                         <a href="#" class="text-white"><i class="bi bi-instagram"></i></a>
                         <a href="#" class="text-white"><i class="bi bi-youtube"></i></a>
                         <a href="#" class="text-white"><i class="bi bi-tiktok"></i></a>
-                    </div>
+                                       </div>
                 </div>
                 
                 <!-- Quick Links -->

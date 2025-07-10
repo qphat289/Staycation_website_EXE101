@@ -383,7 +383,7 @@ function previewImage(input, previewElement) {
 
 // Function to format currency
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('vi-VN').format(parseFloat(amount)) + 'đ';
+    return new Intl.NumberFormat('vi-VN').format(parseFloat(amount)) + ' VND';
 }
 
 // Function to calculate background brightness and adjust navbar text color automatically

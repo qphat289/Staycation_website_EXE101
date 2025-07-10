@@ -2262,7 +2262,7 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Phí dịch vụ</h6>
-                                <h5 class="mb-1">{{ '{:,.0f}'.format(admin_commission) if admin_commission else 0 }} <span class="small text-muted">đ</span></h5>
+                                <h5 class="mb-1">{{ '{:,.0f}'.format(admin_commission) if admin_commission else 0 }} <span class="small text-muted">VND</span></h5>
                                 <small class="text-success">+{{ weekly_stats.booking_growth_rate if weekly_stats.booking_growth_rate else 0 }}% so với tuần trước</small>
                             </div>
                         </div>
@@ -2559,15 +2559,15 @@ nav[aria-label="Page navigation"] {
                                             <td>{{ homestay.room_count if homestay.room_count else 0 }}</td>
                                             <td>
                                                 {% if homestay.revenue %}
-                                                    {{ '{:,.0f}'.format(homestay.revenue) }}đ
+                                                    {{ '{:,.0f}'.format(homestay.revenue) }} VND
                                                 {% else %}
-                                                    0đ
+                                                    0 VND
                                                 {% endif %}
                                             </td><td>
                                                 {% if homestay.admin_commission %}
-                                                    {{ '{:,.0f}'.format(homestay.admin_commission) }}đ
+                                                    {{ '{:,.0f}'.format(homestay.admin_commission) }} VND
                                                 {% else %}
-                                                    0đ
+                                                    0 VND
                                                 {% endif %}
                                             </td>
                                             <td>
@@ -2843,7 +2843,7 @@ nav[aria-label="Page navigation"] {
                                     <tr>
                                         <td>{{ room.name }}</td>
                                         <td>{{ room.address }}</td>
-                                        <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VNĐ</td>
+                                        <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VND</td>
                                         <td>
                                             <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
                                                 {{ 'Còn trống' if room.is_available else 'Đã đặt' }}
@@ -2882,7 +2882,7 @@ nav[aria-label="Page navigation"] {
                                                         {% for room in owner.rooms %}
                                                         <tr>
                                                             <td>{{ room.title }}</td>
-                                                            <td>{{ '{:,.0f}'.format(room.revenue|default(0, true) * 1000) }} VNĐ</td>
+                                                            <td>{{ '{:,.0f}'.format(room.revenue|default(0, true) * 1000) }} VND</td>
                                                             <td>
                                                                 <input type="number" min="0" max="100" step="0.1"
                                                                        value="{{ room.commission_percent|default(10.0, true) }}"
@@ -2923,7 +2923,7 @@ nav[aria-label="Page navigation"] {
                                                             <td>{{ payment.transaction_id }}</td>
                                                             <td>{{ payment.created_at.strftime('%d/%m/%Y') }}</td>
                                                             <td>{{ payment.type }}</td>
-                                                            <td>{{ '{:,.0f}'.format(payment.amount|float * 1000) }} VNĐ</td>
+                                                            <td>{{ '{:,.0f}'.format(payment.amount|float * 1000) }} VND</td>
                                                             <td>
                                                                 <span class="badge {% if payment.status == 'success' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
                                                                     {{ payment.status|title }}
@@ -3270,7 +3270,7 @@ nav[aria-label="Page navigation"] {
                         <div class="card bg-success text-white">
                             <div class="card-body">
                                 <h5 class="card-title">Tổng doanh thu</h5>
-                                <h3 id="totalRevenue">0 VNĐ</h3>
+                                <h3 id="totalRevenue">0 VND</h3>
                             </div>
                         </div>
                     </div>
@@ -3299,7 +3299,7 @@ nav[aria-label="Page navigation"] {
                                 <th>Tên chủ nhà</th>
                                 <th>Số phòng</th>
                                 <th>Lượt đặt</th>
-                                <th>Doanh thu (VNĐ)</th>
+                                <th>Doanh thu (VND)</th>
                                 <th>Đánh giá TB</th>
                                 <th>Thao tác</th>
                             </tr>

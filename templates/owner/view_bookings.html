@@ -988,7 +988,7 @@ function getActionButtons(booking, tabType) {
 }
 
 function formatCurrency(amount) {
-  return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+  return new Intl.NumberFormat('vi-VN').format(amount) + ' VND';
 }
 
 function renderPagination(pagination, container, tabType) {
@@ -1457,7 +1457,7 @@ function showSortOptions() {
         <div class="receipt-payment">
           <div class="receipt-total-row">
             <span class="receipt-total-label">TỔNG TIỀN:</span>
-            <span class="receipt-total-value" id="receiptTotal">800,000đ</span>
+            <span class="receipt-total-value" id="receiptTotal">800,000 VND</span>
           </div>
           <div class="receipt-payment-method">
             <span class="receipt-label">Phương thức thanh toán:</span>
