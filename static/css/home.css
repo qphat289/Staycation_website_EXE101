@@ -444,17 +444,17 @@ main.container {
 
 /* Specific styling for hourly form only */
 .search-form.hourly-form .row {
-    gap: 1.2rem !important;
+    gap: 1rem !important;
+}
+
+.search-form.hourly-form .col-xxl-4 {
+    margin-right: 0.3rem;
+    min-width: 210px !important;
 }
 
 .search-form.hourly-form .col-xxl-3 {
-    margin-right: 0.4rem;
-    min-width: 200px !important;
-}
-
-.search-form.hourly-form .col-xxl-2 {
-    margin-right: 0.4rem;
-    min-width: 140px !important;
+    margin-right: 0.3rem;
+    min-width: 160px !important;
 }
 
 /* Custom DateTime Selector for Hourly Booking */
@@ -696,33 +696,33 @@ main.container {
 /* Ensure hourly form has better spacing on larger screens */
 @media (min-width: 1400px) {
     .search-form.hourly-form .row {
-        gap: 1.5rem !important;
+        gap: 1.2rem !important;
+    }
+    
+    .search-form.hourly-form .col-xxl-4 {
+        min-width: 240px !important;
+        margin-right: 0.4rem;
     }
     
     .search-form.hourly-form .col-xxl-3 {
-        min-width: 220px !important;
-        margin-right: 0.5rem;
-    }
-    
-    .search-form.hourly-form .col-xxl-2 {
-        min-width: 160px !important;
-        margin-right: 0.5rem;
+        min-width: 180px !important;
+        margin-right: 0.4rem;
     }
 }
 
 @media (max-width: 1200px) {
     .search-form.hourly-form .row {
-        gap: 1rem !important;
+        gap: 0.8rem !important;
+    }
+    
+    .search-form.hourly-form .col-xxl-4 {
+        min-width: 190px !important;
+        margin-right: 0.2rem;
     }
     
     .search-form.hourly-form .col-xxl-3 {
-        min-width: 180px !important;
-        margin-right: 0.3rem;
-    }
-    
-    .search-form.hourly-form .col-xxl-2 {
-        min-width: 130px !important;
-        margin-right: 0.3rem;
+        min-width: 140px !important;
+        margin-right: 0.2rem;
     }
     
     .datetime-dropdown {

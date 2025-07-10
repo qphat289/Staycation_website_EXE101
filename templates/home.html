@@ -649,7 +649,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                         </div>
                     </div>
                 </div>
-                <div class="col-xxl-3 col-xl-3 col-lg-4 col-md-6">
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
                     <label for="datetime-hourly" class="form-label">Nhận phòng</label>
                     <div class="datetime-selector-hourly">
                         <input type="text" class="form-control datetime-display" id="datetime-hourly" 
@@ -733,7 +733,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                         </div>
                     </div>
                 </div>
-                <div class="col-xxl-2 col-xl-2 col-lg-3 col-md-6">
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
                     <label for="checkout-display-hourly" class="form-label">Trả phòng</label>
                     <input type="text" class="form-control" id="checkout-display-hourly" 
                            value="Bất kỳ" readonly>
@@ -2140,7 +2140,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update display text
         function updateDisplay() {
             if (selectedDate && selectedTime && selectedDuration) {
-                const date = new Date(selectedDate);
+                const date = new Date(selectedDate + 'T00:00:00'); // Fix timezone issue
                 const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
                 const dayName = dayNames[date.getDay()];
                 const dateStr = date.getDate() + '/' + (date.getMonth() + 1);
