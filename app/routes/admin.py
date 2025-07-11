@@ -235,24 +235,20 @@ def dashboard():
         new_homes_this_month = Home.query.filter(Home.created_at >= month_start_datetime).count()
         new_bookings_this_month = Booking.query.filter(Booking.created_at >= month_start_datetime).count()
 
-        # Calculate most popular rental type based on homestay count (not booking count)
-        all_active_homes = Home.query.filter_by(is_active=True).all()
-        hourly_homestays_count = 0
-        nightly_homestays_count = 0
-        
-        for home in all_active_homes:
-            # Use same logic as owner.py line 612 to determine rental type
-            if home.price_per_night and home.price_per_night > 0:
-                nightly_homestays_count += 1
+        # Calculate most popular rental type based on actual booking data
+        if completed_bookings:
+            hourly_booking_count = sum(1 for b in completed_bookings if b.booking_type == 'hourly')
+            daily_booking_count = sum(1 for b in completed_bookings if b.booking_type == 'daily')
+            
+            # Determine most popular type based on actual bookings
+            if hourly_booking_count > daily_booking_count:
+                stats.common_type = "Theo giờ"
+            elif daily_booking_count > hourly_booking_count:
+                stats.common_type = "Theo ngày"
             else:
-                hourly_homestays_count += 1
-          # Determine most popular type based on homestay count
-        if hourly_homestays_count > nightly_homestays_count:
-            stats.common_type = "Theo giờ"
-        elif nightly_homestays_count > hourly_homestays_count:
-            stats.common_type = "Theo ngày"
+                stats.common_type = "N/A"  # Equal numbers or no bookings
         else:
-            stats.common_type = "N/A"  # Equal numbers or no homestays
+            stats.common_type = "N/A"  # No bookings yet
 
         # Calculate admin commission (10% from all completed bookings)
         total_revenue_all_bookings = sum(booking.total_price for booking in completed_bookings)
@@ -260,7 +256,7 @@ def dashboard():
 
         if completed_bookings:
             stats.total_hours = int(sum((b.end_time - b.start_time).total_seconds() / 3600 for b in completed_bookings))
-            hourly_count = sum(1 for b in completed_bookings if ((b.end_time - b.start_time).total_seconds() / 3600) <= 24)
+            hourly_count = sum(1 for b in completed_bookings if b.booking_type == 'hourly')
             stats.hourly_bookings = hourly_count
             stats.overnight_bookings = stats.total_bookings - hourly_count
         else:
@@ -1235,22 +1231,20 @@ def get_booking_stats_data(period):
                 start_datetime = datetime.combine(current_date, datetime.min.time())
                 end_datetime = datetime.combine(current_date, datetime.max.time())
                 
-                # Count hourly bookings (homes with hourly pricing)
-                hourly_bookings = db.session.query(Booking).join(Home).filter(
+                # Count hourly bookings using booking_type field
+                hourly_bookings = Booking.query.filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Home.price_per_hour.isnot(None),
-                    Home.price_per_hour > 0,
-                    Booking.status == 'completed'
+                    Booking.booking_type == 'hourly',
+                    Booking.status.in_(['completed', 'confirmed'])
                 ).count()
                 
-                # Count nightly bookings (homes with nightly pricing)
-                nightly_bookings = db.session.query(Booking).join(Home).filter(
+                # Count daily bookings using booking_type field
+                nightly_bookings = Booking.query.filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Home.price_per_night.isnot(None),
-                    Home.price_per_night > 0,
-                    Booking.status == 'completed'
+                    Booking.booking_type == 'daily',
+                    Booking.status.in_(['completed', 'confirmed'])
                 ).count()
                 
                 # Format label for week view
@@ -1261,22 +1255,20 @@ def get_booking_stats_data(period):
                 start_datetime = datetime.combine(current_date, datetime.min.time())
                 end_datetime = datetime.combine(current_date, datetime.max.time())
                 
-                # Count hourly bookings
-                hourly_bookings = db.session.query(Booking).join(Home).filter(
+                # Count hourly bookings using booking_type field
+                hourly_bookings = Booking.query.filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Home.price_per_hour.isnot(None),
-                    Home.price_per_hour > 0,
-                    Booking.status == 'completed'
+                    Booking.booking_type == 'hourly',
+                    Booking.status.in_(['completed', 'confirmed'])
                 ).count()
                 
-                # Count nightly bookings
-                nightly_bookings = db.session.query(Booking).join(Home).filter(
+                # Count daily bookings using booking_type field
+                nightly_bookings = Booking.query.filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Home.price_per_night.isnot(None),
-                    Home.price_per_night > 0,
-                    Booking.status == 'completed'
+                    Booking.booking_type == 'daily',
+                    Booking.status.in_(['completed', 'confirmed'])
                 ).count()
                 
                 # Format label for month view (show every 3rd day to avoid crowding)
@@ -1293,22 +1285,20 @@ def get_booking_stats_data(period):
                 start_datetime = datetime.combine(week_start, datetime.min.time())
                 end_datetime = datetime.combine(week_end, datetime.max.time())
                 
-                # Count hourly bookings for the week
-                hourly_bookings = db.session.query(Booking).join(Home).filter(
+                # Count hourly bookings for the week using booking_type field
+                hourly_bookings = Booking.query.filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Home.price_per_hour.isnot(None),
-                    Home.price_per_hour > 0,
-                    Booking.status == 'completed'
+                    Booking.booking_type == 'hourly',
+                    Booking.status.in_(['completed', 'confirmed'])
                 ).count()
                 
-                # Count nightly bookings for the week
-                nightly_bookings = db.session.query(Booking).join(Home).filter(
+                # Count daily bookings for the week using booking_type field
+                nightly_bookings = Booking.query.filter(
                     Booking.created_at >= start_datetime,
                     Booking.created_at <= end_datetime,
-                    Home.price_per_night.isnot(None),
-                    Home.price_per_night > 0,
-                    Booking.status == 'completed'
+                    Booking.booking_type == 'daily',
+                    Booking.status.in_(['completed', 'confirmed'])
                 ).count()
                 
                 # Format label for year view (show every 30th day)
@@ -1389,23 +1379,21 @@ def get_revenue_stats_data(year):
             # Calculate revenue for hourly bookings in this month
             hourly_revenue = db.session.query(
                 func.sum(Booking.total_price * 0.1)  # 10% commission
-            ).join(Home).filter(
+            ).filter(
                 extract('year', Booking.created_at) == year,
                 extract('month', Booking.created_at) == month,
-                Home.price_per_hour.isnot(None),
-                Home.price_per_hour > 0,
-                Booking.status == 'completed'
+                Booking.booking_type == 'hourly',
+                Booking.status.in_(['completed', 'confirmed'])
             ).scalar() or 0
             
-            # Calculate revenue for nightly bookings in this month
+            # Calculate revenue for daily bookings in this month
             nightly_revenue = db.session.query(
                 func.sum(Booking.total_price * 0.1)  # 10% commission
-            ).join(Home).filter(
+            ).filter(
                 extract('year', Booking.created_at) == year,
                 extract('month', Booking.created_at) == month,
-                Home.price_per_night.isnot(None),
-                Home.price_per_night > 0,
-                Booking.status == 'completed'
+                Booking.booking_type == 'daily',
+                Booking.status.in_(['completed', 'confirmed'])
             ).scalar() or 0
             
             # Convert to float and ensure non-negative

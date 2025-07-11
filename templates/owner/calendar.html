@@ -240,7 +240,7 @@
         left: 4px;
         right: 4px;
         background-color: #ddf8b5eb;
-        border: 1px solid #425e26;
+        border: 2px solid #425e26;
         border-radius: 4px;
         padding: 4px 8px;
         cursor: pointer;
@@ -336,6 +336,31 @@
     .calendar-nav-btn:hover {
         color: #333;
         background-color: #f0f0f0;
+    }
+
+    .calendar-nav-btn:focus {
+        outline: none;
+    }
+
+    .calendar-nav-btn:active {
+        outline: none;
+    }
+
+    .calendar-nav-btn *:focus {
+        outline: none;
+    }
+
+    /* Remove all possible focus/active outlines from calendar navigation */
+    .calendar-nav-btn,
+    .calendar-nav-btn:focus,
+    .calendar-nav-btn:active,
+    .calendar-nav-btn:focus-visible,
+    .calendar-nav-btn i,
+    .calendar-nav-btn i:focus,
+    .calendar-nav-btn i:active {
+        outline: none !important;
+        box-shadow: none !important;
+        border: none !important;
     }
 
     .calendar-weekdays {
@@ -828,6 +853,7 @@
         generateRoomHeaders();
         generateRoomTimelines();
         renderBookings();
+        updateCalendarTitle(); // Initialize calendar title with current month
         generateCalendar();
         updateCurrentTimeIndicator();
         updateDateDisplay();
@@ -1302,9 +1328,7 @@
                 const newBookings = data.bookings.filter(b => !existingBookingIds.has(b.id));
                 bookings.push(...newBookings);
                 
-                // Re-render the timeline
-                renderBookings();
-                updateBookingSummary();
+                // Note: renderBookings() and updateBookingSummary() will be called by the caller
                 
                 console.log(`Loaded ${data.bookings.length} bookings for ${dateStr} (${newBookings.length} new)`);
             } else {
@@ -1400,19 +1424,30 @@
         document.getElementById('bookingModal').style.display = 'none';
     }
 
-    // Enhanced date navigation with API integration
+        // Enhanced date navigation with API integration
     async function goToPreviousDay() {
         const newDate = new Date(selectedDate);
         newDate.setDate(selectedDate.getDate() - 1);
         selectedDate = newDate;
-        updateDateDisplay();
         
+        // Update currentDate if we moved to a different month
+        if (currentDate.getMonth() !== selectedDate.getMonth() || 
+            currentDate.getFullYear() !== selectedDate.getFullYear()) {
+            currentDate = new Date(selectedDate);
+            updateCalendarTitle();
+        }
+        
+        updateDateDisplay();
+
         // Load bookings for the new date
         await loadBookingsForDate(selectedDate);
         
+        // Re-render timeline and update indicators
+        renderBookings();
         updateCurrentTimeIndicator();
+        updateBookingSummary();
         generateCalendar(); // Update calendar selection
-        
+
         // Ensure alignment after date change
         setTimeout(ensureAlignment, 50);
     }
@@ -1421,14 +1456,25 @@
         const newDate = new Date(selectedDate);
         newDate.setDate(selectedDate.getDate() + 1);
         selectedDate = newDate;
-        updateDateDisplay();
         
+        // Update currentDate if we moved to a different month
+        if (currentDate.getMonth() !== selectedDate.getMonth() || 
+            currentDate.getFullYear() !== selectedDate.getFullYear()) {
+            currentDate = new Date(selectedDate);
+            updateCalendarTitle();
+        }
+        
+        updateDateDisplay();
+
         // Load bookings for the new date
         await loadBookingsForDate(selectedDate);
         
+        // Re-render timeline and update indicators
+        renderBookings();
         updateCurrentTimeIndicator();
+        updateBookingSummary();
         generateCalendar(); // Update calendar selection
-        
+
         // Ensure alignment after date change
         setTimeout(ensureAlignment, 50);
     }
@@ -1494,6 +1540,7 @@
                 // Load bookings for this date if not already loaded
                 await loadBookingsForDate(selectedDate);
                 
+                // Re-render timeline and update all indicators
                 renderBookings();
                 updateCurrentTimeIndicator();
                 updateBookingSummary();
@@ -1513,16 +1560,52 @@
         }
     }
     
-    function previousMonth() {
+        async function previousMonth() {
         currentDate.setMonth(currentDate.getMonth() - 1);
+        
+        // Update selectedDate to maintain the same day of month, or last day if it doesn't exist
+        const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDate.getDate());
+        
+        // If the day doesn't exist in the new month (e.g., Jan 31 -> Feb 31), use the last day of the month
+        if (newSelectedDate.getMonth() !== currentDate.getMonth()) {
+            selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0); // Last day of current month
+        } else {
+            selectedDate = newSelectedDate;
+        }
+        
         updateCalendarTitle();
+        updateDateDisplay();
         generateCalendar();
+        
+        // Load bookings for the selected date
+        await loadBookingsForDate(selectedDate);
+        renderBookings();
+        updateCurrentTimeIndicator();
+        updateBookingSummary();
     }
-    
-    function nextMonth() {
+
+    async function nextMonth() {
         currentDate.setMonth(currentDate.getMonth() + 1);
+        
+        // Update selectedDate to maintain the same day of month, or last day if it doesn't exist
+        const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDate.getDate());
+        
+        // If the day doesn't exist in the new month (e.g., Jan 31 -> Feb 31), use the last day of the month
+        if (newSelectedDate.getMonth() !== currentDate.getMonth()) {
+            selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0); // Last day of current month
+        } else {
+            selectedDate = newSelectedDate;
+        }
+        
         updateCalendarTitle();
+        updateDateDisplay();
         generateCalendar();
+        
+        // Load bookings for the selected date
+        await loadBookingsForDate(selectedDate);
+        renderBookings();
+        updateCurrentTimeIndicator();
+        updateBookingSummary();
     }
     
     function updateCalendarTitle() {

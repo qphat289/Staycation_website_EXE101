@@ -2255,8 +2255,8 @@ nav[aria-label="Page navigation"] {
                         <div class="col-md-2">
                             <div class="stat-card bg-white p-2 rounded shadow-sm">
                                 <h6 class="mb-1 text-muted small">Tổng số phòng</h6>
-                                <h5 class="mb-1">{{ stats.total_rooms }}</h5>
-                                <small class="text-muted">+{{ weekly_stats.new_rooms if weekly_stats.new_rooms else 0 }} trong tuần</small>
+                                <h5 class="mb-1">{{ stats.total_homes }}</h5>
+                                <small class="text-muted">+{{ weekly_stats.new_homes if weekly_stats.new_homes else 0 }} trong tuần</small>
                             </div>
                         </div>
                         <div class="col-md-2">
@@ -2366,7 +2366,7 @@ nav[aria-label="Page navigation"] {
                                     </div>
                                     <div class="legend-item" style="display: flex; align-items: center; gap: 5px;">
                                         <div style="width: 12px; height: 3px; background: #3b82f6; border-radius: 2px;"></div>
-                                        <span>Đặt phòng qua đêm</span>
+                                        <span>Đặt phòng theo ngày</span>
                                     </div>
                                 </div>
                             </div>
@@ -2551,12 +2551,12 @@ nav[aria-label="Page navigation"] {
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if stats and stats.top_rooms %}
-                                    {% set homestays_data = stats.top_rooms|from_json %}
+                                {% if stats and stats.top_homes %}
+                                    {% set homestays_data = stats.top_homes|from_json %}
                                     {% if homestays_data %}
                                         {% for homestay in homestays_data %}                                        <tr>
                                             <td>{{ homestay.name if homestay.name else 'N/A' }}</td>
-                                            <td>{{ homestay.room_count if homestay.room_count else 0 }}</td>
+                                            <td>{{ homestay.home_count if homestay.home_count else 0 }}</td>
                                             <td>
                                                 {% if homestay.revenue %}
                                                     {{ '{:,.0f}'.format(homestay.revenue) }} VND

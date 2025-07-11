@@ -605,19 +605,33 @@
                             <i class="fas fa-home"></i>
                             <span>Loại hình:</span>
                         </div>
-                        <div class="filter-toggle-buttons">
+                        <div class="filter-toggle-buttons" id="propertyTypeButtons">
                             <button type="button" class="toggle-btn active" data-filter="propertyType" data-value="all">
                                 Tất cả
                             </button>
-                            <button type="button" class="toggle-btn" data-filter="propertyType" data-value="Nhà">
-                                <i class="fas fa-home"></i> Nhà
-                            </button>
-                            <button type="button" class="toggle-btn" data-filter="propertyType" data-value="Căn hộ">
-                                <i class="fas fa-building"></i> Căn hộ
-                            </button>
-                            <button type="button" class="toggle-btn" data-filter="propertyType" data-value="Khách sạn">
-                                <i class="fas fa-hotel"></i> Khách sạn
-                            </button>
+                            {% set unique_types = homes|map(attribute='home_type')|list|unique %}
+                            {% for home_type in unique_types %}
+                                {% if home_type %}
+                                <button type="button" class="toggle-btn" data-filter="propertyType" data-value="{{ home_type }}">
+                                    {% if home_type == 'Nhà phố' %}
+                                        <i class="fas fa-home"></i>
+                                    {% elif home_type == 'Chung cư' %}
+                                        <i class="fas fa-building"></i>
+                                    {% elif home_type == 'Villa' %}
+                                        <i class="fas fa-house-user"></i>
+                                    {% elif home_type == 'Penthouse' %}
+                                        <i class="fas fa-city"></i>
+                                    {% elif home_type == 'Farmstay' %}
+                                        <i class="fas fa-tree"></i>
+                                    {% elif home_type == 'Resort' %}
+                                        <i class="fas fa-water"></i>
+                                    {% else %}
+                                        <i class="fas fa-building"></i>
+                                    {% endif %}
+                                    {{ home_type }}
+                                </button>
+                                {% endif %}
+                            {% endfor %}
                         </div>
                     </div>
 
@@ -883,20 +897,63 @@ function confirmDeleteHome() {
 
 // Search functionality
 document.getElementById('searchInput').addEventListener('input', function(e) {
-    const searchTerm = e.target.value.toLowerCase();
+    const searchTerm = e.target.value.toLowerCase().trim();
     const homestayItems = document.querySelectorAll('.homestay-item');
+    let visibleCount = 0;
     
     homestayItems.forEach(item => {
-        const title = item.querySelector('h3').textContent.toLowerCase();
-        const address = item.querySelector('.homestay-detail span').textContent.toLowerCase();
+        const title = item.querySelector('h3')?.textContent?.toLowerCase() || '';
+        const addressElement = item.querySelector('.homestay-detail span');
+        const address = addressElement?.textContent?.toLowerCase() || '';
+        const homeType = item.querySelector('.status-badge:nth-child(2)')?.textContent?.toLowerCase() || '';
         
-        if (title.includes(searchTerm) || address.includes(searchTerm)) {
-            item.style.display = 'flex';
+        // Search in title, address, and home type
+        const matchesSearch = searchTerm === '' || 
+                             title.includes(searchTerm) || 
+                             address.includes(searchTerm) ||
+                             homeType.includes(searchTerm);
+        
+        if (matchesSearch) {
+            // Also check if item passes current filters
+            const passesFilters = checkItemPassesFilters(item);
+            if (passesFilters) {
+                item.style.display = 'flex';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
         } else {
             item.style.display = 'none';
         }
     });
+    
+    console.log(`Search: "${searchTerm}" - Showing ${visibleCount} of ${homestayItems.length} items`);
 });
+
+// Helper function to check if an item passes current filters
+function checkItemPassesFilters(item) {
+    // Check type filter
+    if (currentTypeFilter.length > 0) {
+        const homeType = item.querySelector('.status-badge:nth-child(2)')?.textContent?.trim();
+        if (!currentTypeFilter.includes(homeType)) {
+            return false;
+        }
+    }
+    
+    // Check status filter
+    if (currentStatusFilter !== 'all') {
+        const statusBadge = item.querySelector('.status-badge:first-child');
+        const isActive = statusBadge?.classList.contains('status-active');
+        
+        if (currentStatusFilter === 'active' && !isActive) {
+            return false;
+        } else if (currentStatusFilter === 'inactive' && isActive) {
+            return false;
+        }
+    }
+    
+    return true;
+}
 
 // Enhanced home status toggle with better feedback
 document.querySelectorAll('.btn-lock').forEach(btn => {
@@ -1058,86 +1115,133 @@ function applyFilters(event) {
     if (event) {
         event.stopPropagation();
     }
-    // Get selected property types (multiple selection)
-    const activeTypeButtons = document.querySelectorAll('.toggle-btn[data-filter="propertyType"].active');
-    tempTypeFilter = [];
-    activeTypeButtons.forEach(btn => {
-        const value = btn.getAttribute('data-value');
-        if (value !== 'all') {
-            tempTypeFilter.push(value);
+    
+    try {
+        // Get selected property types (multiple selection)
+        const activeTypeButtons = document.querySelectorAll('.toggle-btn[data-filter="propertyType"].active');
+        tempTypeFilter = [];
+        activeTypeButtons.forEach(btn => {
+            const value = btn.getAttribute('data-value');
+            if (value !== 'all') {
+                tempTypeFilter.push(value);
+            }
+        });
+        
+        // Get selected status (single selection)
+        const statusBtn = document.querySelector('.toggle-btn[data-filter="status"].active');
+        if (statusBtn) {
+            tempStatusFilter = statusBtn.getAttribute('data-value');
+        } else {
+            tempStatusFilter = 'all'; // Default fallback
         }
-    });
-    
-    // Get selected status (single selection)
-    const statusBtn = document.querySelector('.toggle-btn[data-filter="status"].active');
-    if (statusBtn) tempStatusFilter = statusBtn.getAttribute('data-value');
-    
-    // Apply the filters
-    currentTypeFilter = [...tempTypeFilter]; // Copy array
-    currentStatusFilter = tempStatusFilter;
-    
-    // Save filter state to localStorage
-    saveFilterState();
-    
-    // Execute filtering (sorting is handled separately now)
-    filterHomes();
-    
-    // Close dropdown
+        
+        // Apply the filters
+        currentTypeFilter = [...tempTypeFilter]; // Copy array
+        currentStatusFilter = tempStatusFilter;
+        
+        // Save filter state to localStorage
+        saveFilterState();
+        
+        // Execute filtering
+        filterHomes();
+        
+        // Reset apply button visual state
+        const applyBtn = document.querySelector('.btn-apply');
+        applyBtn.style.background = '';
+        applyBtn.style.transform = '';
+        
+        // Close dropdown gracefully
+        closeFilterDropdown();
+        
+        // Update filter button text to show active filters
+        updateFilterButtonText();
+        
+        console.log('Filters applied successfully:', {
+            typeFilter: currentTypeFilter,
+            statusFilter: currentStatusFilter
+        });
+        
+    } catch (error) {
+        console.error('Error applying filters:', error);
+    }
+}
+
+// Helper function to close filter dropdown
+function closeFilterDropdown() {
     const filterDropdownElement = document.getElementById('filterDropdown');
-    const dropdown = bootstrap.Dropdown.getInstance(filterDropdownElement);
-    if (dropdown) {
-        dropdown.hide();
-    } else {
-        // If no instance exists, create one and then hide it
-        const newDropdown = new bootstrap.Dropdown(filterDropdownElement);
-        newDropdown.hide();
+    if (!filterDropdownElement) return;
+    
+    try {
+        const dropdown = bootstrap.Dropdown.getInstance(filterDropdownElement);
+        if (dropdown) {
+            dropdown.hide();
+        }
+    } catch (error) {
+        console.log('Bootstrap dropdown not available, using manual close');
     }
     
-    // Remove any open dropdown classes as backup
+    // Manual cleanup as backup
     filterDropdownElement.setAttribute('aria-expanded', 'false');
     const dropdownMenu = filterDropdownElement.nextElementSibling;
     if (dropdownMenu) {
         dropdownMenu.classList.remove('show');
     }
     
-    // Update filter button text to show active filters
-    updateFilterButtonText();
+    // Remove backdrop if exists
+    const backdrop = document.querySelector('.dropdown-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
 }
 
 // Reset filters function
 function resetFilters() {
-    // Reset toggle buttons to default
-    document.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Set default active buttons (no sort buttons in filter anymore)
-    document.querySelector('.toggle-btn[data-filter="propertyType"][data-value="all"]').classList.add('active');
-    document.querySelector('.toggle-btn[data-filter="status"][data-value="all"]').classList.add('active');
-    
-    // Reset sort dropdown to default
-    document.querySelectorAll('.sort-dropdown .dropdown-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelector('.sort-dropdown .dropdown-item[data-sort="date-newest"]').classList.add('active');
-    
-    // Reset temp variables
-    tempSort = 'date-newest';
-    tempTypeFilter = [];
-    tempStatusFilter = 'all';
-    
-    // Reset current variables
-    currentSort = 'date-newest';
-    currentTypeFilter = [];
-    currentStatusFilter = 'all';
-    
-    // Clear saved filter state
-    clearFilterState();
-    
-    // Apply reset
-    sortHomes(currentSort);
-    filterHomes();
-    updateFilterButtonText();
+    try {
+        console.log('Resetting all filters to defaults');
+        
+        // Reset toggle buttons to default
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Set default active buttons
+        const defaultPropertyBtn = document.querySelector('.toggle-btn[data-filter="propertyType"][data-value="all"]');
+        const defaultStatusBtn = document.querySelector('.toggle-btn[data-filter="status"][data-value="all"]');
+        
+        if (defaultPropertyBtn) defaultPropertyBtn.classList.add('active');
+        if (defaultStatusBtn) defaultStatusBtn.classList.add('active');
+        
+        // Reset sort dropdown to default
+        document.querySelectorAll('.sort-dropdown .dropdown-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        const defaultSortBtn = document.querySelector('.sort-dropdown .dropdown-item[data-sort="date-newest"]');
+        if (defaultSortBtn) defaultSortBtn.classList.add('active');
+        
+        // Reset all variables to defaults
+        currentSort = 'date-newest';
+        currentTypeFilter = [];
+        currentStatusFilter = 'all';
+        tempSort = 'date-newest';
+        tempTypeFilter = [];
+        tempStatusFilter = 'all';
+        
+        // Clear saved filter state
+        clearFilterState();
+        
+        // Apply reset changes
+        sortHomes(currentSort);
+        filterHomes();
+        updateFilterButtonText();
+        
+        // Close any open dropdowns
+        closeFilterDropdown();
+        
+        console.log('Filters reset successfully');
+        
+    } catch (error) {
+        console.error('Error resetting filters:', error);
+    }
 }
 
 // Handle toggle button clicks
@@ -1187,15 +1291,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             } else if (filterType === 'status') {
-                // Handle single selection for status (existing behavior)
+                // Handle single selection for status
                 document.querySelectorAll(`.toggle-btn[data-filter="${filterType}"]`).forEach(b => {
                     b.classList.remove('active');
                 });
                 this.classList.add('active');
             }
+            
+            // Show visual feedback that selection has changed
+            updateTempFilterDisplay();
         });
     });
 });
+
+// Add visual feedback function for temporary filter state
+function updateTempFilterDisplay() {
+    // This function can show immediate visual feedback while user is selecting filters
+    // without actually applying them until "Áp dụng" is clicked
+    const applyBtn = document.querySelector('.btn-apply');
+    
+    // Add a subtle animation or color change to indicate pending changes
+    applyBtn.style.background = '#9ed649';
+    applyBtn.style.transform = 'scale(1.02)';
+    
+    setTimeout(() => {
+        applyBtn.style.transform = 'scale(1)';
+    }, 150);
+}
 
 // Update filter button text based on active filters
 function updateFilterButtonText() {
@@ -1280,13 +1402,15 @@ function getDateFromItem(item) {
 
 function filterHomes() {
     const homestayItems = document.querySelectorAll('.homestay-item');
+    const searchTerm = document.getElementById('searchInput')?.value?.toLowerCase()?.trim() || '';
+    let visibleCount = 0;
     
     homestayItems.forEach(item => {
         let showItem = true;
         
         // Filter by type (multiple selection support)
         if (currentTypeFilter.length > 0) {
-            const homeType = item.querySelector('.status-badge:nth-child(2)').textContent.trim();
+            const homeType = item.querySelector('.status-badge:nth-child(2)')?.textContent?.trim();
             if (!currentTypeFilter.includes(homeType)) {
                 showItem = false;
             }
@@ -1295,7 +1419,7 @@ function filterHomes() {
         // Filter by status
         if (currentStatusFilter !== 'all') {
             const statusBadge = item.querySelector('.status-badge:first-child');
-            const isActive = statusBadge.classList.contains('status-active');
+            const isActive = statusBadge?.classList.contains('status-active');
             
             if (currentStatusFilter === 'active' && !isActive) {
                 showItem = false;
@@ -1304,9 +1428,33 @@ function filterHomes() {
             }
         }
         
+        // Filter by search term
+        if (searchTerm && showItem) {
+            const title = item.querySelector('h3')?.textContent?.toLowerCase() || '';
+            const addressElement = item.querySelector('.homestay-detail span');
+            const address = addressElement?.textContent?.toLowerCase() || '';
+            const homeType = item.querySelector('.status-badge:nth-child(2)')?.textContent?.toLowerCase() || '';
+            
+            const matchesSearch = title.includes(searchTerm) || 
+                                 address.includes(searchTerm) ||
+                                 homeType.includes(searchTerm);
+            
+            if (!matchesSearch) {
+                showItem = false;
+            }
+        }
+        
         // Show/hide item
-        item.style.display = showItem ? 'flex' : 'none';
+        if (showItem) {
+            item.style.display = 'flex';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
     });
+    
+    console.log(`Filter applied - Showing ${visibleCount} of ${homestayItems.length} items`);
+    return visibleCount;
 }
 </script>
 {% endblock %} 

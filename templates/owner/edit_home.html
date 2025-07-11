@@ -1479,7 +1479,8 @@ function clearEditPriceValidation(input) {
 // Rental type change
 document.addEventListener('DOMContentLoaded', function() {
     const hourlyRadio = document.getElementById('hourly');
-    const nightlyRadio = document.getElementById('nightly');
+    const dailyRadio = document.getElementById('daily');
+    const bothRadio = document.getElementById('both');
     
     if (hourlyRadio) {
         hourlyRadio.addEventListener('change', function() {
@@ -1489,8 +1490,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    if (nightlyRadio) {
-        nightlyRadio.addEventListener('change', function() {
+    if (dailyRadio) {
+        dailyRadio.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricingDisplay();
+            }
+        });
+    }
+    
+    if (bothRadio) {
+        bothRadio.addEventListener('change', function() {
             if (this.checked) {
                 updatePricingDisplay();
             }
@@ -1520,16 +1529,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function updatePricingDisplay() {
     const hourlyRadio = document.getElementById('hourly');
-    const nightlyRadio = document.getElementById('nightly');
+    const dailyRadio = document.getElementById('daily');
+    const bothRadio = document.getElementById('both');
     const hourlyPricing = document.getElementById('hourly-pricing');
-    const nightlyPricing = document.getElementById('nightly-pricing');
+    const dailyPricing = document.getElementById('daily-pricing');
+    const bothPricing = document.getElementById('both-pricing');
     
-    if (hourlyRadio.checked) {
-        hourlyPricing.style.display = 'block';
-        nightlyPricing.style.display = 'none';
-    } else if (nightlyRadio.checked) {
-        nightlyPricing.style.display = 'block';
-        hourlyPricing.style.display = 'none';
+    // Hide all pricing sections first
+    if (hourlyPricing) hourlyPricing.style.display = 'none';
+    if (dailyPricing) dailyPricing.style.display = 'none';
+    if (bothPricing) bothPricing.style.display = 'none';
+    
+    // Show the relevant pricing section based on selection
+    if (hourlyRadio && hourlyRadio.checked) {
+        if (hourlyPricing) hourlyPricing.style.display = 'block';
+    } else if (dailyRadio && dailyRadio.checked) {
+        if (dailyPricing) dailyPricing.style.display = 'block';
+    } else if (bothRadio && bothRadio.checked) {
+        if (bothPricing) bothPricing.style.display = 'block';
     }
 }
 

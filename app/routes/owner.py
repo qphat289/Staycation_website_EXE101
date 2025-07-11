@@ -1358,6 +1358,22 @@ def view_bookings(status=None):
     for home in homes:
         all_bookings.extend(home.bookings)
     
+    # Update booking statuses before filtering
+    now = datetime.now()
+    updated = False
+    
+    for booking in all_bookings:
+        # Only update confirmed bookings that have been paid and are now active
+        if booking.status == 'confirmed' and booking.payment_status == 'paid' and booking.start_time <= now:
+            booking.status = 'active'
+            updated = True
+        elif booking.status == 'active' and booking.end_time <= now:
+            booking.status = 'completed'
+            updated = True
+    
+    if updated:
+        db.session.commit()
+    
     # Filter bookings by status if specified
     if status:
         all_bookings = [b for b in all_bookings if b.status == status]
@@ -2565,6 +2581,25 @@ def get_bookings_api():
         owner_homes = Home.query.filter_by(owner_id=current_user.id).all()
         home_ids = [home.id for home in owner_homes]
         
+        # Update booking statuses before filtering
+        now = datetime.now()
+        updated = False
+        
+        # Get all bookings for owner's homes that might need status updates
+        all_bookings = Booking.query.filter(Booking.home_id.in_(home_ids)).all()
+        
+        for booking in all_bookings:
+            # Only update confirmed bookings that have been paid and are now active
+            if booking.status == 'confirmed' and booking.payment_status == 'paid' and booking.start_time <= now:
+                booking.status = 'active'
+                updated = True
+            elif booking.status == 'active' and booking.end_time <= now:
+                booking.status = 'completed'
+                updated = True
+        
+        if updated:
+            db.session.commit()
+        
         if not home_ids:
             return jsonify({
                 'bookings': [],
@@ -2586,33 +2621,7 @@ def get_bookings_api():
         # Apply status filter
         if status_filter:
             status_list = status_filter.split(',')
-            if 'active' in status_list:
-                # For "active" status, we need confirmed bookings that are currently ongoing
-                status_list = [s for s in status_list if s != 'active']
-                now = datetime.now()
-                if status_list:
-                    # Include other statuses plus active bookings
-                    query = query.filter(
-                        db.or_(
-                            Booking.status.in_(status_list),
-                            db.and_(
-                                Booking.status == 'confirmed',
-                                Booking.start_time <= now,
-                                Booking.end_time >= now
-                            )
-                        )
-                    )
-                else:
-                    # Only active bookings
-                    query = query.filter(
-                        db.and_(
-                            Booking.status == 'confirmed',
-                            Booking.start_time <= now,
-                            Booking.end_time >= now
-                        )
-                    )
-            else:
-                query = query.filter(Booking.status.in_(status_list))
+            query = query.filter(Booking.status.in_(status_list))
         
         # Apply search filter
         if search_term:
@@ -2645,13 +2654,8 @@ def get_bookings_api():
                 duration_days = (booking.end_time.date() - booking.start_time.date()).days + 1
                 duration = f"{duration_days} ngày"
             
-            # Determine actual status for display
+            # Status is already updated, so use it directly
             display_status = booking.status
-            if booking.status == 'confirmed':
-                # Check if booking is currently active
-                now = datetime.now()
-                if booking.start_time <= now <= booking.end_time:
-                    display_status = 'active'
             
             bookings_data.append({
                 'id': booking.id,
