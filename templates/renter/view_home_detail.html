@@ -198,6 +198,83 @@
         background-color: rgba(0, 0, 0, 0.9) !important;
     }
     
+    /* Carousel styling */
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 60px;
+        height: 60px;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.8;
+        transition: all 0.3s ease;
+    }
+    
+    .carousel-control-prev:hover,
+    .carousel-control-next:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+        opacity: 1;
+    }
+    
+    .carousel-control-prev {
+        left: 20px;
+    }
+    
+    .carousel-control-next {
+        right: 20px;
+    }
+    
+    .carousel-inner img {
+        max-height: 85vh;
+        max-width: 100%;
+        object-fit: contain;
+        pointer-events: none;
+    }
+    
+    /* Thumbnail styling */
+    .thumbnail-item {
+        width: 60px;
+        height: 40px;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        opacity: 0.7;
+    }
+    
+    .thumbnail-item:hover {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    
+    .thumbnail-item.active {
+        border-color: #8bc34a;
+        opacity: 1;
+        box-shadow: 0 0 10px rgba(139, 195, 74, 0.5);
+    }
+    
+    .thumbnail-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 2px;
+    }
+    
+    /* Keyboard navigation hint */
+    .keyboard-hint {
+        position: absolute;
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 12px;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 5px 10px;
+        border-radius: 15px;
+        opacity: 0.8;
+    }
+    
     /* Transition cho modal gallery */
     #imageGalleryModal {
         transition: all 0.3s ease;
@@ -581,7 +658,7 @@
                                  class="img-fluid w-100 h-100 rounded-3 main-image" 
                                  style="object-fit: cover; cursor: pointer;" 
                                  alt="Main home image"
-                                 onclick="showSingleImage('{{ url_for('static', filename=(featured_image.image_path if featured_image else home.images[0].image_path)) }}', 'Ảnh chính')">
+                                 onclick="showSingleImage('{{ url_for('static', filename=(featured_image.image_path if featured_image else home.images[0].image_path)) }}', 'Ảnh chính', 0)">>
                             <div class="image-hover-simple">
                                 Click để xem toàn bộ ảnh
                             </div>
@@ -602,7 +679,7 @@
                                      class="img-fluid w-100 h-100 rounded-2 side-image" 
                                      style="object-fit: cover; cursor: pointer;" 
                                      alt="Home image"
-                                     onclick="showSingleImage('{{ url_for('static', filename=home.images[1].image_path) }}', 'Ảnh phụ 1')">
+                                     onclick="showSingleImage('{{ url_for('static', filename=home.images[1].image_path) }}', 'Ảnh phụ 1', 1)">>
                                 <div class="image-hover-simple">
                                     Click để xem toàn bộ ảnh
                                 </div>
@@ -616,7 +693,7 @@
                                      class="img-fluid w-100 h-100 rounded-2 side-image" 
                                      style="object-fit: cover; cursor: pointer;" 
                                      alt="Home image"
-                                     onclick="showSingleImage('{{ url_for('static', filename=home.images[2].image_path) }}', 'Ảnh phụ 2')">
+                                     onclick="showSingleImage('{{ url_for('static', filename=home.images[2].image_path) }}', 'Ảnh phụ 2', 2)">>
                                 <div class="image-hover-simple">
                                     Click để xem toàn bộ ảnh
                                 </div>
@@ -1119,18 +1196,59 @@
     </div>
 </div>
 
-<!-- Modal hiển thị ảnh đơn lẻ -->
+<!-- Modal hiển thị ảnh với carousel -->
 <div class="modal fade" id="singleImageModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true" style="z-index: 1070;" data-bs-focus="false">
-    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 90vw;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 95vw;">
         <div class="modal-content bg-transparent border-0" style="z-index: 1071;">
-            <div class="modal-body p-0 text-center" data-bs-dismiss="modal" style="cursor: pointer;">
-                <img id="singleImageDisplay" src="" class="img-fluid rounded-3" style="max-height: 90vh; max-width: 100%; object-fit: contain; pointer-events: none;" alt="Home image">
+            <!-- Header với thông tin ảnh -->
+            <div class="modal-header border-0 bg-transparent text-white position-absolute" style="top: 0; left: 0; right: 0; z-index: 1072;">
+                <h5 class="modal-title" id="imageModalTitle">Ảnh nhà</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-sm btn-outline-light" id="backToGridBtn" onclick="backToGrid()" style="display: none;">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>
+                        Quay lại
+                    </button>
+                    <span id="imageCounter" class="badge bg-dark bg-opacity-50 px-3 py-2">1 / 1</span>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            
+            <!-- Carousel -->
+            <div class="modal-body p-0 text-center position-relative">
+                <div id="imageCarousel" class="carousel slide" data-bs-ride="false" data-bs-interval="false">
+                    <div class="carousel-inner" id="carouselInner">
+                        <!-- Slides sẽ được tạo động -->
+                    </div>
+                    
+                    <!-- Navigation buttons -->
+                    <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev" id="prevBtn">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next" id="nextBtn">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                    
+                    <!-- Thumbnails -->
+                    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3" style="z-index: 1073;">
+                        <div class="d-flex gap-2 overflow-auto" id="thumbnailContainer" style="max-width: 80vw;">
+                            <!-- Thumbnails sẽ được tạo động -->
+                        </div>
+                    </div>
+                    
+                    <!-- Keyboard navigation hint -->
+                    <div class="keyboard-hint">
+                        <i class="bi bi-keyboard me-1"></i>
+                        Sử dụng phím mũi tên ← → để chuyển ảnh, ESC để đóng
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal hiển thị tất cả ảnh -->
+<!-- Modal hiển thị tất cả ảnh trong grid -->
 <div class="modal fade" id="imageGalleryModal" tabindex="-1" aria-labelledby="imageGalleryModalLabel" aria-hidden="true" style="z-index: 1060;" data-bs-backdrop="true" data-bs-keyboard="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content" style="z-index: 1061;">
@@ -1139,8 +1257,8 @@
                     <i class="bi bi-images me-2 fs-5" style="color: #8bc34a;"></i>
                     <h4 class="modal-title fw-bold mb-0" id="imageGalleryModalLabel">
                         Tất cả ảnh nhà
-                        {% if home.images and home.images|length > 3 %}
-                            <span class="text-muted fs-6 fw-normal">({{ home.images|length - 3 }} ảnh)</span>
+                        {% if home.images %}
+                            <span class="text-muted fs-6 fw-normal">({{ home.images|length }} ảnh)</span>
                         {% endif %}
                     </h4>
                 </div>
@@ -1148,22 +1266,25 @@
             </div>
             <div class="modal-body">
                 <div class="row g-3">
-                    {% if home.images and home.images|length > 3 %}
-                        {% for image in home.images[3:] %}
+                    {% if home.images %}
+                        {% for image in home.images %}
                             <div class="col-md-4">
                                 <div class="position-relative" style="height: 250px;">
                                     <img src="{{ url_for('static', filename=image.image_path) }}" 
                                          class="img-fluid w-100 h-100 rounded gallery-img" 
                                          style="object-fit: cover; cursor: pointer;" 
-                                         alt="Home image"
-                                         data-image-src="{{ url_for('static', filename=image.image_path) }}">
+                                         alt="Ảnh nhà {{ loop.index }}"
+                                         onclick="openImageFromGrid('{{ url_for('static', filename=image.image_path) }}', 'Ảnh nhà {{ loop.index }}', {{ loop.index0 }})">
+                                    <div class="position-absolute top-0 start-0 m-2">
+                                        <span class="badge bg-dark bg-opacity-75 px-2 py-1">{{ loop.index }}</span>
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}
                     {% else %}
                         <div class="col-12 text-center py-5">
                             <i class="bi bi-images text-muted fs-1 mb-3"></i>
-                            <p class="text-muted">Không có thêm ảnh để hiển thị</p>
+                            <p class="text-muted">Không có ảnh để hiển thị</p>
                         </div>
                     {% endif %}
                 </div>
@@ -1331,27 +1452,217 @@
 </div>
 
 <script>
-function showSingleImage(imageSrc, title) {
-    document.getElementById('singleImageDisplay').src = imageSrc;
+// Gallery data
+let galleryImages = [];
+let currentImageIndex = 0;
+
+// Initialize gallery on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeGallery();
     
-    // Làm mờ modal gallery
-    var galleryModal = document.getElementById('imageGalleryModal');
-    if (galleryModal) {
-        galleryModal.style.filter = 'blur(3px)';
-        galleryModal.style.opacity = '0.3';
+    // Add keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('singleImageModal').classList.contains('show')) {
+            if (e.key === 'ArrowLeft') {
+                previousImage();
+            } else if (e.key === 'ArrowRight') {
+                nextImage();
+            } else if (e.key === 'Escape') {
+                bootstrap.Modal.getInstance(document.getElementById('singleImageModal')).hide();
+            }
+        }
+    });
+    
+    // Add click event to gallery images in modal
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('gallery-img')) {
+            // Kiểm tra xem có phải click từ modal grid không
+            const gridModal = e.target.closest('#imageGalleryModal');
+            if (gridModal) {
+                // Không cần xử lý ở đây vì đã có onclick handler
+                return;
+            }
+            
+            // Xử lý click từ các nơi khác
+            var imageSrc = e.target.getAttribute('data-image-src');
+            if (imageSrc) {
+                var index = galleryImages.findIndex(img => img.src === imageSrc);
+                showSingleImage(imageSrc, 'Ảnh nhà', index);
+            }
+        }
+    });
+});
+
+function initializeGallery() {
+    // Collect all home images
+    galleryImages = [];
+    
+    {% if home.images %}
+        {% for image in home.images %}
+            galleryImages.push({
+                src: '{{ url_for('static', filename=image.image_path) }}',
+                alt: 'Ảnh nhà {{ loop.index }}'
+            });
+        {% endfor %}
+    {% endif %}
+    
+    console.log('Gallery initialized with', galleryImages.length, 'images');
+}
+
+function showSingleImage(imageSrc, title, startIndex = 0) {
+    // Find the index of the clicked image
+    if (startIndex === 0) {
+        currentImageIndex = galleryImages.findIndex(img => img.src === imageSrc);
+        if (currentImageIndex === -1) currentImageIndex = 0;
+    } else {
+        currentImageIndex = startIndex;
     }
     
+    // Ẩn nút "Quay lại" nếu được gọi trực tiếp (không từ modal grid)
+    const backButton = document.getElementById('backToGridBtn');
+    if (backButton && !backButton.style.display) {
+        backButton.style.display = 'none';
+    }
+    
+    // Build carousel
+    buildCarousel();
+    
+    // Show modal
     var modal = new bootstrap.Modal(document.getElementById('singleImageModal'));
     modal.show();
     
-    // Reset modal gallery khi đóng single image modal
-    document.getElementById('singleImageModal').addEventListener('hidden.bs.modal', function() {
-        if (galleryModal) {
-            galleryModal.style.filter = 'none';
-            galleryModal.style.opacity = '1';
-        }
+    // Update counter and title
+    updateImageInfo();
+    
+    // Update thumbnails
+    updateThumbnails();
+}
+
+function openImageFromGrid(imageSrc, title, startIndex = 0) {
+    // Đóng modal grid trước
+    const gridModal = bootstrap.Modal.getInstance(document.getElementById('imageGalleryModal'));
+    if (gridModal) {
+        gridModal.hide();
+    }
+    
+    // Hiển thị nút "Quay lại" trong modal carousel
+    const backButton = document.getElementById('backToGridBtn');
+    if (backButton) {
+        backButton.style.display = 'block';
+    }
+    
+    // Chờ một chút để modal grid đóng hoàn toàn trước khi mở modal carousel
+    setTimeout(() => {
+        showSingleImage(imageSrc, title, startIndex);
+    }, 300);
+}
+
+function backToGrid() {
+    // Đóng modal carousel
+    const carouselModal = bootstrap.Modal.getInstance(document.getElementById('singleImageModal'));
+    if (carouselModal) {
+        carouselModal.hide();
+    }
+    
+    // Chờ một chút để modal carousel đóng hoàn toàn trước khi mở modal grid
+    setTimeout(() => {
+        showAllImages();
+    }, 300);
+}
+
+function buildCarousel() {
+    const carouselInner = document.getElementById('carouselInner');
+    const thumbnailContainer = document.getElementById('thumbnailContainer');
+    
+    // Clear existing content
+    carouselInner.innerHTML = '';
+    thumbnailContainer.innerHTML = '';
+    
+    // Build carousel slides
+    galleryImages.forEach((image, index) => {
+        const slide = document.createElement('div');
+        slide.className = `carousel-item ${index === currentImageIndex ? 'active' : ''}`;
+        slide.innerHTML = `
+            <img src="${image.src}" class="d-block w-100" alt="${image.alt}">
+        `;
+        carouselInner.appendChild(slide);
+        
+        // Build thumbnail
+        const thumbnail = document.createElement('div');
+        thumbnail.className = `thumbnail-item ${index === currentImageIndex ? 'active' : ''}`;
+        thumbnail.innerHTML = `
+            <img src="${image.src}" alt="${image.alt}">
+        `;
+        thumbnail.addEventListener('click', () => goToImage(index));
+        thumbnailContainer.appendChild(thumbnail);
+    });
+    
+    // Show/hide navigation buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (galleryImages.length <= 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+    } else {
+        prevBtn.style.display = 'block';
+        nextBtn.style.display = 'block';
+    }
+}
+
+function updateImageInfo() {
+    const counter = document.getElementById('imageCounter');
+    const title = document.getElementById('imageModalTitle');
+    
+    counter.textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
+    title.textContent = `Ảnh nhà (${currentImageIndex + 1}/${galleryImages.length})`;
+}
+
+function updateThumbnails() {
+    const thumbnails = document.querySelectorAll('.thumbnail-item');
+    thumbnails.forEach((thumb, index) => {
+        thumb.classList.toggle('active', index === currentImageIndex);
     });
 }
+
+function goToImage(index) {
+    currentImageIndex = index;
+    
+    // Update carousel
+    const carousel = bootstrap.Carousel.getInstance(document.getElementById('imageCarousel'));
+    carousel.to(index);
+    
+    // Update info and thumbnails
+    updateImageInfo();
+    updateThumbnails();
+}
+
+function nextImage() {
+    if (currentImageIndex < galleryImages.length - 1) {
+        goToImage(currentImageIndex + 1);
+    }
+}
+
+function previousImage() {
+    if (currentImageIndex > 0) {
+        goToImage(currentImageIndex - 1);
+    }
+}
+
+// Add event listeners for carousel
+document.getElementById('imageCarousel').addEventListener('slid.bs.carousel', function(e) {
+    currentImageIndex = e.to;
+    updateImageInfo();
+    updateThumbnails();
+});
+
+// Reset nút "Quay lại" khi đóng modal carousel
+document.getElementById('singleImageModal').addEventListener('hidden.bs.modal', function() {
+    const backButton = document.getElementById('backToGridBtn');
+    if (backButton) {
+        backButton.style.display = 'none';
+    }
+});
 
 function showAllImages() {
     var modal = new bootstrap.Modal(document.getElementById('imageGalleryModal'));
@@ -1367,17 +1678,6 @@ function showRulesModal() {
     var modal = new bootstrap.Modal(document.getElementById('rulesModal'));
     modal.show();
 }
-
-// Thêm event listener cho gallery images
-document.addEventListener('DOMContentLoaded', function() {
-    // Add click event to gallery images
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('gallery-img')) {
-            var imageSrc = e.target.getAttribute('data-image-src');
-            showSingleImage(imageSrc, 'Ảnh nhà');
-        }
-    });
-});
 
 // Header action buttons functionality
 function shareHome() {
