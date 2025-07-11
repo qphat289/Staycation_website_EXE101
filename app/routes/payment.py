@@ -23,6 +23,11 @@ APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:5000")
 @login_required
 def checkout(booking_id):
     """Hiển thị trang checkout với thông tin booking"""
+    # Kiểm tra email verification cho Renter
+    if current_user.is_renter() and not current_user.email_verified:
+        flash('Vui lòng xác thực email trước khi thực hiện thanh toán', 'warning')
+        return redirect(url_for('renter.verify_email'))
+    
     # Get the booking
     booking = Booking.query.get_or_404(booking_id)
     
@@ -43,6 +48,11 @@ def checkout(booking_id):
 def process_payment():
     print('[DEBUG] Đã vào route /process_payment')
     current_app.logger.info(f'[PAYMENT] User {current_user.id} ({current_user.email}) bắt đầu tạo payment cho booking {request.form.get("booking_id")}.')
+    
+    # Kiểm tra email verification cho Renter
+    if current_user.is_renter() and not current_user.email_verified:
+        flash('Vui lòng xác thực email trước khi thực hiện thanh toán', 'warning')
+        return redirect(url_for('renter.verify_email'))
     
     booking_id = request.form.get('booking_id')
     booking = Booking.query.get_or_404(booking_id)

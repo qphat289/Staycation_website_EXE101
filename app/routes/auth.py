@@ -75,7 +75,9 @@ def register():
             phone=phone,
             first_name=first_name,
             last_name=last_name,
-            full_name=f"{first_name} {last_name}"
+            full_name=f"{first_name} {last_name}",
+            email_verified=False,
+            first_login=True
         )
         new_renter.set_password(password)
         
@@ -326,6 +328,8 @@ def complete_google_signup():
             phone=phone,
             personal_id=personal_id,
             google_id=session['google_id'],
+            email_verified=True,  # Google accounts are pre-verified
+            first_login=False
         )
         
         # Generate a random password for Google users - they'll use Google to login
@@ -508,6 +512,8 @@ def complete_facebook_signup():
             phone=phone,
             personal_id=personal_id,
             facebook_id=session['facebook_id'],
+            email_verified=True,  # Facebook accounts are pre-verified
+            first_login=False
         )
         
         # Generate a random password for Facebook users

@@ -276,7 +276,9 @@ def create_renter():
             last_name='Trần',
             phone='0987654321',
             address='456 Đường Lê Lợi, Quận 1, TP.HCM',
-            gender='Nữ'
+            gender='Nữ',
+            email_verified=True,
+            first_login=True
         )
         renter.set_password('123')
         db.session.add(renter)

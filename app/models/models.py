@@ -166,6 +166,10 @@ class Renter(UserMixin, db.Model):
     google_username = db.Column(db.String(100))
     facebook_username = db.Column(db.String(100))
     
+    # Email verification fields
+    email_verified = db.Column(db.Boolean, default=False)
+    first_login = db.Column(db.Boolean, default=True)
+    
     # Relationships
     bookings = db.relationship('Booking', backref='renter', lazy=True)
     reviews = db.relationship('Review', backref='renter', lazy=True)
@@ -173,7 +177,8 @@ class Renter(UserMixin, db.Model):
     def __init__(self, username, email, full_name=None, first_name=None, last_name=None,
                  gender='Nam', address=None, birth_date=None, phone=None, avatar=None,
                  is_active=True, temp_role='renter', is_google=False, is_facebook=False,
-                 google_id=None, facebook_id=None, google_username=None, facebook_username=None):
+                 google_id=None, facebook_id=None, google_username=None, facebook_username=None,
+                 email_verified=False, first_login=True):
         self.username = username
         self.email = email
         self.full_name = full_name or username
@@ -192,6 +197,8 @@ class Renter(UserMixin, db.Model):
         self.facebook_id = facebook_id
         self.google_username = google_username
         self.facebook_username = facebook_username
+        self.email_verified = email_verified
+        self.first_login = first_login
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

@@ -30,6 +30,23 @@ def renter_required(f):
     decorated_function.__name__ = f.__name__
     return decorated_function
 
+# Custom decorator to check email verification for booking
+def require_email_verification_for_booking(f):
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_renter():
+            flash('You must be a renter to access this page', 'danger')
+            return redirect(url_for('home'))
+        
+        # Kiểm tra email verification
+        if not current_user.email_verified:
+            flash('Vui lòng xác thực email trước khi thực hiện đặt phòng', 'warning')
+            return redirect(url_for('renter.verify_email'))
+            
+        return f(*args, **kwargs)
+    decorated_function.__name__ = f.__name__
+    return decorated_function
+
 @renter_bp.route('/dashboard')
 @renter_required
 def dashboard():
@@ -50,6 +67,20 @@ def dashboard():
         db.session.commit()
     
     return render_template('renter/dashboard.html', bookings=bookings)
+
+@renter_bp.route('/verify-email')
+@login_required
+def verify_email():
+    """Trang verify email cho Renter"""
+    if not current_user.is_renter():
+        flash('Chỉ Renter mới có thể truy cập trang này', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    if current_user.email_verified:
+        flash('Email đã được xác thực', 'info')
+        return redirect(url_for('renter.dashboard'))
+    
+    return render_template('renter/verify_email.html')
 
 # City and district mapping
 CITY_MAPPING = {
@@ -270,7 +301,7 @@ def view_home(id):
                           reviews=reviews)
 
 @renter_bp.route('/book/<int:home_id>', methods=['GET', 'POST'])
-@renter_required
+@require_email_verification_for_booking
 def book_home(home_id):
     home = Home.query.get_or_404(home_id)
     

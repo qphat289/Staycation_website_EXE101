@@ -1,0 +1,560 @@
+{% extends 'base.html' %}
+
+{% block title %}Xác thực Email - Staycation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .verify-email-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fdf4;
+    }
+    .verification-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        max-width: 420px;
+        width: 100%;
+        margin: 2rem auto;
+        overflow: hidden;
+    }
+    .verification-header {
+        background: linear-gradient(135deg, #9ed649, #7cb342);
+        color: white;
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+        text-align: center;
+    }
+    .verification-header i {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .verification-header h2 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0 0 0.25rem 0;
+    }
+    .verification-header p {
+        font-size: 0.95rem;
+        opacity: 0.95;
+        margin: 0;
+    }
+    .verification-body {
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+    }
+    .step-container { text-align: center; }
+    .step-icon { font-size: 2rem; color: #9ed649; margin-bottom: 0.5rem; }
+    .step-title { font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 0.25rem; }
+    .step-description { color: #666; margin-bottom: 1rem; font-size: 0.97rem; }
+    .email-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0 1.5rem 0;
+        border-left: 4px solid #9ed649;
+        text-align: left;
+    }
+    .email-info h6 { color: #333; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; }
+    .email-info ul { list-style: none; padding: 0; margin: 0; }
+    .email-info li { display: flex; align-items: center; gap: 0.5rem; color: #666; font-size: 0.93rem; margin-bottom: 0.25rem; }
+    .email-info li i { color: #9ed649; width: 16px; }
+    .btn-primary {
+        background: linear-gradient(135deg, #9ed649, #7cb342);
+        border: none;
+        border-radius: 8px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(158, 214, 73, 0.3);
+        background: linear-gradient(135deg, #8bc34a, #689f38);
+    }
+    .btn-secondary {
+        background: #6c757d;
+        border: none;
+        border-radius: 8px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+    }
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        background: #5a6268;
+    }
+    .btn-outline-secondary {
+        border: 1px solid #6c757d;
+        background: transparent;
+        color: #6c757d;
+        border-radius: 8px;
+        padding: 0.7rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+    }
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+    }
+    .otp-input {
+        font-size: 1.3rem;
+        text-align: center;
+        letter-spacing: 0.5rem;
+        font-weight: bold;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        max-width: 260px;
+        margin: 0 auto;
+    }
+    .otp-input:focus {
+        border-color: #9ed649;
+        box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+        outline: none;
+    }
+    .countdown-timer {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #dc3545;
+        text-align: center;
+        margin: 1rem 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .attempt-counter {
+        font-size: 0.93rem;
+        color: #6c757d;
+        text-align: center;
+        margin: 0.5rem 0 1rem 0;
+    }
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        margin: 1rem 0;
+    }
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+    .success-icon { color: #28a745; font-size: 2.2rem; margin-bottom: 1rem; }
+    .error-icon { color: #dc3545; font-size: 2.2rem; margin-bottom: 1rem; }
+    .button-group { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem; }
+    .form-text { font-size: 0.9rem; color: #6c757d; margin-top: 0.5rem; }
+    .modal-content { border-radius: 12px; border: none; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); }
+    .modal-header { background: linear-gradient(135deg, #9ed649, #7cb342); color: white; border-radius: 12px 12px 0 0; border: none; padding: 1.5rem; }
+    .modal-header .btn-close { filter: invert(1); }
+    .modal-body { padding: 2rem; text-align: center; }
+    .modal-footer { border: none; padding: 1rem 2rem 2rem; justify-content: center; }
+    .modal-footer .btn { min-width: 100px; }
+    @media (max-width: 768px) {
+        .verify-email-wrapper { padding: 0 0.5rem; }
+        .verification-card { margin: 1rem auto; }
+        .verification-header { padding: 1.2rem 0.5rem 1rem 0.5rem; }
+        .verification-body { padding: 1.2rem 0.5rem 1rem 0.5rem; }
+        .button-group { gap: 0.5rem; }
+        .btn { padding: 0.7rem 1.2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="verify-email-wrapper">
+    <div class="verification-card">
+        <div class="verification-header">
+            <i class="fas fa-shield-alt"></i>
+            <h2>Xác thực Email</h2>
+            <p>Hoàn tất xác thực tài khoản của bạn</p>
+        </div>
+        <div class="verification-body">
+            <div id="step1" class="step-container">
+                <div class="step-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <h3 class="step-title">Gửi mã xác thực</h3>
+                <p class="step-description">
+                    Chúng tôi sẽ gửi mã OTP đến email <strong>{{ current_user.email }}</strong>
+                </p>
+                <div class="email-info">
+                    <h6><i class="fas fa-info-circle"></i> Thông tin mã OTP:</h6>
+                    <ul>
+                        <li><i class="fas fa-clock"></i> Hiệu lực: <strong>2 phút</strong></li>
+                    </ul>
+                </div>
+                <button id="sendOtpBtn" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    Gửi mã xác thực
+                </button>
+                <div class="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang gửi...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Đang gửi mã xác thực...</p>
+                </div>
+            </div>
+            <div id="step2" class="step-container" style="display: none;">
+                <div class="step-icon">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h3 class="step-title">Nhập mã xác thực</h3>
+                <p class="step-description">
+                    Mã OTP đã được gửi đến <strong>{{ current_user.email }}</strong>
+                </p>
+                <div class="countdown-timer" id="countdown">
+                    <i class="fas fa-clock"></i>
+                    Còn lại: <span id="timer">02:00</span>
+                </div>
+                <div class="attempt-counter" id="attemptCounter">
+                    Lần thử: <span id="attempts">0</span>/3
+                </div>
+                <div class="mb-4">
+                    <input type="text" id="otpInput" class="form-control otp-input" maxlength="6" placeholder="000000" autocomplete="off">
+                    <div class="form-text">Nhập 6 chữ số từ email</div>
+                </div>
+                <div class="button-group">
+                    <button id="verifyOtpBtn" class="btn btn-primary">
+                        <i class="fas fa-check"></i>
+                        Xác thực
+                    </button>
+                    <button id="resendOtpBtn" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i>
+                        Gửi lại mã
+                    </button>
+                    <button id="backToStep1Btn" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay lại
+                    </button>
+                </div>
+                <div class="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang xác thực...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Đang xác thực mã...</p>
+                </div>
+            </div>
+            <div id="successStep" class="step-container" style="display: none;">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="step-title text-success">Xác thực thành công!</h3>
+                <p class="step-description">
+                    Email của bạn đã được xác thực. Bạn sẽ được chuyển hướng trong giây lát...
+                </p>
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Đang chuyển hướng...</span>
+                </div>
+            </div>
+            <div id="errorStep" class="step-container" style="display: none;">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="step-title text-danger">Có lỗi xảy ra</h3>
+                <p id="errorMessage" class="step-description"></p>
+                <button id="retryBtn" class="btn btn-primary">
+                    <i class="fas fa-redo"></i>
+                    Thử lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal thông báo -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Thông báo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="modalIcon" class="mb-3"></div>
+                <p id="modalMessage"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+console.log('[DEBUG] Script starting...');
+console.log('[DEBUG] Bootstrap available:', typeof bootstrap !== 'undefined');
+console.log('[DEBUG] Bootstrap Modal available:', typeof bootstrap?.Modal !== 'undefined');
+
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('[DEBUG] DOM loaded successfully');
+    
+    let countdownInterval;
+    let attempts = 0;
+    let resendCount = 0;
+    let currentToken = null;
+    
+    // Elements
+    const sendOtpBtn = document.getElementById('sendOtpBtn');
+    const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+    const resendOtpBtn = document.getElementById('resendOtpBtn');
+    const backToStep1Btn = document.getElementById('backToStep1Btn');
+    const retryBtn = document.getElementById('retryBtn');
+    const otpInput = document.getElementById('otpInput');
+    const timer = document.getElementById('timer');
+    const attemptsSpan = document.getElementById('attempts');
+    // Steps
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const successStep = document.getElementById('successStep');
+    const errorStep = document.getElementById('errorStep');
+    // Debug log
+    console.log('[DEBUG] Elements found:', {
+        sendOtpBtn: !!sendOtpBtn,
+        step1: !!step1,
+        step2: !!step2,
+        verifyOtpBtn: !!verifyOtpBtn,
+        resendOtpBtn: !!resendOtpBtn,
+        backToStep1Btn: !!backToStep1Btn,
+        retryBtn: !!retryBtn,
+        otpInput: !!otpInput,
+        timer: !!timer,
+        attemptsSpan: !!attemptsSpan,
+        successStep: !!successStep,
+        errorStep: !!errorStep
+    });
+    if (!sendOtpBtn) { 
+        console.error('[ERROR] Không tìm thấy nút gửi mã xác thực'); 
+        return; 
+    }
+    if (!step1 || !step2) { 
+        console.error('[ERROR] Không tìm thấy step1/step2'); 
+        return; 
+    }
+    console.log('[DEBUG] Adding event listeners...');
+    // Send OTP
+    sendOtpBtn.addEventListener('click', async function() {
+        console.log('[DEBUG] Bấm gửi mã xác thực');
+        try {
+            setLoading(true, 'send');
+            const response = await fetch('/email-verification/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: '{{ current_user.email }}' })
+            });
+            const data = await response.json();
+            console.log('[DEBUG] Kết quả gửi OTP:', data);
+            if (data.success) {
+                currentToken = data.token;
+                showStep(2);
+                startCountdown(120); // 2 phút = 120 giây
+                showNotification('success', 'Mã xác thực đã được gửi!', 'Kiểm tra email của bạn để lấy mã OTP.');
+            } else {
+                showNotification('error', 'Lỗi gửi mã', data.message || 'Không thể gửi mã xác thực.');
+            }
+        } catch (error) {
+            console.error('Error sending OTP:', error);
+            showNotification('error', 'Lỗi kết nối', error.message || 'Không thể kết nối đến máy chủ.');
+        } finally {
+            setLoading(false, 'send');
+        }
+    });
+    // Verify OTP
+    verifyOtpBtn.addEventListener('click', async function() {
+        const otp = otpInput.value.trim();
+        if (otp.length !== 6) {
+            showNotification('error', 'Mã không hợp lệ', 'Vui lòng nhập đúng 6 chữ số.');
+            return;
+        }
+        if (attempts >= 3) {
+            showNotification('error', 'Hết lượt thử', 'Bạn đã thử quá 3 lần. Vui lòng gửi lại mã mới.');
+            return;
+        }
+        try {
+            setLoading(true, 'verify');
+            attempts++;
+            attemptsSpan.textContent = attempts;
+            const response = await fetch('/email-verification/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otp: otp, token: currentToken })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showStep(3); // Success step
+                setTimeout(() => { window.location.href = '/renter/dashboard'; }, 2000);
+            } else {
+                if (attempts >= 3) {
+                    showNotification('error', 'Hết lượt thử', 'Bạn đã thử quá 3 lần. Vui lòng gửi lại mã mới.');
+                    resendOtpBtn.disabled = false;
+                } else {
+                    showNotification('error', 'Mã không đúng', data.message || 'Mã OTP không chính xác.');
+                }
+            }
+        } catch (error) {
+            console.error('Error verifying OTP:', error);
+            showNotification('error', 'Lỗi kết nối', error.message || 'Không thể kết nối đến máy chủ.');
+        } finally {
+            setLoading(false, 'verify');
+        }
+    });
+    // Resend OTP
+    resendOtpBtn.addEventListener('click', async function() {
+        if (resendCount >= 3) {
+            showNotification('error', 'Hết lượt gửi', 'Bạn đã gửi lại quá 3 lần trong ngày.');
+            return;
+        }
+        try {
+            setLoading(true, 'resend');
+            const response = await fetch('/email-verification/resend-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: '{{ current_user.email }}' })
+            });
+            const data = await response.json();
+            if (data.success) {
+                currentToken = data.token;
+                attempts = 0;
+                attemptsSpan.textContent = attempts;
+                resendCount++;
+                startCountdown(120); // 2 phút
+                showNotification('success', 'Mã mới đã được gửi!', 'Kiểm tra email của bạn để lấy mã OTP mới.');
+            } else {
+                showNotification('error', 'Lỗi gửi lại', data.message || 'Không thể gửi lại mã xác thực.');
+            }
+        } catch (error) {
+            console.error('Error resending OTP:', error);
+            showNotification('error', 'Lỗi kết nối', error.message || 'Không thể kết nối đến máy chủ.');
+        } finally {
+            setLoading(false, 'resend');
+        }
+    });
+    // Back to step 1
+    backToStep1Btn.addEventListener('click', function() {
+        showStep(1);
+        clearCountdown();
+        attempts = 0;
+        attemptsSpan.textContent = attempts;
+        otpInput.value = '';
+    });
+    // Retry button
+    retryBtn.addEventListener('click', function() {
+        showStep(1);
+    });
+    // Auto-submit when OTP is complete
+    otpInput.addEventListener('input', function() {
+        if (this.value.length === 6) {
+            verifyOtpBtn.click();
+        }
+    });
+    // Functions
+    function showStep(step) {
+        console.log('[DEBUG] Showing step:', step);
+        step1.style.display = 'none';
+        step2.style.display = 'none';
+        successStep.style.display = 'none';
+        errorStep.style.display = 'none';
+        switch(step) {
+            case 1:
+                step1.style.display = 'block';
+                break;
+            case 2:
+                step2.style.display = 'block';
+                otpInput.focus();
+                break;
+            case 3:
+                successStep.style.display = 'block';
+                break;
+            case 4:
+                errorStep.style.display = 'block';
+                break;
+        }
+    }
+    function setLoading(loading, type) {
+        const loadingSpinners = document.querySelectorAll('.loading-spinner');
+        const buttons = [sendOtpBtn, verifyOtpBtn, resendOtpBtn];
+        loadingSpinners.forEach(spinner => {
+            spinner.style.display = loading ? 'block' : 'none';
+        });
+        buttons.forEach(btn => {
+            if (btn) btn.disabled = loading;
+        });
+    }
+    function startCountdown(seconds) {
+        clearCountdown();
+        countdownInterval = setInterval(() => {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            if (timer) {
+                timer.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+            if (seconds <= 0) {
+                clearCountdown();
+                showNotification('error', 'Mã đã hết hạn', 'Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.');
+                if (resendOtpBtn) resendOtpBtn.disabled = false;
+            }
+            seconds--;
+        }, 1000);
+    }
+    function clearCountdown() {
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+    }
+    function showNotification(type, title, message) {
+        console.log('[DEBUG] Showing notification:', { type, title, message });
+        try {
+            const modal = new bootstrap.Modal(document.getElementById('notificationModal'));
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalIcon = document.getElementById('modalIcon');
+            if (modalTitle) modalTitle.textContent = title;
+            if (modalMessage) modalMessage.textContent = message;
+            if (modalIcon) {
+                if (type === 'success') {
+                    modalIcon.innerHTML = '<i class="fas fa-check-circle text-success fa-3x"></i>';
+                } else {
+                    modalIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-danger fa-3x"></i>';
+                }
+            }
+            modal.show();
+        } catch (error) {
+            console.error('[ERROR] Failed to show notification:', error);
+            alert(`${title}: ${message}`);
+        }
+    }
+    // Check verification status on page load
+    window.addEventListener('load', async function() {
+        try {
+            const response = await fetch('/email-verification/check-status');
+            const data = await response.json();
+            if (data.verified) {
+                window.location.href = '/renter/dashboard';
+            }
+        } catch (error) {
+            console.error('Error checking verification status:', error);
+        }
+    });
+    console.log('[DEBUG] Event listeners added successfully');
+});
+</script>
+{% endblock %} 
