@@ -656,12 +656,29 @@
                     Giá nhà
                 </h2>
                 <div class="description-text">
+                    {% if home.price_first_2_hours %}
+                        <div><span style="font-weight:600;">2 giờ đầu:</span> {{ "{:,.0f}".format(home.price_first_2_hours) }} VND</div>
+                    {% endif %}
+                    {% if home.price_per_additional_hour %}
+                        <div><span style="font-weight:600;">Giờ tiếp theo:</span> {{ "{:,.0f}".format(home.price_per_additional_hour) }} VND/giờ</div>
+                    {% endif %}
+                    {% if home.price_overnight %}
+                        <div><span style="font-weight:600;">Qua đêm (21h-8h):</span> {{ "{:,.0f}".format(home.price_overnight) }} VND</div>
+                    {% endif %}
+                    {% if home.price_daytime %}
+                        <div><span style="font-weight:600;">Ban ngày (9h-20h):</span> {{ "{:,.0f}".format(home.price_daytime) }} VND</div>
+                    {% endif %}
                     {% if home.price_per_hour %}
-                        <span style="color: #4a5568; font-weight: 600;">{{ "{:,.0f}".format(home.price_per_hour) }} VND/giờ</span>
-                        {% if home.price_per_hour and home.price_per_night %} | {% endif %}
+                        <div><span style="font-weight:600;">Giá theo giờ:</span> {{ "{:,.0f}".format(home.price_per_hour) }} VND/giờ</div>
+                    {% endif %}
+                    {% if home.price_per_day %}
+                        <div><span style="font-weight:600;">Giá theo ngày:</span> {{ "{:,.0f}".format(home.price_per_day) }} VND/ngày</div>
                     {% endif %}
                     {% if home.price_per_night %}
-                        <span style="color: #4a5568; font-weight: 600;">{{ "{:,.0f}".format(home.price_per_night) }} VND/ngày</span>
+                        <div><span style="font-weight:600;">Giá theo đêm:</span> {{ "{:,.0f}".format(home.price_per_night) }} VND/ngày</div>
+                    {% endif %}
+                    {% if not (home.price_first_2_hours or home.price_per_additional_hour or home.price_overnight or home.price_daytime or home.price_per_hour or home.price_per_day or home.price_per_night) %}
+                        <span style="color: #dc3545; font-weight: 600;">Giá chưa được cập nhật</span>
                     {% endif %}
                 </div>
             </div>

@@ -222,7 +222,13 @@
                                         </div>
                                         <div class="info-content">
                                             <div class="info-label">Price per night</div>
-                                            <div class="info-value">{{ "{:,.0f}".format(booking.home.price_per_night) }} VND</div>
+                                            <div class="info-value">
+                                                {% if booking.home.price_per_night %}
+                                                    {{ "{:,.0f}".format(booking.home.price_per_night) }} VND
+                                                {% else %}
+                                                    Chưa cập nhật
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

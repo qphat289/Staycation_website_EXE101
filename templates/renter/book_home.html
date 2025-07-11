@@ -2,6 +2,64 @@
 {% extends 'base.html' %}
 {% block title %}Book Home: {{ home.title }}{% endblock %}
 
+{% macro daily_booking_block(home) %}
+  <div id="daily-section">
+    <div class="mb-3">
+      <label for="start_date" class="form-label">Ngày nhận phòng</label>
+      <input type="text" class="form-control" id="start_date" name="start_date" required>
+    </div>
+    <div class="mb-3">
+      <label for="duration" class="form-label">Số ngày thuê</label>
+      <input type="number" class="form-control" id="duration" name="duration" min="1" value="1" required>
+    </div>
+    <div class="mb-3">
+      <label for="guests" class="form-label">Số khách</label>
+      <input type="number" class="form-control" id="guests" name="guests" min="1" max="{{ home.max_guests }}" value="1" required>
+    </div>
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5>Tóm tắt đặt phòng</h5>
+        <table class="table table-borderless" id="summary-table-daily">
+          <!-- Nội dung sẽ được cập nhật động bằng JS -->
+        </table>
+      </div>
+    </div>
+    <div id="price-warning-daily"></div>
+    <button type="submit" class="btn btn-primary w-100" id="submit-btn-daily">Xác nhận đặt phòng</button>
+  </div>
+{% endmacro %}
+
+{% macro hourly_booking_block(home) %}
+  <div id="hourly-section">
+    <div class="mb-3">
+      <label for="start_date_hourly" class="form-label">Ngày thuê</label>
+      <input type="text" class="form-control" id="start_date_hourly" name="start_date_hourly" required>
+    </div>
+    <div class="mb-3">
+      <label for="start_time" class="form-label">Giờ bắt đầu</label>
+      <input type="time" class="form-control" id="start_time" name="start_time" required>
+    </div>
+    <div class="mb-3">
+      <label for="duration_hourly" class="form-label">Số giờ thuê</label>
+      <input type="number" class="form-control" id="duration_hourly" name="duration_hourly" min="1" value="2" required>
+    </div>
+    <div class="mb-3">
+      <label for="guests" class="form-label">Số khách</label>
+      <input type="number" class="form-control" id="guests" name="guests" min="1" max="{{ home.max_guests }}" value="1" required>
+    </div>
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5>Tóm tắt đặt phòng</h5>
+        <table class="table table-borderless" id="summary-table-hourly">
+          <!-- Nội dung sẽ được cập nhật động bằng JS -->
+        </table>
+      </div>
+    </div>
+    <div id="price-warning-hourly"></div>
+    <button type="submit" class="btn btn-primary w-100" id="submit-btn-hourly">Xác nhận đặt phòng</button>
+  </div>
+{% endmacro %}
+
 {% block content %}
 <div class="row">
   <div class="col-md-8 mx-auto">
@@ -10,72 +68,26 @@
         <h4 data-translate="book-home">Book Home: {{ home.title }}</h4>
       </div>
       <div class="card-body">
-        <!-- Home booking form -->
         <form method="post" action="{{ url_for('renter.book_home', home_id=home.id) }}" id="booking-form">
-
-          <!-- Home Information Display -->
-          <div class="mb-3">
-            <div class="card bg-light">
-              <div class="card-body">
-                <h6 class="card-title">{{ home.title }}</h6>
-                <p class="card-text">
-                  <small class="text-muted">
-                    <i class="fas fa-map-marker-alt"></i> {{ home.address }}
-                  </small>
-                </p>
-                <p class="card-text">
-                  <span class="badge bg-primary">{{ home.home_type }}</span>
-                  <span class="badge bg-info">{{ home.max_guests }} guests</span>
-                  <span class="badge bg-success">{{ "{:,.0f}".format(home.price_per_night) }} VND/ngày</span>
-                </p>
+          {% set has_daily = home.price_per_night or home.price_per_day %}
+          {% set has_hourly = home.price_first_2_hours or home.price_per_hour or home.price_per_additional_hour or home.price_overnight or home.price_daytime %}
+          {% if has_daily and has_hourly %}
+            <div class="mb-3">
+              <label class="form-label">Chọn loại hình thuê</label>
+              <div>
+                <input type="radio" id="booking_type_daily" name="booking_type" value="daily" checked>
+                <label for="booking_type_daily">Thuê theo ngày</label>
+                <input type="radio" id="booking_type_hourly" name="booking_type" value="hourly" class="ms-3">
+                <label for="booking_type_hourly">Thuê theo giờ</label>
               </div>
             </div>
-          </div>
-
-          <!-- Check-in Date -->
-          <div class="mb-3">
-            <label for="start_date" class="form-label" data-translate="checkin-date">Check-in Date</label>
-            <input type="text" class="form-control" id="start_date" name="start_date" required>
-          </div>
-
-          <!-- Duration in Days -->
-          <div class="mb-3">
-            <label for="duration" class="form-label" data-translate="duration-days">Duration (in days)</label>
-            <input type="number" class="form-control" id="duration" name="duration" min="1" value="1" required>
-          </div>
-
-          <!-- Number of Guests -->
-          <div class="mb-3">
-            <label for="guests" class="form-label" data-translate="guests">Number of Guests</label>
-            <input type="number" class="form-control" id="guests" name="guests" min="1" max="{{ home.max_guests }}" value="1" required>
-          </div>
-
-          <!-- Booking Summary -->
-          <div class="card mb-3">
-            <div class="card-body">
-              <h5 data-translate="booking-summary">Booking Summary</h5>
-              <table class="table table-borderless">
-                <tr>
-                  <td data-translate="price-per-night">Price per Night</td>
-                  <td class="text-end" id="price-per-night">{{ "{:,.0f}".format(home.price_per_night) }} VND</td>
-                </tr>
-                <tr>
-                  <td data-translate="duration-days">Duration (days)</td>
-                  <td class="text-end" id="duration-display">1</td>
-                </tr>
-                <tr>
-                  <td data-translate="guests">Guests</td>
-                  <td class="text-end" id="guests-display">1</td>
-                </tr>
-                <tr class="fw-bold">
-                  <td data-translate="total-price">Total</td>
-                  <td class="text-end" id="total-price">{{ "{:,.0f}".format(home.price_per_night) }} VND</td>
-                </tr>
-              </table>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100" data-translate="confirm-booking">Confirm Booking</button>
+            <div id="hybrid-daily-block">{{ daily_booking_block(home) }}</div>
+            <div id="hybrid-hourly-block" style="display:none;">{{ hourly_booking_block(home) }}</div>
+          {% elif has_hourly and not has_daily %}
+            {{ hourly_booking_block(home) }}
+          {% else %}
+            {{ daily_booking_block(home) }}
+          {% endif %}
         </form>
       </div>
     </div>
@@ -90,50 +102,98 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-  // Initialize flatpickr on the date input
-  flatpickr("#start_date", {
-    minDate: "today",
-    dateFormat: "Y-m-d"
-  });
-
-  // Grab elements for summary calculation
-  const durationInput = document.getElementById('duration');
-  const guestsInput = document.getElementById('guests');
-  const durationDisplay = document.getElementById('duration-display');
-  const guestsDisplay = document.getElementById('guests-display');
-  const totalPriceEl = document.getElementById('total-price');
-  const pricePerNight = {{ home.price_per_night }};
-
-  // Function to update booking summary
-  function updateSummary() {
+  flatpickr("#start_date_hourly", { minDate: "today", dateFormat: "Y-m-d" });
+  flatpickr("#start_date", { minDate: "today", dateFormat: "Y-m-d" });
+  // Giá
+  const pricePerNight = {{ home.price_per_night or 0 }};
+  const pricePerDay = {{ home.price_per_day or 0 }};
+  const priceFirst2Hours = {{ home.price_first_2_hours or 0 }};
+  const pricePerAdditionalHour = {{ home.price_per_additional_hour or 0 }};
+  const priceOvernight = {{ home.price_overnight or 0 }};
+  const priceDaytime = {{ home.price_daytime or 0 }};
+  const pricePerHour = {{ home.price_per_hour or 0 }};
+  // DOM
+  const bookingTypeDaily = document.getElementById('booking_type_daily');
+  const bookingTypeHourly = document.getElementById('booking_type_hourly');
+  const hybridDailyBlock = document.getElementById('hybrid-daily-block');
+  const hybridHourlyBlock = document.getElementById('hybrid-hourly-block');
+  // Chuyển đổi loại hình
+  if (bookingTypeDaily && bookingTypeHourly && hybridDailyBlock && hybridHourlyBlock) {
+    bookingTypeDaily.addEventListener('change', function() {
+      if (this.checked) {
+        hybridDailyBlock.style.display = '';
+        hybridHourlyBlock.style.display = 'none';
+      }
+    });
+    bookingTypeHourly.addEventListener('change', function() {
+      if (this.checked) {
+        hybridDailyBlock.style.display = 'none';
+        hybridHourlyBlock.style.display = '';
+      }
+    });
+  }
+  // Tính tiền daily
+  function updateSummaryDaily() {
     const duration = parseInt(durationInput.value) || 1;
-    const guests = parseInt(guestsInput.value) || 1;
-    
-    durationDisplay.textContent = duration;
-    guestsDisplay.textContent = guests;
-
-    // Calculate total price (price per night * duration)
-    const totalPrice = duration * pricePerNight;
-    totalPriceEl.textContent = (totalPrice.toLocaleString('vi-VN') + ' VND');
+    const price = pricePerDay > 0 ? pricePerDay : pricePerNight;
+    let valid = true;
+    let warning = '';
+    let total = 0;
+    if (price > 0) {
+      total = duration * price;
+    } else {
+      valid = false;
+      warning = 'Nhà này chưa có giá theo ngày.';
+    }
+    let html = '';
+    html += `<tr><td>Giá/ngày</td><td class="text-end">${valid ? price.toLocaleString('vi-VN') + ' VND' : 'Chưa cập nhật'}</td></tr>`;
+    html += `<tr><td>Số ngày</td><td class="text-end">${duration}</td></tr>`;
+    html += `<tr><td>Số khách</td><td class="text-end">${guestsInput.value}</td></tr>`;
+    html += `<tr class="fw-bold"><td>Tổng tiền</td><td class="text-end">${valid ? total.toLocaleString('vi-VN') + ' VND' : 'Chưa cập nhật'}</td></tr>`;
+    summaryTableDaily.innerHTML = html;
+    if (!valid) {
+      priceWarningDaily.innerHTML = `<div class='alert alert-warning mt-2'>${warning}</div>`;
+      submitBtnDaily.disabled = true;
+    } else {
+      priceWarningDaily.innerHTML = '';
+      submitBtnDaily.disabled = false;
+    }
   }
-
-  durationInput.addEventListener('input', updateSummary);
-  guestsInput.addEventListener('input', updateSummary);
-  updateSummary();
-  
-  // Function to set up the page for translation
-  document.addEventListener('DOMContentLoaded', function() {
-    // Update content initially
-    updateTranslations();
-    
-    // Listen to language changes
-    window.addEventListener('languageChanged', updateTranslations);
-  });
-  
-  // Function to update translations
-  function updateTranslations() {
-    // The data-translate elements will be handled by the main translation system
-    // Any additional translation logic can be added here
+  if (durationInput) durationInput.addEventListener('input', updateSummaryDaily);
+  if (guestsInput) guestsInput.addEventListener('input', updateSummaryDaily);
+  updateSummaryDaily();
+  // Tính tiền hourly (giữ nguyên logic đã có)
+  function updateSummaryHourly() {
+    const duration = parseInt(durationHourlyInput.value) || 2;
+    let price = 0;
+    let valid = true;
+    let warning = '';
+    if (duration <= 2 && priceFirst2Hours > 0) {
+      price = priceFirst2Hours;
+    } else if (duration > 2 && priceFirst2Hours > 0 && pricePerAdditionalHour > 0) {
+      price = priceFirst2Hours + (duration - 2) * pricePerAdditionalHour;
+    } else if (pricePerHour > 0) {
+      price = duration * pricePerHour;
+    } else {
+      valid = false;
+      warning = 'Nhà này chưa có giá theo giờ.';
+    }
+    let html = '';
+    html += `<tr><td>Giá thuê</td><td class="text-end">${valid ? price.toLocaleString('vi-VN') + ' VND' : 'Chưa cập nhật'}</td></tr>`;
+    html += `<tr><td>Số giờ</td><td class="text-end">${duration}</td></tr>`;
+    html += `<tr><td>Số khách</td><td class="text-end">${guestsInput.value}</td></tr>`;
+    html += `<tr class="fw-bold"><td>Tổng tiền</td><td class="text-end">${valid ? price.toLocaleString('vi-VN') + ' VND' : 'Chưa cập nhật'}</td></tr>`;
+    summaryTableHourly.innerHTML = html;
+    if (!valid) {
+      priceWarningHourly.innerHTML = `<div class='alert alert-warning mt-2'>${warning}</div>`;
+      submitBtnHourly.disabled = true;
+    } else {
+      priceWarningHourly.innerHTML = '';
+      submitBtnHourly.disabled = false;
+    }
   }
+  if (durationHourlyInput) durationHourlyInput.addEventListener('input', updateSummaryHourly);
+  if (guestsInput) guestsInput.addEventListener('input', updateSummaryHourly);
+  updateSummaryHourly();
 </script>
 {% endblock %} 

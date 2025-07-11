@@ -78,9 +78,30 @@
                                     {% if booking.booking_type == 'hourly' %}
                                         Theo giờ ({{ booking.total_hours }} giờ)
                                     {% else %}
-                                        Qua đêm
+                                        Theo ngày ({{ (booking.end_time - booking.start_time).days }} ngày)
                                     {% endif %}
                                 </p>
+                                {% if booking.booking_type == 'hourly' %}
+                                    <p><strong>Chi tiết giá:</strong></p>
+                                    <ul class="mb-0">
+                                        {% set home = booking.home %}
+                                        {% if booking.total_hours <= 2 and home.price_first_2_hours %}
+                                            <li>2 giờ đầu: {{ "{:,.0f}".format(home.price_first_2_hours) }} VND</li>
+                                        {% elif booking.total_hours > 2 and home.price_first_2_hours and home.price_per_additional_hour %}
+                                            <li>2 giờ đầu: {{ "{:,.0f}".format(home.price_first_2_hours) }} VND</li>
+                                            <li>{{ booking.total_hours - 2 }} giờ tiếp theo: {{ "{:,.0f}".format((booking.total_hours - 2) * home.price_per_additional_hour) }} VND</li>
+                                        {% elif home.price_per_hour %}
+                                            <li>{{ booking.total_hours }} giờ: {{ "{:,.0f}".format(booking.total_hours * home.price_per_hour) }} VND</li>
+                                        {% endif %}
+                                    </ul>
+                                {% elif booking.booking_type == 'daily' %}
+                                    <p><strong>Chi tiết giá:</strong></p>
+                                    <ul class="mb-0">
+                                        {% set home = booking.home %}
+                                        {% set price = home.price_per_day if home.price_per_day and home.price_per_day > 0 else home.price_per_night %}
+                                        <li>{{ (booking.end_time - booking.start_time).days }} ngày × {{ "{:,.0f}".format(price) }} VND/ngày</li>
+                                    </ul>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

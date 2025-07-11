@@ -2843,7 +2843,13 @@ nav[aria-label="Page navigation"] {
                                     <tr>
                                         <td>{{ room.name }}</td>
                                         <td>{{ room.address }}</td>
-                                        <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VND</td>
+                                        <td>
+                                            {% if room.price_per_night %}
+                                                {{ '{:,.0f}'.format(room.price_per_night) }} VND
+                                            {% else %}
+                                                Chưa cập nhật
+                                            {% endif %}
+                                        </td>
                                         <td>
                                             <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
                                                 {{ 'Còn trống' if room.is_available else 'Đã đặt' }}

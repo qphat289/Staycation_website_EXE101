@@ -596,7 +596,13 @@ nav.navbar {
                             <tr>
                                 <td>{{ room.name }}</td>
                                 <td>{{ format_full_address(room.address, None, room.district, room.city) }}</td>
-                                <td>{{ '{:,.0f}'.format(room.price_per_night|float) }} VND</td>
+                                <td>
+                                    {% if room.price_per_night %}
+                                        {{ '{:,.0f}'.format(room.price_per_night) }} VND
+                                    {% else %}
+                                        Chưa cập nhật
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <span class="badge {% if room.is_available %}badge-success{% else %}badge-inactive{% endif %}">
                                         {{ 'Còn trống' if room.is_available else 'Đã đặt' }}

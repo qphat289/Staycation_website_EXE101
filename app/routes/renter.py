@@ -274,78 +274,134 @@ def view_home(id):
 def book_home(home_id):
     home = Home.query.get_or_404(home_id)
     
+    # Check if home is active
+    if not home.is_active:
+        flash("This home is currently not available for booking.", "danger")
+        return redirect(url_for('renter.view_home_detail', home_id=home.id))
+    
     if request.method == 'POST':
-        start_date = request.form.get('start_date')
-        duration_str = request.form.get('duration')
+        booking_type = request.form.get('booking_type', 'daily')
         guests_str = request.form.get('guests')
-        
-        if not start_date or not duration_str:
-            flash("You must select date and duration.", "warning")
-            return redirect(url_for('renter.book_home', home_id=home.id))
-        
         try:
-            duration = int(duration_str)
             guests = int(guests_str) if guests_str else 1
         except ValueError:
-            flash("Invalid duration or guest count.", "danger")
+            flash("Invalid guest count.", "danger")
             return redirect(url_for('renter.book_home', home_id=home.id))
-        
-        if duration < 1:
-            flash("Minimum duration is 1 night.", "warning")
-            return redirect(url_for('renter.book_home', home_id=home.id))
-        
         if guests > home.max_guests:
             flash(f"Maximum guests allowed: {home.max_guests}", "warning")
             return redirect(url_for('renter.book_home', home_id=home.id))
-        
-        # Check if home has price_per_night
-        if not home.price_per_night:
-            flash("This home does not have daily pricing available.", "danger")
-            return redirect(url_for('renter.book_home', home_id=home.id))
-        
-        # For home bookings, check-in is typically at 3 PM
-        start_str = f"{start_date} 15:00"
-        try:
-            start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
-        except ValueError:
-            flash("Invalid date format.", "danger")
-            return redirect(url_for('renter.book_home', home_id=home.id))
-        
-        end_datetime = start_datetime + timedelta(days=duration)
-        # Calculate total price using the home's price per night
-        total_price = home.price_per_night * duration
-        # Calculate total hours (24 hours per day for daily bookings)
-        total_hours = duration * 24
-        
-        # Check for overlapping bookings for this home (chỉ check với booking chưa bị hủy)
-        existing_bookings = Booking.query.filter(
-            Booking.home_id == home.id,
-            Booking.status.in_(['pending', 'confirmed', 'active'])
-        ).all()
-        for booking in existing_bookings:
-            if start_datetime < booking.end_time and end_datetime > booking.start_time:
-                flash('This home is not available during the selected time period.', 'danger')
-                return redirect(url_for('renter.book_home', home_id=home.id))
-        
-        new_booking = Booking(
-            home_id=home.id,
-            renter_id=current_user.id,
-            start_time=start_datetime,
-            end_time=end_datetime,
-            total_hours=total_hours,
-            total_price=total_price,
-            status='confirmed',
-            payment_status='pending',
-            booking_type='daily'  # Set booking type to daily for home bookings
-        )
-        
-        db.session.add(new_booking)
-        # current_user.experience_points += total_price * 10  # Update user XP based on total price
-        db.session.commit()
 
-        # Redirect directly to payment instead of dashboard
-        flash('Booking created successfully! Please proceed with payment.', 'success')
-        return redirect(url_for('payment.checkout', booking_id=new_booking.id))
+        if booking_type == 'hourly':
+            start_date = request.form.get('start_date_hourly')
+            start_time = request.form.get('start_time')
+            duration_str = request.form.get('duration_hourly')
+            if not start_date or not start_time or not duration_str:
+                flash("Bạn phải chọn ngày, giờ bắt đầu và số giờ thuê.", "warning")
+                return redirect(url_for('renter.book_home', home_id=home.id))
+            try:
+                duration = int(duration_str)
+            except ValueError:
+                flash("Số giờ thuê không hợp lệ.", "danger")
+                return redirect(url_for('renter.book_home', home_id=home.id))
+            if duration < 1:
+                flash("Số giờ thuê tối thiểu là 1.", "warning")
+                return redirect(url_for('renter.book_home', home_id=home.id))
+            # Tính thời gian bắt đầu/kết thúc
+            try:
+                start_datetime = datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M")
+            except ValueError:
+                flash("Định dạng ngày/giờ không hợp lệ.", "danger")
+                return redirect(url_for('renter.book_home', home_id=home.id))
+            end_datetime = start_datetime + timedelta(hours=duration)
+            # Tính tổng tiền
+            total_price = 0
+            if duration <= 2 and home.price_first_2_hours:
+                total_price = home.price_first_2_hours
+            elif duration > 2 and home.price_first_2_hours and home.price_per_additional_hour:
+                total_price = home.price_first_2_hours + (duration - 2) * home.price_per_additional_hour
+            elif home.price_per_hour:
+                total_price = duration * home.price_per_hour
+            else:
+                flash("Nhà này chưa có giá theo giờ.", "warning")
+                return redirect(url_for('renter.book_home', home_id=home.id))
+            # Check for overlapping bookings
+            existing_bookings = Booking.query.filter(
+                Booking.home_id == home.id,
+                Booking.status.in_(['pending', 'confirmed', 'active'])
+            ).all()
+            for booking in existing_bookings:
+                if start_datetime < booking.end_time and end_datetime > booking.start_time:
+                    flash('This home is not available during the selected time period.', 'danger')
+                    return redirect(url_for('renter.book_home', home_id=home.id))
+            new_booking = Booking(
+                home_id=home.id,
+                renter_id=current_user.id,
+                start_time=start_datetime,
+                end_time=end_datetime,
+                total_hours=duration,
+                total_price=total_price,
+                status='confirmed',
+                payment_status='pending',
+                booking_type='hourly'
+            )
+            db.session.add(new_booking)
+            db.session.commit()
+            flash('Booking created successfully! Please proceed with payment.', 'success')
+            return redirect(url_for('payment.checkout', booking_id=new_booking.id))
+        else:
+            # DAILY BOOKING LOGIC (giữ nguyên như cũ, chỉ sửa lấy booking_type)
+            start_date = request.form.get('start_date')
+            duration_str = request.form.get('duration')
+            if not start_date or not duration_str:
+                flash("You must select date and duration.", "warning")
+                return redirect(url_for('renter.book_home', home_id=home.id))
+            try:
+                duration = int(duration_str)
+            except ValueError:
+                flash("Invalid duration.", "danger")
+                return redirect(url_for('renter.book_home', home_id=home.id))
+            if duration < 1:
+                flash("Minimum duration is 1 night.", "warning")
+                return redirect(url_for('renter.book_home', home_id=home.id))
+            # Check if home has price_per_night or price_per_day
+            price = home.price_per_day if home.price_per_day and home.price_per_day > 0 else home.price_per_night
+            if not price or price <= 0:
+                flash("Nhà này chưa có thông tin giá. Vui lòng liên hệ chủ nhà để cập nhật giá trước khi đặt.", "warning")
+                return redirect(url_for('renter.view_home_detail', home_id=home.id))
+            # For home bookings, check-in is typically at 3 PM
+            start_str = f"{start_date} 15:00"
+            try:
+                start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
+            except ValueError:
+                flash("Invalid date format.", "danger")
+                return redirect(url_for('renter.book_home', home_id=home.id))
+            end_datetime = start_datetime + timedelta(days=duration)
+            total_price = price * duration
+            total_hours = duration * 24
+            # Check for overlapping bookings
+            existing_bookings = Booking.query.filter(
+                Booking.home_id == home.id,
+                Booking.status.in_(['pending', 'confirmed', 'active'])
+            ).all()
+            for booking in existing_bookings:
+                if start_datetime < booking.end_time and end_datetime > booking.start_time:
+                    flash('This home is not available during the selected time period.', 'danger')
+                    return redirect(url_for('renter.book_home', home_id=home.id))
+            new_booking = Booking(
+                home_id=home.id,
+                renter_id=current_user.id,
+                start_time=start_datetime,
+                end_time=end_datetime,
+                total_hours=total_hours,
+                total_price=total_price,
+                status='confirmed',
+                payment_status='pending',
+                booking_type='daily'
+            )
+            db.session.add(new_booking)
+            db.session.commit()
+            flash('Booking created successfully! Please proceed with payment.', 'success')
+            return redirect(url_for('payment.checkout', booking_id=new_booking.id))
 
     return render_template('renter/book_home.html', home=home)
   
