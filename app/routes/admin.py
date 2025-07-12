@@ -564,7 +564,9 @@ def create_owner():
                 full_name=full_name,
                 username=username,
                 email=email,
-                phone=phone
+                phone=phone,
+                email_verified= False, 
+                first_login= True
             )
             new_owner.set_password(password)
             db.session.add(new_owner)
@@ -813,7 +815,8 @@ def add_owner():
     # Kiểm tra phone đã tồn tại chưa (tất cả user types)
     existing_renter_phone = Renter.query.filter_by(phone=phone).first()
     existing_owner_phone = Owner.query.filter_by(phone=phone).first()
-    existing_admin_phone = Admin.query.filter_by(phone=phone).first()
+    # existing_admin_phone = Admin.query.filter_by(phone=phone).first()  # Admin không có trường phone
+    existing_admin_phone = None
     
     if existing_renter_phone or existing_owner_phone or existing_admin_phone:
         return jsonify({'error': 'Số điện thoại đã được sử dụng bởi tài khoản khác'}), 400
@@ -827,8 +830,8 @@ def add_owner():
             first_name=first_name,
             last_name=last_name,
             full_name=f"{first_name} {last_name}",
-            email_verified=True,  # Admin tạo thì auto verify
-            first_login=False
+            email_verified=False,  # Owner phải verify email lần đầu
+            first_login=True
         )
         new_owner.set_password(password)
         

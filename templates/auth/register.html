@@ -196,11 +196,6 @@
                    autocomplete="new-password"
                    placeholder=""
             >
-            <button class="btn btn-outline-secondary" 
-                    type="button" 
-                    id="togglePassword">
-              <i class="bi bi-eye"></i>
-            </button>
           </div>
           <div id="passwordStrength" class="mt-2"></div>
         </div>
@@ -217,11 +212,6 @@
                    autocomplete="new-password"
                    placeholder=""
             >
-            <button class="btn btn-outline-secondary" 
-                    type="button" 
-                    id="toggleConfirmPassword">
-              <i class="bi bi-eye"></i>
-            </button>
           </div>
           <div id="passwordMatch" class="mt-2"></div>
         </div>
@@ -661,34 +651,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmPasswordInput = document.getElementById('confirm_password');
     const passwordStrength = document.getElementById('passwordStrength');
     const passwordMatch = document.getElementById('passwordMatch');
-    const togglePassword = document.getElementById('togglePassword');
-    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
-    
-    // Toggle password visibility
-    if (togglePassword) {
-        togglePassword.addEventListener('click', function() {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('bi-eye');
-            this.querySelector('i').classList.toggle('bi-eye-slash');
-        });
-    }
-    
-    if (toggleConfirmPassword) {
-        toggleConfirmPassword.addEventListener('click', function() {
-            const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            confirmPasswordInput.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('bi-eye');
-            this.querySelector('i').classList.toggle('bi-eye-slash');
-        });
-    }
     
     // Password strength evaluation
     if (passwordInput) {
         passwordInput.addEventListener('input', function() {
             const password = this.value;
             evaluatePasswordStrength(password);
-            checkPasswordMatch();
         });
     }
     

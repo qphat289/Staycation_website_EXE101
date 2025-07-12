@@ -78,7 +78,8 @@ def register():
         if phone:
             existing_renter_phone = Renter.query.filter_by(phone=phone).first()
             existing_owner_phone = Owner.query.filter_by(phone=phone).first()
-            existing_admin_phone = Admin.query.filter_by(phone=phone).first()
+            # existing_admin_phone = Admin.query.filter_by(phone=phone).first()  # Admin không có trường phone
+            existing_admin_phone = None
             
             if existing_renter_phone or existing_owner_phone or existing_admin_phone:
                 flash('Số điện thoại đã được sử dụng bởi tài khoản khác', 'danger')

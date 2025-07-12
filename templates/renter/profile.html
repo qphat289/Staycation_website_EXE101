@@ -356,12 +356,31 @@ if (window.MutationObserver) {
                                     <i class="fas fa-envelope me-1"></i>
                                     Email
                                 </label>
-                                <input type="email" 
-                                       class="form-control form-input-renter" 
-                                       id="email" 
-                                       name="email" 
-                                       value="{{ current_user.email }}"
-                                       required>
+                                <div class="email-container">
+                                    <input type="email"
+                                           class="form-control form-input-renter email-input"
+                                           id="email"
+                                           name="email"
+                                           value="{{ current_user.email }}"
+                                           required
+                                           disabled>
+                                    {% if current_user.email_verified %}
+                                    <div class="verified-badge">
+                                        <div class="verified-icon">
+                                            <i class="fas fa-shield-check"></i>
+                                        </div>
+                                        <span class="verified-text">Đã xác thực</span>
+                                    </div>
+                                    {% else %}
+                                    <div class="verified-badge" style="background: linear-gradient(135deg, #ffe066 0%, #ffc107 100%); color: #856404; box-shadow: 0 1px 4px rgba(255, 224, 102, 0.3);">
+                                        <div class="verified-icon">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <span class="verified-text">Chưa xác thực</span>
+                                        <a href="{{ url_for('renter.verify_email') }}" class="btn btn-sm btn-outline-primary ms-2" style="padding: 2px 10px; font-size: 10px; border-radius: 10px;">Xác thực ngay</a>
+                                    </div>
+                                    {% endif %}
+                                </div>
                                 <div class="invalid-feedback">
                                     Vui lòng nhập email hợp lệ
                                 </div>
@@ -798,6 +817,68 @@ if (window.MutationObserver) {
     100% {
         box-shadow: 0 5px 15px rgba(158, 214, 73, 0.2);
     }
+}
+
+/* Thêm style giống owner cho renter email badge */
+.email-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.email-input {
+    flex: 1;
+    padding: 15px 60px 15px 16px;
+    background: linear-gradient(135deg, #E0EC9B 0%, #f0f8d0 100%);
+    border: 1.5px solid #C3D600;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #101917;
+    box-shadow: 0 2px 8px rgba(224, 236, 155, 0.2);
+    height: 48px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+.verified-badge {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: linear-gradient(135deg, #34C759 0%, #28a745 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 15px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    box-shadow: 0 1px 4px rgba(52, 199, 89, 0.3);
+    animation: verified-glow 2s ease-in-out infinite alternate;
+    z-index: 2;
+}
+.verified-badge .btn-outline-primary {
+    margin-left: 0.5rem;
+    padding: 2px 10px;
+    font-size: 10px;
+    border-radius: 10px;
+    height: 22px;
+    line-height: 1.2;
+}
+.verified-badge .verified-icon {
+    font-size: 10px;
+    color: inherit;
+}
+.verified-badge .verified-text {
+    font-size: 8px;
+    font-weight: 700;
+}
+@keyframes verified-glow {
+    from { box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3); }
+    to { box-shadow: 0 4px 16px rgba(52, 199, 89, 0.5); }
 }
 
 @media (max-width: 768px) {
