@@ -13,24 +13,44 @@
       <input type="number" class="form-control" id="duration" name="duration" min="1" value="1" required>
     </div>
     <div class="mb-3">
-      <label for="guests" class="form-label">Số khách</label>
-      <input type="number" class="form-control" id="guests" name="guests" min="1" max="{{ home.max_guests }}" value="1" required>
+      <label for="guests_daily" class="form-label">Số khách</label>
+      <input type="number" class="form-control" id="guests_daily" name="guests" min="1" max="{{ home.max_guests }}" value="1" required>
     </div>
     <div class="card mb-3">
       <div class="card-body">
         <h5>Tóm tắt đặt phòng</h5>
-        <table class="table table-borderless" id="summary-table-daily">
-          <!-- Nội dung sẽ được cập nhật động bằng JS -->
-        </table>
+        <p class="text-muted">Giá sẽ được tính toán sau khi bạn nhấn "Xác nhận đặt phòng"</p>
       </div>
     </div>
-    <div id="price-warning-daily"></div>
-    <button type="submit" class="btn btn-primary w-100" id="submit-btn-daily">Xác nhận đặt phòng</button>
+    <button type="submit" class="btn btn-primary w-100">Xác nhận đặt phòng</button>
   </div>
 {% endmacro %}
 
 {% macro hourly_booking_block(home) %}
   <div id="hourly-section">
+    <!-- Hiển thị thông tin giá -->
+    {% if home.price_overnight or home.price_daytime %}
+    <div class="alert alert-info mb-3">
+      <h6 class="mb-2">💡 Giá theo khung giờ đặc biệt:</h6>
+      <div class="row">
+        {% if home.price_overnight %}
+        <div class="col-md-6">
+          <span class="badge bg-primary">🌙 Qua đêm (21h-8h)</span>
+          <br><strong>{{ "{:,.0f}".format(home.price_overnight) }} VND</strong>
+          <br><small class="text-muted">Áp dụng cho booking từ 8h trở lên</small>
+        </div>
+        {% endif %}
+        {% if home.price_daytime %}
+        <div class="col-md-6">
+          <span class="badge bg-info">☀️ Qua ngày (9h-20h)</span>
+          <br><strong>{{ "{:,.0f}".format(home.price_daytime) }} VND</strong>
+          <br><small class="text-muted">Áp dụng cho booking từ 8h trở lên</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    
     <div class="mb-3">
       <label for="start_date_hourly" class="form-label">Ngày thuê</label>
       <input type="text" class="form-control" id="start_date_hourly" name="start_date_hourly" required>
@@ -44,19 +64,16 @@
       <input type="number" class="form-control" id="duration_hourly" name="duration_hourly" min="1" value="2" required>
     </div>
     <div class="mb-3">
-      <label for="guests" class="form-label">Số khách</label>
-      <input type="number" class="form-control" id="guests" name="guests" min="1" max="{{ home.max_guests }}" value="1" required>
+      <label for="guests_hourly" class="form-label">Số khách</label>
+      <input type="number" class="form-control" id="guests_hourly" name="guests" min="1" max="{{ home.max_guests }}" value="1" required>
     </div>
     <div class="card mb-3">
       <div class="card-body">
         <h5>Tóm tắt đặt phòng</h5>
-        <table class="table table-borderless" id="summary-table-hourly">
-          <!-- Nội dung sẽ được cập nhật động bằng JS -->
-        </table>
+        <p class="text-muted">Giá sẽ được tính toán sau khi bạn nhấn "Xác nhận đặt phòng"</p>
       </div>
     </div>
-    <div id="price-warning-hourly"></div>
-    <button type="submit" class="btn btn-primary w-100" id="submit-btn-hourly">Xác nhận đặt phòng</button>
+    <button type="submit" class="btn btn-primary w-100">Xác nhận đặt phòng</button>
   </div>
 {% endmacro %}
 
@@ -102,98 +119,101 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize date pickers
   flatpickr("#start_date_hourly", { minDate: "today", dateFormat: "Y-m-d" });
   flatpickr("#start_date", { minDate: "today", dateFormat: "Y-m-d" });
-  // Giá
-  const pricePerNight = {{ home.price_per_night or 0 }};
-  const pricePerDay = {{ home.price_per_day or 0 }};
-  const priceFirst2Hours = {{ home.price_first_2_hours or 0 }};
-  const pricePerAdditionalHour = {{ home.price_per_additional_hour or 0 }};
-  const priceOvernight = {{ home.price_overnight or 0 }};
-  const priceDaytime = {{ home.price_daytime or 0 }};
-  const pricePerHour = {{ home.price_per_hour or 0 }};
-  // DOM
-  const bookingTypeDaily = document.getElementById('booking_type_daily');
-  const bookingTypeHourly = document.getElementById('booking_type_hourly');
-  const hybridDailyBlock = document.getElementById('hybrid-daily-block');
-  const hybridHourlyBlock = document.getElementById('hybrid-hourly-block');
-  // Chuyển đổi loại hình
-  if (bookingTypeDaily && bookingTypeHourly && hybridDailyBlock && hybridHourlyBlock) {
-    bookingTypeDaily.addEventListener('change', function() {
+  
+  // Simple booking type switching
+  const dailyRadio = document.getElementById('booking_type_daily');
+  const hourlyRadio = document.getElementById('booking_type_hourly');
+  const dailyBlock = document.getElementById('hybrid-daily-block');
+  const hourlyBlock = document.getElementById('hybrid-hourly-block');
+  
+  if (dailyRadio && hourlyRadio && dailyBlock && hourlyBlock) {
+    dailyRadio.addEventListener('change', function() {
       if (this.checked) {
-        hybridDailyBlock.style.display = '';
-        hybridHourlyBlock.style.display = 'none';
+        dailyBlock.style.display = '';
+        hourlyBlock.style.display = 'none';
+        
+        // Disable required fields in hourly block
+        document.getElementById('start_date_hourly').required = false;
+        document.getElementById('start_time').required = false;
+        document.getElementById('duration_hourly').required = false;
+        document.getElementById('guests_hourly').required = false;
+        
+        // Enable required fields in daily block
+        document.getElementById('start_date').required = true;
+        document.getElementById('duration').required = true;
+        document.getElementById('guests_daily').required = true;
       }
     });
-    bookingTypeHourly.addEventListener('change', function() {
+    
+    hourlyRadio.addEventListener('change', function() {
       if (this.checked) {
-        hybridDailyBlock.style.display = 'none';
-        hybridHourlyBlock.style.display = '';
+        dailyBlock.style.display = 'none';
+        hourlyBlock.style.display = '';
+        
+        // Disable required fields in daily block
+        document.getElementById('start_date').required = false;
+        document.getElementById('duration').required = false;
+        document.getElementById('guests_daily').required = false;
+        
+        // Enable required fields in hourly block
+        document.getElementById('start_date_hourly').required = true;
+        document.getElementById('start_time').required = true;
+        document.getElementById('duration_hourly').required = true;
+        document.getElementById('guests_hourly').required = true;
       }
     });
   }
-  // Tính tiền daily
-  function updateSummaryDaily() {
-    const duration = parseInt(durationInput.value) || 1;
-    const price = pricePerDay > 0 ? pricePerDay : pricePerNight;
-    let valid = true;
-    let warning = '';
-    let total = 0;
-    if (price > 0) {
-      total = duration * price;
-    } else {
-      valid = false;
-      warning = 'Nhà này chưa có giá theo ngày.';
-    }
-    let html = '';
-    html += `<tr><td>Giá/ngày</td><td class="text-end">${valid ? price.toLocaleString('vi-VN') + ' VND' : 'Chưa cập nhật'}</td></tr>`;
-    html += `<tr><td>Số ngày</td><td class="text-end">${duration}</td></tr>`;
-    html += `<tr><td>Số khách</td><td class="text-end">${guestsInput.value}</td></tr>`;
-    html += `<tr class="fw-bold"><td>Tổng tiền</td><td class="text-end">${valid ? total.toLocaleString('vi-VN') + ' VND' : 'Chưa cập nhật'}</td></tr>`;
-    summaryTableDaily.innerHTML = html;
-    if (!valid) {
-      priceWarningDaily.innerHTML = `<div class='alert alert-warning mt-2'>${warning}</div>`;
-      submitBtnDaily.disabled = true;
-    } else {
-      priceWarningDaily.innerHTML = '';
-      submitBtnDaily.disabled = false;
-    }
+  
+  // Form submission handler
+  const form = document.getElementById('booking-form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      // Check which booking type is selected
+      const dailyRadio = document.getElementById('booking_type_daily');
+      const hourlyRadio = document.getElementById('booking_type_hourly');
+      const selectedType = dailyRadio && dailyRadio.checked ? 'daily' : 'hourly';
+      
+      // Check required fields based on booking type
+      if (selectedType === 'daily') {
+        const startDate = document.getElementById('start_date').value;
+        const duration = document.getElementById('duration').value;
+        const guests = document.getElementById('guests_daily').value;
+        
+        if (!startDate || !duration || !guests) {
+          alert('Vui lòng điền đầy đủ thông tin: Ngày nhận phòng, Số ngày thuê, Số khách');
+          e.preventDefault();
+          return false;
+        }
+      } else {
+        const startDateHourly = document.getElementById('start_date_hourly').value;
+        const startTime = document.getElementById('start_time').value;
+        const durationHourly = document.getElementById('duration_hourly').value;
+        const guests = document.getElementById('guests_hourly').value;
+        
+        if (!startDateHourly || !startTime || !durationHourly || !guests) {
+          alert('Vui lòng điền đầy đủ thông tin: Ngày thuê, Giờ bắt đầu, Số giờ thuê, Số khách');
+          e.preventDefault();
+          return false;
+        }
+      }
+      
+      // Let the form submit normally
+      return true;
+    });
   }
-  if (durationInput) durationInput.addEventListener('input', updateSummaryDaily);
-  if (guestsInput) guestsInput.addEventListener('input', updateSummaryDaily);
-  updateSummaryDaily();
-  // Tính tiền hourly (giữ nguyên logic đã có)
-  function updateSummaryHourly() {
-    const duration = parseInt(durationHourlyInput.value) || 2;
-    let price = 0;
-    let valid = true;
-    let warning = '';
-    if (duration <= 2 && priceFirst2Hours > 0) {
-      price = priceFirst2Hours;
-    } else if (duration > 2 && priceFirst2Hours > 0 && pricePerAdditionalHour > 0) {
-      price = priceFirst2Hours + (duration - 2) * pricePerAdditionalHour;
-    } else if (pricePerHour > 0) {
-      price = duration * pricePerHour;
-    } else {
-      valid = false;
-      warning = 'Nhà này chưa có giá theo giờ.';
-    }
-    let html = '';
-    html += `<tr><td>Giá thuê</td><td class="text-end">${valid ? price.toLocaleString('vi-VN') + ' VND' : 'Chưa cập nhật'}</td></tr>`;
-    html += `<tr><td>Số giờ</td><td class="text-end">${duration}</td></tr>`;
-    html += `<tr><td>Số khách</td><td class="text-end">${guestsInput.value}</td></tr>`;
-    html += `<tr class="fw-bold"><td>Tổng tiền</td><td class="text-end">${valid ? price.toLocaleString('vi-VN') + ' VND' : 'Chưa cập nhật'}</td></tr>`;
-    summaryTableHourly.innerHTML = html;
-    if (!valid) {
-      priceWarningHourly.innerHTML = `<div class='alert alert-warning mt-2'>${warning}</div>`;
-      submitBtnHourly.disabled = true;
-    } else {
-      priceWarningHourly.innerHTML = '';
-      submitBtnHourly.disabled = false;
-    }
+  
+  // Initialize form state based on default selection
+  if (dailyRadio && dailyRadio.checked) {
+    // Daily is selected by default, disable hourly fields
+    document.getElementById('start_date_hourly').required = false;
+    document.getElementById('start_time').required = false;
+    document.getElementById('duration_hourly').required = false;
+    document.getElementById('guests_hourly').required = false;
   }
-  if (durationHourlyInput) durationHourlyInput.addEventListener('input', updateSummaryHourly);
-  if (guestsInput) guestsInput.addEventListener('input', updateSummaryHourly);
-  updateSummaryHourly();
+});
 </script>
 {% endblock %} 

@@ -312,6 +312,7 @@ def book_home(home_id):
     
     if request.method == 'POST':
         booking_type = request.form.get('booking_type', 'daily')
+        
         guests_str = request.form.get('guests')
         try:
             guests = int(guests_str) if guests_str else 1
@@ -344,16 +345,36 @@ def book_home(home_id):
                 flash("Định dạng ngày/giờ không hợp lệ.", "danger")
                 return redirect(url_for('renter.book_home', home_id=home.id))
             end_datetime = start_datetime + timedelta(hours=duration)
-            # Tính tổng tiền
+            
+            # Tính tổng tiền dựa trên thời gian và loại giá
             total_price = 0
-            if duration <= 2 and home.price_first_2_hours:
+            
+            # Kiểm tra xem thời gian đặt có phù hợp với giá qua đêm hay qua ngày không
+            start_hour = start_datetime.hour
+            end_hour = end_datetime.hour
+            
+            # Qua đêm: 21h-8h
+            is_overnight = (start_hour >= 21 or start_hour <= 8) and home.price_overnight
+            # Qua ngày: 9h-20h  
+            is_daytime = (start_hour >= 9 and start_hour <= 20) and home.price_daytime
+            
+            if is_overnight and duration >= 8:
+                # Sử dụng giá qua đêm cho booking từ 8h trở lên trong khung giờ 21h-8h
+                total_price = home.price_overnight
+            elif is_daytime and duration >= 8:
+                # Sử dụng giá qua ngày cho booking từ 8h trở lên trong khung giờ 9h-20h
+                total_price = home.price_daytime
+            elif duration <= 2 and home.price_first_2_hours:
+                # Giá 2 giờ đầu
                 total_price = home.price_first_2_hours
             elif duration > 2 and home.price_first_2_hours and home.price_per_additional_hour:
+                # Giá 2 giờ đầu + giá các giờ sau
                 total_price = home.price_first_2_hours + (duration - 2) * home.price_per_additional_hour
             elif home.price_per_hour:
+                # Giá theo giờ thông thường
                 total_price = duration * home.price_per_hour
             else:
-                flash("Nhà này chưa có giá theo giờ.", "warning")
+                flash("Nhà này chưa có giá phù hợp với thời gian bạn chọn.", "warning")
                 return redirect(url_for('renter.book_home', home_id=home.id))
             # Check for overlapping bookings
             existing_bookings = Booking.query.filter(
@@ -380,7 +401,7 @@ def book_home(home_id):
             flash('Booking created successfully! Please proceed with payment.', 'success')
             return redirect(url_for('payment.checkout', booking_id=new_booking.id))
         else:
-            # DAILY BOOKING LOGIC (giữ nguyên như cũ, chỉ sửa lấy booking_type)
+            # DAILY BOOKING LOGIC
             start_date = request.form.get('start_date')
             duration_str = request.form.get('duration')
             if not start_date or not duration_str:
