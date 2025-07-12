@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from app.models.models import db, Admin, Owner, Renter, Home, Booking, Statistics, Review
 from app.utils.utils import allowed_file
+from app.utils.password_validator import PasswordValidator
 from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
@@ -766,38 +767,68 @@ def add_owner():
         return jsonify({'error': 'Bạn không có quyền thực hiện thao tác này'}), 401
     
     data = request.json
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
     username = data.get('username')
     email = data.get('email')
+    phone = data.get('phone')
     password = data.get('password')
     confirm_password = data.get('confirm_password')
     
     # Kiểm tra dữ liệu đầu vào
-    if not username:
-        return jsonify({'error': 'Vui lòng nhập tên đăng nhập'}), 400
-    if not email:
-        return jsonify({'error': 'Vui lòng nhập email'}), 400
-    if not password:
-        return jsonify({'error': 'Vui lòng nhập mật khẩu'}), 400
-    if not confirm_password:
-        return jsonify({'error': 'Vui lòng xác nhận mật khẩu'}), 400
+    if not all([first_name, last_name, username, email, phone, password, confirm_password]):
+        return jsonify({'error': 'Vui lòng điền đầy đủ thông tin bắt buộc'}), 400
     
     # Kiểm tra mật khẩu khớp nhau
     if password != confirm_password:
         return jsonify({'error': 'Mật khẩu xác nhận không khớp'}), 400
+    
+    # Validate password strength
+    password_evaluation = PasswordValidator.evaluate_password(password)
+    if not password_evaluation['is_acceptable']:
+        return jsonify({'error': 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.'}), 400
         
-    # Kiểm tra username và email đã tồn tại chưa
-    if Owner.query.filter_by(username=username).first():
+    # Kiểm tra username đã tồn tại chưa (tất cả user types)
+    existing_renter = Renter.query.filter_by(username=username).first()
+    existing_owner = Owner.query.filter_by(username=username).first()
+    existing_admin = Admin.query.filter_by(username=username).first()
+    
+    if existing_renter or existing_owner or existing_admin:
         return jsonify({'error': 'Tên đăng nhập đã tồn tại'}), 400
-        
-    if Owner.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email đã được sử dụng'}), 400
+    
+    # Process and validate email
+    from app.utils.email_validator import process_email
+    cleaned_email, is_valid_email = process_email(email)
+    if not is_valid_email:
+        return jsonify({'error': 'Email không hợp lệ'}), 400
+    
+    # Kiểm tra email đã tồn tại chưa (tất cả user types)
+    existing_renter_email = Renter.query.filter_by(email=cleaned_email).first()
+    existing_owner_email = Owner.query.filter_by(email=cleaned_email).first()
+    existing_admin_email = Admin.query.filter_by(email=cleaned_email).first()
+    
+    if existing_renter_email or existing_owner_email or existing_admin_email:
+        return jsonify({'error': 'Email đã được sử dụng bởi tài khoản khác'}), 400
+    
+    # Kiểm tra phone đã tồn tại chưa (tất cả user types)
+    existing_renter_phone = Renter.query.filter_by(phone=phone).first()
+    existing_owner_phone = Owner.query.filter_by(phone=phone).first()
+    existing_admin_phone = Admin.query.filter_by(phone=phone).first()
+    
+    if existing_renter_phone or existing_owner_phone or existing_admin_phone:
+        return jsonify({'error': 'Số điện thoại đã được sử dụng bởi tài khoản khác'}), 400
     
     try:
         # Tạo owner mới
         new_owner = Owner(
             username=username,
-            email=email,
-            full_name=username  # Tạm thời dùng username làm full_name
+            email=cleaned_email,
+            phone=phone,
+            first_name=first_name,
+            last_name=last_name,
+            full_name=f"{first_name} {last_name}",
+            email_verified=True,  # Admin tạo thì auto verify
+            first_login=False
         )
         new_owner.set_password(password)
         
@@ -809,7 +840,9 @@ def add_owner():
             'owner': {
                 'id': new_owner.id,
                 'username': new_owner.username,
-                'email': new_owner.email
+                'email': new_owner.email,
+                'full_name': new_owner.full_name,
+                'phone': new_owner.phone
             }
         }), 201
         
@@ -824,8 +857,14 @@ def seed_owners():
         return jsonify({'error': 'Unauthorized'}), 401
     
     try:
-        from scripts.seed_data import seed_owners
-        seed_owners()
+        # Import the seed function from the correct module
+        import sys
+        import os
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        sys.path.insert(0, project_root)
+        
+        from scripts.seed.seed_db import create_owner_and_homes
+        create_owner_and_homes()
         return jsonify({'message': 'Đã thêm dữ liệu mẫu thành công!'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

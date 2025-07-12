@@ -99,7 +99,11 @@ def create_owner_and_homes():
                 business_name='Staycation Properties',
                 gender='Nam',
                 email_verified=True,
-                first_login=False
+                first_login=False,
+                # Thêm các trường mới nếu có
+                tax_code=None,
+                bank_name=None,
+                bank_account=None
             )
             owner.set_password('123')
             db.session.add(owner)
@@ -278,7 +282,14 @@ def create_renter():
             address='456 Đường Lê Lợi, Quận 1, TP.HCM',
             gender='Nữ',
             email_verified=True,
-            first_login=True
+            first_login=True,
+            # Thêm các trường mới nếu có
+            is_google=False,
+            is_facebook=False,
+            google_id=None,
+            facebook_id=None,
+            google_username=None,
+            facebook_username=None
         )
         renter.set_password('123')
         db.session.add(renter)

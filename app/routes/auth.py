@@ -1,5 +1,5 @@
 # routes/auth.py
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
 from app.models.models import Admin, Owner, Renter, db
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,6 +11,7 @@ import secrets
 from urllib.parse import urlparse
 from sqlalchemy.exc import IntegrityError
 from app.utils.email_validator import process_email
+from app.utils.password_validator import PasswordValidator
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -47,6 +48,12 @@ def register():
             flash('Mật khẩu xác nhận không khớp', 'danger')
             return render_template('auth/register.html', form_data=form_data)
         
+        # Validate password strength
+        password_evaluation = PasswordValidator.evaluate_password(password)
+        if not password_evaluation['is_acceptable']:
+            flash('Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.', 'danger')
+            return render_template('auth/register.html', form_data=form_data)
+        
         # Check if username exists
         if Renter.query.filter_by(username=username).first():
             flash('Tên đăng nhập đã tồn tại', 'danger')
@@ -58,15 +65,24 @@ def register():
             flash('Email không hợp lệ', 'danger')
             return render_template('auth/register.html', form_data=form_data)
         
-        # Check if email exists
-        if Renter.query.filter_by(email=cleaned_email).first():
-            flash('Email đã được sử dụng', 'danger')
+        # Check if email exists in all user types
+        existing_renter = Renter.query.filter_by(email=cleaned_email).first()
+        existing_owner = Owner.query.filter_by(email=cleaned_email).first()
+        existing_admin = Admin.query.filter_by(email=cleaned_email).first()
+        
+        if existing_renter or existing_owner or existing_admin:
+            flash('Email đã được sử dụng bởi tài khoản khác', 'danger')
             return render_template('auth/register.html', form_data=form_data)
         
-        # Check if phone exists
-        if phone and Renter.query.filter_by(phone=phone).first():
-            flash('Số điện thoại đã được sử dụng', 'danger')
-            return render_template('auth/register.html', form_data=form_data)
+        # Check if phone exists in all user types
+        if phone:
+            existing_renter_phone = Renter.query.filter_by(phone=phone).first()
+            existing_owner_phone = Owner.query.filter_by(phone=phone).first()
+            existing_admin_phone = Admin.query.filter_by(phone=phone).first()
+            
+            if existing_renter_phone or existing_owner_phone or existing_admin_phone:
+                flash('Số điện thoại đã được sử dụng bởi tài khoản khác', 'danger')
+                return render_template('auth/register.html', form_data=form_data)
         
         # Create new renter
         new_renter = Renter(
@@ -93,6 +109,29 @@ def register():
     
     # GET request - render form with empty form_data
     return render_template('auth/register.html', form_data=form_data)
+
+
+
+@auth_bp.route('/evaluate-password', methods=['POST'])
+def evaluate_password():
+    """API endpoint để đánh giá mật khẩu chi tiết"""
+    try:
+        data = request.get_json()
+        password = data.get('password', '')
+        
+        if not password:
+            return jsonify({'error': 'Mật khẩu không được để trống'}), 400
+        
+        # Đánh giá mật khẩu
+        result = PasswordValidator.format_evaluation_result(password)
+        
+        return jsonify({
+            'success': True,
+            'result': result.replace('\n', '<br>')
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Lỗi đánh giá mật khẩu: {str(e)}'}), 500
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():

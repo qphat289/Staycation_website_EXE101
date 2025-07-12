@@ -187,27 +187,43 @@
         <!-- Mật khẩu -->
         <div class="form-group">
           <label for="password" class="form-label">Mật khẩu*</label>
-          <input type="password" 
-                 name="password" 
-                 id="password" 
-                 class="form-control" 
-                 required 
-                 autocomplete="new-password"
-                 placeholder=""
-          >
+          <div class="input-group">
+            <input type="password" 
+                   name="password" 
+                   id="password" 
+                   class="form-control" 
+                   required 
+                   autocomplete="new-password"
+                   placeholder=""
+            >
+            <button class="btn btn-outline-secondary" 
+                    type="button" 
+                    id="togglePassword">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div id="passwordStrength" class="mt-2"></div>
         </div>
         
         <!-- Xác nhận mật khẩu -->
         <div class="form-group">
           <label for="confirm_password" class="form-label">Xác nhận mật khẩu*</label>
-          <input type="password" 
-                 name="confirm_password" 
-                 id="confirm_password" 
-                 class="form-control" 
-                 required 
-                 autocomplete="new-password"
-                 placeholder=""
-          >
+          <div class="input-group">
+            <input type="password" 
+                   name="confirm_password" 
+                   id="confirm_password" 
+                   class="form-control" 
+                   required 
+                   autocomplete="new-password"
+                   placeholder=""
+            >
+            <button class="btn btn-outline-secondary" 
+                    type="button" 
+                    id="toggleConfirmPassword">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div id="passwordMatch" class="mt-2"></div>
         </div>
         
         <!-- Submit -->
@@ -239,6 +255,8 @@
         <span>Đã có tài khoản? </span>
         <a href="{{ url_for('auth.login') }}" class="register-link">Đăng nhập</a>
       </div>
+      
+
     </div>
   </div>
 </div>
@@ -627,17 +645,172 @@ footer {
 window.addEventListener('scroll', function() {
     const navbar = document.querySelector('.navbar');
     if (navbar) {
-                if (window.scrollY > 50) {
+        if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
-                    } else {
+        } else {
             navbar.classList.remove('scrolled');
-                    }
-    } else {
-            }
+        }
+    }
 });
 
 document.addEventListener('DOMContentLoaded', function() {
     const navbar = document.querySelector('.navbar');
-    });
+    
+    // Password strength evaluation
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const passwordStrength = document.getElementById('passwordStrength');
+    const passwordMatch = document.getElementById('passwordMatch');
+    const togglePassword = document.getElementById('togglePassword');
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+    
+    // Toggle password visibility
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('bi-eye');
+            this.querySelector('i').classList.toggle('bi-eye-slash');
+        });
+    }
+    
+    if (toggleConfirmPassword) {
+        toggleConfirmPassword.addEventListener('click', function() {
+            const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPasswordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('bi-eye');
+            this.querySelector('i').classList.toggle('bi-eye-slash');
+        });
+    }
+    
+    // Password strength evaluation
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            evaluatePasswordStrength(password);
+            checkPasswordMatch();
+        });
+    }
+    
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', function() {
+            checkPasswordMatch();
+        });
+    }
+    
+    function evaluatePasswordStrength(password) {
+        if (!password) {
+            passwordStrength.innerHTML = '';
+            return;
+        }
+        
+        // Simple client-side evaluation
+        let score = 0;
+        let details = [];
+        
+        // Length check
+        if (password.length >= 8) {
+            score += 2;
+            details.push('✓ Độ dài tốt (≥ 8 ký tự)');
+        } else if (password.length >= 6) {
+            score += 1;
+            details.push('⚠ Độ dài trung bình (6-7 ký tự)');
+        } else {
+            details.push('✗ Độ dài quá ngắn (≤ 5 ký tự)');
+        }
+        
+        // Character types
+        const hasLower = /[a-z]/.test(password);
+        const hasUpper = /[A-Z]/.test(password);
+        const hasDigit = /\d/.test(password);
+        const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+        
+        const charTypes = [hasLower, hasUpper, hasDigit, hasSpecial].filter(Boolean).length;
+        
+        if (charTypes >= 3) {
+            score += 2;
+            details.push(`✓ Sử dụng ${charTypes} loại ký tự`);
+        } else if (charTypes === 2) {
+            score += 1;
+            details.push('⚠ Sử dụng 2 loại ký tự');
+        } else {
+            details.push('✗ Chỉ sử dụng 1 loại ký tự');
+        }
+        
+        // Common patterns - removed from UI display
+        if (/123|abc|qwe|asd|zxc/.test(password.toLowerCase())) {
+            score -= 1;
+        }
+        
+        // Determine strength
+        let strength, strengthClass;
+        if (score <= 0) {
+            strength = 'YẾU';
+            strengthClass = 'text-danger';
+        } else if (score <= 2) {
+            strength = 'TRUNG BÌNH';
+            strengthClass = 'text-warning';
+        } else {
+            strength = 'MẠNH';
+            strengthClass = 'text-success';
+        }
+        
+        // Update UI
+        passwordStrength.innerHTML = `
+            <div class="${strengthClass} fw-bold">
+                <i class="bi bi-shield me-1"></i>
+                Độ mạnh: ${strength}
+            </div>
+            <small class="text-muted">
+                ${details.join('<br>')}
+            </small>
+        `;
+        
+        // Store evaluation for form submission
+        passwordInput.dataset.strength = strength;
+        passwordInput.dataset.score = score;
+    }
+    
+    function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (!confirmPassword) {
+            passwordMatch.innerHTML = '';
+            return;
+        }
+        
+        if (password === confirmPassword) {
+            passwordMatch.innerHTML = '<i class="bi bi-check-circle me-1"></i>Mật khẩu khớp';
+            passwordMatch.className = 'text-success fw-bold';
+        } else {
+            passwordMatch.innerHTML = '<i class="bi bi-x-circle me-1"></i>Mật khẩu không khớp';
+            passwordMatch.className = 'text-danger fw-bold';
+        }
+    }
+    
+    // Form validation
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            // Check password strength
+            if (passwordInput.dataset.score <= 0) {
+                e.preventDefault();
+                alert('Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.');
+                return;
+            }
+            
+            // Check password match
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Mật khẩu xác nhận không khớp.');
+                return;
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

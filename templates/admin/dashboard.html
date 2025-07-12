@@ -2605,9 +2605,43 @@ nav[aria-label="Page navigation"] {
             </div>
             <form id="addOwnerForm" autocomplete="off" spellcheck="false">
                 <div class="modal-body">
+                    <div class="row">
+                        <!-- First Name -->
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">
+                                <i class="bi bi-person me-1"></i>Tên*
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="first_name" 
+                                   name="first_name" 
+                                   required
+                                   autocomplete="off"
+                                   placeholder="Nhập tên">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <!-- Last Name -->
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">
+                                <i class="bi bi-person me-1"></i>Họ*
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="last_name" 
+                                   name="last_name" 
+                                   required
+                                   autocomplete="off"
+                                   placeholder="Nhập họ">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
                     <!-- Username -->
                     <div class="mb-3">
-                        <label for="username" class="form-label">Tên đăng nhập*</label>
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person-badge me-1"></i>Tên đăng nhập*
+                        </label>
                         <input type="text" 
                                class="form-control" 
                                id="username" 
@@ -2620,7 +2654,9 @@ nav[aria-label="Page navigation"] {
 
                     <!-- Email -->
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email*</label>
+                        <label for="email" class="form-label">
+                            <i class="bi bi-envelope me-1"></i>Email*
+                        </label>
                         <input type="email" 
                                class="form-control" 
                                id="email" 
@@ -2631,29 +2667,64 @@ nav[aria-label="Page navigation"] {
                         <div class="invalid-feedback"></div>
                     </div>
 
+                    <!-- Phone -->
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">
+                            <i class="bi bi-telephone me-1"></i>Số điện thoại*
+                        </label>
+                        <input type="tel" 
+                               class="form-control" 
+                               id="phone" 
+                               name="phone" 
+                               required
+                               autocomplete="off"
+                               placeholder="Nhập số điện thoại">
+                        <div class="invalid-feedback"></div>
+                    </div>
+
                     <!-- Password -->
                     <div class="mb-3">
-                        <label for="password" class="form-label">Mật khẩu*</label>
-                        <input type="password" 
-                               class="form-control" 
-                               id="password" 
-                               name="password" 
-                               required
-                               autocomplete="new-password"
-                               placeholder="Nhập mật khẩu">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-lock me-1"></i>Mật khẩu*
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password" 
+                                   required
+                                   autocomplete="new-password"
+                                   placeholder="Nhập mật khẩu">
+                            <button class="btn btn-outline-secondary" 
+                                    type="button" 
+                                    id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div id="passwordStrength" class="mt-2"></div>
                         <div class="invalid-feedback"></div>
                     </div>
 
                     <!-- Confirm Password -->
                     <div class="mb-3">
-                        <label for="confirm_password" class="form-label">Xác nhận mật khẩu*</label>
-                        <input type="password" 
-                               class="form-control" 
-                               id="confirm_password" 
-                               name="confirm_password" 
-                               required
-                               autocomplete="new-password"
-                               placeholder="Nhập lại mật khẩu">
+                        <label for="confirm_password" class="form-label">
+                            <i class="bi bi-lock-fill me-1"></i>Xác nhận mật khẩu*
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="confirm_password" 
+                                   name="confirm_password" 
+                                   required
+                                   autocomplete="new-password"
+                                   placeholder="Nhập lại mật khẩu">
+                            <button class="btn btn-outline-secondary" 
+                                    type="button" 
+                                    id="toggleConfirmPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div id="passwordMatch" class="mt-2"></div>
                         <div class="invalid-feedback"></div>
                     </div>
                 </div>
@@ -3839,8 +3910,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             const formData = {
+                first_name: addOwnerForm.first_name.value.trim(),
+                last_name: addOwnerForm.last_name.value.trim(),
                 username: addOwnerForm.username.value.trim(),
                 email: addOwnerForm.email.value.trim(),
+                phone: addOwnerForm.phone.value.trim(),
                 password: addOwnerForm.password.value,
                 confirm_password: addOwnerForm.confirm_password.value
             };
@@ -3870,6 +3944,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (result.error.includes('email')) {
                         addOwnerForm.email.classList.add('is-invalid');
                         addOwnerForm.email.nextElementSibling.textContent = result.error;
+                    } else if (result.error.includes('số điện thoại')) {
+                        addOwnerForm.phone.classList.add('is-invalid');
+                        addOwnerForm.phone.nextElementSibling.textContent = result.error;
                     } else if (result.error.includes('mật khẩu')) {
                         if (result.error.includes('xác nhận')) {
                             addOwnerForm.confirm_password.classList.add('is-invalid');
@@ -3878,6 +3955,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             addOwnerForm.password.classList.add('is-invalid');
                             addOwnerForm.password.nextElementSibling.textContent = result.error;
                         }
+                    } else if (result.error.includes('đầy đủ thông tin')) {
+                        // Hiển thị lỗi cho tất cả các trường bắt buộc
+                        ['first_name', 'last_name', 'username', 'email', 'phone', 'password', 'confirm_password'].forEach(field => {
+                            if (addOwnerForm[field]) {
+                                addOwnerForm[field].classList.add('is-invalid');
+                                addOwnerForm[field].nextElementSibling.textContent = 'Trường này là bắt buộc';
+                            }
+                        });
                     }
                     showToast('error', result.error);
                 }
@@ -3888,6 +3973,139 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Password strength evaluation
+    const passwordInput = addOwnerForm.querySelector('#password');
+    const confirmPasswordInput = addOwnerForm.querySelector('#confirm_password');
+    const passwordStrength = addOwnerForm.querySelector('#passwordStrength');
+    const passwordMatch = addOwnerForm.querySelector('#passwordMatch');
+    const togglePassword = addOwnerForm.querySelector('#togglePassword');
+    const toggleConfirmPassword = addOwnerForm.querySelector('#toggleConfirmPassword');
+    
+    // Toggle password visibility
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('bi-eye');
+            this.querySelector('i').classList.toggle('bi-eye-slash');
+        });
+    }
+    
+    if (toggleConfirmPassword) {
+        toggleConfirmPassword.addEventListener('click', function() {
+            const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPasswordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('bi-eye');
+            this.querySelector('i').classList.toggle('bi-eye-slash');
+        });
+    }
+    
+    // Password strength evaluation
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            evaluatePasswordStrength(password);
+            checkPasswordMatch();
+        });
+    }
+    
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', function() {
+            checkPasswordMatch();
+        });
+    }
+    
+    function evaluatePasswordStrength(password) {
+        if (!password) {
+            passwordStrength.innerHTML = '';
+            return;
+        }
+        
+        // Simple client-side evaluation
+        let score = 0;
+        let details = [];
+        
+        // Length check
+        if (password.length >= 8) {
+            score += 2;
+            details.push('✓ Độ dài tốt (≥ 8 ký tự)');
+        } else if (password.length >= 6) {
+            score += 1;
+            details.push('⚠ Độ dài trung bình (6-7 ký tự)');
+        } else {
+            details.push('✗ Độ dài quá ngắn (≤ 5 ký tự)');
+        }
+        
+        // Character types
+        const hasLower = /[a-z]/.test(password);
+        const hasUpper = /[A-Z]/.test(password);
+        const hasDigit = /\d/.test(password);
+        const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+        
+        const charTypes = [hasLower, hasUpper, hasDigit, hasSpecial].filter(Boolean).length;
+        
+        if (charTypes >= 3) {
+            score += 2;
+            details.push(`✓ Sử dụng ${charTypes} loại ký tự`);
+        } else if (charTypes === 2) {
+            score += 1;
+            details.push('⚠ Sử dụng 2 loại ký tự');
+        } else {
+            details.push('✗ Chỉ sử dụng 1 loại ký tự');
+        }
+        
+        // Common patterns - removed from UI display
+        if (/123|abc|qwe|asd|zxc/.test(password.toLowerCase())) {
+            score -= 1;
+        }
+        
+        // Determine strength
+        let strength, strengthClass;
+        if (score <= 0) {
+            strength = 'YẾU';
+            strengthClass = 'text-danger';
+        } else if (score <= 2) {
+            strength = 'TRUNG BÌNH';
+            strengthClass = 'text-warning';
+        } else {
+            strength = 'MẠNH';
+            strengthClass = 'text-success';
+        }
+        
+        // Update UI
+        passwordStrength.innerHTML = `
+            <div class="${strengthClass} fw-bold">
+                <i class="bi bi-shield me-1"></i>
+                Độ mạnh: ${strength}
+            </div>
+            <small class="text-muted">
+                ${details.join('<br>')}
+            </small>
+        `;
+        
+        // Store evaluation for form submission
+        passwordInput.dataset.strength = strength;
+        passwordInput.dataset.score = score;
+    }
+    
+    function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (!confirmPassword) {
+            passwordMatch.innerHTML = '';
+            return;
+        }
+        
+        if (password === confirmPassword) {
+            passwordMatch.innerHTML = '<i class="bi bi-check-circle me-1"></i>Mật khẩu khớp';
+            passwordMatch.className = 'text-success fw-bold';
+        } else {
+            passwordMatch.innerHTML = '<i class="bi bi-x-circle me-1"></i>Mật khẩu không khớp';
+            passwordMatch.className = 'text-danger fw-bold';
+        }
+    }
+    
     // Reset form khi đóng modal
     document.getElementById('addOwnerModal').addEventListener('hidden.bs.modal', function () {
         addOwnerForm.reset();
@@ -3896,6 +4114,10 @@ document.addEventListener('DOMContentLoaded', function() {
             input.classList.remove('is-invalid');
             input.nextElementSibling.textContent = '';
         });
+        
+        // Clear password strength indicators
+        if (passwordStrength) passwordStrength.innerHTML = '';
+        if (passwordMatch) passwordMatch.innerHTML = '';
     });
 
     // Filter handling
