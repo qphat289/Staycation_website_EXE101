@@ -398,6 +398,64 @@ class Home(db.Model):
             return 0
         return sum([b.total_price for b in self.bookings if getattr(b, 'status', None) == 'completed'])
 
+    @property
+    def rental_status(self):
+        """
+        Determine current rental status based on bookings
+        Returns: tuple (status_text, status_class)
+        - không trong giờ thuê -> "Trống" - xanh lá (status-available)
+        - trước giờ thuê 15p -> "Check-in" - màu vàng (status-checkin)  
+        - đang được thuê -> "Đang ở" - màu cam (status-occupied)
+        - dọn dẹp (1 tiếng sau khi thuê xong) -> "Dọn dẹp" - xanh dương (status-cleaning)
+        """
+        from datetime import datetime, timedelta
+        
+        now = datetime.utcnow()
+        
+        # Get active bookings (confirmed, active, or paid)
+        active_bookings = [b for b in self.bookings if b.status in ['confirmed', 'active'] and b.payment_status == 'paid']
+        
+        # First, check for highest priority statuses
+        for booking in active_bookings:
+            if not booking.start_time or not booking.end_time:
+                continue
+                
+            # Check if currently rented (between start and end time) - HIGHEST PRIORITY
+            if booking.start_time <= now <= booking.end_time:
+                return ("Đang ở", "status-occupied")
+        
+        # Second, check for upcoming check-ins - SECOND PRIORITY
+        for booking in active_bookings:
+            if not booking.start_time or not booking.end_time:
+                continue
+                
+            # Check if check-in is within 15 minutes
+            if booking.start_time > now and (booking.start_time - now).total_seconds() <= 15 * 60:
+                return ("Check-in", "status-checkin")
+        
+        # Third, check for cleaning period - THIRD PRIORITY
+        # Only show cleaning if there's no upcoming check-in within the next hour
+        for booking in active_bookings:
+            if not booking.start_time or not booking.end_time:
+                continue
+                
+            # Check if in cleaning period (1 hour after checkout)
+            if booking.end_time < now and (now - booking.end_time).total_seconds() <= 60 * 60:
+                # Before showing cleaning status, check if there's any upcoming booking within the next hour
+                has_upcoming_checkin = False
+                for future_booking in active_bookings:
+                    if (future_booking.start_time and future_booking.start_time > now and 
+                        (future_booking.start_time - now).total_seconds() <= 60 * 60):  # Within next hour
+                        has_upcoming_checkin = True
+                        break
+                
+                # Only show cleaning if no upcoming check-in
+                if not has_upcoming_checkin:
+                    return ("Dọn dẹp", "status-cleaning")
+        
+        # Default: available
+        return ("Trống", "status-available")
+
     def __repr__(self):
         return f'<Home {self.title}>'
     

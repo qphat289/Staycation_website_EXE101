@@ -383,6 +383,8 @@
         gap: 0.5rem;
     }
 
+
+
     .status-badge {
         padding: 4px 8px;
         border-radius: 12px;
@@ -403,10 +405,80 @@
         background: #ffebee;
     }
 
+    /* Rental Status Badges */
+    .rental-status-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border: 1px solid;
+    }
+
+    .rental-status-badge .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .status-available {
+        color: #2e7d32;
+        border-color: #2e7d32;
+        background: #e8f5e8;
+    }
+
+    .status-available .status-dot {
+        background-color: #2e7d32;
+    }
+
+    .status-checkin {
+        color: #f57c00;
+        border-color: #f57c00;
+        background: #fff3e0;
+    }
+
+    .status-checkin .status-dot {
+        background-color: #f57c00;
+    }
+
+    .status-occupied {
+        color: #ef6c00;
+        border-color: #ef6c00;
+        background: #fff3e0;
+    }
+
+    .status-occupied .status-dot {
+        background-color: #ef6c00;
+    }
+
+    .status-cleaning {
+        color: #1976d2;
+        border-color: #1976d2;
+        background: #e3f2fd;
+    }
+
+    .status-cleaning .status-dot {
+        background-color: #1976d2;
+    }
+
     .homestay-actions {
         display: flex;
         gap: 0.5rem;
         margin-top: 2rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .rental-status-corner {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
     }
 
     .btn-action {
@@ -741,23 +813,36 @@
                 </div>
                 
                 <div class="homestay-actions">
-                    <a href="{{ url_for('owner.toggle_home_status', home_id=home.id) }}" 
-                       class="btn-action btn-lock" 
-                       data-action="{{ 'mở khóa' if not home.is_active else 'khóa' }}">
-                        {{ 'Mở khóa' if not home.is_active else 'Khóa nhà' }}
-                    </a>
-                    <a href="{{ url_for('owner.edit_home', home_id=home.id) }}" class="btn-action btn-edit" onclick="saveFilterState()">
-                        Sửa
-                    </a>
-                    <button type="button" class="btn-action btn-delete" 
-                            data-home-id="{{ home.id }}" 
-                            data-home-title="{{ home.title|e }}"
-                            onclick="openDeleteModal(this.dataset.homeId, this.dataset.homeTitle)">
-                        Xóa
-                    </button>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('owner.toggle_home_status', home_id=home.id) }}" 
+                           class="btn-action btn-lock" 
+                           data-action="{{ 'mở khóa' if not home.is_active else 'khóa' }}">
+                            {{ 'Mở khóa' if not home.is_active else 'Khóa nhà' }}
+                        </a>
+                        <a href="{{ url_for('owner.edit_home', home_id=home.id) }}" class="btn-action btn-edit" onclick="saveFilterState()">
+                            Sửa
+                        </a>
+                        <button type="button" class="btn-action btn-delete" 
+                                data-home-id="{{ home.id }}" 
+                                data-home-title="{{ home.title|e }}"
+                                onclick="openDeleteModal(this.dataset.homeId, this.dataset.homeTitle)">
+                            Xóa
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+        
+        <!-- Rental Status at bottom-right corner -->
+        {% if home.is_active %}
+            <div class="rental-status-corner">
+                {% set rental_status, rental_class = home.rental_status %}
+                <span class="rental-status-badge {{ rental_class }}">
+                    <span class="status-dot"></span>
+                    {{ rental_status }}
+                </span>
+            </div>
+        {% endif %}
     </div>
     {% endfor %}
 </div>
