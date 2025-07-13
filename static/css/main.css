@@ -404,8 +404,9 @@ html body .navbar-brand .brand-text {
 
 footer {
     margin-top: auto;
-    background: var(--accent-color);
-    color: #ffffff;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-top: 1px solid #e0e0e0;
 }
 
 footer .container {
@@ -414,13 +415,13 @@ footer .container {
 }
 
 footer h5, footer h6 {
-    color: #ffffff;
+    color: #000000 !important;
     font-size: 1rem;
     margin-bottom: 0.75rem;
 }
 
 footer .text-muted {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: rgba(0, 0, 0, 0.6) !important;
     font-size: 0.875rem;
 }
 
@@ -449,7 +450,7 @@ footer .social-links a {
     justify-content: center;
     width: 32px;
     height: 32px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
     border-radius: 50%;
     transition: all 0.3s ease;
     font-size: 0.875rem;
@@ -459,11 +460,11 @@ footer .social-links a:hover {
     background: var(--primary-color);
     color: #333 !important;
     transform: translateY(-2px);
-    box-shadow: 0 3px 10px rgba(241, 181, 95, 0.3);
+    box-shadow: 0 3px 10px rgba(158, 214, 73, 0.3);
 }
 
 footer .border-top {
-    border-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 footer .border-top .container {

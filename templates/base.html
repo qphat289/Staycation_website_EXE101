@@ -368,8 +368,8 @@
         .search-form .form-control:focus,
         .search-form input:focus,
         .search-form select:focus {
-            border-color: #8bc34a;
-            box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.1);
+            border-color: #b2e254;
+            box-shadow: 0 0 0 3px rgba(178, 226, 84, 0.1);
             background: white;
             transform: translateY(-1px);
             outline: none;
@@ -388,14 +388,14 @@
         }
         
         .search-btn {
-            background: linear-gradient(135deg, #8bc34a, #689f38);
+            background: linear-gradient(135deg, #b2e254, #9ed649);
             border: none;
             border-radius: 6px;
             padding: 12px 20px;
             font-weight: 600;
             color: white;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(139, 195, 74, 0.3);
+            box-shadow: 0 2px 8px rgba(178, 226, 84, 0.3);
             height: 46px;
             white-space: nowrap;
             min-width: 100px;
@@ -404,8 +404,9 @@
         
         .search-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(139, 195, 74, 0.4);
-            background: linear-gradient(135deg, #689f38, #558b2f);
+            box-shadow: 0 4px 15px rgba(178, 226, 84, 0.4);
+            background: linear-gradient(135deg, #9ed649, #8bc34a);
+            color: white !important;
         }
         
         .search-btn-col {
@@ -2341,7 +2342,7 @@
     
     <!-- Footer - chỉ hiển thị ở homepage khi renter đăng nhập -->
     {% if request.endpoint == 'home' %}
-    <footer class="bg-dark text-white mt-4">
+    <footer class="bg-white text-dark mt-4">
         <div class="container">
             <div class="row">
                 <!-- About Section -->
@@ -2354,10 +2355,10 @@
                         Nền tảng đặt phòng homestay hàng đầu Việt Nam. Khám phá những không gian lưu trú độc đáo.
                     </p>
                     <div class="d-flex gap-2 social-links">
-                        <a href="#" class="text-white"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="text-white"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="text-white"><i class="bi bi-youtube"></i></a>
-                        <a href="#" class="text-white"><i class="bi bi-tiktok"></i></a>
+                        <a href="#" class="text-dark"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-dark"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-dark"><i class="bi bi-youtube"></i></a>
+                        <a href="#" class="text-dark"><i class="bi bi-tiktok"></i></a>
                                        </div>
                 </div>
                 
@@ -2365,18 +2366,18 @@
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h6 class="fw-bold">Liên kết nhanh</h6>
                     <ul class="list-unstyled">
-                        <li><a href="{{ url_for('home') }}" class="text-muted text-decoration-none">Trang chủ</a></li>
-                        <li><a href="{{ url_for('renter.search') }}" class="text-muted text-decoration-none">Tìm phòng</a></li>
+                        <li><a href="{{ url_for('home') }}" class="text-dark text-decoration-none">Trang chủ</a></li>
+                        <li><a href="{{ url_for('renter.search') }}" class="text-dark text-decoration-none">Tìm phòng</a></li>
                         {% if current_user.is_authenticated %}
                             {% if current_user.is_renter() %}
-                                <li><a href="{{ url_for('renter.dashboard') }}" class="text-muted text-decoration-none">Dashboard</a></li>
-                                <li><a href="{{ url_for('renter.booking_history') }}" class="text-muted text-decoration-none">Lịch sử</a></li>
+                                <li><a href="{{ url_for('renter.dashboard') }}" class="text-dark text-decoration-none">Dashboard</a></li>
+                                <li><a href="{{ url_for('renter.booking_history') }}" class="text-dark text-decoration-none">Lịch sử</a></li>
                             {% elif current_user.is_owner() %}
-                                <li><a href="{{ url_for('owner.dashboard') }}" class="text-muted text-decoration-none">Quản lý phòng</a></li>
+                                <li><a href="{{ url_for('owner.dashboard') }}" class="text-dark text-decoration-none">Quản lý phòng</a></li>
                             {% endif %}
                         {% else %}
-                            <li><a href="{{ url_for('auth.login') }}" class="text-muted text-decoration-none">Đăng nhập</a></li>
-                            <li><a href="{{ url_for('auth.register') }}" class="text-muted text-decoration-none">Đăng ký</a></li>
+                            <li><a href="{{ url_for('auth.login') }}" class="text-dark text-decoration-none">Đăng nhập</a></li>
+                            <li><a href="{{ url_for('auth.register') }}" class="text-dark text-decoration-none">Đăng ký</a></li>
                         {% endif %}
                     </ul>
                 </div>
@@ -2385,10 +2386,10 @@
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h6 class="fw-bold">Chủ nhà</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-muted text-decoration-none">Đăng ký</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Hướng dẫn</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Chính sách</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Hỗ trợ</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Đăng ký</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Hướng dẫn</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Chính sách</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Hỗ trợ</a></li>
                     </ul>
                 </div>
                 
@@ -2396,10 +2397,10 @@
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h6 class="fw-bold">Hỗ trợ</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-muted text-decoration-none">Trung tâm trợ giúp</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Liên hệ</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Báo cáo</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">FAQ</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Trung tâm trợ giúp</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Liên hệ</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Báo cáo</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">FAQ</a></li>
                     </ul>
                 </div>
                 
@@ -2435,9 +2436,9 @@
                     </div>
                     <div class="col-md-6 text-md-end">
                         <div class="d-flex justify-content-md-end gap-2 mt-2 mt-md-0">
-                            <a href="#" class="text-muted small text-decoration-none">Điều khoản</a>
-                            <a href="#" class="text-muted small text-decoration-none">Bảo mật</a>
-                            <a href="#" class="text-muted small text-decoration-none">Cookie</a>
+                            <a href="#" class="text-dark small text-decoration-none">Điều khoản</a>
+                            <a href="#" class="text-dark small text-decoration-none">Bảo mật</a>
+                            <a href="#" class="text-dark small text-decoration-none">Cookie</a>
                         </div>
                     </div>
                 </div>

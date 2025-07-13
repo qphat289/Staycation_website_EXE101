@@ -194,10 +194,11 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Footer cải tiến */
 footer {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    background: #ffffff !important;
     padding-top: 3rem;
     margin-top: 5rem;
     box-shadow: 0 -5px 20px rgba(24, 40, 44, 0.1);
+    border-top: 1px solid #e0e0e0;
 }
 
 footer h5 {
@@ -214,7 +215,7 @@ footer h5:after {
     width: 40px;
     height: 3px;
     border-radius: 2px;
-    background-color: var(--primary-dark);
+    background-color: var(--primary-color);
 }
 
 /* Responsive tweaks */

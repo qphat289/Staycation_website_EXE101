@@ -356,8 +356,8 @@ main.container {
 .search-form .guest-display:hover,
 .search-form input[type="date"]:hover,
 .search-form input[type="time"]:hover {
-    border-color: #8bc34a;
-    box-shadow: 0 0 0 2px rgba(139, 195, 74, 0.1);
+    border-color: #b2e254;
+    box-shadow: 0 0 0 2px rgba(178, 226, 84, 0.1);
 }
 
 .search-form input:focus,
@@ -366,8 +366,8 @@ main.container {
 .search-form input[type="date"]:focus,
 .search-form input[type="time"]:focus {
     outline: none;
-    border-color: #8bc34a;
-    box-shadow: 0 0 0 2px rgba(139, 195, 74, 0.2);
+    border-color: #b2e254;
+    box-shadow: 0 0 0 2px rgba(178, 226, 84, 0.2);
 }
 
 /* Style for date and time inputs */
@@ -914,7 +914,7 @@ main.container {
 .search-btn {
     height: 46px;
     width: 100%;
-    background: #8bc34a;
+    background: #b2e254;
     color: white;
     border: none;
     border-radius: 6px;
@@ -926,9 +926,10 @@ main.container {
 }
 
 .search-btn:hover {
-    background: #7cb342;
+    background: #9ed649;
+    color: white !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(139, 195, 74, 0.3);
+    box-shadow: 0 4px 12px rgba(178, 226, 84, 0.3);
 }
 
 /* Form Labels - Compact mode */
@@ -1078,7 +1079,7 @@ main.container {
 
 /* Button Styles */
 .btn-view-all {
-    background: linear-gradient(135deg, #8bc34a, #689f38);
+    background: linear-gradient(135deg, #b2e254, #9ed649);
     border: none;
     color: white;
     padding: 0.5rem 1.8rem; /* Tăng padding để nút to hơn */
@@ -1087,7 +1088,7 @@ main.container {
     font-size: 1rem; /* Tăng font size */
     text-decoration: none;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(139, 195, 74, 0.3);
+    box-shadow: 0 4px 15px rgba(178, 226, 84, 0.3);
     position: relative;
     overflow: hidden;
     white-space: nowrap; /* Đảm bảo text không bị xuống dòng */
@@ -1109,10 +1110,10 @@ main.container {
 }
 
 .btn-view-all:hover {
-    background: linear-gradient(135deg, #689f38, #558b2f);
+    background: linear-gradient(135deg, #9ed649, #8bc34a);
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 195, 74, 0.4);
+    box-shadow: 0 6px 20px rgba(178, 226, 84, 0.4);
     text-decoration: none;
 }
 
