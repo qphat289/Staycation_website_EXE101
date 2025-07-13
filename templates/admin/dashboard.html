@@ -3882,10 +3882,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Khởi tạo các elements
     const modalElement = document.getElementById('addOwnerModal');
     const addOwnerForm = document.getElementById('addOwnerForm');
-    const addOwnerModal = new bootstrap.Modal(modalElement, {
-        backdrop: 'static',
-        keyboard: false
-    });
+    let addOwnerModal = null;
+    
+    if (modalElement) {
+        addOwnerModal = new bootstrap.Modal(modalElement, {
+            backdrop: 'static',
+            keyboard: false
+        });
+    }
 
     // Xử lý form submit
     if (addOwnerForm) {
@@ -3896,7 +3900,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const inputs = addOwnerForm.querySelectorAll('input');
             inputs.forEach(input => {
                 input.classList.remove('is-invalid');
-                input.nextElementSibling.textContent = '';
+                if (input.nextElementSibling) {
+                    input.nextElementSibling.textContent = '';
+                }
             });
 
             const formData = {
@@ -3922,7 +3928,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (response.ok) {
                     showToast('success', result.message);
-                    addOwnerModal.hide();
+                    if (addOwnerModal) {
+                        addOwnerModal.hide();
+                    }
                     setTimeout(() => {
                         location.reload();
                     }, 1500);
@@ -3930,27 +3938,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Hiển thị lỗi cụ thể cho từng trường
                     if (result.error.includes('tên đăng nhập')) {
                         addOwnerForm.username.classList.add('is-invalid');
-                        addOwnerForm.username.nextElementSibling.textContent = result.error;
+                        if (addOwnerForm.username.nextElementSibling) {
+                            addOwnerForm.username.nextElementSibling.textContent = result.error;
+                        }
                     } else if (result.error.includes('email')) {
                         addOwnerForm.email.classList.add('is-invalid');
-                        addOwnerForm.email.nextElementSibling.textContent = result.error;
+                        if (addOwnerForm.email.nextElementSibling) {
+                            addOwnerForm.email.nextElementSibling.textContent = result.error;
+                        }
                     } else if (result.error.includes('số điện thoại')) {
                         addOwnerForm.phone.classList.add('is-invalid');
-                        addOwnerForm.phone.nextElementSibling.textContent = result.error;
+                        if (addOwnerForm.phone.nextElementSibling) {
+                            addOwnerForm.phone.nextElementSibling.textContent = result.error;
+                        }
                     } else if (result.error.includes('mật khẩu')) {
                         if (result.error.includes('xác nhận')) {
                             addOwnerForm.confirm_password.classList.add('is-invalid');
-                            addOwnerForm.confirm_password.nextElementSibling.textContent = result.error;
+                            if (addOwnerForm.confirm_password.nextElementSibling) {
+                                addOwnerForm.confirm_password.nextElementSibling.textContent = result.error;
+                            }
                         } else {
                             addOwnerForm.password.classList.add('is-invalid');
-                            addOwnerForm.password.nextElementSibling.textContent = result.error;
+                            if (addOwnerForm.password.nextElementSibling) {
+                                addOwnerForm.password.nextElementSibling.textContent = result.error;
+                            }
                         }
                     } else if (result.error.includes('đầy đủ thông tin')) {
                         // Hiển thị lỗi cho tất cả các trường bắt buộc
                         ['first_name', 'last_name', 'username', 'email', 'phone', 'password', 'confirm_password'].forEach(field => {
                             if (addOwnerForm[field]) {
                                 addOwnerForm[field].classList.add('is-invalid');
-                                addOwnerForm[field].nextElementSibling.textContent = 'Trường này là bắt buộc';
+                                if (addOwnerForm[field].nextElementSibling) {
+                                    addOwnerForm[field].nextElementSibling.textContent = 'Trường này là bắt buộc';
+                                }
                             }
                         });
                     }
@@ -3964,12 +3984,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Password strength evaluation
-    const passwordInput = addOwnerForm.querySelector('#password');
-    const confirmPasswordInput = addOwnerForm.querySelector('#confirm_password');
-    const passwordStrength = addOwnerForm.querySelector('#passwordStrength');
-    const passwordMatch = addOwnerForm.querySelector('#passwordMatch');
-    const togglePassword = addOwnerForm.querySelector('#togglePassword');
-    const toggleConfirmPassword = addOwnerForm.querySelector('#toggleConfirmPassword');
+    const passwordInput = addOwnerForm ? addOwnerForm.querySelector('#password') : null;
+    const confirmPasswordInput = addOwnerForm ? addOwnerForm.querySelector('#confirm_password') : null;
+    const passwordStrength = addOwnerForm ? addOwnerForm.querySelector('#passwordStrength') : null;
+    const passwordMatch = addOwnerForm ? addOwnerForm.querySelector('#passwordMatch') : null;
+    const togglePassword = addOwnerForm ? addOwnerForm.querySelector('#togglePassword') : null;
+    const toggleConfirmPassword = addOwnerForm ? addOwnerForm.querySelector('#toggleConfirmPassword') : null;
     
     // Toggle password visibility
     if (togglePassword) {
@@ -4097,18 +4117,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Reset form khi đóng modal
-    document.getElementById('addOwnerModal').addEventListener('hidden.bs.modal', function () {
-        addOwnerForm.reset();
-        const inputs = addOwnerForm.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.classList.remove('is-invalid');
-            input.nextElementSibling.textContent = '';
+    const addOwnerModalElement = document.getElementById('addOwnerModal');
+    if (addOwnerModalElement) {
+        addOwnerModalElement.addEventListener('hidden.bs.modal', function () {
+            if (addOwnerForm) {
+                addOwnerForm.reset();
+                const inputs = addOwnerForm.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.classList.remove('is-invalid');
+                    if (input.nextElementSibling) {
+                        input.nextElementSibling.textContent = '';
+                    }
+                });
+                
+                // Clear password strength indicators
+                if (passwordStrength) passwordStrength.innerHTML = '';
+                if (passwordMatch) passwordMatch.innerHTML = '';
+            }
         });
-        
-        // Clear password strength indicators
-        if (passwordStrength) passwordStrength.innerHTML = '';
-        if (passwordMatch) passwordMatch.innerHTML = '';
-    });
+    }
 
     // Filter handling
     const filterPills = document.querySelectorAll('.filter-pill');
