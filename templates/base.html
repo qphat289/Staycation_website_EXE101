@@ -339,6 +339,15 @@
             z-index: 20;
         }
         
+        /* Ensure daily form displays correctly with separate date inputs */
+        .daily-form .date-input-wrapper {
+            position: relative;
+        }
+        
+        .daily-form input[type="date"] {
+            width: 100%;
+        }
+        
         .search-form input,
         .search-form select,
         .search-form button {
@@ -799,6 +808,11 @@
             z-index: 1000;
         }
         
+        .datetime-selector-daily {
+            position: relative;
+            z-index: 1000;
+        }
+        
         .datetime-display {
             cursor: pointer;
             background: #fafafa !important;
@@ -806,6 +820,199 @@
         
         .datetime-display:focus {
             background: white !important;
+        }
+        
+        /* Daily Calendar Styling */
+        .datetime-selector-daily .datetime-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            padding: 20px;
+            min-width: 750px;
+            max-width: 900px;
+        }
+        
+        .datetime-selector-daily .datetime-dropdown.show {
+            display: block !important;
+        }
+        
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-months {
+            display: flex;
+            gap: 60px;
+            justify-content: center;
+            flex: 1;
+        }
+        
+        .month-container {
+            text-align: center;
+        }
+        
+        .month-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .calendar-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            margin: 0;
+            min-width: 120px;
+        }
+        
+        .calendar-nav {
+            background: none;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-nav:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .month-nav {
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            min-width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .month-nav:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .month-nav-placeholder {
+            min-width: 30px;
+            height: 30px;
+        }
+        
+        .calendar-grid {
+            min-width: 280px;
+        }
+        
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+        
+        .calendar-weekdays span {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+            padding: 8px 4px;
+        }
+        
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .calendar-day:hover {
+            background: #f0f8ff;
+        }
+        
+        .calendar-day.selected {
+            background: #8bc34a;
+            color: white;
+        }
+        
+        .calendar-day.in-range {
+            background: rgba(139, 195, 74, 0.2);
+            color: #333;
+        }
+        
+        .calendar-day.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .calendar-day.disabled:hover {
+            background: transparent;
+        }
+        
+        .calendar-time-info {
+            padding: 12px 16px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .calendar-time-info small {
+            color: #6c757d;
+            font-size: 13px;
+        }
+        
+        .calendar-time-info i {
+            margin-right: 6px;
+            color: #28a745;
+        }
+        
+        .calendar-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            gap: 12px;
+        }
+        
+        .calendar-footer .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
         }
         
         /* Special Time Periods Styling */
@@ -961,8 +1168,8 @@
             padding: 25px;
             backdrop-filter: blur(10px);
             animation: slideDown 0.3s ease-out;
-            min-width: 400px;
-            max-width: 520px;
+            min-width: 650px;
+            max-width: 800px;
             min-height: 520px;
         }
         
@@ -973,6 +1180,32 @@
         /* Smaller height for step 3 (duration selection) */
         .datetime-dropdown.step-3-active {
             min-height: 300px;
+        }
+        
+        /* Styling for daily form checkin date picker */
+        #global-checkin-dropdown-daily {
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 9999 !important;
+            background: white !important;
+            border: 1px solid #ddd !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+            margin-top: 5px !important;
+            overflow: visible !important;
+            display: none;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.3s ease-out;
+            min-width: 300px;
+            max-width: 350px;
+            min-height: 350px;
+        }
+        
+        #global-checkin-dropdown-daily.show {
+            display: block;
         }
         
         /* Step Progress */
@@ -1578,7 +1811,7 @@
                     </div>
                 </form>
                 
-                <!-- Daily Search Form -->
+                <!-- Daily Search Form - Updated UI with calendar layout -->
                 <form class="search-form daily-form {% if request.args.get('booking_type') == 'daily' or request.args.get('booking_type') == 'overnight' %}active{% endif %}" id="global-daily-form" action="{{ url_for('renter.search') }}" method="GET">
                     <input type="hidden" name="booking_type" value="daily">
                     <input type="hidden" name="adults" id="global-adults-input-daily" value="{{ request.args.get('adults', '1') }}">
@@ -1586,34 +1819,85 @@
                     <input type="hidden" name="rooms" id="global-rooms-input-daily" value="{{ request.args.get('rooms', '1') }}">
                     
                     <div class="row g-2 align-items-end">
-                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
+                        <div class="col-xxl-3 col-xl-3 col-lg-4 col-md-6">
                             <label for="global-location-daily" class="form-label">Địa điểm hoặc tên homestay</label>
                             <div class="location-selector">
                                 <input type="text" class="form-control location-input" id="global-location-daily" name="location" 
                                        value="{{ request.args.get('location', '') }}"
-                                       placeholder="Nhập hoặc chọn địa điểm" autocomplete="off">
+                                       placeholder="Bạn muốn đi đâu?" autocomplete="off">
                                 <div class="location-dropdown" id="global-location-dropdown-daily">
                                     <!-- Options will be loaded dynamically from API -->
                                 </div>
                             </div>
                         </div>
-                        <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-3">
-                            <label for="global-checkin-daily" class="form-label">Ngày nhận phòng</label>
-                            <div class="date-input-wrapper">
-                                <input type="date" class="form-control" id="global-checkin-daily" name="checkin_date"
-                                       value="{{ request.args.get('checkin_date', '') }}">
-                                <div class="custom-placeholder" data-for="global-checkin-daily">Chọn ngày nhận phòng</div>
+                        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
+                            <label for="global-datetime-daily" class="form-label">Nhận phòng</label>
+                            <div class="datetime-selector-daily">
+                                <input type="text" class="form-control datetime-display" id="global-datetime-daily" 
+                                       value="Chọn ngày" readonly>
+                                <input type="hidden" name="checkin_date" id="global-checkin-date-daily" value="{{ request.args.get('checkin_date', '') }}">
+                                <input type="hidden" name="checkout_date" id="global-checkout-date-daily" value="{{ request.args.get('checkout_date', '') }}">
+                                
+                                <!-- Custom Calendar Dropdown -->
+                                <div class="datetime-dropdown" id="global-datetime-dropdown-daily">
+                                    <!-- Calendar Navigation -->
+                                            <div class="calendar-header">
+                                        <div class="calendar-months">
+                                            <div class="month-container">
+                                                <div class="month-header">
+                                                    <button type="button" class="month-nav" id="global-prev-month-daily">‹</button>
+                                                    <span class="calendar-title" id="global-calendar-title-daily-1">Tháng 7</span>
+                                                    <span class="month-nav-placeholder"></span>
+                                                </div>
+                                                <div class="calendar-grid">
+                                                    <div class="calendar-weekdays">
+                                                        <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+                                            </div>
+                                                    <div class="calendar-days" id="global-calendar-days-daily-1">
+                                                        <!-- Days will be generated by JavaScript -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="month-container">
+                                                <div class="month-header">
+                                                    <span class="month-nav-placeholder"></span>
+                                                    <span class="calendar-title" id="global-calendar-title-daily-2">Tháng 8</span>
+                                                    <button type="button" class="month-nav" id="global-next-month-daily">›</button>
+                                                </div>
+                                            <div class="calendar-grid">
+                                                <div class="calendar-weekdays">
+                                                    <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+                                                </div>
+                                                    <div class="calendar-days" id="global-calendar-days-daily-2">
+                                                    <!-- Days will be generated by JavaScript -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                    
+                                    <!-- Time Info and Buttons -->
+                                    <div class="calendar-footer">
+                                        <button type="button" class="btn btn-outline-secondary" id="global-clear-dates-daily">Ngày giờ bất kỳ</button>
+                                        <div class="calendar-time-info">
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i>
+                                                Nhận phòng: 14:00 • Trả phòng: 12:00 (ngày hôm sau)
+                                            </small>
+                                        </div>
+                                        <button type="button" class="btn btn-primary" id="global-apply-dates-daily">Áp dụng</button>
                             </div>
                         </div>
-                        <div class="col-xxl-3 col-xl-2 col-lg-3 col-md-3">
-                            <label for="global-checkout-daily" class="form-label">Ngày trả phòng</label>
-                            <div class="date-input-wrapper">
-                                <input type="date" class="form-control" id="global-checkout-daily" name="checkout_date"
-                                       value="{{ request.args.get('checkout_date', '') }}">
-                                <div class="custom-placeholder" data-for="global-checkout-daily">Chọn ngày trả phòng</div>
                             </div>
                         </div>
-                        <div class="col-xxl-2 col-xl-2 col-lg-3 col-md-6">
+                        <div class="col-xxl-3 col-xl-3 col-lg-2 col-md-6">
+                            <label for="global-checkout-display-daily" class="form-label">Trả phòng</label>
+                            <div class="datetime-selector-daily">
+                                <input type="text" class="form-control datetime-display" id="global-checkout-display-daily" 
+                                       value="Chọn ngày" readonly>
+                            </div>
+                        </div>
+                        <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6">
                             <label for="global-guests-rooms-daily" class="form-label">Khách</label>
                             <div class="guest-selector">
                                 <input type="text" class="form-control guest-display" id="global-guests-rooms-daily" 
@@ -1644,8 +1928,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-xxl-1 col-xl-2 col-lg-12 col-md-12 search-btn-col">
-                            <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
+                        <div class="col-xxl-1 col-xl-1 col-lg-12 col-md-12 search-btn-col d-flex justify-content-center">
+                            <button type="submit" class="btn search-btn" style="white-space: nowrap; min-width: 100px;">Tìm kiếm</button>
                         </div>
                     </div>
                 </form>
@@ -2811,6 +3095,234 @@
         </div>
     </footer>
     {% endif %}
+    
+    <script>
+        // Setup Global Daily DateTime Selector inside DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            setupGlobalDailyDateTimeSelector();
+        });
+        
+        function setupGlobalDailyDateTimeSelector() {
+            const display = document.getElementById('global-datetime-daily');
+            const checkoutDisplay = document.getElementById('global-checkout-display-daily');
+            const dropdown = document.getElementById('global-datetime-dropdown-daily');
+            const prevMonth = document.getElementById('global-prev-month-daily');
+            const nextMonth = document.getElementById('global-next-month-daily');
+            const calendarTitle1 = document.getElementById('global-calendar-title-daily-1');
+            const calendarTitle2 = document.getElementById('global-calendar-title-daily-2');
+            const calendarDays1 = document.getElementById('global-calendar-days-daily-1');
+            const calendarDays2 = document.getElementById('global-calendar-days-daily-2');
+            const clearDatesBtn = document.getElementById('global-clear-dates-daily');
+            const applyDatesBtn = document.getElementById('global-apply-dates-daily');
+            
+            // Check if required elements exist
+            if (!display || !dropdown || !calendarTitle1 || !calendarTitle2 || !calendarDays1 || !calendarDays2) {
+                console.log('Global Daily DateTime selector elements not found');
+                return;
+            }
+            
+            let currentDate = new Date();
+            let selectedCheckinDate = null;
+            let selectedCheckoutDate = null;
+            let isSelectingCheckout = false;
+            
+            // Month names in Vietnamese
+            const monthNames = [
+                'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+            ];
+            
+            // Toggle dropdown on input click
+            if (display) {
+                display.addEventListener('click', function() {
+                    dropdown.classList.toggle('show');
+                    if (dropdown.classList.contains('show')) {
+                        renderCalendars();
+                    }
+                });
+            }
+            
+            // Also toggle on checkout display click
+            if (checkoutDisplay) {
+                checkoutDisplay.addEventListener('click', function() {
+                    dropdown.classList.toggle('show');
+                    if (dropdown.classList.contains('show')) {
+                        renderCalendars();
+                    }
+                });
+            }
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                if (!display.contains(e.target) && !checkoutDisplay.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                    }
+                });
+                
+            // Calendar navigation
+            if (prevMonth) {
+                prevMonth.addEventListener('click', function() {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    renderCalendars();
+                });
+            }
+            
+            if (nextMonth) {
+                nextMonth.addEventListener('click', function() {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    renderCalendars();
+                });
+            }
+            
+            // Clear dates button
+            if (clearDatesBtn) {
+                clearDatesBtn.addEventListener('click', function() {
+                    selectedCheckinDate = null;
+                    selectedCheckoutDate = null;
+                    isSelectingCheckout = false;
+                    updateDisplay();
+                    updateHiddenInputs();
+                    renderCalendars();
+                });
+            }
+            
+            // Apply dates button
+            if (applyDatesBtn) {
+                applyDatesBtn.addEventListener('click', function() {
+                    updateDisplay();
+                    updateHiddenInputs();
+                    dropdown.classList.remove('show');
+                });
+            }
+            
+            // Render both calendars
+            function renderCalendars() {
+                renderCalendar(currentDate, calendarTitle1, calendarDays1, 'daily-1');
+                
+                const nextMonth = new Date(currentDate);
+                nextMonth.setMonth(currentDate.getMonth() + 1);
+                renderCalendar(nextMonth, calendarTitle2, calendarDays2, 'daily-2');
+            }
+            
+            // Render single calendar
+            function renderCalendar(date, titleElement, daysElement, calendarId) {
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                
+                titleElement.textContent = monthNames[month];
+                    
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                    const today = new Date();
+                
+                let calendarHTML = '';
+                    
+                // Add empty cells for days before first day of month
+                for (let i = 0; i < firstDay.getDay(); i++) {
+                    const prevDate = new Date(year, month, 1 - (firstDay.getDay() - i));
+                    calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${prevDate.toISOString().split('T')[0]}" data-calendar="${calendarId}">${prevDate.getDate()}</button>`;
+                    }
+                    
+                // Add days of current month
+                for (let day = 1; day <= lastDay.getDate(); day++) {
+                    const date = new Date(year, month, day);
+                    const dateStr = year + '-' + (month + 1).toString().padStart(2, '0') + '-' + day.toString().padStart(2, '0');
+                    
+                    const todayStr = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + today.getDate().toString().padStart(2, '0');
+                    const isPastDay = dateStr < todayStr;
+                    const isCheckinSelected = selectedCheckinDate === dateStr;
+                    const isCheckoutSelected = selectedCheckoutDate === dateStr;
+                    const isInRange = selectedCheckinDate && selectedCheckoutDate && 
+                                     dateStr > selectedCheckinDate && dateStr < selectedCheckoutDate;
+                    
+                    let classes = 'calendar-day';
+                    let isDisabled = isPastDay;
+                    
+                    if (isDisabled) classes += ' disabled';
+                    if (isCheckinSelected || isCheckoutSelected) classes += ' selected';
+                    if (isInRange) classes += ' in-range';
+                    
+                    calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" data-calendar="${calendarId}" ${isDisabled ? 'disabled' : ''}>${day}</button>`;
+                }
+                
+                // Add empty cells for days after last day of month
+                const cellsUsed = firstDay.getDay() + lastDay.getDate();
+                const totalCells = Math.ceil(cellsUsed / 7) * 7;
+                for (let i = cellsUsed; i < totalCells; i++) {
+                    const nextDate = new Date(year, month + 1, i - cellsUsed + 1);
+                    calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${nextDate.toISOString().split('T')[0]}" data-calendar="${calendarId}">${nextDate.getDate()}</button>`;
+                }
+                
+                daysElement.innerHTML = calendarHTML;
+                
+                // Add click handlers for calendar days
+                daysElement.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList && e.target.classList.contains('calendar-day') && !e.target.disabled && !e.target.classList.contains('other-month')) {
+                        const clickedDate = e.target.dataset.date;
+                        
+                        if (!selectedCheckinDate || isSelectingCheckout) {
+                            // Select checkin date or if we're selecting checkout
+                            if (isSelectingCheckout && selectedCheckinDate && clickedDate > selectedCheckinDate) {
+                                selectedCheckoutDate = clickedDate;
+                                isSelectingCheckout = false;
+                        } else {
+                                selectedCheckinDate = clickedDate;
+                                selectedCheckoutDate = null;
+                                isSelectingCheckout = true;
+                            }
+                        } else if (clickedDate > selectedCheckinDate) {
+                            // Select checkout date
+                            selectedCheckoutDate = clickedDate;
+                            isSelectingCheckout = false;
+                        } else {
+                            // Reset selection
+                            selectedCheckinDate = clickedDate;
+                            selectedCheckoutDate = null;
+                            isSelectingCheckout = true;
+                        }
+                        
+                        console.log('Global dates selected:', selectedCheckinDate, selectedCheckoutDate);
+                        updateDisplay();
+                        updateHiddenInputs();
+                        renderCalendars();
+                    }
+                });
+            }
+            
+            // Update display text
+            function updateDisplay() {
+                if (selectedCheckinDate) {
+                    const checkinDate = new Date(selectedCheckinDate);
+                    const checkinDayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][checkinDate.getDay()];
+                    const checkinDisplayText = `${checkinDayName} - ${checkinDate.getDate()} tháng ${checkinDate.getMonth() + 1}`;
+                    display.value = checkinDisplayText;
+                } else {
+                    display.value = 'Chọn ngày';
+                }
+                
+                if (selectedCheckoutDate) {
+                    const checkoutDate = new Date(selectedCheckoutDate);
+                    const checkoutDayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][checkoutDate.getDay()];
+                    const checkoutDisplayText = `${checkoutDayName} - ${checkoutDate.getDate()} tháng ${checkoutDate.getMonth() + 1}`;
+                    checkoutDisplay.value = checkoutDisplayText;
+                } else {
+                    checkoutDisplay.value = 'Chọn ngày';
+                }
+            }
+            
+            // Update hidden inputs
+            function updateHiddenInputs() {
+                const checkinDateEl = document.getElementById('global-checkin-date-daily');
+                const checkoutDateEl = document.getElementById('global-checkout-date-daily');
+                
+                if (checkinDateEl) checkinDateEl.value = selectedCheckinDate || '';
+                if (checkoutDateEl) checkoutDateEl.value = selectedCheckoutDate || '';
+                    }
+            
+            // Initialize
+            renderCalendars();
+        }
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

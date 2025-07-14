@@ -473,3 +473,536 @@ function viewUserDetails(element) {
     const userDetailModal = new bootstrap.Modal(document.getElementById('userDetailModal'));
     userDetailModal.show();
 }
+
+// Daily Date Time Selector for Home page
+function setupDailyDateTimeSelector() {
+    console.log('Setting up daily date time selector for home page...');
+    
+    const checkinInput = document.getElementById('datetime-daily');
+    const checkoutInput = document.getElementById('checkout-display-daily');
+    const calendarDropdown = document.getElementById('datetime-dropdown-daily');
+    
+    if (!checkinInput || !checkoutInput || !calendarDropdown) {
+        console.log('Daily form elements not found:', {
+            checkinInput: !!checkinInput,
+            checkoutInput: !!checkoutInput, 
+            calendarDropdown: !!calendarDropdown
+        });
+        return;
+    }
+    
+    console.log('Daily form elements found successfully');
+    
+    let isDropdownOpen = false;
+    let selectedCheckin = null;
+    let selectedCheckout = null;
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    
+    const monthNames = [
+        'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    ];
+    
+    // Show/hide dropdown
+    function toggleDropdown() {
+        console.log('Toggling dropdown, current state:', isDropdownOpen);
+        isDropdownOpen = !isDropdownOpen;
+        calendarDropdown.style.display = isDropdownOpen ? 'block' : 'none';
+        if (isDropdownOpen) {
+            renderCalendar();
+        }
+    }
+    
+    // Render calendar for both months
+    function renderCalendar() {
+        console.log('Rendering calendar...');
+        const calendarDays1 = document.getElementById('calendar-days-daily-1');
+        const calendarDays2 = document.getElementById('calendar-days-daily-2');
+        const calendarTitle1 = document.getElementById('calendar-title-daily-1');
+        const calendarTitle2 = document.getElementById('calendar-title-daily-2');
+        
+        if (!calendarDays1 || !calendarDays2 || !calendarTitle1 || !calendarTitle2) {
+            console.log('Calendar elements not found');
+            return;
+        }
+        
+        // Render first month
+        renderMonth(calendarDays1, calendarTitle1, currentMonth, currentYear);
+        
+        // Render second month
+        let nextMonth = currentMonth + 1;
+        let nextYear = currentYear;
+        if (nextMonth > 11) {
+            nextMonth = 0;
+            nextYear++;
+        }
+        renderMonth(calendarDays2, calendarTitle2, nextMonth, nextYear);
+    }
+    
+    // Render individual month
+    function renderMonth(calendarDays, calendarTitle, month, year) {
+        // Update month title
+        calendarTitle.textContent = `${monthNames[month]} ${year}`;
+        
+        // Clear existing days
+        calendarDays.innerHTML = '';
+        
+        // Get first day of month and number of days
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Add empty cells for days before first day of month
+        for (let i = 0; i < firstDay; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'calendar-day empty';
+            calendarDays.appendChild(emptyCell);
+        }
+        
+        // Add days of month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayCell = document.createElement('div');
+            dayCell.className = 'calendar-day';
+            dayCell.textContent = day;
+            
+            const cellDate = new Date(year, month, day);
+            cellDate.setHours(0, 0, 0, 0);
+            
+            // Disable past dates
+            if (cellDate < today) {
+                dayCell.classList.add('disabled');
+            } else {
+                dayCell.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectDate(cellDate);
+                });
+                
+                // Highlight selected dates
+                if (selectedCheckin && cellDate.getTime() === selectedCheckin.getTime()) {
+                    dayCell.classList.add('selected', 'checkin');
+                }
+                if (selectedCheckout && cellDate.getTime() === selectedCheckout.getTime()) {
+                    dayCell.classList.add('selected', 'checkout');
+                }
+                
+                // Highlight dates in range
+                if (selectedCheckin && selectedCheckout && 
+                    cellDate > selectedCheckin && cellDate < selectedCheckout) {
+                    dayCell.classList.add('in-range');
+                }
+            }
+            
+            calendarDays.appendChild(dayCell);
+        }
+    }
+    
+    // Select date
+    function selectDate(date) {
+        console.log('Selecting date:', date);
+        
+        if (!selectedCheckin || (selectedCheckin && selectedCheckout)) {
+            // First selection or reset
+            selectedCheckin = date;
+            selectedCheckout = null;
+            checkinInput.value = formatDate(date);
+            checkoutInput.value = 'Chọn ngày';
+            
+            // Update hidden inputs
+            document.getElementById('checkin-date-daily').value = formatDateForInput(date);
+            document.getElementById('checkout-date-daily').value = '';
+            
+            // Re-render calendar to show selection but keep dropdown open
+            renderCalendar();
+        } else if (date > selectedCheckin) {
+            // Second selection (checkout) - keep dropdown open until Apply is clicked
+            selectedCheckout = date;
+            checkoutInput.value = formatDate(date);
+            
+            // Update hidden input
+            document.getElementById('checkout-date-daily').value = formatDateForInput(date);
+            
+            // Re-render calendar to show selection but keep dropdown open
+            renderCalendar();
+        } else {
+            // New checkin date
+            selectedCheckin = date;
+            selectedCheckout = null;
+            checkinInput.value = formatDate(date);
+            checkoutInput.value = 'Chọn ngày';
+            
+            // Update hidden inputs
+            document.getElementById('checkin-date-daily').value = formatDateForInput(date);
+            document.getElementById('checkout-date-daily').value = '';
+            
+            // Re-render calendar to show selection but keep dropdown open
+            renderCalendar();
+        }
+    }
+    
+    // Format date for display
+    function formatDate(date) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+    
+    // Format date for input (YYYY-MM-DD)
+    function formatDateForInput(date) {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Navigation
+    const prevBtn = document.getElementById('prev-month-daily');
+    const nextBtn = document.getElementById('next-month-daily');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentMonth === 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            renderCalendar();
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (currentMonth === 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            renderCalendar();
+        });
+    }
+    
+    // Apply button
+    const applyBtn = document.getElementById('apply-dates-daily');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            toggleDropdown();
+        });
+    }
+    
+    // Clear button
+    const clearBtn = document.getElementById('clear-dates-daily');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            selectedCheckin = null;
+            selectedCheckout = null;
+            checkinInput.value = 'Chọn ngày';
+            checkoutInput.value = 'Chọn ngày';
+            
+            // Update hidden inputs
+            document.getElementById('checkin-date-daily').value = '';
+            document.getElementById('checkout-date-daily').value = '';
+            
+            renderCalendar();
+        });
+    }
+    
+    // Event listeners for inputs
+    checkinInput.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Checkin input clicked');
+        toggleDropdown();
+    });
+    
+    checkoutInput.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Checkout input clicked');
+        toggleDropdown();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!calendarDropdown.contains(e.target) && 
+            !checkinInput.contains(e.target) && 
+            !checkoutInput.contains(e.target)) {
+            if (isDropdownOpen) {
+                toggleDropdown();
+            }
+        }
+    });
+}
+
+// Daily Date Time Selector for Global (base.html)
+function setupGlobalDailyDateTimeSelector() {
+    console.log('Setting up global daily date time selector...');
+    
+    const checkinInput = document.getElementById('global-datetime-daily');
+    const checkoutInput = document.getElementById('global-checkout-display-daily');
+    const calendarDropdown = document.getElementById('global-datetime-dropdown-daily');
+    
+    if (!checkinInput || !checkoutInput || !calendarDropdown) {
+        console.log('Global daily form elements not found:', {
+            checkinInput: !!checkinInput,
+            checkoutInput: !!checkoutInput,
+            calendarDropdown: !!calendarDropdown
+        });
+        return;
+    }
+    
+    console.log('Global daily form elements found successfully');
+    
+    let isDropdownOpen = false;
+    let selectedCheckin = null;
+    let selectedCheckout = null;
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    
+    const monthNames = [
+        'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    ];
+    
+    // Show/hide dropdown
+    function toggleDropdown() {
+        console.log('Toggling global dropdown, current state:', isDropdownOpen);
+        isDropdownOpen = !isDropdownOpen;
+        calendarDropdown.style.display = isDropdownOpen ? 'block' : 'none';
+        if (isDropdownOpen) {
+            renderCalendar();
+        }
+    }
+    
+    // Render calendar for both months
+    function renderCalendar() {
+        console.log('Rendering global calendar...');
+        const calendarDays1 = document.getElementById('global-calendar-days-daily-1');
+        const calendarDays2 = document.getElementById('global-calendar-days-daily-2');
+        const calendarTitle1 = document.getElementById('global-calendar-title-daily-1');
+        const calendarTitle2 = document.getElementById('global-calendar-title-daily-2');
+        
+        if (!calendarDays1 || !calendarDays2 || !calendarTitle1 || !calendarTitle2) {
+            console.log('Global calendar elements not found');
+            return;
+        }
+        
+        // Render first month
+        renderMonth(calendarDays1, calendarTitle1, currentMonth, currentYear);
+        
+        // Render second month
+        let nextMonth = currentMonth + 1;
+        let nextYear = currentYear;
+        if (nextMonth > 11) {
+            nextMonth = 0;
+            nextYear++;
+        }
+        renderMonth(calendarDays2, calendarTitle2, nextMonth, nextYear);
+    }
+    
+    // Render individual month
+    function renderMonth(calendarDays, calendarTitle, month, year) {
+        // Update month title
+        calendarTitle.textContent = `${monthNames[month]} ${year}`;
+        
+        // Clear existing days
+        calendarDays.innerHTML = '';
+        
+        // Get first day of month and number of days
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Add empty cells for days before first day of month
+        for (let i = 0; i < firstDay; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'calendar-day empty';
+            calendarDays.appendChild(emptyCell);
+        }
+        
+        // Add days of month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayCell = document.createElement('div');
+            dayCell.className = 'calendar-day';
+            dayCell.textContent = day;
+            
+            const cellDate = new Date(year, month, day);
+            cellDate.setHours(0, 0, 0, 0);
+            
+            // Disable past dates
+            if (cellDate < today) {
+                dayCell.classList.add('disabled');
+            } else {
+                dayCell.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectDate(cellDate);
+                });
+                
+                // Highlight selected dates
+                if (selectedCheckin && cellDate.getTime() === selectedCheckin.getTime()) {
+                    dayCell.classList.add('selected', 'checkin');
+                }
+                if (selectedCheckout && cellDate.getTime() === selectedCheckout.getTime()) {
+                    dayCell.classList.add('selected', 'checkout');
+                }
+                
+                // Highlight dates in range
+                if (selectedCheckin && selectedCheckout && 
+                    cellDate > selectedCheckin && cellDate < selectedCheckout) {
+                    dayCell.classList.add('in-range');
+                }
+            }
+            
+            calendarDays.appendChild(dayCell);
+        }
+    }
+    
+    // Select date
+    function selectDate(date) {
+        console.log('Selecting global date:', date);
+        
+        if (!selectedCheckin || (selectedCheckin && selectedCheckout)) {
+            // First selection or reset
+            selectedCheckin = date;
+            selectedCheckout = null;
+            checkinInput.value = formatDate(date);
+            checkoutInput.value = 'Chọn ngày';
+            
+            // Update hidden inputs
+            document.getElementById('global-checkin-date-daily').value = formatDateForInput(date);
+            document.getElementById('global-checkout-date-daily').value = '';
+            
+            // Re-render calendar to show selection but keep dropdown open
+            renderCalendar();
+        } else if (date > selectedCheckin) {
+            // Second selection (checkout) - keep dropdown open until Apply is clicked
+            selectedCheckout = date;
+            checkoutInput.value = formatDate(date);
+            
+            // Update hidden input
+            document.getElementById('global-checkout-date-daily').value = formatDateForInput(date);
+            
+            // Re-render calendar to show selection but keep dropdown open
+            renderCalendar();
+        } else {
+            // New checkin date
+            selectedCheckin = date;
+            selectedCheckout = null;
+            checkinInput.value = formatDate(date);
+            checkoutInput.value = 'Chọn ngày';
+            
+            // Update hidden inputs
+            document.getElementById('global-checkin-date-daily').value = formatDateForInput(date);
+            document.getElementById('global-checkout-date-daily').value = '';
+            
+            // Re-render calendar to show selection but keep dropdown open
+            renderCalendar();
+        }
+    }
+    
+    // Format date for display
+    function formatDate(date) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+    
+    // Format date for input (YYYY-MM-DD)
+    function formatDateForInput(date) {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Navigation
+    const prevBtn = document.getElementById('global-prev-month-daily');
+    const nextBtn = document.getElementById('global-next-month-daily');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentMonth === 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            renderCalendar();
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (currentMonth === 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            renderCalendar();
+        });
+    }
+    
+    // Apply button
+    const applyBtn = document.getElementById('global-apply-dates-daily');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            toggleDropdown();
+        });
+    }
+    
+    // Clear button
+    const clearBtn = document.getElementById('global-clear-dates-daily');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            selectedCheckin = null;
+            selectedCheckout = null;
+            checkinInput.value = 'Chọn ngày';
+            checkoutInput.value = 'Chọn ngày';
+            
+            // Update hidden inputs
+            document.getElementById('global-checkin-date-daily').value = '';
+            document.getElementById('global-checkout-date-daily').value = '';
+            
+            renderCalendar();
+        });
+    }
+    
+    // Event listeners for inputs
+    checkinInput.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Global checkin input clicked');
+        toggleDropdown();
+    });
+    
+    checkoutInput.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Global checkout input clicked');
+        toggleDropdown();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!calendarDropdown.contains(e.target) && 
+            !checkinInput.contains(e.target) && 
+            !checkoutInput.contains(e.target)) {
+            if (isDropdownOpen) {
+                toggleDropdown();
+            }
+        }
+    });
+}
+
+// Initialize daily calendar when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing daily calendars...');
+    
+    // Small delay to ensure all elements are rendered
+    setTimeout(() => {
+        setupDailyDateTimeSelector();
+        setupGlobalDailyDateTimeSelector();
+    }, 100);
+});
