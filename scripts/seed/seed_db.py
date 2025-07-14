@@ -303,6 +303,61 @@ def create_renter():
         db.session.rollback()
         return False
 
+def setup_payos_payment():
+    """Setup PayOS payment configuration for the owner"""
+    try:
+        print("💳 Setting up PayOS payment configuration...")
+        
+        from app.models.models import db, Owner, PaymentConfig
+        
+        # Find the owner
+        owner = Owner.query.filter_by(username='owner').first()
+        if not owner:
+            print("  ❌ Owner not found! Please create owner first.")
+            return False
+        
+        # Check if PayOS config already exists
+        existing_config = PaymentConfig.query.filter_by(owner_id=owner.id).first()
+        
+        if existing_config:
+            print("  PayOS config already exists, updating...")
+            existing_config.payos_client_id = '0c4f23f9-5321-439b-a909-c74641f98de9'
+            existing_config.payos_api_key = 'bde40f77-1af5-4b74-bfe7-540165dd465f'
+            existing_config.payos_checksum_key = '041db3b7e1158179d9ba8774fae25346b284073674dc57fd4f4d6a0f9ec3a14e'
+            existing_config.is_active = True
+            existing_config.updated_at = datetime.utcnow()
+            print("  ✅ Updated PayOS config")
+        else:
+            print("  Creating new PayOS config...")
+            config = PaymentConfig(
+                owner_id=owner.id,
+                payos_client_id='0c4f23f9-5321-439b-a909-c74641f98de9',
+                payos_api_key='bde40f77-1af5-4b74-bfe7-540165dd465f',
+                payos_checksum_key='041db3b7e1158179d9ba8774fae25346b284073674dc57fd4f4d6a0f9ec3a14e',
+                is_active=True,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.session.add(config)
+            print("  ✅ Created new PayOS config")
+        
+        db.session.commit()
+        
+        print("✅ PayOS payment configuration setup completed!")
+        print("  📋 PayOS Configuration Details:")
+        print(f"    - Owner: {owner.username} ({owner.full_name})")
+        print(f"    - Client ID: 0c4f23f9-5321-439b-a909-c74641f98de9")
+        print(f"    - API Key: bde40f77-1af5-4b74-bfe7-540165dd465f")
+        print(f"    - Checksum Key: 041db3b7e1158179d9ba8774fae25346b284073674dc57fd4f4d6a0f9ec3a14e")
+        print(f"    - Status: Active")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error setting up PayOS payment: {str(e)}")
+        db.session.rollback()
+        return False
+
 def run_booking_data():
     """Run booking data creation script"""
     try:
@@ -360,6 +415,7 @@ def seed_database():
                     print("🗑️ Clearing existing data...")
                     # Clear in correct order to avoid foreign key constraints
                     from sqlalchemy import text
+                    db.session.execute(text('DELETE FROM payment_config'))
                     db.session.execute(text('DELETE FROM home_amenities'))
                     db.session.execute(text('DELETE FROM home_rules'))
                     db.session.execute(text('DELETE FROM booking'))
@@ -384,7 +440,8 @@ def seed_database():
                 ("3️⃣ Rules", run_seed_rules),
                 ("4️⃣ Owner & Homes", create_owner_and_homes),
                 ("5️⃣ Renter", create_renter),
-                ("6️⃣ Booking Data", run_booking_data)
+                ("6️⃣ PayOS Payment Setup", setup_payos_payment),
+                ("7️⃣ Booking Data", run_booking_data)
             ]
             
             success_count = 0
@@ -417,6 +474,11 @@ def seed_database():
                 print("   Username: renter")
                 print("   Password: 123")
                 print("   Email: renter@staycation.vn")
+                print("\n💳 PayOS Configuration:")
+                print("   Client ID: 0c4f23f9-5321-439b-a909-c74641f98de9")
+                print("   API Key: bde40f77-1af5-4b74-bfe7-540165dd465f")
+                print("   Checksum Key: 041db3b7e1158179d9ba8774fae25346b284073674dc57fd4f4d6a0f9ec3a14e")
+                print("   Status: Active")
                 print("\n🏠 Created 5 diverse homes with different types and pricing")
                 print("📅 Generated realistic booking data with no time conflicts")
                 print("🏙️ Seeded location data for Vietnam")
