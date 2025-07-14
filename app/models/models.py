@@ -130,6 +130,18 @@ class Owner(UserMixin, db.Model):
         return self.full_name or self.username or "My Homestay"
     
     @property
+    def display_name(self):
+        """Trả về tên hiển thị của owner"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        elif self.full_name:
+            return self.full_name
+        elif self.username:
+            return self.username
+        else:
+            return self.email.split('@')[0]  # Fallback to email prefix
+    
+    @property
     def city(self):
         """Return the city from one of the owner's homes"""
         if self.homes:
@@ -215,6 +227,18 @@ class Renter(UserMixin, db.Model):
         
     def is_renter(self):
         return True
+    
+    @property
+    def display_name(self):
+        """Trả về tên hiển thị của renter"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        elif self.full_name:
+            return self.full_name
+        elif self.username:
+            return self.username
+        else:
+            return self.email.split('@')[0]  # Fallback to email prefix
         
     def __repr__(self):
         return f'<Renter {self.username}>'
@@ -607,6 +631,71 @@ class Booking(db.Model):
     def homestay_id(self):
         """Return the homestay (owner) ID for this booking"""
         return self.home.owner_id if self.home else None
+    
+    def get_display_status(self):
+        """
+        Trả về trạng thái hiển thị cho renter với màu sắc tương ứng
+        """
+        from datetime import datetime, timedelta
+        
+        now = datetime.utcnow()
+        
+        # Trạng thái hủy
+        if self.status == 'cancelled':
+            return {
+                'text': 'Hủy đặt phòng',
+                'color': 'danger',  # đỏ
+                'icon': 'x-circle-fill'
+            }
+        
+        # Chờ thanh toán - chưa thanh toán
+        if self.payment_status != 'paid':
+            return {
+                'text': 'Chờ thanh toán',
+                'color': 'secondary',  # xám
+                'icon': 'clock-fill'
+            }
+        
+        # Kiểm tra thời gian thực tế trước khi xử lý trạng thái
+        # Nếu đã qua thời gian kết thúc -> Hoàn thành
+        if now >= self.end_time:
+            return {
+                'text': 'Hoàn thành',
+                'color': 'success',  # xanh lá
+                'icon': 'check-circle-fill'
+            }
+        
+        # Nếu đã đến thời gian bắt đầu -> Đang tận hưởng
+        if now >= self.start_time:
+            return {
+                'text': 'Đang tận hưởng',
+                'color': 'info',  # xanh dương
+                'icon': 'heart-fill'
+            }
+        
+        # Đã thanh toán, chưa đến thời gian thuê
+        if self.status == 'confirmed' and self.payment_status == 'paid':
+            # Kiểm tra nếu còn 15 phút nữa là check-in
+            checkin_time = self.start_time - timedelta(minutes=15)
+            if now >= checkin_time:
+                return {
+                    'text': 'Check-in',
+                    'color': 'warning',  # màu vàng
+                    'icon': 'door-open-fill'
+                }
+            else:
+                return {
+                    'text': 'Chờ nhận phòng',
+                    'color': 'primary',  # màu cam (sử dụng primary cho orange)
+                    'icon': 'house-check-fill'
+                }
+        
+        # Mặc định
+        return {
+            'text': self.status.capitalize(),
+            'color': 'secondary',
+            'icon': 'info-circle-fill'
+        }
     
     def __repr__(self):
         return f'<Booking {self.id}>'

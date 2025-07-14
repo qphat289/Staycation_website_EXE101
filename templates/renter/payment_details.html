@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="background-color: #e2b77b; color: white;">
+                    <h4 class="mb-0">Chi Tiết Giao Dịch #{{ payment.payment_code }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <a href="{{ url_for('renter.payment_history') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Quay lại Lịch sử
+                        </a>
+                    </div>
+
+                    <div class="row">
+                        <!-- Thông tin giao dịch -->
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">Thông Tin Giao Dịch</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th style="width: 40%">Mã giao dịch:</th>
+                                            <td><code>{{ payment.payment_code }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Mã đơn hàng:</th>
+                                            <td><code>{{ payment.order_code }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Số tiền:</th>
+                                            <td><strong class="text-success">{{ "{:,.0f}".format(payment.amount) }} {{ payment.currency }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Trạng thái:</th>
+                                            <td>
+                                                {% if payment.status == 'success' %}
+                                                    <span class="badge bg-success fs-6">
+                                                        <i class="bi bi-check-circle-fill"></i> Thành công
+                                                    </span>
+                                                {% elif payment.status == 'pending' %}
+                                                    <span class="badge bg-warning fs-6">
+                                                        <i class="bi bi-clock-fill"></i> Chờ xử lý
+                                                    </span>
+                                                {% elif payment.status == 'failed' %}
+                                                    <span class="badge bg-danger fs-6">
+                                                        <i class="bi bi-x-circle-fill"></i> Thất bại
+                                                    </span>
+                                                {% elif payment.status == 'cancelled' %}
+                                                    <span class="badge bg-secondary fs-6">
+                                                        <i class="bi bi-dash-circle-fill"></i> Đã hủy
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary fs-6">
+                                                        {{ payment.status|title }}
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Phương thức:</th>
+                                            <td>
+                                                <span class="badge bg-info">{{ payment.payment_method or 'PayOS' }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Ngày tạo:</th>
+                                            <td>{{ payment.created_at.strftime('%d/%m/%Y %H:%M:%S') if payment.created_at else 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Ngày thanh toán:</th>
+                                            <td>
+                                                {% if payment.paid_at %}
+                                                    {{ payment.paid_at.strftime('%d/%m/%Y %H:%M:%S') }}
+                                                {% else %}
+                                                    <em>Chưa thanh toán</em>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% if payment.payos_transaction_id %}
+                                        <tr>
+                                            <th>Mã giao dịch PayOS:</th>
+                                            <td><code>{{ payment.payos_transaction_id }}</code></td>
+                                        </tr>
+                                        {% endif %}
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thông tin booking -->
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Thông Tin Booking</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if payment.booking %}
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <th style="width: 40%">Booking ID:</th>
+                                                <td>
+                                                    <a href="{{ url_for('renter.booking_details', booking_id=payment.booking.id) }}" class="text-decoration-none">
+                                                        #{{ payment.booking.id }}
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Homestay:</th>
+                                                <td>
+                                                    {% if payment.booking.home %}
+                                                        <strong>{{ payment.booking.home.title }}</strong>
+                                                    {% else %}
+                                                        <em>Không có thông tin</em>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Thời gian:</th>
+                                                <td>
+                                                    {{ payment.booking.start_time.strftime('%d/%m/%Y %H:%M') }} - 
+                                                    {{ payment.booking.end_time.strftime('%d/%m/%Y %H:%M') }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Tổng giờ:</th>
+                                                <td>{{ payment.booking.total_hours or 'N/A' }} giờ</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Loại booking:</th>
+                                                <td>
+                                                    <span class="badge bg-info">
+                                                        {{ payment.booking.booking_type|title }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Trạng thái booking:</th>
+                                                <td>
+                                                    {% set booking_status = payment.booking.get_display_status() %}
+                                                    <span class="badge bg-{{ booking_status.color }}">
+                                                        <i class="bi bi-{{ booking_status.icon }}"></i>
+                                                        {{ booking_status.text }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    {% else %}
+                                        <div class="alert alert-warning">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                            Không tìm thấy thông tin booking
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin khách hàng -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">Thông Tin Khách Hàng</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th style="width: 40%">Tên:</th>
+                                            <td>{{ payment.customer_name or current_user.display_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Email:</th>
+                                            <td>{{ payment.customer_email or current_user.email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Số điện thoại:</th>
+                                            <td>{{ payment.customer_phone or current_user.phone or 'N/A' }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mô tả giao dịch -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">Mô Tả Giao Dịch</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if payment.description %}
+                                        <p>{{ payment.description }}</p>
+                                    {% else %}
+                                        <em>Không có mô tả</em>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            {% if payment.status == 'pending' %}
+                                <a href="{{ url_for('payment.checkout', booking_id=payment.booking_id) }}" class="btn btn-success">
+                                    <i class="bi bi-credit-card"></i> Tiếp tục thanh toán
+                                </a>
+                            {% endif %}
+                            
+                            {% if payment.booking %}
+                                <a href="{{ url_for('renter.booking_details', booking_id=payment.booking.id) }}" class="btn btn-primary">
+                                    <i class="bi bi-eye"></i> Xem chi tiết booking
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.875em;
+    color: #d63384;
+}
+
+.badge {
+    font-size: 0.8em;
+    padding: 0.4em 0.6em;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.btn {
+    margin: 0 5px;
+}
+
+/* Custom colors for booking status */
+.bg-primary {
+    background-color: #ff8c00 !important;
+}
+</style>
+{% endblock %}

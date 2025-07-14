@@ -58,21 +58,11 @@
                                                     <tr>
                                                         <th class="align-middle" style="width: 40%">Status:</th>
                                                         <td class="align-middle">
-                                                            {% if booking.status == 'pending' %}
-                                                                <span class="badge bg-warning fs-6 w-100 py-2">Pending</span>
-                                                            {% elif booking.status == 'confirmed' %}
-                                                                <span class="badge bg-primary fs-6 w-100 py-2">Confirmed</span>
-                                                            {% elif booking.status == 'active' %}
-                                                                <span class="badge bg-info fs-6 w-100 py-2">Active</span>
-                                                            {% elif booking.status == 'completed' %}
-                                                                <span class="badge bg-success fs-6 w-100 py-2">Completed</span>
-                                                            {% elif booking.status == 'cancelled' %}
-                                                                <span class="badge bg-danger fs-6 w-100 py-2">Cancelled</span>
-                                                            {% elif booking.status == 'rejected' %}
-                                                                <span class="badge bg-danger fs-6 w-100 py-2">Rejected</span>
-                                                            {% else %}
-                                                                <span class="badge bg-secondary fs-6 w-100 py-2">{{ booking.status|capitalize }}</span>
-                                                            {% endif %}
+                                                            {% set status_info = booking.get_display_status() %}
+                                                            <span class="badge bg-{{ status_info.color }} fs-6 w-100 py-2">
+                                                                <i class="bi bi-{{ status_info.icon }} me-1"></i>
+                                                                {{ status_info.text }}
+                                                            </span>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -161,25 +151,27 @@
                                 <div class="row mt-4">
                                     <div class="col-md-12 text-center">
                                         <div class="action-buttons-container">
-                                            {% if booking.payment_status != 'paid' %}
+                                            {% set status_info = booking.get_display_status() %}
+                                            
+                                            {% if status_info.text == 'Chờ thanh toán' %}
                                                 <a href="{{ url_for('payment.checkout', booking_id=booking.id) }}" class="detail-action-button payment-btn">
                                                     <i class="bi bi-credit-card"></i> Thanh toán ngay
                                                 </a>
                                             {% endif %}
                                             
-                                            {% if booking.home is not none %}
+                                            {% if booking.home is not none and status_info.text != 'Chờ thanh toán' %}
                                                 <a href="{{ url_for('renter.book_home', home_id=booking.home.id) }}" class="detail-action-button book-again-btn">
                                                     <i class="bi bi-calendar-plus"></i> Đặt phòng lại
                                                 </a>
                                             {% endif %}
                                             
-                                            {% if booking.status == 'completed' and not booking.has_review %}
+                                            {% if status_info.text == 'Hoàn thành' and not booking.has_review %}
                                                 <a href="{{ url_for('renter.review_booking', booking_id=booking.id) }}" class="detail-action-button review-btn">
                                                     <i class="bi bi-star"></i> Đánh giá Homestay
                                                 </a>
                                             {% endif %}
                                             
-                                            {% if booking.status not in ['cancelled', 'completed'] and booking.payment_status != 'paid' %}
+                                            {% if status_info.text in ['Chờ thanh toán', 'Chờ nhận phòng'] %}
                                                 <a href="{{ url_for('renter.cancel_booking', id=booking.id) }}" class="detail-action-button cancel-btn">
                                                     <i class="bi bi-x-circle"></i> Hủy đặt phòng
                                                 </a>
@@ -252,6 +244,11 @@
   
   .cancel-btn {
     background-color: #dc3545;
+  }
+  
+  /* Custom colors for booking status */
+  .bg-primary {
+    background-color: #ff8c00 !important; /* Orange color for "Chờ nhận phòng" */
   }
   
   /* Đảm bảo container đủ rộng */

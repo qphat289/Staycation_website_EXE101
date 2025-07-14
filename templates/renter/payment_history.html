@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header" style="background-color: #e2b77b; color: white;">
+                    <h4 class="mb-0">Lịch Sử Thanh Toán</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <a href="{{ url_for('renter.dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+                        </a>
+                    </div>
+
+                    {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Mã Giao Dịch</th>
+                                    <th>Booking</th>
+                                    <th>Homestay</th>
+                                    <th>Số Tiền</th>
+                                    <th>Phương Thức</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Ngày Tạo</th>
+                                    <th>Ngày Thanh Toán</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td>
+                                        <code>{{ payment.payment_code }}</code>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('renter.booking_details', booking_id=payment.booking_id) }}" class="text-decoration-none">
+                                            Booking #{{ payment.booking_id }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if payment.booking and payment.booking.home %}
+                                            {{ payment.booking.home.title }}
+                                        {% else %}
+                                            <em>Không có thông tin</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ "{:,.0f}".format(payment.amount) }} VND</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ payment.payment_method or 'PayOS' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if payment.status == 'success' %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle-fill"></i> Thành công
+                                            </span>
+                                        {% elif payment.status == 'pending' %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-clock-fill"></i> Chờ xử lý
+                                            </span>
+                                        {% elif payment.status == 'failed' %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle-fill"></i> Thất bại
+                                            </span>
+                                        {% elif payment.status == 'cancelled' %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-dash-circle-fill"></i> Đã hủy
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                {{ payment.status|title }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ payment.created_at.strftime('%d/%m/%Y %H:%M') if payment.created_at else 'N/A' }}
+                                    </td>
+                                    <td>
+                                        {% if payment.paid_at %}
+                                            {{ payment.paid_at.strftime('%d/%m/%Y %H:%M') }}
+                                        {% else %}
+                                            <em>Chưa thanh toán</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('renter.payment_details', payment_id=payment.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tổng kết -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">Thống Kê Thanh Toán</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% set successful_payments = payments | selectattr('status', 'equalto', 'success') | list %}
+                                    {% set total_amount = successful_payments | map(attribute='amount') | sum %}
+                                    
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Tổng giao dịch:</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            {{ payments | length }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Thành công:</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="text-success">{{ successful_payments | length }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Tổng tiền:</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong class="text-success">{{ "{:,.0f}".format(total_amount) }} VND</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Chưa có giao dịch nào</strong>
+                        <p class="mb-0">Bạn chưa thực hiện giao dịch thanh toán nào. Hãy đặt phòng để bắt đầu!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table th {
+    background-color: #343a40;
+    color: white;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.875em;
+}
+
+.badge {
+    font-size: 0.8em;
+    padding: 0.4em 0.6em;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+</style>
+{% endblock %}
