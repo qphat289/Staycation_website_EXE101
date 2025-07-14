@@ -481,9 +481,9 @@ main.container {
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     z-index: 1000;
-    padding: 15px;
+    padding: 12px;
     display: none;
-    min-width: 480px;
+    min-width: 380px;
     max-height: 500px;
     overflow-y: auto;
 }
@@ -496,8 +496,8 @@ main.container {
 .step-progress {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
-    padding: 0 20px;
+    margin-bottom: 16px;
+    padding: 0 16px;
 }
 
 .step {
@@ -528,7 +528,7 @@ main.container {
 }
 
 .step.active .step-number {
-    background: #007bff;
+    background: #8bc34a;
     color: white;
 }
 
@@ -539,7 +539,7 @@ main.container {
 }
 
 .step.active .step-label {
-    color: #007bff;
+    color: #8bc34a;
 }
 
 /* Step Content */
@@ -628,7 +628,7 @@ main.container {
 }
 
 .calendar-day.selected {
-    background-color: #007bff;
+    background-color: #8bc34a;
     color: white;
 }
 
@@ -645,7 +645,7 @@ main.container {
 .time-duration-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 16px;
 }
 
 .time-section, .duration-section {
@@ -662,8 +662,8 @@ main.container {
 .time-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-bottom: 12px;
+    gap: 5px;
+    margin-bottom: 10px;
     max-height: 140px;
     overflow-y: auto;
 }
@@ -671,8 +671,8 @@ main.container {
 .duration-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
-    margin-bottom: 12px;
+    gap: 5px;
+    margin-bottom: 10px;
 }
 
 /* Compact Grids for Steps */
@@ -702,10 +702,10 @@ main.container {
 
 .btn-back, .btn-next {
     padding: 8px 16px;
-    border: 1px solid #007bff;
+    border: 1px solid #8bc34a;
     border-radius: 4px;
     background: white;
-    color: #007bff;
+    color: #8bc34a;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -713,43 +713,43 @@ main.container {
 }
 
 .btn-back:hover, .btn-next:hover {
-    background: #007bff;
+    background: #8bc34a;
     color: white;
 }
 
 .btn-next {
-    background: #007bff;
+    background: #8bc34a;
     color: white;
 }
 
 .btn-next:hover {
-    background: #0056b3;
+    background: #7cb342;
 }
 
 .time-slot, .duration-slot {
-    padding: 6px 8px;
+    padding: 6px;
     border: 1px solid #ddd;
     border-radius: 4px;
     background: white;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 13px;
     text-align: center;
     transition: all 0.2s;
-    min-height: 28px;
+    min-height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .time-slot:hover, .duration-slot:hover {
-    border-color: #007bff;
+    border-color: #8bc34a;
     background-color: #f0f8ff;
 }
 
 .time-slot.active, .duration-slot.active {
-    background-color: #007bff;
+    background-color: #8bc34a;
     color: white;
-    border-color: #007bff;
+    border-color: #8bc34a;
 }
 
 /* Apply Button */
@@ -853,8 +853,9 @@ main.container {
     }
     
     .datetime-dropdown {
-        min-width: 400px !important;
+        min-width: 320px !important;
         max-height: 450px !important;
+        padding: 12px !important;
     }
     
     .time-duration-section {
@@ -863,12 +864,12 @@ main.container {
     }
     
     .time-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         max-height: 120px;
     }
     
     .duration-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
@@ -1236,6 +1237,33 @@ main.container {
         height: 44px;
     }
     
+    /* DateTime Dropdown Mobile Styles */
+    .datetime-dropdown {
+        min-width: 280px !important;
+        max-height: 400px !important;
+        padding: 10px !important;
+    }
+    
+    .time-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        max-height: 100px !important;
+    }
+    
+    .duration-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    
+    .step-progress {
+        margin-bottom: 12px !important;
+        padding: 0 12px !important;
+    }
+    
+    .time-slot, .duration-slot {
+        font-size: 12px !important;
+        min-height: 30px !important;
+        padding: 5px !important;
+    }
+    
     /* Section Header Mobile Styles */
     .section-header {
         margin-bottom: 2rem !important;
@@ -1299,6 +1327,43 @@ main.container {
     
     .search-form {
         padding: 1rem;
+    }
+    
+    /* DateTime Dropdown Extra Small Mobile Styles */
+    .datetime-dropdown {
+        min-width: 260px !important;
+        max-height: 350px !important;
+        padding: 8px !important;
+    }
+    
+    .time-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        max-height: 80px !important;
+    }
+    
+    .duration-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .step-progress {
+        margin-bottom: 10px !important;
+        padding: 0 10px !important;
+    }
+    
+    .step-number {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 10px !important;
+    }
+    
+    .step-label {
+        font-size: 10px !important;
+    }
+    
+    .time-slot, .duration-slot {
+        font-size: 11px !important;
+        min-height: 28px !important;
+        padding: 4px !important;
     }
 }
 

@@ -461,7 +461,7 @@
 
 .btn-decrease:hover, .btn-increase:hover {
     background: #f8f9fa;
-    border-color: #007bff;
+    border-color: #8bc34a;
 }
 
 .btn-decrease:disabled {
@@ -1909,6 +1909,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const calendarDays = document.getElementById('calendar-days-hourly');
         const applyBtn = document.getElementById('apply-datetime-hourly');
         
+        // Check if required elements exist
+        if (!display || !dropdown || !calendarTitle || !calendarDays) {
+            console.log('DateTime selector elements not found');
+            return;
+        }
+        
         let currentDate = new Date();
         let selectedDate = null;
         let selectedTime = '14:00';
@@ -1921,40 +1927,100 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
         
         // Toggle dropdown
-        display.addEventListener('click', function() {
-            dropdown.classList.toggle('show');
-            if (dropdown.classList.contains('show')) {
-                renderCalendar();
-            }
-        });
+        if (display && dropdown) {
+            display.addEventListener('click', function() {
+                dropdown.classList.toggle('show');
+                if (dropdown.classList.contains('show')) {
+                    renderCalendar();
+                }
+            });
+        }
         
         // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!display.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.remove('show');
-            }
-        });
+        if (display && dropdown) {
+            document.addEventListener('click', function(e) {
+                if (!display.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
         
         // Calendar navigation
-        prevMonth.addEventListener('click', function() {
+        if (prevMonth) {
+            prevMonth.addEventListener('click', function() {
             currentDate.setMonth(currentDate.getMonth() - 1);
+            
+            // Reset selectedDate when changing month
+            const today = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
+            
+            // If viewing current month or future month, set to today or first day of month
+            if (currentYear > today.getFullYear() || 
+                (currentYear === today.getFullYear() && currentMonth >= today.getMonth())) {
+                
+                if (currentYear === today.getFullYear() && currentMonth === today.getMonth()) {
+                    // Current month: set to today
+                    selectedDate = today.toISOString().split('T')[0];
+                } else {
+                    // Future month: set to first day of month
+                    selectedDate = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+                }
+            } else {
+                // Past month: clear selection
+                selectedDate = null;
+            }
+            
             renderCalendar();
-        });
+            updateDisplay();
+            updateHiddenInputs();
+            });
+        }
         
-        nextMonth.addEventListener('click', function() {
+        if (nextMonth) {
+            nextMonth.addEventListener('click', function() {
             currentDate.setMonth(currentDate.getMonth() + 1);
+            
+            // Reset selectedDate when changing month
+            const today = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
+            
+            // If viewing current month or future month, set to today or first day of month
+            if (currentYear > today.getFullYear() || 
+                (currentYear === today.getFullYear() && currentMonth >= today.getMonth())) {
+                
+                if (currentYear === today.getFullYear() && currentMonth === today.getMonth()) {
+                    // Current month: set to today
+                    selectedDate = today.toISOString().split('T')[0];
+                } else {
+                    // Future month: set to first day of month
+                    selectedDate = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+                }
+            } else {
+                // Past month: clear selection
+                selectedDate = null;
+            }
+            
             renderCalendar();
-        });
+            updateDisplay();
+            updateHiddenInputs();
+            });
+        }
         
         // Apply button
-        applyBtn.addEventListener('click', function() {
+        if (applyBtn) {
+            applyBtn.addEventListener('click', function() {
             updateDisplay();
             updateHiddenInputs();
             dropdown.classList.remove('show');
-        });
+            });
+        }
         
         // Render calendar
         function renderCalendar() {
+            if (!calendarTitle || !calendarDays) return;
+            
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             
@@ -1972,6 +2038,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${prevDate.toISOString().split('T')[0]}">${prevDate.getDate()}</button>`;
             }
             
+            // Check if current viewing month is past, current, or future
+            const currentViewingMonth = new Date(year, month, 1);
+            const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const isPastMonth = currentViewingMonth < currentMonth;
+            const isCurrentMonth = currentViewingMonth.getTime() === currentMonth.getTime();
+            
             // Add days of current month
             for (let day = 1; day <= lastDay.getDate(); day++) {
                 const date = new Date(year, month, day);
@@ -1980,14 +2052,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Compare dates without time to avoid timezone issues
                 const todayStr = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + today.getDate().toString().padStart(2, '0');
                 const isToday = dateStr === todayStr;
-                const isPast = dateStr < todayStr;
+                const isPastDay = dateStr < todayStr;
                 const isSelected = selectedDate === dateStr;
                 
                 let classes = 'calendar-day';
-                if (isPast) classes += ' disabled';
+                let isDisabled = false;
+                
+                if (isPastMonth) {
+                    // Past month: disable all days
+                    classes += ' disabled';
+                    isDisabled = true;
+                } else if (isCurrentMonth && isPastDay) {
+                    // Current month: only disable past days
+                    classes += ' disabled';
+                    isDisabled = true;
+                }
+                // Future month: enable all days (no additional logic needed)
+                
                 if (isSelected) classes += ' selected';
                 
-                calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" ${isPast ? 'disabled' : ''}>${day}</button>`;
+                calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" ${isDisabled ? 'disabled' : ''}>${day}</button>`;
             }
             
             // Add empty cells for days after last day of month
@@ -2000,16 +2084,22 @@ document.addEventListener('DOMContentLoaded', function() {
             
             calendarDays.innerHTML = calendarHTML;
             
-            // Remove old event listeners to avoid conflicts
-            const newCalendarDays = calendarDays.cloneNode(false);
-            calendarDays.parentNode.replaceChild(newCalendarDays, calendarDays);
-            newCalendarDays.innerHTML = calendarHTML;
-            
             // Add click handlers for calendar days
-            newCalendarDays.addEventListener('click', function(e) {
-                if (e.target.classList.contains('calendar-day') && !e.target.disabled) {
-                    newCalendarDays.querySelectorAll('.calendar-day').forEach(day => day.classList.remove('selected'));
-                    e.target.classList.add('selected');
+            calendarDays.addEventListener('click', function(e) {
+                if (e.target && e.target.classList && e.target.classList.contains('calendar-day') && !e.target.disabled) {
+                    // Remove selected class from all days
+                    const allDays = calendarDays.querySelectorAll('.calendar-day');
+                    allDays.forEach(day => {
+                        if (day && day.classList) {
+                            day.classList.remove('selected');
+                        }
+                    });
+                    
+                    // Add selected class to clicked day
+                    if (e.target.classList) {
+                        e.target.classList.add('selected');
+                    }
+                    
                     selectedDate = e.target.dataset.date;
                     console.log('Date selected:', selectedDate);
                     
@@ -2020,7 +2110,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Auto-proceed to next step after selecting date
                     setTimeout(() => {
                         console.log('Auto-proceeding to step 2 after date selection');
-                        window.nextStep(2);
+                        if (window.nextStep) {
+                            window.nextStep(2);
+                        }
                     }, 300);
                 }
             });
@@ -2028,6 +2120,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update display text
         function updateDisplay() {
+            if (!display) return;
+            
             if (selectedDate && selectedTime && selectedDuration) {
                 // Parse date parts manually to avoid timezone issues
                 const dateParts = selectedDate.split('-');
@@ -2046,6 +2140,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Calculate checkout time and date
                 updateCheckoutDisplay();
+            } else {
+                // Reset display if no date selected
+                display.value = 'Hãy chọn ngày và giờ';
             }
         }
         
@@ -2083,16 +2180,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 const checkoutDateFormatted = checkoutDateTime.getFullYear() + '-' + 
                                             (checkoutDateTime.getMonth() + 1).toString().padStart(2, '0') + '-' + 
                                             checkoutDateTime.getDate().toString().padStart(2, '0');
-                document.getElementById('checkout-date-hourly').value = checkoutDateFormatted;
-                document.getElementById('checkout-time-hourly').value = checkoutTimeStr;
+                
+                const checkoutDateEl = document.getElementById('checkout-date-hourly');
+                const checkoutTimeEl = document.getElementById('checkout-time-hourly');
+                
+                if (checkoutDateEl) checkoutDateEl.value = checkoutDateFormatted;
+                if (checkoutTimeEl) checkoutTimeEl.value = checkoutTimeStr;
             }
         }
         
         // Update hidden inputs
         function updateHiddenInputs() {
-            document.getElementById('checkin-date-hourly').value = selectedDate || '';
-            document.getElementById('checkin-time-hourly').value = selectedTime || '';
-            document.getElementById('hours-duration-hourly').value = selectedDuration || '';
+            const checkinDateEl = document.getElementById('checkin-date-hourly');
+            const checkinTimeEl = document.getElementById('checkin-time-hourly');
+            const hoursDurationEl = document.getElementById('hours-duration-hourly');
+            
+            if (checkinDateEl) checkinDateEl.value = selectedDate || '';
+            if (checkinTimeEl) checkinTimeEl.value = selectedTime || '';
+            if (hoursDurationEl) hoursDurationEl.value = selectedDuration || '';
         }
         
         // Format time from 24h to 12h AM/PM

@@ -586,7 +586,7 @@
         
         .btn-decrease:hover, .btn-increase:hover {
             background: #f8f9fa;
-            border-color: #007bff;
+            border-color: #8bc34a;
         }
         
         .btn-decrease:disabled {
@@ -1914,14 +1914,62 @@
             if (prevMonth) {
                 prevMonth.addEventListener('click', function() {
                     currentDate.setMonth(currentDate.getMonth() - 1);
+                    
+                    // Reset selectedDate when changing month
+                    const today = new Date();
+                    const currentYear = currentDate.getFullYear();
+                    const currentMonth = currentDate.getMonth();
+                    
+                    // If viewing current month or future month, set to today or first day of month
+                    if (currentYear > today.getFullYear() || 
+                        (currentYear === today.getFullYear() && currentMonth >= today.getMonth())) {
+                        
+                        if (currentYear === today.getFullYear() && currentMonth === today.getMonth()) {
+                            // Current month: set to today
+                            selectedDate = today.toISOString().split('T')[0];
+                        } else {
+                            // Future month: set to first day of month
+                            selectedDate = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+                        }
+                    } else {
+                        // Past month: clear selection
+                        selectedDate = null;
+                    }
+                    
                     renderGlobalCalendar();
+                    updateGlobalDisplay();
+                    updateGlobalHiddenInputs();
                 });
             }
             
             if (nextMonth) {
                 nextMonth.addEventListener('click', function() {
                     currentDate.setMonth(currentDate.getMonth() + 1);
+                    
+                    // Reset selectedDate when changing month
+                    const today = new Date();
+                    const currentYear = currentDate.getFullYear();
+                    const currentMonth = currentDate.getMonth();
+                    
+                    // If viewing current month or future month, set to today or first day of month
+                    if (currentYear > today.getFullYear() || 
+                        (currentYear === today.getFullYear() && currentMonth >= today.getMonth())) {
+                        
+                        if (currentYear === today.getFullYear() && currentMonth === today.getMonth()) {
+                            // Current month: set to today
+                            selectedDate = today.toISOString().split('T')[0];
+                        } else {
+                            // Future month: set to first day of month
+                            selectedDate = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+                        }
+                    } else {
+                        // Past month: clear selection
+                        selectedDate = null;
+                    }
+                    
                     renderGlobalCalendar();
+                    updateGlobalDisplay();
+                    updateGlobalHiddenInputs();
                 });
             }
             
@@ -1955,6 +2003,12 @@
                     calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${prevDate.toISOString().split('T')[0]}">${prevDate.getDate()}</button>`;
                 }
                 
+                // Check if current viewing month is past, current, or future
+                const currentViewingMonth = new Date(year, month, 1);
+                const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                const isPastMonth = currentViewingMonth < currentMonth;
+                const isCurrentMonth = currentViewingMonth.getTime() === currentMonth.getTime();
+                
                 // Add days of current month
                 for (let day = 1; day <= lastDay.getDate(); day++) {
                     const date = new Date(year, month, day);
@@ -1962,14 +2016,26 @@
                     
                     const todayStr = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + today.getDate().toString().padStart(2, '0');
                     const isToday = dateStr === todayStr;
-                    const isPast = dateStr < todayStr;
+                    const isPastDay = dateStr < todayStr;
                     const isSelected = selectedDate === dateStr;
                     
                     let classes = 'calendar-day';
-                    if (isPast) classes += ' disabled';
+                    let isDisabled = false;
+                    
+                    if (isPastMonth) {
+                        // Past month: disable all days
+                        classes += ' disabled';
+                        isDisabled = true;
+                    } else if (isCurrentMonth && isPastDay) {
+                        // Current month: only disable past days
+                        classes += ' disabled';
+                        isDisabled = true;
+                    }
+                    // Future month: enable all days (no additional logic needed)
+                    
                     if (isSelected) classes += ' selected';
                     
-                    calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" ${isPast ? 'disabled' : ''}>${day}</button>`;
+                    calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" ${isDisabled ? 'disabled' : ''}>${day}</button>`;
                 }
                 
                 // Add empty cells for days after last day of month
@@ -1984,9 +2050,20 @@
                 
                 // Add click handlers for calendar days
                 calendarDays.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('calendar-day') && !e.target.disabled) {
-                        calendarDays.querySelectorAll('.calendar-day').forEach(day => day.classList.remove('selected'));
-                        e.target.classList.add('selected');
+                    if (e.target && e.target.classList && e.target.classList.contains('calendar-day') && !e.target.disabled) {
+                        // Remove selected class from all days
+                        const allDays = calendarDays.querySelectorAll('.calendar-day');
+                        allDays.forEach(day => {
+                            if (day && day.classList) {
+                                day.classList.remove('selected');
+                            }
+                        });
+                        
+                        // Add selected class to clicked day
+                        if (e.target.classList) {
+                            e.target.classList.add('selected');
+                        }
+                        
                         selectedDate = e.target.dataset.date;
                         
                         updateGlobalDisplay();
@@ -1994,7 +2071,9 @@
                         
                         // Auto-proceed to next step
                         setTimeout(() => {
-                            window.nextGlobalStep(2);
+                            if (window.nextGlobalStep) {
+                                window.nextGlobalStep(2);
+                            }
                         }, 300);
                     }
                 });
@@ -2002,6 +2081,8 @@
             
             // Update display text
             function updateGlobalDisplay() {
+                if (!display) return;
+                
                 if (selectedDate && selectedTime && selectedDuration) {
                     const dateParts = selectedDate.split('-');
                     const year = parseInt(dateParts[0]);
@@ -2017,6 +2098,9 @@
                     display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeFormatted}`;
                     
                     updateGlobalCheckoutDisplay();
+                } else {
+                    // Reset display if no date selected
+                    display.value = 'Hãy chọn ngày và giờ';
                 }
             }
             
