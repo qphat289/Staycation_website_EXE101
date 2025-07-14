@@ -815,7 +815,7 @@
         
         .period-options {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 15px;
             justify-content: center;
         }
@@ -824,21 +824,23 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 15px 20px;
+            padding: 10px 15px;
             border: 2px solid #e0e0e0;
-            border-radius: 12px;
+            border-radius: 8px;
             background: white;
             cursor: pointer;
             transition: all 0.3s ease;
-            min-width: 140px;
+            min-width: 110px;
+            max-width: 120px;
             position: relative;
+            text-align: center;
         }
         
         .period-btn:hover {
             border-color: #8bc34a;
             background: #f8fff0;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(139, 195, 74, 0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(139, 195, 74, 0.2);
         }
         
         .period-btn.active {
@@ -848,8 +850,8 @@
         }
         
         .period-btn i {
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 20px;
+            margin-bottom: 6px;
             color: #666;
         }
         
@@ -858,11 +860,11 @@
         }
         
         .period-btn[data-period="overnight"] i {
-            color: #4a90e2;
+            color: #666;
         }
         
         .period-btn[data-period="daytime"] i {
-            color: #f5a623;
+            color: #666;
         }
         
         .period-btn.active[data-period="overnight"] i,
@@ -872,13 +874,15 @@
         
         .period-title {
             font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 4px;
+            font-size: 13px;
+            margin-bottom: 2px;
+            line-height: 1.2;
         }
         
         .period-time {
-            font-size: 12px;
+            font-size: 11px;
             opacity: 0.8;
+            line-height: 1.1;
         }
         
         .period-divider {
@@ -954,15 +958,21 @@
             margin-top: 5px !important;
             overflow: visible !important;
             display: none;
-            padding: 20px;
+            padding: 25px;
             backdrop-filter: blur(10px);
             animation: slideDown 0.3s ease-out;
             min-width: 400px;
-            max-width: 500px;
+            max-width: 520px;
+            min-height: 520px;
         }
         
         .datetime-dropdown.show {
             display: block;
+        }
+        
+        /* Smaller height for step 3 (duration selection) */
+        .datetime-dropdown.step-3-active {
+            min-height: 300px;
         }
         
         /* Step Progress */
@@ -1167,6 +1177,8 @@
             transition: all 0.2s ease;
             font-size: 14px;
         }
+        
+
         
         .btn-apply {
             background: #8bc34a;
@@ -2258,7 +2270,7 @@
                         if (window.selectedPeriod === 'overnight') {
                             timeDisplay = 'Qua đêm';
                         } else if (window.selectedPeriod === 'daytime') {
-                            timeDisplay = 'Qua ngày (9h-20h)';
+                            timeDisplay = 'Qua ngày';
                         }
                     } else {
                         timeDisplay = formatGlobalTime12Hour(selectedTime);
@@ -2307,9 +2319,9 @@
                     
                     let checkoutDisplayText = '';
                     if (window.selectedPeriod === 'overnight') {
-                        checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00AM`;
+                        checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 AM`;
                     } else if (window.selectedPeriod === 'daytime') {
-                        checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00PM`;
+                        checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 20:00 PM`;
                     } else {
                         const checkoutTimeFormatted = formatGlobalTime12Hour(checkoutTimeStr);
                         checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeFormatted}`;
@@ -2383,6 +2395,16 @@
                 }
                 if (newStepProgress) {
                     newStepProgress.classList.add('active');
+                }
+                
+                // Update dropdown height based on step
+                const dropdown = document.querySelector('.datetime-dropdown');
+                if (dropdown) {
+                    if (window.currentGlobalStep === 3) {
+                        dropdown.classList.add('step-3-active');
+                    } else {
+                        dropdown.classList.remove('step-3-active');
+                    }
                 }
                 
                 // Setup specific step functionality

@@ -769,8 +769,8 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                                     </div>
                                 </div>
                                 <div class="step-actions">
-                                    <button type="button" class="btn btn-back" id="back-step-3">Quay lại</button>
-                                    <button type="button" class="btn btn-apply" id="apply-datetime-hourly">Hoàn tất</button>
+                                    <button type="button" class="btn btn-back" id="back-step-3">Quay lạiapply-datetime-hourly</button>
+                                    <button type="button" class="btn btn-apply" id="">Hoàn tất</button>
                                 </div>
                             </div>
                         </div>
@@ -2303,6 +2303,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             console.log('Step changed to:', window.currentStep);
+            
+            // Update dropdown height based on step
+            const dropdown = document.querySelector('.datetime-dropdown');
+            if (dropdown) {
+                if (window.currentStep === 3) {
+                    dropdown.classList.add('step-3-active');
+                } else {
+                    dropdown.classList.remove('step-3-active');
+                }
+            }
             
             // Setup specific step functionality
             if (window.currentStep === 2) {
