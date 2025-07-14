@@ -12,6 +12,27 @@ from app.utils.email_validator import process_email
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
+def update_booking_status(bookings):
+    """
+    Utility function để cập nhật trạng thái booking dựa trên thời gian thực tế
+    """
+    now = datetime.utcnow()
+    updated = False
+    
+    for booking in bookings:
+        # Chỉ cập nhật booking đã thanh toán
+        if booking.payment_status == 'paid':
+            # Nếu đã qua thời gian kết thúc -> completed
+            if now >= booking.end_time and booking.status != 'completed':
+                booking.status = 'completed'
+                updated = True
+            # Nếu đã đến thời gian bắt đầu nhưng chưa qua thời gian kết thúc -> active
+            elif now >= booking.start_time and now < booking.end_time and booking.status == 'confirmed':
+                booking.status = 'active'
+                updated = True
+    
+    return updated
+
 # Custom decorator to ensure user is a renter
 def renter_required(f):
     @login_required
@@ -51,18 +72,9 @@ def require_email_verification_for_booking(f):
 @renter_required
 def dashboard():
     bookings = Booking.query.filter_by(renter_id=current_user.id).all()
-    now = datetime.utcnow()
-    updated = False
-
-    for booking in bookings:
-        # Only update confirmed bookings that have been paid
-        if booking.status == 'confirmed' and booking.payment_status == 'paid' and booking.start_time <= now:
-            booking.status = 'active'
-            updated = True
-        elif booking.status == 'active' and booking.end_time <= now:
-            booking.status = 'completed'
-            updated = True
-
+    
+    # Cập nhật trạng thái booking
+    updated = update_booking_status(bookings)
     if updated:
         db.session.commit()
     
@@ -416,7 +428,7 @@ def book_home(home_id):
                 end_time=end_datetime,
                 total_hours=duration,
                 total_price=total_price,
-                status='confirmed',
+                status='pending',  # Bắt đầu với trạng thái pending
                 payment_status='pending',
                 booking_type='hourly'
             )
@@ -470,7 +482,7 @@ def book_home(home_id):
                 end_time=end_datetime,
                 total_hours=total_hours,
                 total_price=total_price,
-                status='confirmed',
+                status='pending',  # Bắt đầu với trạng thái pending
                 payment_status='pending',
                 booking_type='daily'
             )
@@ -494,6 +506,12 @@ def cancel_booking(id):
     # Ensure the current user owns this booking
     if booking.renter_id != current_user.id:
         flash('You do not have permission to cancel this booking', 'danger')
+        return redirect(url_for('renter.dashboard'))
+    
+    # Kiểm tra trạng thái có thể hủy không
+    status_info = booking.get_display_status()
+    if status_info['text'] not in ['Chờ thanh toán', 'Chờ nhận phòng']:
+        flash('Không thể hủy booking ở trạng thái hiện tại', 'danger')
         return redirect(url_for('renter.dashboard'))
     
     # Check if booking can be cancelled (not already started)
@@ -660,18 +678,9 @@ def add_review(home_id):
 def booking_history():
     """View booking history for the current renter"""
     bookings = Booking.query.filter_by(renter_id=current_user.id).order_by(Booking.created_at.desc()).all()
-    now = datetime.utcnow()
-    updated = False
-
-    for booking in bookings:
-        # Only update confirmed bookings that have been paid
-        if booking.status == 'confirmed' and booking.payment_status == 'paid' and booking.start_time <= now:
-            booking.status = 'active'
-            updated = True
-        elif booking.status == 'active' and booking.end_time <= now:
-            booking.status = 'completed'
-            updated = True
-
+    
+    # Cập nhật trạng thái booking
+    updated = update_booking_status(bookings)
     if updated:
         db.session.commit()
     
@@ -685,6 +694,11 @@ def booking_details(booking_id):
     if booking.renter_id != current_user.id:
         flash("You don't have permission to view this booking.", "danger")
         return redirect(url_for('renter.dashboard'))
+
+    # Cập nhật trạng thái booking
+    updated = update_booking_status([booking])
+    if updated:
+        db.session.commit()
 
     return render_template('renter/booking_details.html', booking=booking)
 
@@ -1018,3 +1032,141 @@ def get_bookings_by_home_and_date(home_id, date):
         return jsonify({'success': True, 'bookings': data})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+@renter_bp.route('/debug_booking_status')
+def debug_booking_status():
+    """Debug route để kiểm tra trạng thái booking"""
+    bookings = Booking.query.filter_by(renter_id=current_user.id).all() if current_user.is_authenticated else []
+    
+    # Cập nhật trạng thái trước khi debug
+    updated = update_booking_status(bookings)
+    if updated:
+        db.session.commit()
+    
+    result = []
+    now = datetime.utcnow()
+    
+    for booking in bookings:
+        status_info = booking.get_display_status()
+        
+        # Lấy thông tin payment
+        payments = booking.payments if hasattr(booking, 'payments') else []
+        payment_info = []
+        for payment in payments:
+            payment_info.append({
+                'id': payment.id,
+                'amount': payment.amount,
+                'status': payment.status,
+                'payment_method': payment.payment_method,
+                'created_at': payment.created_at.strftime('%Y-%m-%d %H:%M') if payment.created_at else None,
+                'paid_at': payment.paid_at.strftime('%Y-%m-%d %H:%M') if payment.paid_at else None
+            })
+        
+        result.append({
+            'id': booking.id,
+            'database_status': booking.status,
+            'payment_status': booking.payment_status,
+            'start_time': booking.start_time.strftime('%Y-%m-%d %H:%M'),
+            'end_time': booking.end_time.strftime('%Y-%m-%d %H:%M'),
+            'display_status': status_info,
+            'renter_display_name': booking.renter.display_name if booking.renter else None,
+            'payments': payment_info,
+            'time_checks': {
+                'now_vs_start': 'passed' if now >= booking.start_time else 'not_yet',
+                'now_vs_end': 'passed' if now >= booking.end_time else 'not_yet',
+                'minutes_to_start': int((booking.start_time - now).total_seconds() / 60) if now < booking.start_time else 'already_started',
+                'minutes_to_end': int((booking.end_time - now).total_seconds() / 60) if now < booking.end_time else 'already_ended'
+            }
+        })
+    
+    return jsonify({
+        'bookings': result,
+        'current_time': now.strftime('%Y-%m-%d %H:%M'),
+        'current_user_display_name': current_user.display_name if current_user.is_authenticated else None,
+        'updated_in_this_request': updated
+    })
+
+@renter_bp.route('/payment-history')
+@renter_required
+def payment_history():
+    """Lịch sử thanh toán của renter"""
+    # Import Payment model
+    from app.models.models import Payment
+    
+    # Lấy tất cả payment của renter hiện tại
+    payments = Payment.query.filter_by(renter_id=current_user.id).order_by(Payment.created_at.desc()).all()
+    
+    return render_template('renter/payment_history.html', payments=payments)
+
+@renter_bp.route('/payment/<int:payment_id>')
+@renter_required
+def payment_details(payment_id):
+    """Chi tiết giao dịch thanh toán"""
+    from app.models.models import Payment
+    
+    payment = Payment.query.get_or_404(payment_id)
+    
+    # Kiểm tra quyền truy cập
+    if payment.renter_id != current_user.id:
+        flash("Bạn không có quyền xem giao dịch này", "danger")
+        return redirect(url_for('renter.payment_history'))
+    
+    return render_template('renter/payment_details.html', payment=payment)
+
+@renter_bp.route('/debug_payment_status/<int:booking_id>')
+def debug_payment_status(booking_id):
+    """Debug route để kiểm tra trạng thái thanh toán của booking cụ thể"""
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    from app.models.models import Payment
+    
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Kiểm tra quyền truy cập
+    if booking.renter_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    # Cập nhật trạng thái booking
+    updated = update_booking_status([booking])
+    if updated:
+        db.session.commit()
+    
+    # Lấy thông tin payment
+    payments = Payment.query.filter_by(booking_id=booking_id).all()
+    
+    payment_data = []
+    for payment in payments:
+        payment_data.append({
+            'id': payment.id,
+            'payment_code': payment.payment_code,
+            'amount': payment.amount,
+            'status': payment.status,
+            'payment_method': payment.payment_method,
+            'created_at': payment.created_at.strftime('%Y-%m-%d %H:%M:%S') if payment.created_at else None,
+            'paid_at': payment.paid_at.strftime('%Y-%m-%d %H:%M:%S') if payment.paid_at else None,
+            'payos_transaction_id': payment.payos_transaction_id,
+            'is_successful': payment.is_successful,
+            'is_pending': payment.is_pending,
+            'is_failed': payment.is_failed
+        })
+    
+    # Lấy trạng thái hiển thị
+    status_info = booking.get_display_status()
+    
+    return jsonify({
+        'booking': {
+            'id': booking.id,
+            'database_status': booking.status,
+            'payment_status': booking.payment_status,
+            'start_time': booking.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'end_time': booking.end_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'total_price': booking.total_price,
+            'display_status': status_info,
+            'updated_in_this_request': updated
+        },
+        'payments': payment_data,
+        'payment_count': len(payments),
+        'successful_payments': len([p for p in payments if p.status == 'success']),
+        'current_time': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    })

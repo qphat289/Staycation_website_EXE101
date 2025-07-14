@@ -27,32 +27,34 @@
                     <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>{{ "%.0f"|format(booking.total_price * 1000) }} VND</td>
                     <td>
-                        {% if booking.status == 'rejected' %}
-                            <span class="badge bg-danger">{{ booking.status|title }}</span>
-                        {% elif booking.status == 'pending' %}
-                            <span class="badge bg-warning">{{ booking.status|title }}</span>
-                        {% elif booking.status == 'confirmed' or booking.status == 'active' %}
-                            <span class="badge bg-success">{{ booking.status|title }}</span>
-                        {% elif booking.status == 'completed' %}
-                            <span class="badge bg-info">{{ booking.status|title }}</span>
-                        {% elif booking.status == 'cancelled' %}
-                            <span class="badge bg-secondary">{{ booking.status|title }}</span>
-                        {% else %}
-                            <span class="badge bg-primary">{{ booking.status|title }}</span>
-                        {% endif %}
+                        {% set status_info = booking.get_display_status() %}
+                        <span class="badge bg-{{ status_info.color }}">
+                            <i class="bi bi-{{ status_info.icon }} me-1"></i>
+                            {{ status_info.text }}
+                        </span>
                     </td>
                     <td>
+                        {% set status_info = booking.get_display_status() %}
+                        
                         <a href="{{ url_for('renter.booking_details', booking_id=booking.id) }}" 
                            class="btn btn-sm btn-info" data-translate="view-details">View Details</a>
                         
-                        {% if booking.status == 'pending' %}
+                        <!-- Nút thanh toán - chỉ hiển thị khi chờ thanh toán -->
+                        {% if status_info.text == 'Chờ thanh toán' %}
+                        <a href="{{ url_for('payment.checkout', booking_id=booking.id) }}" 
+                           class="btn btn-sm btn-success" data-translate="pay-now">Pay Now</a>
+                        {% endif %}
+                        
+                        <!-- Nút hủy - chỉ hiển thị khi chờ thanh toán hoặc chờ nhận phòng -->
+                        {% if status_info.text in ['Chờ thanh toán', 'Chờ nhận phòng'] %}
                         <a href="{{ url_for('renter.cancel_booking', id=booking.id) }}" 
                            class="btn btn-sm btn-danger" 
                            onclick="return confirm('Are you sure you want to cancel this booking?')"
                            data-translate="cancel">Cancel</a>
                         {% endif %}
 
-                        {% if booking.status == 'completed' %}
+                        <!-- Nút đánh giá - chỉ hiển thị khi hoàn thành -->
+                        {% if status_info.text == 'Hoàn thành' %}
                         <a href="{{ url_for('renter.review_booking', booking_id=booking.id) }}" 
                            class="btn btn-sm btn-primary" data-translate="write-review">Write Review</a>
                         {% endif %}
