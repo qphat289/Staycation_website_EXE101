@@ -57,11 +57,58 @@
     </div>
     <div class="mb-3">
       <label for="start_time" class="form-label">Giờ bắt đầu</label>
-      <input type="time" class="form-control" id="start_time" name="start_time" required>
+      <div class="time-selector" style="position:relative;">
+        <input type="text" class="form-control" id="start_time_display" value="Chọn giờ" readonly required>
+        <input type="hidden" id="start_time" name="start_time" required>
+        <div class="time-dropdown" id="time-dropdown" style="display:none; position:absolute; z-index:1000; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.08); padding:12px; min-width:320px;">
+          <div class="time-grid" style="display:grid; grid-template-columns:repeat(6,1fr); gap:8px;">
+            <button type="button" class="time-slot" data-time="01:00">01:00</button>
+            <button type="button" class="time-slot" data-time="02:00">02:00</button>
+            <button type="button" class="time-slot" data-time="03:00">03:00</button>
+            <button type="button" class="time-slot" data-time="04:00">04:00</button>
+            <button type="button" class="time-slot" data-time="05:00">05:00</button>
+            <button type="button" class="time-slot" data-time="06:00">06:00</button>
+            <button type="button" class="time-slot" data-time="07:00">07:00</button>
+            <button type="button" class="time-slot" data-time="08:00">08:00</button>
+            <button type="button" class="time-slot" data-time="09:00">09:00</button>
+            <button type="button" class="time-slot" data-time="10:00">10:00</button>
+            <button type="button" class="time-slot" data-time="11:00">11:00</button>
+            <button type="button" class="time-slot" data-time="12:00">12:00</button>
+            <button type="button" class="time-slot" data-time="13:00">13:00</button>
+            <button type="button" class="time-slot" data-time="14:00">14:00</button>
+            <button type="button" class="time-slot" data-time="15:00">15:00</button>
+            <button type="button" class="time-slot" data-time="16:00">16:00</button>
+            <button type="button" class="time-slot" data-time="17:00">17:00</button>
+            <button type="button" class="time-slot" data-time="18:00">18:00</button>
+            <button type="button" class="time-slot" data-time="19:00">19:00</button>
+            <button type="button" class="time-slot" data-time="20:00">20:00</button>
+            <button type="button" class="time-slot" data-time="21:00">21:00</button>
+            <button type="button" class="time-slot" data-time="22:00">22:00</button>
+            <button type="button" class="time-slot" data-time="23:00">23:00</button>
+            <button type="button" class="time-slot" data-time="24:00">24:00</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="mb-3">
       <label for="duration_hourly" class="form-label">Số giờ thuê</label>
-      <input type="number" class="form-control" id="duration_hourly" name="duration_hourly" min="1" value="2" required>
+      <div class="duration-selector" style="position:relative;">
+        <input type="text" class="form-control" id="duration_hourly_display" value="Chọn số giờ" readonly required>
+        <input type="hidden" id="duration_hourly" name="duration_hourly" required>
+        <div class="duration-dropdown" id="duration-dropdown" style="display:none; position:absolute; z-index:1000; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.08); padding:12px; min-width:220px;">
+          <div class="duration-grid" style="display:grid; grid-template-columns:repeat(9,1fr); gap:8px;">
+            <button type="button" class="duration-slot" data-duration="2">2 giờ</button>
+            <button type="button" class="duration-slot" data-duration="3">3 giờ</button>
+            <button type="button" class="duration-slot" data-duration="4">4 giờ</button>
+            <button type="button" class="duration-slot" data-duration="5">5 giờ</button>
+            <button type="button" class="duration-slot" data-duration="6">6 giờ</button>
+            <button type="button" class="duration-slot" data-duration="7">7 giờ</button>
+            <button type="button" class="duration-slot" data-duration="8">8 giờ</button>
+            <button type="button" class="duration-slot" data-duration="9">9 giờ</button>
+            <button type="button" class="duration-slot" data-duration="10">10 giờ</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="mb-3">
       <label for="guests_hourly" class="form-label">Số khách</label>
@@ -78,6 +125,7 @@
 {% endmacro %}
 
 {% block content %}
+<input type="hidden" id="current_home_id" value="{{ home.id }}">
 <div class="row">
   <div class="col-md-8 mx-auto">
     <div class="card">
@@ -138,7 +186,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Disable required fields in hourly block
         document.getElementById('start_date_hourly').required = false;
-        document.getElementById('start_time').required = false;
+        document.getElementById('start_time_display').required = false; // Hide the display input
+        document.getElementById('duration_hourly_display').required = false; // Hide the display input
         document.getElementById('duration_hourly').required = false;
         document.getElementById('guests_hourly').required = false;
         
@@ -161,7 +210,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Enable required fields in hourly block
         document.getElementById('start_date_hourly').required = true;
-        document.getElementById('start_time').required = true;
+        document.getElementById('start_time_display').required = true; // Show the display input
+        document.getElementById('duration_hourly_display').required = true; // Show the display input
         document.getElementById('duration_hourly').required = true;
         document.getElementById('guests_hourly').required = true;
       }
@@ -210,9 +260,178 @@ document.addEventListener('DOMContentLoaded', function() {
   if (dailyRadio && dailyRadio.checked) {
     // Daily is selected by default, disable hourly fields
     document.getElementById('start_date_hourly').required = false;
-    document.getElementById('start_time').required = false;
+    document.getElementById('start_time_display').required = false; // Hide the display input
+    document.getElementById('duration_hourly_display').required = false; // Hide the display input
     document.getElementById('duration_hourly').required = false;
     document.getElementById('guests_hourly').required = false;
+  }
+
+  // --- Dropdown chọn giờ bắt đầu (hourly) ---
+  const timeDisplay = document.getElementById('start_time_display');
+  const timeDropdown = document.getElementById('time-dropdown');
+  const timeHidden = document.getElementById('start_time');
+  if (timeDisplay && timeDropdown && timeHidden) {
+    timeDisplay.addEventListener('click', function(e) {
+      e.stopPropagation();
+      updateTimeSlotsDisable(); // Luôn update lại disable khi mở dropdown
+      timeDropdown.style.display = 'block';
+    });
+    document.querySelectorAll('.time-slot').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (btn.disabled) return; // Không cho chọn nếu bị disable
+        timeDisplay.value = this.dataset.time;
+        timeHidden.value = this.dataset.time;
+        timeDropdown.style.display = 'none';
+        timeDisplay.classList.remove('is-invalid');
+      });
+    });
+    // Ẩn dropdown khi click ra ngoài
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.time-selector')) {
+        timeDropdown.style.display = 'none';
+      }
+    });
+    // Nếu submit mà chưa chọn giờ thì báo lỗi
+    const form = document.getElementById('booking-form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        if (timeDisplay.required && !timeHidden.value) {
+          timeDisplay.classList.add('is-invalid');
+          timeDropdown.style.display = 'block';
+          e.preventDefault();
+        }
+      });
+    }
+  }
+
+  // --- Dropdown chọn số giờ thuê (hourly) ---
+  const durationDisplay = document.getElementById('duration_hourly_display');
+  const durationDropdown = document.getElementById('duration-dropdown');
+  const durationHidden = document.getElementById('duration_hourly');
+  if (durationDisplay && durationDropdown && durationHidden) {
+    durationDisplay.addEventListener('click', function(e) {
+      e.stopPropagation();
+      durationDropdown.style.display = 'block';
+    });
+    document.querySelectorAll('.duration-slot').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        durationDisplay.value = this.dataset.duration + ' giờ';
+        durationHidden.value = this.dataset.duration;
+        durationDropdown.style.display = 'none';
+        durationDisplay.classList.remove('is-invalid');
+      });
+    });
+    // Ẩn dropdown khi click ra ngoài
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.duration-selector')) {
+        durationDropdown.style.display = 'none';
+      }
+    });
+    // Nếu submit mà chưa chọn số giờ thì báo lỗi
+    const form = document.getElementById('booking-form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        if (durationDisplay.required && !durationHidden.value) {
+          durationDisplay.classList.add('is-invalid');
+          durationDropdown.style.display = 'block';
+          e.preventDefault();
+        }
+      });
+    }
+  }
+
+  // --- Disable block giờ trùng booking ---
+  // Lưu trạng thái booking theo ngày
+  let bookingsInDay = [];
+
+  // Lấy home_id từ input ẩn
+  const homeId = document.getElementById('current_home_id')?.value;
+  const startDateInput = document.getElementById('start_date_hourly');
+
+  // Hàm fetch booking theo ngày
+  async function fetchBookingsForDay(dateStr) {
+    if (!homeId || !dateStr) return [];
+    try {
+      const res = await fetch(`/renter/api/bookings/${homeId}/${dateStr}`);
+      const data = await res.json();
+      if (data.success) return data.bookings;
+      return [];
+    } catch (e) { return []; }
+  }
+
+  // Hàm kiểm tra block giờ có bị trùng không (so sánh cả ngày và giờ)
+  function isTimeSlotDisabled(startHour, duration) {
+    const d = parseInt(duration || 2) + 1;
+    const dateStr = startDateInput?.value;
+    if (!dateStr) return false;
+    // Tạo khoảng thời gian muốn kiểm tra (ngày đang chọn)
+    const start = new Date(dateStr + 'T' + (startHour < 10 ? '0' : '') + startHour + ':00');
+    const end = new Date(start.getTime() + d * 60 * 60 * 1000);
+    for (const b of bookingsInDay) {
+      const bStart = new Date(b.start_time.replace(' ', 'T'));
+      const bEnd = new Date(b.end_time.replace(' ', 'T'));
+      // So sánh cùng ngày
+      if (
+        start.getFullYear() === bStart.getFullYear() &&
+        start.getMonth() === bStart.getMonth() &&
+        start.getDate() === bStart.getDate()
+      ) {
+        // Nếu có overlap thì disable
+        if (start < bEnd && end > bStart) return true;
+      }
+    }
+    return false;
+  }
+
+  // Cập nhật trạng thái disable cho các block giờ
+  function updateTimeSlotsDisable() {
+    const duration = durationHidden.value || 2;
+    console.log('Bookings trong ngày:', bookingsInDay);
+    document.querySelectorAll('.time-slot').forEach(btn => {
+      const hour = parseInt(btn.dataset.time.split(':')[0]);
+      const disabled = isTimeSlotDisabled(hour, duration);
+      console.log('Giờ:', btn.dataset.time, 'Disable:', disabled);
+      if (disabled) {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        btn.style.background = '#eee';
+        btn.style.color = '#aaa';
+        btn.style.cursor = 'not-allowed';
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('disabled');
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.cursor = '';
+      }
+    });
+  }
+
+  // Khi chọn ngày hoặc số giờ thuê thì fetch lại bookings và cập nhật block giờ
+  async function handleDateOrDurationChange() {
+    const dateStr = startDateInput?.value;
+    if (!dateStr) return;
+    bookingsInDay = await fetchBookingsForDay(dateStr);
+    updateTimeSlotsDisable();
+  }
+
+  if (startDateInput) {
+    startDateInput.addEventListener('change', handleDateOrDurationChange);
+  }
+  if (durationHidden) {
+    durationHidden.addEventListener('change', updateTimeSlotsDisable);
+  }
+  // Khi chọn số giờ thuê thì cũng gọi lại updateTimeSlotsDisable sau khi chọn
+  document.querySelectorAll('.duration-slot').forEach(btn => {
+    btn.addEventListener('click', function() {
+      setTimeout(updateTimeSlotsDisable, 100); // delay nhỏ để đảm bảo value đã cập nhật
+    });
+  });
+
+  // Khi trang load, nếu đã có ngày và số giờ thuê, gọi luôn hàm fetch bookings và disable block giờ
+  const dateStrInit = startDateInput?.value;
+  if (dateStrInit) {
+    handleDateOrDurationChange();
   }
 });
 </script>
