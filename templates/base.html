@@ -808,6 +808,139 @@
             background: white !important;
         }
         
+        /* Special Time Periods Styling */
+        .special-time-periods {
+            margin-bottom: 20px;
+        }
+        
+        .period-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+        
+        .period-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            position: relative;
+        }
+        
+        .period-btn:hover {
+            border-color: #8bc34a;
+            background: #f8fff0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 195, 74, 0.2);
+        }
+        
+        .period-btn.active {
+            border-color: #8bc34a;
+            background: #8bc34a;
+            color: white;
+        }
+        
+        .period-btn i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #666;
+        }
+        
+        .period-btn.active i {
+            color: white;
+        }
+        
+        .period-btn[data-period="overnight"] i {
+            color: #4a90e2;
+        }
+        
+        .period-btn[data-period="daytime"] i {
+            color: #f5a623;
+        }
+        
+        .period-btn.active[data-period="overnight"] i,
+        .period-btn.active[data-period="daytime"] i {
+            color: white;
+        }
+        
+        .period-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .period-time {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .period-divider {
+            text-align: center;
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .period-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .period-divider span {
+            background: white;
+            padding: 0 15px;
+            font-size: 12px;
+            color: #666;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Period Info Styling */
+        .period-info {
+            margin-bottom: 15px;
+        }
+        
+        .period-info .alert {
+            background: #e8f5e8;
+            border: 1px solid #8bc34a;
+            color: #2e7d32;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .period-info .alert i {
+            color: #8bc34a;
+            font-size: 16px;
+        }
+        
+        .period-info .alert span {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .period-info .alert small {
+            display: block;
+            margin-top: 4px;
+            opacity: 0.8;
+            font-size: 11px;
+        }
+        
         .datetime-dropdown {
             position: absolute !important;
             top: 100% !important;
@@ -1308,6 +1441,26 @@
                                     <div class="step-content" id="global-step-2-hourly">
                                         <div class="time-section">
                                             <h4>Chọn giờ nhận phòng</h4>
+                                            
+                                            <!-- Special Time Periods -->
+                                            <div class="special-time-periods mb-3">
+                                                <div class="period-options">
+                                                                                                <button type="button" class="period-btn" data-period="overnight" data-start="21:00" data-end="08:00">
+                                                <i class="fas fa-moon"></i>
+                                                <span class="period-title">Qua đêm</span>
+                                                <span class="period-time">21h - 8h</span>
+                                            </button>
+                                                    <button type="button" class="period-btn" data-period="daytime" data-start="09:00" data-end="20:00">
+                                                        <i class="fas fa-sun"></i>
+                                                        <span class="period-title">Qua ngày</span>
+                                                        <span class="period-time">9h - 20h</span>
+                                                    </button>
+                                                </div>
+                                                <div class="period-divider">
+                                                    <span>hoặc chọn giờ cụ thể</span>
+                                                </div>
+                                            </div>
+                                            
                                             <div class="time-grid-compact">
                                                 <button type="button" class="time-slot" data-time="01:00">01:00</button>
                                                 <button type="button" class="time-slot" data-time="02:00">02:00</button>
@@ -1344,8 +1497,14 @@
                                     <div class="step-content" id="global-step-3-hourly">
                                         <div class="duration-section">
                                             <h4>Chọn số giờ sử dụng</h4>
+                                            <div class="period-info" id="global-period-info" style="display: none;">
+                                                <div class="alert alert-info">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    <span id="global-period-text"></span>
+                                                    <small>Đề xuất: 8 giờ để tận hưởng trọn vẹn</small>
+                                                </div>
+                                            </div>
                                             <div class="duration-grid-compact">
-                                                <button type="button" class="duration-slot" data-duration="1">1 giờ</button>
                                                 <button type="button" class="duration-slot" data-duration="2">2 giờ</button>
                                                 <button type="button" class="duration-slot active" data-duration="3">3 giờ</button>
                                                 <button type="button" class="duration-slot" data-duration="4">4 giờ</button>
@@ -2093,9 +2252,19 @@
                     const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
                     const dayName = dayNames[date.getDay()];
                     
-                    const timeFormatted = formatGlobalTime12Hour(selectedTime);
+                    let timeDisplay = '';
+                    if (window.selectedPeriod) {
+                        // Display special period info
+                        if (window.selectedPeriod === 'overnight') {
+                            timeDisplay = 'Qua đêm';
+                        } else if (window.selectedPeriod === 'daytime') {
+                            timeDisplay = 'Qua ngày (9h-20h)';
+                        }
+                    } else {
+                        timeDisplay = formatGlobalTime12Hour(selectedTime);
+                    }
                     
-                    display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeFormatted}`;
+                    display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeDisplay}`;
                     
                     updateGlobalCheckoutDisplay();
                 } else {
@@ -2117,18 +2286,38 @@
                     const minutes = parseInt(timeParts[1]) || 0;
                     
                     const checkinDateTime = new Date(year, month, day, hours, minutes);
-                    const checkoutDateTime = new Date(checkinDateTime.getTime() + (parseInt(selectedDuration) * 60 * 60 * 1000));
+                    let checkoutDateTime;
+                    
+                    // Handle special periods
+                    if (window.selectedPeriod === 'overnight') {
+                        // For overnight, checkout is at 8h the next day regardless of duration
+                        checkoutDateTime = new Date(year, month, day + 1, 8, 0);
+                    } else if (window.selectedPeriod === 'daytime') {
+                        // For daytime, checkout is at 20h (8PM) the same day regardless of duration
+                        checkoutDateTime = new Date(year, month, day, 20, 0);
+                    } else {
+                        // Normal calculation: checkin time + duration
+                        checkoutDateTime = new Date(checkinDateTime.getTime() + (parseInt(selectedDuration) * 60 * 60 * 1000));
+                    }
                     
                     const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
                     const checkoutDayName = dayNames[checkoutDateTime.getDay()];
                     const checkoutTimeStr = checkoutDateTime.getHours().toString().padStart(2, '0') + ':' + 
                                            checkoutDateTime.getMinutes().toString().padStart(2, '0');
                     
-                    const checkoutTimeFormatted = formatGlobalTime12Hour(checkoutTimeStr);
+                    let checkoutDisplayText = '';
+                    if (window.selectedPeriod === 'overnight') {
+                        checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00AM`;
+                    } else if (window.selectedPeriod === 'daytime') {
+                        checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00PM`;
+                    } else {
+                        const checkoutTimeFormatted = formatGlobalTime12Hour(checkoutTimeStr);
+                        checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeFormatted}`;
+                    }
                     
                     const checkoutDisplay = document.getElementById('global-checkout-display-hourly');
                     if (checkoutDisplay) {
-                        checkoutDisplay.value = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeFormatted}`;
+                        checkoutDisplay.value = checkoutDisplayText;
                     }
                     
                     const checkoutDateFormatted = checkoutDateTime.getFullYear() + '-' + 
@@ -2246,12 +2435,56 @@
                 if (globalTimeSelectionSetup) return;
                 globalTimeSelectionSetup = true;
                 
+                // Handle special time periods
+                const periodBtns = document.querySelectorAll('#global-step-2-hourly .period-btn');
+                periodBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        // Remove active from all period buttons and time slots
+                        periodBtns.forEach(p => p.classList.remove('active'));
+                        document.querySelectorAll('#global-step-2-hourly .time-slot').forEach(s => s.classList.remove('active'));
+                        
+                        // Add active to clicked period button
+                        this.classList.add('active');
+                        
+                        // Set selected time based on period
+                        const period = this.dataset.period;
+                        const startTime = this.dataset.start;
+                        selectedTime = startTime;
+                        
+                        // Store the selected period for later use
+                        window.selectedPeriod = period;
+                        
+                        // Auto-set duration for special periods and skip step 3
+                        if (period === 'overnight') {
+                            selectedDuration = '10'; // 10 hours for overnight
+                        } else if (period === 'daytime') {
+                            selectedDuration = '11'; // 11 hours for daytime (9h-20h)
+                        }
+                        
+                        updateGlobalDisplay();
+                        updateGlobalHiddenInputs();
+                        
+                        // Skip step 3 and close dropdown directly for special periods
+                        setTimeout(() => {
+                            dropdown.classList.remove('show');
+                        }, 300);
+                    });
+                });
+                
+                // Handle individual time slots
                 const timeSlots = document.querySelectorAll('#global-step-2-hourly .time-slot');
                 timeSlots.forEach(slot => {
                     slot.addEventListener('click', function() {
+                        // Remove active from all time slots and period buttons
                         timeSlots.forEach(s => s.classList.remove('active'));
+                        periodBtns.forEach(p => p.classList.remove('active'));
+                        
+                        // Add active to clicked time slot
                         this.classList.add('active');
                         selectedTime = this.dataset.time;
+                        
+                        // Clear selected period
+                        window.selectedPeriod = null;
                         
                         updateGlobalDisplay();
                         updateGlobalHiddenInputs();
@@ -2266,6 +2499,32 @@
             function setupGlobalDurationSelection() {
                 if (globalDurationSelectionSetup) return;
                 globalDurationSelectionSetup = true;
+                
+                // Only show period info and auto-select if we reach step 3 (not for special periods)
+                if (window.selectedPeriod) {
+                    const periodInfo = document.getElementById('global-period-info');
+                    const periodText = document.getElementById('global-period-text');
+                    
+                    let periodInfoText = '';
+                    
+                    if (window.selectedPeriod === 'overnight') {
+                        periodInfoText = 'Khung giờ qua đêm - Thích hợp cho nghỉ ngơi và thư giãn';
+                    } else if (window.selectedPeriod === 'daytime') {
+                        periodInfoText = 'Khung giờ qua ngày (9h-20h) - Thích hợp cho hoạt động và vui chơi';
+                    }
+                    
+                    // Show period info
+                    if (periodInfo && periodText) {
+                        periodText.textContent = periodInfoText;
+                        periodInfo.style.display = 'block';
+                    }
+                } else {
+                    // Hide period info if no special period selected
+                    const periodInfo = document.getElementById('global-period-info');
+                    if (periodInfo) {
+                        periodInfo.style.display = 'none';
+                    }
+                }
                 
                 const durationSlots = document.querySelectorAll('#global-step-3-hourly .duration-slot');
                 durationSlots.forEach(slot => {

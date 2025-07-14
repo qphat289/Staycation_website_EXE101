@@ -359,8 +359,8 @@ def book_home(home_id):
             except ValueError:
                 flash("Số giờ thuê không hợp lệ.", "danger")
                 return redirect(url_for('renter.book_home', home_id=home.id))
-            if duration < 1:
-                flash("Số giờ thuê tối thiểu là 1.", "warning")
+            if duration < 2:
+                flash("Số giờ thuê tối thiểu là 2.", "warning")
                 return redirect(url_for('renter.book_home', home_id=home.id))
             # Tính thời gian bắt đầu/kết thúc
             try:
