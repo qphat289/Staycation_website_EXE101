@@ -255,6 +255,30 @@ def search():
     
     # Execute query
     homes = query.all()
+
+    # Lọc loại home có booking trùng thời gian nếu là hourly
+    if booking_type == 'hourly':
+        search_date = request.args.get('checkin_date') or request.args.get('start_date_hourly')
+        search_time = request.args.get('checkin_time') or request.args.get('start_time')
+        hours_duration = request.args.get('hours_duration') or request.args.get('duration_hourly')
+        if search_date and search_time and hours_duration:
+            from datetime import datetime, timedelta
+            try:
+                start_dt = datetime.strptime(f"{search_date} {search_time}", "%Y-%m-%d %H:%M")
+                end_dt = start_dt + timedelta(hours=int(hours_duration))
+                filtered_homes = []
+                for home in homes:
+                    bookings = Booking.query.filter(
+                        Booking.home_id == home.id,
+                        Booking.status.in_(['pending', 'confirmed', 'active']),
+                        Booking.start_time < end_dt,
+                        Booking.end_time > start_dt
+                    ).all()
+                    if not bookings:
+                        filtered_homes.append(home)
+                homes = filtered_homes
+            except Exception as e:
+                pass
     
     # Get filter options
     cities, districts, home_types = _get_filter_options()
@@ -967,3 +991,30 @@ def debug_search():
             'error': str(e),
             'type': type(e).__name__
         }), 500
+
+@renter_bp.route('/api/bookings/<int:home_id>/<date>', methods=['GET'])
+def get_bookings_by_home_and_date(home_id, date):
+    """API: Lấy danh sách booking của 1 home trong 1 ngày (dạng JSON)"""
+    try:
+        from datetime import datetime, timedelta
+        # Parse ngày dạng yyyy-mm-dd
+        day = datetime.strptime(date, '%Y-%m-%d')
+        start_of_day = day.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = start_of_day + timedelta(days=1)
+        bookings = Booking.query.filter(
+            Booking.home_id == home_id,
+            Booking.status.in_(['pending', 'confirmed', 'active']),
+            Booking.start_time < end_of_day,
+            Booking.end_time > start_of_day
+        ).all()
+        data = [
+            {
+                'id': b.id,
+                'start_time': b.start_time.strftime('%Y-%m-%d %H:%M'),
+                'end_time': b.end_time.strftime('%Y-%m-%d %H:%M')
+            }
+            for b in bookings
+        ]
+        return jsonify({'success': True, 'bookings': data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})

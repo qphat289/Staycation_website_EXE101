@@ -670,8 +670,8 @@ main.container {
 
 .duration-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 5px;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 8px;
     margin-bottom: 10px;
 }
 
@@ -1652,3 +1652,71 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .auth-link.re
 }
 
 /* Adjust existing homestay card styles for 5-column layout */ 
+
+.time-dropdown {
+  position: absolute;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 12px;
+  min-width: 320px;
+  display: none;
+}
+.time-dropdown.show {
+  display: block;
+}
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+.time-slot {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 0;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+}
+.time-slot:hover, .time-slot.active {
+  background: #b2e254;
+  color: #fff;
+  border-color: #8bc34a;
+} 
+
+.duration-dropdown {
+  position: absolute;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 12px;
+  min-width: 220px;
+  display: none;
+}
+.duration-dropdown.show {
+  display: block;
+}
+.duration-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.duration-slot {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 0;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+}
+.duration-slot:hover, .duration-slot.active {
+  background: #b2e254;
+  color: #fff;
+  border-color: #8bc34a;
+} 
