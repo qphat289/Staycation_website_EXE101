@@ -351,3 +351,76 @@ def list_payments():
     except Exception as e:
         current_app.logger.error(f"Lỗi khi lấy danh sách payment: {str(e)}")
         return jsonify({"error": "Lỗi server"}), 500 
+
+@payment_api.route('/api/payment/<int:payment_id>/auto-cancel', methods=['POST'])
+def auto_cancel_payment(payment_id):
+    """
+    API tự động hủy payment sau 5 phút
+    """
+    try:
+        payment = Payment.query.get(payment_id)
+        if not payment:
+            return jsonify({"error": "Payment không tồn tại"}), 404
+        
+        # Chỉ cho phép hủy payment đang pending
+        if payment.status != 'pending':
+            return jsonify({
+                "success": True,
+                "message": "Payment đã không còn pending",
+                "payment_id": payment.id,
+                "status": payment.status
+            })
+        
+        # Kiểm tra thời gian tạo payment
+        time_diff = datetime.utcnow() - payment.created_at
+        if time_diff.total_seconds() < 300:  # 5 phút = 300 giây
+            return jsonify({
+                "success": False,
+                "message": "Payment chưa đủ 5 phút để tự động hủy",
+                "payment_id": payment.id,
+                "time_elapsed": time_diff.total_seconds()
+            }), 400
+        
+        # Lấy cấu hình PayOS
+        owner_config = PaymentConfig.query.filter_by(
+            owner_id=payment.owner_id, 
+            is_active=True
+        ).first()
+        
+        # Hủy payment trên PayOS nếu có transaction_id
+        if payment.payos_transaction_id and owner_config:
+            try:
+                payos = PayOSService(
+                    owner_config.payos_client_id,
+                    owner_config.payos_api_key,
+                    owner_config.payos_checksum_key
+                )
+                
+                cancel_response = payos.cancel_payment(
+                    payment.payos_transaction_id,
+                    "Tự động hủy sau 5 phút"
+                )
+                
+                if cancel_response.get('error'):
+                    current_app.logger.warning(f"Không thể hủy payment trên PayOS: {cancel_response.get('message')}")
+            except Exception as e:
+                current_app.logger.warning(f"Lỗi khi hủy payment trên PayOS: {str(e)}")
+        
+        # Cập nhật trạng thái payment
+        payment.mark_as_cancelled("Tự động hủy sau 5 phút")
+        update_booking_payment_status(payment.booking_id, 'cancelled')
+        db.session.commit()
+        
+        current_app.logger.info(f'[AUTO_CANCEL] Payment {payment.payment_code} đã được tự động hủy sau 5 phút')
+        
+        return jsonify({
+            "success": True,
+            "message": "Payment đã được tự động hủy thành công",
+            "payment_id": payment.id,
+            "status": payment.status,
+            "time_elapsed": time_diff.total_seconds()
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Lỗi khi tự động hủy payment: {str(e)}")
+        return jsonify({"error": "Lỗi server"}), 500 

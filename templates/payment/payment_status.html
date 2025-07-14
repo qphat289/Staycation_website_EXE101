@@ -117,23 +117,19 @@
 
                                 <!-- Waiting status -->
                                 <div class="waiting-section mt-3">
-                                    <div class="spinner-border text-warning" role="status">
-                                        <span class="sr-only">Loading...</span>
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
+                                             id="countdown-progress" role="progressbar" style="width: 100%"></div>
                                     </div>
-                                    <p class="mt-2"><strong>Đang chờ thanh toán...</strong></p>
-                                    <p class="text-muted">
+                                    <div class="mt-1 text-center">
+                                        <small class="text-info" id="countdown-timer-label">
+                                            <i class="fas fa-clock"></i> Còn lại: <span id="countdown-timer">05:00</span>
+                                        </small>
+                                    </div>
+                                    <p class="text-muted mt-2 mb-0">
                                         <i class="fas fa-sync-alt"></i> Hệ thống đang tự động kiểm tra trạng thái mỗi 5 giây<br>
                                         <small>Bạn có thể thanh toán và đợi, hoặc click "Mở trang PayOS" để thanh toán trực tiếp</small>
                                     </p>
-                                    <div class="progress" style="height: 5px;">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
-                                             role="progressbar" style="width: 100%"></div>
-                                    </div>
-                                    <div class="mt-2">
-                                        <small class="text-info">
-                                            <i class="fas fa-clock"></i> Thời gian chờ tối đa: 5 phút
-                                        </small>
-                                    </div>
                                 </div>
 
                             {% elif payment.status == 'success' %}
@@ -224,14 +220,21 @@ var refreshInterval = null;
 var refreshCount = 0;
 var maxRefresh = 60;
 
+// Countdown timer variables
+var countdownInterval = null;
+var countdownSeconds = 300; // 5 minutes = 300 seconds
+var initialCountdownSeconds = 300;
+
 var PAYMENT_DATA = {
     id: parseInt('{{ payment.id }}'),
     status: '{{ payment.status }}',
-            checkStatusUrl: '{{ url_for("payment.refresh_payment_status", payment_id=payment.id) }}',
+    checkStatusUrl: '{{ url_for("payment.refresh_payment_status", payment_id=payment.id) }}',
     getQrUrl: '{{ url_for("payment.get_qr_direct", payment_id=payment.id) }}',
     successUrl: '{{ url_for("payment.payment_success", payment_id=payment.id) }}',
     failedUrl: '{{ url_for("payment.payment_failed", payment_id=payment.id) }}',
-    cancelledUrl: '{{ url_for("payment.payment_cancelled", payment_id=payment.id) }}'
+    cancelledUrl: '{{ url_for("payment.payment_cancelled", payment_id=payment.id) }}',
+    timeoutUrl: '{{ url_for("payment.payment_timeout", payment_id=payment.id) }}',
+    autoCancelUrl: '{{ url_for("payment_api.auto_cancel_payment", payment_id=payment.id) }}'
 };
 
 console.log('🟢 Direct QR Payment Status Script');
@@ -261,6 +264,7 @@ function initPendingPayment() {
     loadDirectQR();
     startAutoRefresh();
     startProgressAnimation();
+    startCountdownTimer();
 }
 
 function loadDirectQR() {
@@ -571,6 +575,107 @@ function startProgressAnimation() {
     }
 }
 
+function updateCountdownProgress() {
+    var progressElement = document.getElementById('countdown-progress');
+    if (progressElement) {
+        var progressPercent = (countdownSeconds / initialCountdownSeconds) * 100;
+        if (progressPercent < 0) progressPercent = 0;
+        progressElement.style.width = progressPercent + '%';
+
+        // Màu sắc có thể thay đổi nếu muốn
+        if (countdownSeconds <= 60) {
+            progressElement.className = 'progress-bar progress-bar-striped progress-bar-animated bg-danger';
+        } else if (countdownSeconds <= 120) {
+            progressElement.className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
+        } else {
+            progressElement.className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
+        }
+    }
+}
+
+function startCountdownTimer() {
+    console.log('⏰ Starting countdown timer...');
+    
+    if (countdownInterval) clearInterval(countdownInterval);
+    
+    countdownInterval = setInterval(function() {
+        countdownSeconds--;
+        
+        // Update countdown display
+        updateCountdownDisplay();
+        // Update progress bar đồng bộ
+        updateCountdownProgress();
+        
+        // Check if time is up
+        if (countdownSeconds <= 0) {
+            console.log('⏰ Countdown finished - auto cancelling payment...');
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            autoCancelPayment();
+        }
+    }, 1000);
+    // Gọi ngay lần đầu để đồng bộ khi load trang
+    updateCountdownProgress();
+}
+
+function updateCountdownDisplay() {
+    var countdownElement = document.getElementById('countdown-timer');
+    if (countdownElement) {
+        var minutes = Math.floor(countdownSeconds / 60);
+        var seconds = countdownSeconds % 60;
+        countdownElement.textContent = 
+            (minutes < 10 ? '0' : '') + minutes + ':' + 
+            (seconds < 10 ? '0' : '') + seconds;
+        
+        // Change color when time is running out
+        if (countdownSeconds <= 60) {
+            countdownElement.style.color = '#dc3545';
+            countdownElement.style.fontWeight = 'bold';
+        } else if (countdownSeconds <= 120) {
+            countdownElement.style.color = '#ffc107';
+            countdownElement.style.fontWeight = 'bold';
+        }
+    }
+}
+
+function autoCancelPayment() {
+    console.log('🔄 Auto cancelling payment due to timeout...');
+    
+    // Stop all intervals
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+    
+    // Show timeout message
+    showTimeoutMessage();
+    
+    // Call backend to cancel payment
+    fetch(PAYMENT_DATA.autoCancelUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        console.log('📊 Auto cancel result:', data);
+        
+        // Redirect to timeout page after 3 seconds
+        setTimeout(function() {
+            window.location.href = PAYMENT_DATA.timeoutUrl;
+        }, 3000);
+    })
+    .catch(function(error) {
+        console.error('❌ Auto cancel error:', error);
+        
+        // Still redirect even if API call fails
+        setTimeout(function() {
+            window.location.href = PAYMENT_DATA.timeoutUrl;
+        }, 3000);
+    });
+}
+
 function showLoadingState() {
     var loading = document.getElementById('qr-loading');
     if (loading) {
@@ -634,13 +739,11 @@ function showTimeoutMessage() {
     var waitingSection = document.querySelector('.waiting-section');
     if (waitingSection) {
         waitingSection.innerHTML = 
-            '<div class="alert alert-warning text-center">' +
-            '<i class="fas fa-clock fa-2x text-warning mb-2"></i><br>' +
-            '<strong>Hết thời gian chờ</strong><br>' +
-            '<small>Vui lòng kiểm tra lại trạng thái thanh toán</small><br>' +
-            '<a href="/payment/status/' + PAYMENT_DATA.id + '" class="btn btn-primary btn-sm mt-2">' +
-            '<i class="fas fa-refresh"></i> Tải lại' +
-            '</a>' +
+            '<div class="alert alert-danger text-center">' +
+            '<i class="fas fa-clock fa-2x text-danger mb-2"></i><br>' +
+            '<strong>Hết thời gian thanh toán!</strong><br>' +
+            '<small>Thanh toán đã tự động bị hủy sau 5 phút</small><br>' +
+            '<small>Đang chuyển hướng...</small>' +
             '</div>';
     }
 }
@@ -655,15 +758,22 @@ function showFailedState() {
 
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-        console.log('👁️ Page hidden - pausing refresh');
+        console.log('👁️ Page hidden - pausing refresh and countdown');
         if (refreshInterval) {
             clearInterval(refreshInterval);
             refreshInterval = null;
         }
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
     } else {
-        console.log('👁️ Page visible - resuming refresh');
+        console.log('👁️ Page visible - resuming refresh and countdown');
         if (PAYMENT_DATA.status === 'pending' && refreshCount < maxRefresh && !refreshInterval) {
             startAutoRefresh();
+        }
+        if (PAYMENT_DATA.status === 'pending' && countdownSeconds > 0 && !countdownInterval) {
+            startCountdownTimer();
         }
     }
 });
@@ -828,6 +938,49 @@ console.log('🟢 Direct QR Payment Status Template loaded');
     border-radius: 8px;
     padding: 8px;
     margin-top: 10px;
+}
+
+/* Countdown timer styling */
+.countdown-timer {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 2px solid #ffc107;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+}
+
+.countdown-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.countdown-label {
+    font-weight: 600;
+    color: #856404;
+}
+
+.countdown-time {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+    padding: 5px 10px;
+    border-radius: 8px;
+    min-width: 80px;
+    display: inline-block;
+}
+
+.countdown-progress .progress {
+    border-radius: 10px;
+    background-color: rgba(255, 193, 7, 0.2);
+}
+
+.countdown-progress .progress-bar {
+    border-radius: 10px;
+    transition: width 1s ease, background-color 0.5s ease;
 }
 
 /* Loading animations */
