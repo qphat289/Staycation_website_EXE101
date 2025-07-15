@@ -454,28 +454,142 @@ if (window.MutationObserver) {
 
 <!-- Change Password Modal -->
 <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
                 <h5 class="modal-title" id="changePasswordModalLabel">
                     <i class="fas fa-lock me-2"></i>
-                    Thông báo
+                    Đổi Mật Khẩu
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center py-4">
-                <div class="mb-3">
-                    <i class="fas fa-tools text-warning" style="font-size: 3rem;"></i>
+            <div class="modal-body">
+                <!-- Step 1: Password Form -->
+                <div id="passwordFormStep">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Để đổi mật khẩu, bạn cần xác thực qua email. Hệ thống sẽ gửi mã OTP đến email của bạn.
+                    </div>
+                    
+                    <form id="passwordChangeForm">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">
+                                <i class="fas fa-key me-1"></i>
+                                Mật khẩu hiện tại <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="currentPassword" 
+                                   required
+                                   placeholder="Nhập mật khẩu hiện tại">
+                            <div class="invalid-feedback" id="currentPasswordError"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">
+                                <i class="fas fa-lock me-1"></i>
+                                Mật khẩu mới <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="newPassword" 
+                                   required
+                                   placeholder="Nhập mật khẩu mới"
+                                   oninput="evaluatePasswordStrength(this.value)">
+                            <div id="passwordStrength" class="mt-2"></div>
+                            <div class="invalid-feedback" id="newPasswordError"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirmNewPassword" class="form-label">
+                                <i class="fas fa-lock me-1"></i>
+                                Nhập lại mật khẩu mới <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="confirmNewPassword" 
+                                   required
+                                   placeholder="Nhập lại mật khẩu mới"
+                                   oninput="checkPasswordMatch()">
+                            <div id="passwordMatch" class="mt-2"></div>
+                            <div class="invalid-feedback" id="confirmNewPasswordError"></div>
+                        </div>
+                    </form>
                 </div>
-                <h6 class="fw-bold mb-2">Chức năng đang được phát triển</h6>
-                <p class="text-muted mb-0">
-                    Tính năng đổi mật khẩu sẽ sớm được cập nhật trong phiên bản tiếp theo.
-                </p>
+                
+                <!-- Step 2: OTP Verification -->
+                <div id="otpVerificationStep" style="display: none;">
+                    <div class="alert alert-success d-flex align-items-center" role="alert" style="margin-bottom: 16px;">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <div>
+                            Mã OTP đã được gửi đến email <strong id="userEmail"></strong> (có hiệu lực 2 phút)
+                        </div>
+                    </div>
+                        <div class="text-center mb-3">
+        <div class="countdown-timer" style="font-size: 1.1rem; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e9ecef;">
+            <span id="countdownText">Mã OTP có hiệu lực trong: </span>
+            <span id="countdownTime" class="fw-bold text-danger" style="font-size: 1.2rem;">02:00</span>
+        </div>
+    </div>
+                    <form id="otpForm">
+                        <div class="mb-3">
+                            <label for="otpInput" class="form-label fw-semibold">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Mã xác nhận <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control text-center" 
+                                   id="otpInput" 
+                                   maxlength="6"
+                                   placeholder="Nhập mã 6 số"
+                                   style="font-size: 1.2rem; letter-spacing: 0.5rem; font-weight: bold;">
+                            <div class="invalid-feedback" id="otpError"></div>
+                        </div>
+                        <div class="text-center mb-2">
+                            <small class="text-muted">
+                                Bạn có thể thử tối đa <span id="maxAttempts" class="fw-bold">3</span> lần
+                            </small>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loadingState" style="display: none;">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted" id="loadingText">Đang xử lý...</p>
+                    </div>
+                </div>
+                
+                <!-- Success State -->
+                <div id="successState" style="display: none;">
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                        </div>
+                        <h5 class="text-success mb-2">Đổi mật khẩu thành công!</h5>
+                        <p class="text-muted">Mật khẩu của bạn đã được cập nhật. Email xác nhận đã được gửi.</p>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelBtn">
+                    <i class="fas fa-times me-1"></i>
+                    Hủy
+                </button>
+                <button type="button" class="btn btn-primary" id="sendOtpBtn" onclick="sendOtp()">
+                    <i class="fas fa-paper-plane me-1"></i>
+                    Gửi mã xác nhận
+                </button>
+                <button type="button" class="btn btn-success" id="verifyOtpBtn" style="display: none;" onclick="verifyOtp()">
                     <i class="fas fa-check me-1"></i>
-                    Đã hiểu
+                    Xác nhận
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="resendOtpBtn" style="display: none;" onclick="sendOtp()">
+                    <i class="fas fa-redo me-1"></i>
+                    Gửi lại
                 </button>
             </div>
         </div>
@@ -512,6 +626,57 @@ if (window.MutationObserver) {
     width: auto;
     display: inline-block;
     min-width: 200px; /* Adjust based on text length */
+}
+
+/* Ensure modal steps are properly displayed */
+#otpVerificationStep {
+    display: none;
+    visibility: visible;
+    opacity: 1;
+}
+
+#otpVerificationStep.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Improved modal styles */
+#changePasswordModal .modal-content {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+#changePasswordModal .modal-header {
+    border-bottom: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+#changePasswordModal .alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#changePasswordModal .form-control {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#changePasswordModal .form-control:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+#changePasswordModal .btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+#changePasswordModal .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Disabled form styling */
@@ -895,6 +1060,199 @@ if (window.MutationObserver) {
         height: 120px;
     }
 }
+
+/* Password Change Modal Styles */
+.countdown-timer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+    margin: 15px 0;
+}
+
+.countdown-timer #countdownTime {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #dc3545;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+#otpInput {
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    font-size: 1.5rem !important;
+    letter-spacing: 0.5rem !important;
+    font-weight: bold;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+#otpInput:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    background: white;
+}
+
+#otpInput::placeholder {
+    color: #6c757d;
+    font-size: 1rem;
+    letter-spacing: normal;
+}
+
+.modal-lg {
+    max-width: 600px;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.input-group .btn {
+    border-radius: 0 8px 8px 0;
+    border: 2px solid #e9ecef;
+    border-left: none;
+}
+
+.input-group .form-control {
+    border-radius: 8px 0 0 8px;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #545b62 0%, #3d4449 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+#successState .fas {
+    animation: successPulse 2s ease-in-out infinite;
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Password strength indicator */
+#passwordStrength {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+#passwordMatch {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .modal-lg {
+        max-width: 95%;
+        margin: 10px;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    #otpInput {
+        font-size: 1.2rem !important;
+        letter-spacing: 0.3rem !important;
+        padding: 12px;
+    }
+    
+    .countdown-timer #countdownTime {
+        font-size: 1.2rem;
+    }
+}
 </style>
 
 <script>
@@ -1091,5 +1449,600 @@ function checkEmailAvailability(email, inputElement) {
         console.error('Error checking email:', error);
     });
 }
+
+// Password Change Modal Functions
+let countdownInterval;
+let currentStep = 'form';
+
+// Function removed - no longer needed since we removed eye icons
+
+function evaluatePasswordStrength(password) {
+    const strengthDiv = document.getElementById('passwordStrength');
+    
+    if (!password) {
+        strengthDiv.innerHTML = '';
+        return;
+    }
+    
+    // Simple client-side evaluation
+    let score = 0;
+    let details = [];
+    
+    // Length check
+    if (password.length >= 8) {
+        score += 2;
+        details.push('✓ Độ dài tốt (≥ 8 ký tự)');
+    } else if (password.length >= 6) {
+        score += 1;
+        details.push('⚠ Độ dài trung bình (6-7 ký tự)');
+    } else {
+        details.push('✗ Độ dài quá ngắn (≤ 5 ký tự)');
+    }
+    
+    // Character types
+    const hasLower = /[a-z]/.test(password);
+    const hasUpper = /[A-Z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    
+    const charTypes = [hasLower, hasUpper, hasDigit, hasSpecial].filter(Boolean).length;
+    
+    if (charTypes >= 3) {
+        score += 2;
+        details.push(`✓ Sử dụng ${charTypes} loại ký tự`);
+    } else if (charTypes === 2) {
+        score += 1;
+        details.push('⚠ Sử dụng 2 loại ký tự');
+    } else {
+        details.push('✗ Chỉ sử dụng 1 loại ký tự');
+    }
+    
+    // Determine strength
+    let strength, strengthClass;
+    if (score <= 0) {
+        strength = 'YẾU';
+        strengthClass = 'text-danger';
+    } else if (score <= 2) {
+        strength = 'TRUNG BÌNH';
+        strengthClass = 'text-warning';
+    } else {
+        strength = 'MẠNH';
+        strengthClass = 'text-success';
+    }
+    
+    // Update UI
+    strengthDiv.innerHTML = `
+        <div class="${strengthClass} fw-bold">
+            <i class="bi bi-shield me-1"></i>
+            Độ mạnh: ${strength}
+        </div>
+        <small class="text-muted">
+            ${details.join('<br>')}
+        </small>
+    `;
+    
+    // Store evaluation for form submission
+    document.getElementById('newPassword').dataset.strength = strength;
+    document.getElementById('newPassword').dataset.score = score;
+}
+
+function checkPasswordMatch() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmNewPassword').value;
+    const matchDiv = document.getElementById('passwordMatch');
+    
+    if (!confirmPassword) {
+        matchDiv.innerHTML = '';
+        return;
+    }
+    
+    if (newPassword === confirmPassword) {
+        matchDiv.innerHTML = '<i class="bi bi-check-circle me-1"></i>Mật khẩu khớp';
+        matchDiv.className = 'text-success fw-bold';
+    } else {
+        matchDiv.innerHTML = '<i class="bi bi-x-circle me-1"></i>Mật khẩu không khớp';
+        matchDiv.className = 'text-danger fw-bold';
+    }
+}
+
+function validatePasswordForm() {
+    const currentPassword = document.getElementById('currentPassword')?.value || '';
+    const newPassword = document.getElementById('newPassword')?.value || '';
+    const confirmPassword = document.getElementById('confirmNewPassword')?.value || '';
+    
+    let isValid = true;
+    
+    // Clear previous errors
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    
+    // Validate current password
+    if (!currentPassword) {
+        const currentPasswordEl = document.getElementById('currentPassword');
+        const currentPasswordErrorEl = document.getElementById('currentPasswordError');
+        if (currentPasswordEl) currentPasswordEl.classList.add('is-invalid');
+        if (currentPasswordErrorEl) currentPasswordErrorEl.textContent = 'Vui lòng nhập mật khẩu hiện tại';
+        isValid = false;
+    }
+    
+    // Validate new password
+    if (!newPassword) {
+        const newPasswordEl = document.getElementById('newPassword');
+        const newPasswordErrorEl = document.getElementById('newPasswordError');
+        if (newPasswordEl) newPasswordEl.classList.add('is-invalid');
+        if (newPasswordErrorEl) newPasswordErrorEl.textContent = 'Vui lòng nhập mật khẩu mới';
+        isValid = false;
+    } else if (newPassword === currentPassword) {
+        const newPasswordEl = document.getElementById('newPassword');
+        const newPasswordErrorEl = document.getElementById('newPasswordError');
+        if (newPasswordEl) newPasswordEl.classList.add('is-invalid');
+        if (newPasswordErrorEl) newPasswordErrorEl.textContent = 'Mật khẩu mới không được trùng với mật khẩu cũ';
+        isValid = false;
+    } else {
+        const newPasswordEl = document.getElementById('newPassword');
+        const newPasswordErrorEl = document.getElementById('newPasswordError');
+        if (newPasswordEl && newPasswordEl.dataset.score <= 0) {
+            if (newPasswordEl) newPasswordEl.classList.add('is-invalid');
+            if (newPasswordErrorEl) newPasswordErrorEl.textContent = 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn';
+            isValid = false;
+        }
+    }
+    
+    // Validate confirm password
+    if (!confirmPassword) {
+        const confirmPasswordEl = document.getElementById('confirmNewPassword');
+        const confirmPasswordErrorEl = document.getElementById('confirmNewPasswordError');
+        if (confirmPasswordEl) confirmPasswordEl.classList.add('is-invalid');
+        if (confirmPasswordErrorEl) confirmPasswordErrorEl.textContent = 'Vui lòng nhập lại mật khẩu mới';
+        isValid = false;
+    } else if (newPassword !== confirmPassword) {
+        const confirmPasswordEl = document.getElementById('confirmNewPassword');
+        const confirmPasswordErrorEl = document.getElementById('confirmNewPasswordError');
+        if (confirmPasswordEl) confirmPasswordEl.classList.add('is-invalid');
+        if (confirmPasswordErrorEl) confirmPasswordErrorEl.textContent = 'Mật khẩu xác nhận không khớp';
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function showLoading(text = 'Đang xử lý...') {
+    const loadingTextEl = document.getElementById('loadingText');
+    const loadingStateEl = document.getElementById('loadingState');
+    const passwordFormStepEl = document.getElementById('passwordFormStep');
+    const otpVerificationStepEl = document.getElementById('otpVerificationStep');
+    const successStateEl = document.getElementById('successState');
+    
+    if (loadingTextEl) loadingTextEl.textContent = text;
+    if (loadingStateEl) loadingStateEl.style.display = 'block';
+    if (passwordFormStepEl) passwordFormStepEl.style.display = 'none';
+    if (otpVerificationStepEl) otpVerificationStepEl.style.display = 'none';
+    if (successStateEl) successStateEl.style.display = 'none';
+}
+
+function hideLoading() {
+    document.getElementById('loadingState').style.display = 'none';
+}
+
+function showStep(step) {
+    currentStep = step;
+    console.log('[DEBUG] showStep called with:', step);
+    
+    if (step === 'form') {
+        document.getElementById('passwordFormStep').style.display = 'block';
+        document.getElementById('otpVerificationStep').style.display = 'none';
+        document.getElementById('successState').style.display = 'none';
+        document.getElementById('sendOtpBtn').style.display = 'inline-block';
+        document.getElementById('verifyOtpBtn').style.display = 'none';
+        document.getElementById('resendOtpBtn').style.display = 'none';
+        console.log('[DEBUG] Showing form step');
+    } else if (step === 'otp') {
+        const otpStep = document.getElementById('otpVerificationStep');
+        const formStep = document.getElementById('passwordFormStep');
+        const successStep = document.getElementById('successState');
+        
+        console.log('[DEBUG] Elements found:', {
+            otpStep: !!otpStep,
+            formStep: !!formStep,
+            successStep: !!successStep
+        });
+        
+        if (formStep) {
+            formStep.style.display = 'none';
+            formStep.style.visibility = 'hidden';
+        }
+        if (otpStep) {
+            otpStep.style.display = 'block';
+            otpStep.style.visibility = 'visible';
+            otpStep.style.opacity = '1';
+            otpStep.classList.add('show');
+            console.log('[DEBUG] Added show class to otpStep');
+        }
+        if (successStep) {
+            successStep.style.display = 'none';
+            successStep.style.visibility = 'hidden';
+        }
+        
+        const sendOtpBtnEl = document.getElementById('sendOtpBtn');
+        const verifyOtpBtnEl = document.getElementById('verifyOtpBtn');
+        const resendOtpBtnEl = document.getElementById('resendOtpBtn');
+        
+        if (sendOtpBtnEl) sendOtpBtnEl.style.display = 'none';
+        if (verifyOtpBtnEl) verifyOtpBtnEl.style.display = 'inline-block';
+        if (resendOtpBtnEl) resendOtpBtnEl.style.display = 'inline-block';
+        
+        console.log('[DEBUG] Showing OTP step');
+        console.log('[DEBUG] otpVerificationStep display:', otpStep ? otpStep.style.display : 'element not found');
+    } else if (step === 'success') {
+        const passwordFormStepEl = document.getElementById('passwordFormStep');
+        const otpVerificationStepEl = document.getElementById('otpVerificationStep');
+        const successStateEl = document.getElementById('successState');
+        const sendOtpBtnEl = document.getElementById('sendOtpBtn');
+        const verifyOtpBtnEl = document.getElementById('verifyOtpBtn');
+        const resendOtpBtnEl = document.getElementById('resendOtpBtn');
+        const cancelBtnEl = document.getElementById('cancelBtn');
+        
+        if (passwordFormStepEl) passwordFormStepEl.style.display = 'none';
+        if (otpVerificationStepEl) otpVerificationStepEl.style.display = 'none';
+        if (successStateEl) successStateEl.style.display = 'block';
+        if (sendOtpBtnEl) sendOtpBtnEl.style.display = 'none';
+        if (verifyOtpBtnEl) verifyOtpBtnEl.style.display = 'none';
+        if (resendOtpBtnEl) resendOtpBtnEl.style.display = 'none';
+        if (cancelBtnEl) cancelBtnEl.textContent = 'Đóng';
+        console.log('[DEBUG] Showing success step');
+        setTimeout(() => {
+            const modal = document.getElementById('changePasswordModal');
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }, 2500);
+    }
+}
+
+function startCountdown() {
+    let timeLeft = 120; // 2 minutes in seconds
+    
+    function updateCountdown() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const countdownTimeEl = document.getElementById('countdownTime');
+        if (countdownTimeEl) {
+            countdownTimeEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            const countdownTimeEl = document.getElementById('countdownTime');
+            const countdownTextEl = document.getElementById('countdownText');
+            const verifyOtpBtnEl = document.getElementById('verifyOtpBtn');
+            
+            if (countdownTimeEl) countdownTimeEl.textContent = '00:00';
+            if (countdownTextEl) countdownTextEl.textContent = 'Mã OTP đã hết hạn. ';
+            if (verifyOtpBtnEl) verifyOtpBtnEl.disabled = true;
+        }
+        timeLeft--;
+    }
+    
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function sendOtp() {
+    if (currentStep === 'form' && !validatePasswordForm()) {
+        return;
+    }
+    showLoading('Đang gửi mã OTP...');
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+    fetch('/renter/change-password/send-otp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            current_password: document.getElementById('currentPassword').value,
+            new_password: document.getElementById('newPassword').value,
+            confirm_password: document.getElementById('confirmNewPassword').value
+        })
+    })
+    .then(response => {
+        return response.json().then(data => {
+            return { data, status: response.status, ok: response.ok };
+        }).catch(() => {
+            return response.text().then(text => ({
+                data: { success: false, message: text || 'Có lỗi xảy ra. Vui lòng thử lại.' },
+                status: response.status,
+                ok: response.ok
+            }));
+        });
+    })
+    .then(({ data, status, ok }) => {
+        hideLoading();
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        console.log('[DEBUG] Response data:', data);
+        console.log('[DEBUG] Response status:', status);
+        console.log('[DEBUG] Response ok:', ok);
+        
+        if (data.success === true) {
+            console.log('[DEBUG] Success response, calling showStep("otp")');
+            const userEmailElement = document.getElementById('userEmail');
+            if (userEmailElement) {
+                userEmailElement.textContent = data.email || '';
+            } else {
+                console.error('[DEBUG] userEmail element not found');
+            }
+            
+            // Force a small delay to ensure DOM is ready
+            setTimeout(() => {
+                console.log('[DEBUG] About to call showStep("otp")');
+                showStep('otp');
+                startCountdown();
+                
+                // Additional debug after showing step
+                setTimeout(() => {
+                    const otpStep = document.getElementById('otpVerificationStep');
+                    console.log('[DEBUG] After showStep - otpStep:', {
+                        element: !!otpStep,
+                        display: otpStep ? otpStep.style.display : 'N/A',
+                        visibility: otpStep ? otpStep.style.visibility : 'N/A',
+                        opacity: otpStep ? otpStep.style.opacity : 'N/A',
+                        classes: otpStep ? otpStep.className : 'N/A'
+                    });
+                }, 200);
+            }, 100);
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show d-flex align-items-center';
+            alertDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                <div class="flex-grow-1">
+                    ${data.message || 'Mã OTP đã được gửi thành công!'}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            // Insert alert at the beginning of modal body
+            const modalBody = document.querySelector('.modal-body');
+            modalBody.insertBefore(alertDiv, modalBody.firstChild);
+            console.log('[DEBUG] Success alert added');
+        } else {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show d-flex align-items-center';
+            alertDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <div class="flex-grow-1">
+                    ${data.message || 'Có lỗi xảy ra. Vui lòng thử lại.'}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.modal-body').insertBefore(alertDiv, document.getElementById('passwordFormStep'));
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại.';
+        if (error.message && error.message.includes('HTTP')) {
+            if (error.message.includes('HTTP 500')) {
+                errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+            } else if (error.message.includes('HTTP 400')) {
+                errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+            } else if (error.message.includes('HTTP 403')) {
+                errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+            } else if (error.message.includes('HTTP 401')) {
+                errorMessage = 'Vui lòng đăng nhập lại.';
+            }
+        }
+        console.error('[DEBUG] Fetch error:', error);
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${errorMessage}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.modal-body').insertBefore(alertDiv, document.getElementById('passwordFormStep'));
+    });
+}
+
+function verifyOtp() {
+    const otp = document.getElementById('otpInput').value.trim();
+    
+    if (!otp) {
+        document.getElementById('otpInput').classList.add('is-invalid');
+        document.getElementById('otpError').textContent = 'Vui lòng nhập mã OTP';
+        return;
+    }
+    
+    if (otp.length !== 6) {
+        document.getElementById('otpInput').classList.add('is-invalid');
+        document.getElementById('otpError').textContent = 'Mã OTP phải có 6 số';
+        return;
+    }
+    
+    document.getElementById('otpInput').classList.remove('is-invalid');
+    showLoading('Đang xác thực...');
+    
+    fetch('/renter/change-password/verify-otp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            otp: otp,
+            new_password: document.getElementById('newPassword').value,
+            confirm_password: document.getElementById('confirmNewPassword').value
+        })
+    })
+    .then(response => {
+        console.log('Verify response status:', response.status);
+        
+        // Try to parse JSON first
+        return response.json().then(data => {
+            console.log('Verify parsed JSON data:', data);
+            return { data, status: response.status, ok: response.ok };
+        }).catch(() => {
+            // If not JSON, get text
+            return response.text().then(text => {
+                console.log('Verify response text:', text);
+                return { 
+                    data: { success: false, message: text || 'Có lỗi xảy ra. Vui lòng thử lại.' }, 
+                    status: response.status, 
+                    ok: response.ok 
+                };
+            });
+        });
+    })
+    .then(({ data, status, ok }) => {
+        hideLoading();
+        console.log('Verify final data:', data);
+        
+        if (data.success === true) {
+            showStep('success');
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        } else {
+            document.getElementById('otpInput').classList.add('is-invalid');
+            document.getElementById('otpError').textContent = data.message || 'Mã OTP không đúng';
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        console.error('Verify fetch error:', error);
+        
+        let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại.';
+        
+        // Try to extract error message from response
+        if (error.message && error.message.includes('HTTP')) {
+            if (error.message.includes('HTTP 500')) {
+                errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+            } else if (error.message.includes('HTTP 400')) {
+                errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+            } else if (error.message.includes('HTTP 403')) {
+                errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+            } else if (error.message.includes('HTTP 401')) {
+                errorMessage = 'Vui lòng đăng nhập lại.';
+            }
+        }
+        
+        document.getElementById('otpInput').classList.add('is-invalid');
+        document.getElementById('otpError').textContent = errorMessage;
+    });
+}
+
+// Reset modal when opened
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('changePasswordModal');
+    
+    // Function to cancel password change process
+    function cancelPasswordChange() {
+        console.log('[DEBUG] Canceling password change process');
+        
+        // Clear any pending OTP from session
+        fetch('/renter/change-password/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).catch(error => {
+            console.log('[DEBUG] Cancel request failed:', error);
+        });
+        
+        // Reset form and UI
+        const passwordChangeForm = document.getElementById('passwordChangeForm');
+        const otpForm = document.getElementById('otpForm');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const passwordMatch = document.getElementById('passwordMatch');
+        
+        if (passwordChangeForm) passwordChangeForm.reset();
+        if (otpForm) otpForm.reset();
+        
+        // Clear errors
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        
+        // Reset UI
+        if (passwordStrength) passwordStrength.innerHTML = '';
+        if (passwordMatch) passwordMatch.innerHTML = '';
+        
+        // Reset current step to form
+        currentStep = 'form';
+        
+        // Force show form step and hide all others
+        const passwordFormStep = document.getElementById('passwordFormStep');
+        const otpVerificationStep = document.getElementById('otpVerificationStep');
+        const successState = document.getElementById('successState');
+        const loadingState = document.getElementById('loadingState');
+        
+        if (passwordFormStep) passwordFormStep.style.display = 'block';
+        if (otpVerificationStep) otpVerificationStep.style.display = 'none';
+        if (successState) successState.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'none';
+        
+        // Reset button states
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        if (sendOtpBtn) sendOtpBtn.style.display = 'inline-block';
+        if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
+        if (resendOtpBtn) resendOtpBtn.style.display = 'none';
+        if (cancelBtn) cancelBtn.textContent = 'Hủy';
+        
+        // Clear countdown
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        
+        console.log('[DEBUG] Password change process cancelled and reset to form step');
+    }
+    
+    modal.addEventListener('show.bs.modal', function() {
+        console.log('[DEBUG] Modal show event triggered');
+        cancelPasswordChange();
+    });
+    
+    // Handle modal header close button (X)
+    const modalCloseBtn = modal.querySelector('.btn-close');
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', function() {
+            cancelPasswordChange();
+        });
+    }
+    
+    // Handle cancel button click
+    const cancelBtn = document.getElementById('cancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            cancelPasswordChange();
+            // Force show form step immediately
+            showStep('form');
+        });
+    }
+    
+    // Handle modal close (X button or clicking outside)
+    modal.addEventListener('hidden.bs.modal', function() {
+        cancelPasswordChange();
+    });
+    
+    // Handle clicking outside modal
+    modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            cancelPasswordChange();
+        }
+    });
+    
+    // Auto-close success modal after 3 seconds
+    modal.addEventListener('hidden.bs.modal', function() {
+        if (currentStep === 'success') {
+            setTimeout(() => {
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }, 3000);
+        }
+    });
+});
 </script>
 {% endblock %} 

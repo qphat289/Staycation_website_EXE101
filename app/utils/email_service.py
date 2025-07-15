@@ -294,5 +294,198 @@ class EmailService:
             logger.error(error_msg)
             return False, error_msg, None
 
+    def send_password_change_otp_email(self, to_email, otp, user_name, user_id):
+        """Gửi email chứa mã OTP để đổi mật khẩu"""
+        try:
+            config = self._get_config()
+            if not config:
+                return False, "Email configuration not found", None
+            
+            # Tạo timestamp và token bảo mật
+            timestamp = datetime.now().isoformat()
+            secure_token = self.generate_secure_token(otp, user_id, timestamp)
+            
+            logger.info(f"Sending password change OTP email to {to_email}")
+            
+            # Tạo message
+            message = MIMEMultipart("alternative")
+            message["Subject"] = "Đổi mật khẩu - Staycation"
+            message["From"] = config['from_email']
+            message["To"] = to_email
+            
+            # HTML content
+            html_content = f"""
+            <html>
+            <body>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h2 style="color: #dc3545; margin-bottom: 20px;">🔐 Đổi Mật Khẩu</h2>
+                        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+                            Xin chào <strong>{user_name}</strong>,
+                        </p>
+                        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+                            Bạn đã yêu cầu đổi mật khẩu tài khoản Staycation. Vui lòng sử dụng mã OTP dưới đây:
+                        </p>
+                        <div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+                            {otp}
+                        </div>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                            Mã này có hiệu lực trong <strong>2 phút</strong>.
+                        </p>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                            Bạn có thể thử tối đa <strong>3 lần</strong> với mã này.
+                        </p>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                            Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này và mật khẩu của bạn sẽ không thay đổi.
+                        </p>
+                        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #999;">
+                            Email này được gửi từ hệ thống Staycation. Vui lòng không trả lời email này.
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Plain text content
+            text_content = f"""
+            Đổi Mật Khẩu - Staycation
+            
+            Xin chào {user_name},
+            
+            Bạn đã yêu cầu đổi mật khẩu tài khoản Staycation. Vui lòng sử dụng mã OTP: {otp}
+            
+            Mã này có hiệu lực trong 2 phút.
+            Bạn có thể thử tối đa 3 lần với mã này.
+            
+            Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.
+            
+            ---
+            Email này được gửi từ hệ thống Staycation.
+            """
+            
+            # Attach parts
+            part1 = MIMEText(text_content, "plain")
+            part2 = MIMEText(html_content, "html")
+            message.attach(part1)
+            message.attach(part2)
+            
+            # Gửi email
+            context = ssl.create_default_context()
+            
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                server.starttls(context=context)
+                server.login(config['username'], config['password'])
+                server.sendmail(config['from_email'], to_email, message.as_string())
+            
+            return True, "Email sent successfully", secure_token
+            
+        except smtplib.SMTPAuthenticationError as e:
+            error_msg = f"SMTP Authentication failed: {e}"
+            logger.error(error_msg)
+            return False, error_msg, None
+        except smtplib.SMTPException as e:
+            error_msg = f"SMTP error occurred: {e}"
+            logger.error(error_msg)
+            return False, error_msg, None
+        except Exception as e:
+            error_msg = f"Unexpected error: {e}"
+            logger.error(error_msg)
+            return False, error_msg, None
+
+    def send_password_change_success_email(self, to_email, user_name):
+        """Gửi email thông báo đổi mật khẩu thành công"""
+        try:
+            config = self._get_config()
+            if not config:
+                return False, "Email configuration not found"
+            
+            logger.info(f"Sending password change success email to {to_email}")
+            
+            # Tạo message
+            message = MIMEMultipart("alternative")
+            message["Subject"] = "Đổi mật khẩu thành công - Staycation"
+            message["From"] = config['from_email']
+            message["To"] = to_email
+            
+            # HTML content
+            html_content = f"""
+            <html>
+            <body>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h2 style="color: #28a745; margin-bottom: 20px;">✅ Đổi Mật Khẩu Thành Công</h2>
+                        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+                            Xin chào <strong>{user_name}</strong>,
+                        </p>
+                        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+                            Mật khẩu tài khoản Staycation của bạn đã được thay đổi thành công.
+                        </p>
+                        <div style="background-color: #28a745; color: white; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <i class="fas fa-check-circle" style="font-size: 24px; margin-right: 10px;"></i>
+                            Mật khẩu đã được cập nhật
+                        </div>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                            Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ ngay với chúng tôi.
+                        </p>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                            Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu với bất kỳ ai.
+                        </p>
+                        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #999;">
+                            Email này được gửi từ hệ thống Staycation. Vui lòng không trả lời email này.
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Plain text content
+            text_content = f"""
+            Đổi Mật Khẩu Thành Công - Staycation
+            
+            Xin chào {user_name},
+            
+            Mật khẩu tài khoản Staycation của bạn đã được thay đổi thành công.
+            
+            Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ ngay với chúng tôi.
+            
+            Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu với bất kỳ ai.
+            
+            ---
+            Email này được gửi từ hệ thống Staycation.
+            """
+            
+            # Attach parts
+            part1 = MIMEText(text_content, "plain")
+            part2 = MIMEText(html_content, "html")
+            message.attach(part1)
+            message.attach(part2)
+            
+            # Gửi email
+            context = ssl.create_default_context()
+            
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                server.starttls(context=context)
+                server.login(config['username'], config['password'])
+                server.sendmail(config['from_email'], to_email, message.as_string())
+            
+            return True, "Email sent successfully"
+            
+        except smtplib.SMTPAuthenticationError as e:
+            error_msg = f"SMTP Authentication failed: {e}"
+            logger.error(error_msg)
+            return False, error_msg
+        except smtplib.SMTPException as e:
+            error_msg = f"SMTP error occurred: {e}"
+            logger.error(error_msg)
+            return False, error_msg
+        except Exception as e:
+            error_msg = f"Unexpected error: {e}"
+            logger.error(error_msg)
+            return False, error_msg
+
 # Global instance
 email_service = EmailService() 

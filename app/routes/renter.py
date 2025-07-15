@@ -9,6 +9,14 @@ from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
 from app.utils.utils import get_rank_info, get_location_name, save_user_image, delete_user_image, fix_image_orientation, allowed_file
 from app.utils.email_validator import process_email
+from app.utils.password_validator import PasswordValidator
+from app.utils.email_service import email_service
+import random
+import string
+from flask import session
+import logging
+
+logger = logging.getLogger(__name__)
 
 renter_bp = Blueprint('renter', __name__, url_prefix='/renter')
 
@@ -33,13 +41,31 @@ def update_booking_status(bookings):
     
     return updated
 
+# Custom decorator for password change API endpoints
+def password_change_api_required(f):
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'success': False, 'message': 'Bạn phải đăng nhập để thực hiện thao tác này'}), 401
+        
+        if not current_user.is_renter():
+            return jsonify({'success': False, 'message': 'Chỉ Renter mới có thể đổi mật khẩu'}), 403
+            
+        return f(*args, **kwargs)
+    decorated_function.__name__ = f.__name__
+    return decorated_function
+
 # Custom decorator to ensure user is a renter
 def renter_required(f):
     @login_required
     def decorated_function(*args, **kwargs):
         if not current_user.is_renter():
-            flash('You must be a renter to access this page', 'danger')
-            return redirect(url_for('home'))
+            # Check if this is an API request
+            if request.headers.get('Content-Type') == 'application/json' or request.path.startswith('/renter/change-password/'):
+                return jsonify({'success': False, 'message': 'Bạn phải đăng nhập để thực hiện thao tác này'}), 401
+            else:
+                flash('You must be a renter to access this page', 'danger')
+                return redirect(url_for('home'))
         
         # Kiểm tra nếu là owner đang dùng chế độ xem renter
         # Chỉ ngăn chặn các chức năng booking/đặt nhà
@@ -1170,3 +1196,246 @@ def debug_payment_status(booking_id):
         'successful_payments': len([p for p in payments if p.status == 'success']),
         'current_time': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     })
+
+# Password Change Routes
+@renter_bp.route('/change-password/send-otp', methods=['POST'])
+@password_change_api_required
+def send_password_change_otp():
+    """Gửi mã OTP để đổi mật khẩu cho Renter"""
+    try:
+        renter = current_user
+        
+        # Kiểm tra email đã verify chưa
+        if not renter.email_verified:
+            return jsonify({'success': False, 'message': 'Vui lòng xác thực email trước khi đổi mật khẩu'}), 400
+        
+        # Kiểm tra số lần gửi trong ngày
+        today = datetime.now().date().isoformat()
+        send_count = session.get('password_change_send_count', {}).get(today, 0)
+        blocked_until = session.get('password_change_send_blocked_until')
+        now = datetime.now()
+        
+        if send_count >= 3:  # Giới hạn 3 lần/ngày
+            if blocked_until:
+                blocked_until_dt = datetime.fromisoformat(blocked_until)
+                if now < blocked_until_dt:
+                    seconds_left = int((blocked_until_dt - now).total_seconds())
+                    minutes = seconds_left // 60
+                    seconds = seconds_left % 60
+                    return jsonify({'success': False, 'message': f'Bạn đã gửi quá 3 lần. Vui lòng thử lại sau {minutes} phút {seconds} giây.'}), 400
+                else:
+                    send_count = 0
+                    session['password_change_send_count'][today] = 0
+                    session.pop('password_change_send_blocked_until', None)
+            else:
+                session['password_change_send_blocked_until'] = (now + timedelta(minutes=5)).isoformat()
+                return jsonify({'success': False, 'message': 'Bạn đã gửi quá 3 lần. Vui lòng thử lại sau 5 phút.'}), 400
+        
+        # Validate current password
+        data = request.get_json()
+        current_password = data.get('current_password', '').strip()
+        
+        if not current_password:
+            return jsonify({'success': False, 'message': 'Vui lòng nhập mật khẩu hiện tại'}), 400
+        
+        if not renter.check_password(current_password):
+            return jsonify({'success': False, 'message': 'Mật khẩu hiện tại không đúng'}), 400
+        
+        # Validate new password
+        new_password = data.get('new_password', '').strip()
+        confirm_password = data.get('confirm_password', '').strip()
+        
+        if not all([new_password, confirm_password]):
+            return jsonify({'success': False, 'message': 'Vui lòng điền đầy đủ thông tin mật khẩu mới'}), 400
+        
+        if new_password != confirm_password:
+            return jsonify({'success': False, 'message': 'Mật khẩu xác nhận không khớp'}), 400
+        
+        if new_password == current_password:
+            return jsonify({'success': False, 'message': 'Mật khẩu mới không được trùng với mật khẩu cũ'}), 400
+        
+        # Validate password strength
+        password_evaluation = PasswordValidator.evaluate_password(new_password)
+        if not password_evaluation['is_acceptable']:
+            return jsonify({'success': False, 'message': 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.'}), 400
+        
+        # Tạo mã OTP
+        otp = ''.join(random.choices(string.digits, k=6))
+        
+        # Gửi email với token bảo mật
+        success, message, secure_token = email_service.send_password_change_otp_email(
+            renter.email, 
+            otp, 
+            renter.full_name or renter.username,
+            renter.id
+        )
+        
+        if success:
+            # Lưu OTP và token vào session với thời gian hết hạn 2 phút
+            session['password_change_otp'] = otp
+            session['password_change_token'] = secure_token
+            session['password_change_expires'] = (datetime.now() + timedelta(minutes=2)).isoformat()
+            session['password_change_attempts'] = 0
+            
+            # Cập nhật số lần gửi
+            if 'password_change_send_count' not in session:
+                session['password_change_send_count'] = {}
+            session['password_change_send_count'][today] = send_count + 1
+            
+            logger.info(f"Password change OTP sent successfully to renter {renter.email}")
+            return jsonify({
+                'success': True, 
+                'message': f'Mã OTP đã được gửi đến email của bạn (có hiệu lực 2 phút)',
+                'email': renter.email,
+                'expires_in': 2,
+                'token': secure_token
+            })
+        else:
+            logger.error(f"Failed to send password change OTP to renter {renter.email}: {message}")
+            return jsonify({'success': False, 'message': f'Không thể gửi email: {message}'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error in send_password_change_otp: {e}")
+        return jsonify({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}), 500
+
+@renter_bp.route('/change-password/verify-otp', methods=['POST'])
+@password_change_api_required
+def verify_password_change_otp():
+    """Xác thực mã OTP và đổi mật khẩu cho Renter"""
+    try:
+        renter = current_user
+        data = request.get_json()
+        otp_input = data.get('otp', '').strip()
+        new_password = data.get('new_password', '').strip()
+        confirm_password = data.get('confirm_password', '').strip()
+        
+        if not all([otp_input, new_password, confirm_password]):
+            return jsonify({'success': False, 'message': 'Vui lòng điền đầy đủ thông tin'}), 400
+        
+        # Kiểm tra mật khẩu mới khớp nhau
+        if new_password != confirm_password:
+            return jsonify({'success': False, 'message': 'Mật khẩu xác nhận không khớp'}), 400
+        
+        # Validate password strength
+        password_evaluation = PasswordValidator.evaluate_password(new_password)
+        if not password_evaluation['is_acceptable']:
+            return jsonify({'success': False, 'message': 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.'}), 400
+        
+        # Kiểm tra OTP
+        stored_otp = session.get('password_change_otp')
+        stored_token = session.get('password_change_token')
+        expires_str = session.get('password_change_expires')
+        
+        if not stored_otp or not stored_token or not expires_str:
+            return jsonify({'success': False, 'message': 'Mã OTP không hợp lệ hoặc đã hết hạn'}), 400
+        
+        expires = datetime.fromisoformat(expires_str)
+        if datetime.now() > expires:
+            session.pop('password_change_otp', None)
+            session.pop('password_change_token', None)
+            session.pop('password_change_expires', None)
+            session.pop('password_change_attempts', None)
+            return jsonify({'success': False, 'message': 'Mã OTP đã hết hạn'}), 400
+        
+        attempts = session.get('password_change_attempts', 0)
+        if attempts >= 3:  # Giới hạn 3 lần thử
+            return jsonify({'success': False, 'message': 'Bạn đã thử quá 3 lần. Vui lòng yêu cầu mã mới'}), 400
+        
+        # Tăng số lần thử
+        session['password_change_attempts'] = attempts + 1
+        
+        # Xác thực token bảo mật
+        verified_otp, timestamp = email_service.verify_secure_token(stored_token, renter.id)
+        if not verified_otp or verified_otp != stored_otp:
+            return jsonify({'success': False, 'message': 'Token xác thực không hợp lệ'}), 400
+        
+        # Kiểm tra OTP
+        if otp_input != stored_otp:
+            return jsonify({'success': False, 'message': 'Mã OTP không đúng'}), 400
+        
+        # OTP đúng - đổi mật khẩu
+        renter.set_password(new_password)
+        db.session.commit()
+        
+        # Xóa OTP khỏi session
+        session.pop('password_change_otp', None)
+        session.pop('password_change_token', None)
+        session.pop('password_change_expires', None)
+        session.pop('password_change_attempts', None)
+        
+        # Gửi email thông báo đổi mật khẩu thành công
+        email_service.send_password_change_success_email(
+            renter.email,
+            renter.full_name or renter.username
+        )
+        
+        logger.info(f"Password changed successfully for renter {renter.email}")
+        return jsonify({
+            'success': True, 
+            'message': 'Đổi mật khẩu thành công!'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in verify_password_change_otp: {e}")
+        return jsonify({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}), 500
+
+@renter_bp.route('/change-password/check-status', methods=['GET'])
+@password_change_api_required
+def check_password_change_status():
+    """Kiểm tra trạng thái đổi mật khẩu cho Renter"""
+    try:
+        renter = current_user
+        expires_str = session.get('password_change_expires')
+        remaining_time = 0
+        
+        if expires_str:
+            expires = datetime.fromisoformat(expires_str)
+            if datetime.now() < expires:
+                remaining_time = int((expires - datetime.now()).total_seconds() / 60)
+        
+        today = datetime.now().date().isoformat()
+        send_count = session.get('password_change_send_count', {}).get(today, 0)
+        blocked_until = session.get('password_change_send_blocked_until')
+        blocked_until_str = None
+        
+        if blocked_until:
+            try:
+                dt = datetime.fromisoformat(blocked_until)
+                blocked_until_str = dt.strftime('%H:%M:%S')
+            except:
+                blocked_until_str = blocked_until
+        
+        return jsonify({
+            'success': True,
+            'email_verified': renter.email_verified,
+            'email': renter.email,
+            'remaining_time': remaining_time,
+            'max_attempts': 3,
+            'send_count': send_count,
+            'blocked_until': blocked_until_str
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in check_password_change_status: {e}")
+        return jsonify({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}), 500
+
+@renter_bp.route('/change-password/cancel', methods=['POST'])
+@password_change_api_required
+def cancel_password_change():
+    """Hủy quá trình đổi mật khẩu cho Renter"""
+    try:
+        # Xóa tất cả dữ liệu OTP khỏi session
+        session.pop('password_change_otp', None)
+        session.pop('password_change_token', None)
+        session.pop('password_change_expires', None)
+        session.pop('password_change_attempts', None)
+        
+        logger.info(f"Password change process cancelled for renter {current_user.email}")
+        return jsonify({
+            'success': True,
+            'message': 'Đã hủy quá trình đổi mật khẩu'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in cancel_password_change: {e}")
+        return jsonify({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}), 500
