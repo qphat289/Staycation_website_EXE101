@@ -2550,21 +2550,17 @@
                     
                     let timeDisplay = '';
                     if (window.selectedPeriod) {
-                        // Display special period info
                         if (window.selectedPeriod === 'overnight') {
-                            timeDisplay = 'Qua đêm';
+                            timeDisplay = '21:00';
                         } else if (window.selectedPeriod === 'daytime') {
-                            timeDisplay = 'Qua ngày';
+                            timeDisplay = '09:00';
                         }
                     } else {
                         timeDisplay = formatGlobalTime12Hour(selectedTime);
                     }
-                    
                     display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeDisplay}`;
-                    
                     updateGlobalCheckoutDisplay();
                 } else {
-                    // Reset display if no date selected
                     display.value = 'Hãy chọn ngày và giờ';
                 }
             }
