@@ -365,8 +365,13 @@
     }
     
     .datetime-selector-daily .datetime-dropdown {
-        min-width: 320px !important;
-        max-width: 380px !important;
+        min-width: 400px !important;
+        max-width: 500px !important;
+    }
+    
+    .datetime-selector-hourly .datetime-dropdown {
+        min-width: 400px !important;
+        max-width: 500px !important;
     }
 }
 
@@ -381,8 +386,13 @@
     }
     
     .datetime-selector-daily .datetime-dropdown {
-        min-width: 280px !important;
-        max-width: 320px !important;
+        min-width: 350px !important;
+        max-width: 400px !important;
+    }
+    
+    .datetime-selector-hourly .datetime-dropdown {
+        min-width: 320px !important;
+        max-width: 380px !important;
     }
 }
 
@@ -648,17 +658,17 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     background: white !important;
     border: 1px solid #ddd !important;
     border-radius: 12px !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
     margin-top: 5px !important;
     overflow: hidden !important;
     display: none;
-    padding: 25px;
+    padding: 20px 20px 15px 20px;
     backdrop-filter: blur(10px);
     animation: slideDown 0.3s ease-out;
-    min-width: 700px;
-    max-width: 850px;
-    min-height: 600px;
-    max-height: 700px;
+    min-width: 550px;
+    max-width: 650px;
+    min-height: 450px;
+    max-height: 550px;
 }
 
 .datetime-selector-hourly .datetime-dropdown.show {
@@ -671,12 +681,37 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     max-height: 500px;
 }
 
+/* Remove bottom margin from last elements in hourly dropdown */
+.datetime-selector-hourly .datetime-dropdown .step-content:last-child,
+.datetime-selector-hourly .datetime-dropdown .step-actions:last-child,
+.datetime-selector-hourly .datetime-dropdown > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Ensure consistent spacing for all step content */
+.datetime-selector-hourly .step-content {
+    margin-bottom: 0 !important;
+}
+
+/* Consistent height for all sections within steps */
+.datetime-selector-hourly .calendar-section,
+.datetime-selector-hourly .time-section,
+.datetime-selector-hourly .duration-section {
+    margin-bottom: 10px !important;
+}
+
+/* Standardize step-actions spacing */
+.datetime-selector-hourly .step-actions {
+    margin-top: 10px !important;
+    margin-bottom: 0 !important;
+}
+
 /* Step Progress Styling */
 .step-progress {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
-    gap: 20px;
+    margin-bottom: 12px;
+    gap: 12px;
 }
 
 .step {
@@ -692,16 +727,17 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 }
 
 .step-number {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     background: #e9ecef;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
     transition: all 0.3s ease;
+    font-size: 13px;
 }
 
 .step.active .step-number {
@@ -710,7 +746,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 }
 
 .step-label {
-    font-size: 12px;
+    font-size: 11px;
     color: #6c757d;
     font-weight: 500;
 }
@@ -730,7 +766,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 
 /* Calendar Section Container */
 .calendar-section {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     width: 100%;
     max-width: 100%;
     overflow: hidden;
@@ -739,29 +775,26 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 /* Hourly Calendar Header Styling - Match base.html exactly */
 .datetime-selector-hourly .calendar-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 15px;
 }
 
 .datetime-selector-hourly .calendar-nav {
     background: none;
-    border: 1px solid #ddd;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 16px;
+    border: none;
+    font-size: 20px;
+    font-weight: bold;
     color: #666;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
 .datetime-selector-hourly .calendar-nav:hover {
-    background: #f8f9fa;
-    border-color: #8bc34a;
+    background: #f0f0f0;
+    color: #333;
 }
 
 .datetime-selector-hourly .calendar-title {
@@ -772,80 +805,114 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 
 /* Hourly Calendar Grid - Match base.html exactly */
 .datetime-selector-hourly .calendar-grid {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
+    min-width: 320px;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
 .datetime-selector-hourly .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background: #f8f9fa;
-    padding: 10px 0;
+    gap: 4px;
+    margin-bottom: 12px;
 }
 
 .datetime-selector-hourly .calendar-weekdays span {
     text-align: center;
-    font-weight: 600;
-    font-size: 12px;
-    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    padding: 10px 4px;
 }
 
 .datetime-selector-hourly .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background: #f8f9fa;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 4px;
+    min-height: 240px;
 }
 
 .datetime-selector-hourly .calendar-day {
-    background: white;
-    border: none;
-    padding: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 14px;
     aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-size: 15px;
+    position: relative;
+    min-height: 40px;
 }
 
 .datetime-selector-hourly .calendar-day:hover {
-    background: #e8f5e8;
-    color: #8bc34a;
+    background: #f0f8ff;
 }
 
 .datetime-selector-hourly .calendar-day.selected {
-    background: #8bc34a;
+    background: #b2e254;
     color: white;
 }
 
 .datetime-selector-hourly .calendar-day.disabled {
     color: #ccc;
     cursor: not-allowed;
-    background: #f8f9fa;
 }
 
 .datetime-selector-hourly .calendar-day.other-month {
     color: #ccc;
-    background: #f8f9fa;
+}
+
+/* Hourly Calendar Footer - Match daily style */
+.datetime-selector-hourly .calendar-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    gap: 12px;
+}
+
+.datetime-selector-hourly .calendar-footer .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Hourly Calendar Time Info - Match daily style */
+.datetime-selector-hourly .calendar-time-info {
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    flex: 1;
+    text-align: center;
+}
+
+.datetime-selector-hourly .calendar-time-info small {
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.datetime-selector-hourly .calendar-time-info i {
+    margin-right: 6px;
+    color: #28a745;
 }
 
 /* Time and Duration Grid Styling */
 .time-grid-compact, .duration-grid-compact {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 8px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 6px;
+    margin-bottom: 10px;
 }
 
 .time-slot, .duration-slot {
     background: white;
     border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 10px 8px;
+    border-radius: 6px;
+    padding: 8px 6px;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 13px;
@@ -868,13 +935,14 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 .step-actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 15px;
+    margin-bottom: 0;
 }
 
 .btn-back, .btn-apply {
-    padding: 10px 20px;
+    padding: 8px 16px;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s ease;
@@ -900,13 +968,13 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 
 /* Special Time Periods Styling */
 .special-time-periods {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .period-options {
     display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 8px;
+    margin-bottom: 12px;
     justify-content: center;
 }
 
@@ -914,14 +982,14 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 15px;
+    padding: 8px 12px;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 6px;
     background: white;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 110px;
-    max-width: 120px;
+    min-width: 90px;
+    max-width: 100px;
     position: relative;
     text-align: center;
 }
@@ -940,8 +1008,8 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 }
 
 .period-btn i {
-    font-size: 20px;
-    margin-bottom: 6px;
+    font-size: 16px;
+    margin-bottom: 4px;
     color: #666;
 }
 
@@ -951,13 +1019,13 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 
 .period-title {
     font-weight: 600;
-    font-size: 13px;
+    font-size: 12px;
     margin-bottom: 2px;
     line-height: 1.2;
 }
 
 .period-time {
-    font-size: 11px;
+    font-size: 10px;
     opacity: 0.8;
     line-height: 1.1;
 }
@@ -965,7 +1033,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 .period-divider {
     text-align: center;
     position: relative;
-    margin: 15px 0;
+    margin: 12px 0;
 }
 
 .period-divider span {
@@ -1005,9 +1073,11 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     display: none;
-    padding: 20px;
-    min-width: 800px;
-    max-width: 900px;
+    padding: 25px;
+    min-width: 950px;
+    max-width: 1100px;
+    min-height: 550px;
+    max-height: 650px;
 }
 
 .datetime-selector-daily .datetime-dropdown.show {
@@ -1023,7 +1093,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 
 .datetime-selector-daily .calendar-months {
     display: flex;
-    gap: 60px;
+    gap: 80px;
     justify-content: center;
     flex: 1;
 }
@@ -1086,30 +1156,32 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 
 /* Daily Calendar Grid Styling */
 .datetime-selector-daily .calendar-grid {
-    min-width: 320px;
-    max-width: 400px;
+    min-width: 380px;
+    max-width: 450px;
     margin: 0 auto;
 }
 
 .datetime-selector-daily .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-    margin-bottom: 10px;
+    gap: 4px;
+    margin-bottom: 12px;
 }
 
 .datetime-selector-daily .calendar-weekdays span {
     text-align: center;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: #666;
-    padding: 8px 4px;
+    padding: 10px 4px;
 }
 
 .datetime-selector-daily .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 4px;
+    min-height: 240px;
 }
 
 .datetime-selector-daily .calendar-day {
@@ -1118,10 +1190,11 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 8px;
     transition: all 0.2s ease;
-    font-size: 14px;
+    font-size: 15px;
     position: relative;
+    min-height: 40px;
 }
 
 .datetime-selector-daily .calendar-day:hover {
@@ -1145,51 +1218,6 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
 
 .datetime-selector-daily .calendar-day.other-month {
     color: #ccc;
-}
-
-/* General calendar styles removed - now using specific selectors for hourly and daily */
-
-.calendar-day.disabled {
-    color: #ccc;
-    cursor: not-allowed;
-}
-
-.calendar-day.disabled:hover {
-    background: transparent;
-}
-
-.calendar-time-info {
-    padding: 12px 16px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    flex: 1;
-    text-align: center;
-}
-
-.calendar-time-info small {
-    color: #6c757d;
-    font-size: 13px;
-}
-
-.calendar-time-info i {
-    margin-right: 6px;
-    color: #28a745;
-}
-
-.calendar-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-    gap: 12px;
-}
-
-.calendar-footer .btn {
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
 }
 
 </style>
@@ -1301,7 +1329,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                                     </div>
                                     <div class="calendar-grid">
                                         <div class="calendar-weekdays">
-                                            <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+                                            <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
                                         </div>
                                         <div class="calendar-days" id="calendar-days-hourly">
                                             <!-- Days will be generated by JavaScript -->
@@ -1475,7 +1503,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                                         </div>
                                         <div class="calendar-grid">
                                             <div class="calendar-weekdays">
-                                                <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+                                                <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
                                             </div>
                                             <div class="calendar-days" id="calendar-days-daily-1">
                                                 <!-- Days will be generated by JavaScript -->
@@ -1490,7 +1518,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                                         </div>
                                         <div class="calendar-grid">
                                             <div class="calendar-weekdays">
-                                                <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+                                                <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
                                             </div>
                                             <div class="calendar-days" id="calendar-days-daily-2">
                                                 <!-- Days will be generated by JavaScript -->
@@ -2731,9 +2759,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             let calendarHTML = '';
             
-            // Add empty cells for days before first day of month
-            for (let i = 0; i < firstDay.getDay(); i++) {
-                const prevDate = new Date(year, month, 1 - (firstDay.getDay() - i));
+            // Add empty cells for days before first day of month (Monday-based week)
+            const firstDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0 system
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const prevDate = new Date(year, month, 1 - (firstDayOfWeek - i));
                 calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${prevDate.toISOString().split('T')[0]}">${prevDate.getDate()}</button>`;
             }
             
@@ -2773,9 +2802,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" ${isDisabled ? 'disabled' : ''}>${day}</button>`;
             }
             
-            // Add empty cells for days after last day of month
-            const cellsUsed = firstDay.getDay() + lastDay.getDate();
-            const totalCells = Math.ceil(cellsUsed / 7) * 7;
+            // Add empty cells for days after last day of month to ensure exactly 6 rows (42 cells total)
+            const cellsUsed = firstDayOfWeek + lastDay.getDate();
+            const totalCells = 42; // Always 6 rows × 7 days = 42 cells
             for (let i = cellsUsed; i < totalCells; i++) {
                 const nextDate = new Date(year, month + 1, i - cellsUsed + 1);
                 calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${nextDate.toISOString().split('T')[0]}">${nextDate.getDate()}</button>`;
@@ -3306,9 +3335,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             let calendarHTML = '';
             
-            // Add empty cells for days before first day of month
-            for (let i = 0; i < firstDay.getDay(); i++) {
-                const prevDate = new Date(year, month, 1 - (firstDay.getDay() - i));
+            // Add empty cells for days before first day of month (Monday-based week)
+            const firstDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0 system
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const prevDate = new Date(year, month, 1 - (firstDayOfWeek - i));
                 calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${prevDate.toISOString().split('T')[0]}" data-calendar="${calendarId}">${prevDate.getDate()}</button>`;
             }
             
@@ -3334,9 +3364,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" data-calendar="${calendarId}" ${isDisabled ? 'disabled' : ''}>${day}</button>`;
             }
             
-            // Add empty cells for days after last day of month
-            const cellsUsed = firstDay.getDay() + lastDay.getDate();
-            const totalCells = Math.ceil(cellsUsed / 7) * 7;
+            // Add empty cells for days after last day of month to ensure exactly 6 rows (42 cells total)
+            const cellsUsed = firstDayOfWeek + lastDay.getDate();
+            const totalCells = 42; // Always 6 rows × 7 days = 42 cells
             for (let i = cellsUsed; i < totalCells; i++) {
                 const nextDate = new Date(year, month + 1, i - cellsUsed + 1);
                 calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${nextDate.toISOString().split('T')[0]}" data-calendar="${calendarId}">${nextDate.getDate()}</button>`;
