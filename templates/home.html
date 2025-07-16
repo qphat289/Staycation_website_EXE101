@@ -577,6 +577,407 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     background-color: transparent !important;
 }
 
+/* Period Info Styling */
+.period-info {
+    margin-bottom: 15px;
+}
+
+.period-info .alert {
+    background: #e8f5e8;
+    border: 1px solid #8bc34a;
+    color: #2e7d32;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.period-info .alert i {
+    color: #8bc34a;
+    font-size: 16px;
+}
+
+.period-info .alert span {
+    flex: 1;
+    font-weight: 500;
+}
+
+.period-info .alert small {
+    display: block;
+    margin-top: 4px;
+    opacity: 0.8;
+    font-size: 11px;
+}
+
+/* Dropdown Animations */
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Hourly DateTime Dropdown Styling */
+.datetime-selector-hourly {
+    position: relative;
+    z-index: 1000;
+}
+
+.datetime-selector-hourly .datetime-dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    margin-top: 5px !important;
+    overflow: hidden !important;
+    display: none;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    animation: slideDown 0.3s ease-out;
+    min-width: 700px;
+    max-width: 850px;
+    min-height: 600px;
+    max-height: 700px;
+}
+
+.datetime-selector-hourly .datetime-dropdown.show {
+    display: block;
+}
+
+/* Smaller height for step 3 (duration selection) */
+.datetime-selector-hourly .datetime-dropdown.step-3-active {
+    min-height: 400px;
+    max-height: 500px;
+}
+
+/* Step Progress Styling */
+.step-progress {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.step.active {
+    opacity: 1;
+}
+
+.step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+    background: #8bc34a;
+    color: white;
+}
+
+.step-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.step.active .step-label {
+    color: #8bc34a;
+}
+
+/* Step Content */
+.step-content {
+    display: none;
+}
+
+.step-content.active {
+    display: block;
+}
+
+/* Calendar Section Container */
+.calendar-section {
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* Hourly Calendar Header Styling - Match base.html exactly */
+.datetime-selector-hourly .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.datetime-selector-hourly .calendar-nav {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    color: #666;
+}
+
+.datetime-selector-hourly .calendar-nav:hover {
+    background: #f8f9fa;
+    border-color: #8bc34a;
+}
+
+.datetime-selector-hourly .calendar-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+}
+
+/* Hourly Calendar Grid - Match base.html exactly */
+.datetime-selector-hourly .calendar-grid {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.datetime-selector-hourly .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #f8f9fa;
+    padding: 10px 0;
+}
+
+.datetime-selector-hourly .calendar-weekdays span {
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.datetime-selector-hourly .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #f8f9fa;
+}
+
+.datetime-selector-hourly .calendar-day {
+    background: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.datetime-selector-hourly .calendar-day:hover {
+    background: #e8f5e8;
+    color: #8bc34a;
+}
+
+.datetime-selector-hourly .calendar-day.selected {
+    background: #8bc34a;
+    color: white;
+}
+
+.datetime-selector-hourly .calendar-day.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    background: #f8f9fa;
+}
+
+.datetime-selector-hourly .calendar-day.other-month {
+    color: #ccc;
+    background: #f8f9fa;
+}
+
+/* Time and Duration Grid Styling */
+.time-grid-compact, .duration-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.time-slot, .duration-slot {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.time-slot:hover, .duration-slot:hover {
+    border-color: #8bc34a;
+    background: #e8f5e8;
+}
+
+.time-slot.active, .duration-slot.active {
+    background: #8bc34a;
+    border-color: #8bc34a;
+    color: white;
+}
+
+/* Step Actions */
+.step-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.btn-back, .btn-apply {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-back {
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.btn-back:hover {
+    background: #e9ecef;
+}
+
+.btn-apply {
+    background: #8bc34a;
+    color: white;
+}
+
+.btn-apply:hover {
+    background: #7cb342;
+}
+
+/* Special Time Periods Styling */
+.special-time-periods {
+    margin-bottom: 20px;
+}
+
+.period-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.period-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 110px;
+    max-width: 120px;
+    position: relative;
+    text-align: center;
+}
+
+.period-btn:hover {
+    border-color: #8bc34a;
+    background: #f8fff0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(139, 195, 74, 0.2);
+}
+
+.period-btn.active {
+    border-color: #8bc34a;
+    background: #8bc34a;
+    color: white;
+}
+
+.period-btn i {
+    font-size: 20px;
+    margin-bottom: 6px;
+    color: #666;
+}
+
+.period-btn.active i {
+    color: white;
+}
+
+.period-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.period-time {
+    font-size: 11px;
+    opacity: 0.8;
+    line-height: 1.1;
+}
+
+.period-divider {
+    text-align: center;
+    position: relative;
+    margin: 15px 0;
+}
+
+.period-divider span {
+    background: white;
+    padding: 0 15px;
+    color: #6c757d;
+    font-size: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.period-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e9ecef;
+    z-index: 0;
+}
+
 /* Daily Calendar Styling */
 .datetime-selector-daily {
     position: relative;
@@ -603,25 +1004,25 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     display: block !important;
 }
 
-.calendar-header {
+.datetime-selector-daily .calendar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
 }
 
-.calendar-months {
+.datetime-selector-daily .calendar-months {
     display: flex;
     gap: 60px;
     justify-content: center;
     flex: 1;
 }
 
-.month-container {
+.datetime-selector-daily .month-container {
     text-align: center;
 }
 
-.calendar-title {
+.datetime-selector-daily .calendar-title {
     font-weight: 600;
     font-size: 16px;
     color: #333;
@@ -629,7 +1030,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     display: block;
 }
 
-.calendar-nav {
+.datetime-selector-daily .calendar-nav {
     background: none;
     border: none;
     font-size: 20px;
@@ -641,12 +1042,12 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     transition: all 0.2s ease;
 }
 
-.calendar-nav:hover {
+.datetime-selector-daily .calendar-nav:hover {
     background: #f0f0f0;
     color: #333;
 }
 
-.month-nav {
+.datetime-selector-daily .month-nav {
     background: none;
     border: none;
     font-size: 16px;
@@ -663,28 +1064,31 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     justify-content: center;
 }
 
-.month-nav:hover {
+.datetime-selector-daily .month-nav:hover {
     background: #f0f0f0;
     color: #333;
 }
 
-.month-nav-placeholder {
+.datetime-selector-daily .month-nav-placeholder {
     min-width: 30px;
     height: 30px;
 }
 
-.calendar-grid {
+/* Daily Calendar Grid Styling */
+.datetime-selector-daily .calendar-grid {
     min-width: 320px;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
-.calendar-weekdays {
+.datetime-selector-daily .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
     margin-bottom: 10px;
 }
 
-.calendar-weekdays span {
+.datetime-selector-daily .calendar-weekdays span {
     text-align: center;
     font-size: 12px;
     font-weight: 500;
@@ -692,13 +1096,13 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     padding: 8px 4px;
 }
 
-.calendar-days {
+.datetime-selector-daily .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
 }
 
-.calendar-day {
+.datetime-selector-daily .calendar-day {
     aspect-ratio: 1;
     display: flex;
     align-items: center;
@@ -710,19 +1114,30 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     position: relative;
 }
 
-.calendar-day:hover {
+.datetime-selector-daily .calendar-day:hover {
     background: #f0f8ff;
 }
 
-.calendar-day.selected {
+.datetime-selector-daily .calendar-day.selected {
     background: #b2e254;
     color: white;
 }
 
-.calendar-day.in-range {
+.datetime-selector-daily .calendar-day.in-range {
     background: rgba(178, 226, 84, 0.2);
     color: #333;
 }
+
+.datetime-selector-daily .calendar-day.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.datetime-selector-daily .calendar-day.other-month {
+    color: #ccc;
+}
+
+/* General calendar styles removed - now using specific selectors for hourly and daily */
 
 .calendar-day.disabled {
     color: #ccc;
@@ -946,6 +1361,13 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                             <div class="step-content" id="step-3-hourly">
                                 <div class="duration-section">
                                     <h4>Chọn số giờ sử dụng</h4>
+                                    <div class="period-info" id="period-info" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span id="period-text"></span>
+                                            <small>Đề xuất: 8 giờ để tận hưởng trọn vẹn</small>
+                                        </div>
+                                    </div>
                                     <div class="duration-grid-compact">
                                         <button type="button" class="duration-slot" data-duration="2">2 giờ</button>
                                         <button type="button" class="duration-slot active" data-duration="3">3 giờ</button>
@@ -960,7 +1382,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                                 </div>
                                 <div class="step-actions">
                                     <button type="button" class="btn btn-back" id="back-step-3">Quay lại</button>
-                                    <button type="button" class="btn btn-apply" id="">Hoàn tất</button>
+                                    <button type="button" class="btn btn-apply" id="apply-datetime-hourly">Hoàn tất</button>
                                 </div>
                             </div>
                         </div>
@@ -2708,7 +3130,31 @@ document.addEventListener('DOMContentLoaded', function() {
             if (durationSelectionSetup) return;
             durationSelectionSetup = true;
             
-            // No need to auto-select duration for special periods since they skip step 3
+            // Only show period info and auto-select if we reach step 3 (not for special periods)
+            if (window.selectedPeriod) {
+                const periodInfo = document.getElementById('period-info');
+                const periodText = document.getElementById('period-text');
+                
+                let periodInfoText = '';
+                
+                if (window.selectedPeriod === 'overnight') {
+                    periodInfoText = 'Khung giờ qua đêm - Thích hợp cho nghỉ ngơi và thư giãn';
+                } else if (window.selectedPeriod === 'daytime') {
+                    periodInfoText = 'Khung giờ qua ngày (9h-20h) - Thích hợp cho hoạt động và vui chơi';
+                }
+                
+                // Show period info
+                if (periodInfo && periodText) {
+                    periodText.textContent = periodInfoText;
+                    periodInfo.style.display = 'block';
+                }
+            } else {
+                // Hide period info if no special period selected
+                const periodInfo = document.getElementById('period-info');
+                if (periodInfo) {
+                    periodInfo.style.display = 'none';
+                }
+            }
             
             const durationSlots = document.querySelectorAll('#step-3-hourly .duration-slot');
             durationSlots.forEach(slot => {

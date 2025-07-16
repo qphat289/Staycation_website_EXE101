@@ -1163,14 +1163,15 @@
             border-radius: 12px !important;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
             margin-top: 5px !important;
-            overflow: visible !important;
+            overflow: hidden !important;
             display: none;
             padding: 25px;
             backdrop-filter: blur(10px);
             animation: slideDown 0.3s ease-out;
-            min-width: 650px;
-            max-width: 800px;
-            min-height: 520px;
+            min-width: 700px;
+            max-width: 850px;
+            min-height: 600px;
+            max-height: 700px;
         }
         
         .datetime-dropdown.show {
@@ -1179,7 +1180,8 @@
         
         /* Smaller height for step 3 (duration selection) */
         .datetime-dropdown.step-3-active {
-            min-height: 300px;
+            min-height: 400px;
+            max-height: 500px;
         }
         
         /* Styling for daily form checkin date picker */
