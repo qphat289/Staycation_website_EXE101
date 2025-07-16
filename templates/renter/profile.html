@@ -1451,8 +1451,9 @@ function checkEmailAvailability(email, inputElement) {
 }
 
 // Password Change Modal Functions
-let countdownInterval;
+let countdownInterval = null;
 let currentStep = 'form';
+let modalInitialized = false;
 
 // Function removed - no longer needed since we removed eye icons
 
@@ -1625,7 +1626,6 @@ function hideLoading() {
 
 function showStep(step) {
     currentStep = step;
-    console.log('[DEBUG] showStep called with:', step);
     
     if (step === 'form') {
         document.getElementById('passwordFormStep').style.display = 'block';
@@ -1634,44 +1634,31 @@ function showStep(step) {
         document.getElementById('sendOtpBtn').style.display = 'inline-block';
         document.getElementById('verifyOtpBtn').style.display = 'none';
         document.getElementById('resendOtpBtn').style.display = 'none';
-        console.log('[DEBUG] Showing form step');
     } else if (step === 'otp') {
         const otpStep = document.getElementById('otpVerificationStep');
         const formStep = document.getElementById('passwordFormStep');
         const successStep = document.getElementById('successState');
         
-        console.log('[DEBUG] Elements found:', {
-            otpStep: !!otpStep,
-            formStep: !!formStep,
-            successStep: !!successStep
-        });
-        
-        if (formStep) {
-            formStep.style.display = 'none';
-            formStep.style.visibility = 'hidden';
-        }
+        if (formStep) formStep.style.display = 'none';
         if (otpStep) {
             otpStep.style.display = 'block';
-            otpStep.style.visibility = 'visible';
-            otpStep.style.opacity = '1';
             otpStep.classList.add('show');
-            console.log('[DEBUG] Added show class to otpStep');
         }
-        if (successStep) {
-            successStep.style.display = 'none';
-            successStep.style.visibility = 'hidden';
-        }
+        if (successStep) successStep.style.display = 'none';
         
         const sendOtpBtnEl = document.getElementById('sendOtpBtn');
         const verifyOtpBtnEl = document.getElementById('verifyOtpBtn');
         const resendOtpBtnEl = document.getElementById('resendOtpBtn');
+        const cancelBtnEl = document.getElementById('cancelBtn');
         
         if (sendOtpBtnEl) sendOtpBtnEl.style.display = 'none';
         if (verifyOtpBtnEl) verifyOtpBtnEl.style.display = 'inline-block';
         if (resendOtpBtnEl) resendOtpBtnEl.style.display = 'inline-block';
         
-        console.log('[DEBUG] Showing OTP step');
-        console.log('[DEBUG] otpVerificationStep display:', otpStep ? otpStep.style.display : 'element not found');
+        // Change cancel button text to "Quay lại" when in OTP step
+        if (cancelBtnEl) {
+            cancelBtnEl.innerHTML = '<i class="fas fa-arrow-left me-1"></i>Quay lại';
+        }
     } else if (step === 'success') {
         const passwordFormStepEl = document.getElementById('passwordFormStep');
         const otpVerificationStepEl = document.getElementById('otpVerificationStep');
@@ -1688,7 +1675,7 @@ function showStep(step) {
         if (verifyOtpBtnEl) verifyOtpBtnEl.style.display = 'none';
         if (resendOtpBtnEl) resendOtpBtnEl.style.display = 'none';
         if (cancelBtnEl) cancelBtnEl.textContent = 'Đóng';
-        console.log('[DEBUG] Showing success step');
+        
         setTimeout(() => {
             const modal = document.getElementById('changePasswordModal');
             const modalInstance = bootstrap.Modal.getInstance(modal);
@@ -1763,33 +1750,17 @@ function sendOtp() {
         console.log('[DEBUG] Response ok:', ok);
         
         if (data.success === true) {
-            console.log('[DEBUG] Success response, calling showStep("otp")');
+            // Update email display
             const userEmailElement = document.getElementById('userEmail');
             if (userEmailElement) {
                 userEmailElement.textContent = data.email || '';
-            } else {
-                console.error('[DEBUG] userEmail element not found');
             }
             
-            // Force a small delay to ensure DOM is ready
-            setTimeout(() => {
-                console.log('[DEBUG] About to call showStep("otp")');
-                showStep('otp');
-                startCountdown();
-                
-                // Additional debug after showing step
-                setTimeout(() => {
-                    const otpStep = document.getElementById('otpVerificationStep');
-                    console.log('[DEBUG] After showStep - otpStep:', {
-                        element: !!otpStep,
-                        display: otpStep ? otpStep.style.display : 'N/A',
-                        visibility: otpStep ? otpStep.style.visibility : 'N/A',
-                        opacity: otpStep ? otpStep.style.opacity : 'N/A',
-                        classes: otpStep ? otpStep.className : 'N/A'
-                    });
-                }, 200);
-            }, 100);
+            // Show OTP step immediately
+            showStep('otp');
+            startCountdown();
             
+            // Add success alert
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-success alert-dismissible fade show d-flex align-items-center';
             alertDiv.innerHTML = `
@@ -1799,10 +1770,8 @@ function sendOtp() {
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             `;
-            // Insert alert at the beginning of modal body
             const modalBody = document.querySelector('.modal-body');
             modalBody.insertBefore(alertDiv, modalBody.firstChild);
-            console.log('[DEBUG] Success alert added');
         } else {
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-danger alert-dismissible fade show d-flex align-items-center';
@@ -1933,10 +1902,8 @@ function verifyOtp() {
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('changePasswordModal');
     
-    // Function to cancel password change process
+    // Function to completely cancel password change process (reset everything)
     function cancelPasswordChange() {
-        console.log('[DEBUG] Canceling password change process');
-        
         // Clear any pending OTP from session
         fetch('/renter/change-password/cancel', {
             method: 'POST',
@@ -1953,6 +1920,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const passwordStrength = document.getElementById('passwordStrength');
         const passwordMatch = document.getElementById('passwordMatch');
         
+        // Reset form inputs manually to ensure they're empty
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmNewPassword');
+        const otpInput = document.getElementById('otpInput');
+        
+        if (currentPasswordInput) currentPasswordInput.value = '';
+        if (newPasswordInput) newPasswordInput.value = '';
+        if (confirmPasswordInput) confirmPasswordInput.value = '';
+        if (otpInput) otpInput.value = '';
+        
+        // Also call form reset for good measure
         if (passwordChangeForm) passwordChangeForm.reset();
         if (otpForm) otpForm.reset();
         
@@ -1974,6 +1953,81 @@ document.addEventListener('DOMContentLoaded', function() {
         const loadingState = document.getElementById('loadingState');
         
         if (passwordFormStep) passwordFormStep.style.display = 'block';
+        if (otpVerificationStep) {
+            otpVerificationStep.style.display = 'none';
+            otpVerificationStep.classList.remove('show');
+        }
+        if (successState) successState.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'none';
+        
+        // Reset button states
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        if (sendOtpBtn) sendOtpBtn.style.display = 'inline-block';
+        if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
+        if (resendOtpBtn) resendOtpBtn.style.display = 'none';
+        if (cancelBtn) cancelBtn.innerHTML = '<i class="fas fa-times me-1"></i>Hủy';
+        
+        // Clear countdown
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+        
+        // Reset modal state
+        modalInitialized = false;
+    }
+    
+    // Function to go back to form step (keep form data, just go back from OTP step)
+    function goBackToForm() {
+        console.log('[DEBUG] Going back to form step');
+        
+        // Clear OTP from session but keep form data
+        fetch('/renter/change-password/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).catch(error => {
+            console.log('[DEBUG] Cancel request failed:', error);
+        });
+        
+        // Clear OTP input and errors
+        const otpInput = document.getElementById('otpInput');
+        if (otpInput) {
+            otpInput.value = '';
+            otpInput.classList.remove('is-invalid');
+        }
+        
+        // Clear OTP errors
+        const otpError = document.getElementById('otpError');
+        if (otpError) otpError.textContent = '';
+        
+        // Clear any validation states from form inputs
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmNewPassword');
+        
+        if (currentPasswordInput) currentPasswordInput.classList.remove('is-invalid');
+        if (newPasswordInput) newPasswordInput.classList.remove('is-invalid');
+        if (confirmPasswordInput) confirmPasswordInput.classList.remove('is-invalid');
+        
+        // Clear alerts
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        
+        // Reset current step to form
+        currentStep = 'form';
+        
+        // Show form step and hide OTP step
+        const passwordFormStep = document.getElementById('passwordFormStep');
+        const otpVerificationStep = document.getElementById('otpVerificationStep');
+        const successState = document.getElementById('successState');
+        const loadingState = document.getElementById('loadingState');
+        
+        if (passwordFormStep) passwordFormStep.style.display = 'block';
         if (otpVerificationStep) otpVerificationStep.style.display = 'none';
         if (successState) successState.style.display = 'none';
         if (loadingState) loadingState.style.display = 'none';
@@ -1987,22 +2041,80 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sendOtpBtn) sendOtpBtn.style.display = 'inline-block';
         if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
         if (resendOtpBtn) resendOtpBtn.style.display = 'none';
-        if (cancelBtn) cancelBtn.textContent = 'Hủy';
+        if (cancelBtn) cancelBtn.innerHTML = '<i class="fas fa-times me-1"></i>Hủy';
         
         // Clear countdown
         if (countdownInterval) {
             clearInterval(countdownInterval);
         }
         
-        console.log('[DEBUG] Password change process cancelled and reset to form step');
+        console.log('[DEBUG] Back to form step, form data preserved');
     }
     
     modal.addEventListener('show.bs.modal', function() {
         console.log('[DEBUG] Modal show event triggered');
-        cancelPasswordChange();
+        
+        // Quick reset before modal shows
+        currentStep = 'form';
+        modalInitialized = true;
+        
+        // Reset all form inputs to empty
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmNewPassword');
+        const otpInput = document.getElementById('otpInput');
+        
+        if (currentPasswordInput) currentPasswordInput.value = '';
+        if (newPasswordInput) newPasswordInput.value = '';
+        if (confirmPasswordInput) confirmPasswordInput.value = '';
+        if (otpInput) otpInput.value = '';
+        
+        // Clear any validation states
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        
+        // Clear password strength and match indicators
+        const passwordStrength = document.getElementById('passwordStrength');
+        const passwordMatch = document.getElementById('passwordMatch');
+        if (passwordStrength) passwordStrength.innerHTML = '';
+        if (passwordMatch) passwordMatch.innerHTML = '';
+        
+        // Simple reset without heavy DOM manipulation
+        const passwordFormStep = document.getElementById('passwordFormStep');
+        const otpVerificationStep = document.getElementById('otpVerificationStep');
+        const successState = document.getElementById('successState');
+        const loadingState = document.getElementById('loadingState');
+        
+        if (passwordFormStep) passwordFormStep.style.display = 'block';
+        if (otpVerificationStep) otpVerificationStep.style.display = 'none';
+        if (successState) successState.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'none';
+        
+        // Reset button states
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        if (sendOtpBtn) sendOtpBtn.style.display = 'inline-block';
+        if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
+        if (resendOtpBtn) resendOtpBtn.style.display = 'none';
+        if (cancelBtn) cancelBtn.innerHTML = '<i class="fas fa-times me-1"></i>Hủy';
+        
+        // Clear session in background (non-blocking)
+        fetch('/renter/change-password/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).catch(error => {
+            console.log('[DEBUG] Cancel request failed:', error);
+        });
+        
+        console.log('[DEBUG] Modal reset completed, currentStep:', currentStep);
     });
     
-    // Handle modal header close button (X)
+    // Handle modal header close button (X) - always cancel completely
     const modalCloseBtn = modal.querySelector('.btn-close');
     if (modalCloseBtn) {
         modalCloseBtn.addEventListener('click', function() {
@@ -2010,22 +2122,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Handle cancel button click
+    // Handle cancel button click - smart behavior based on current step
     const cancelBtn = document.getElementById('cancelBtn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', function() {
-            cancelPasswordChange();
-            // Force show form step immediately
-            showStep('form');
+            if (currentStep === 'otp') {
+                // If we're in OTP step, go back to form (preserve form data)
+                goBackToForm();
+            } else {
+                // If we're in form step, cancel completely
+                cancelPasswordChange();
+            }
         });
     }
     
-    // Handle modal close (X button or clicking outside)
+    // Handle modal close (X button or clicking outside) - always cancel completely
     modal.addEventListener('hidden.bs.modal', function() {
+        // Ensure complete reset when modal is hidden
         cancelPasswordChange();
+        // Force reset current step
+        currentStep = 'form';
     });
     
-    // Handle clicking outside modal
+    // Handle clicking outside modal - always cancel completely
     modal.addEventListener('click', function(event) {
         if (event.target === modal) {
             cancelPasswordChange();
