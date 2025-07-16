@@ -835,8 +835,8 @@
             z-index: 1000;
             display: none;
             padding: 20px;
-            min-width: 750px;
-            max-width: 900px;
+            min-width: 600px;
+            max-width: 700px;
         }
         
         .datetime-selector-daily .datetime-dropdown.show {
@@ -1170,7 +1170,7 @@
             animation: slideDown 0.3s ease-out;
             min-width: 700px;
             max-width: 850px;
-            min-height: 600px;
+            min-height: 550px;
             max-height: 700px;
         }
         
@@ -1201,8 +1201,8 @@
             padding: 20px;
             backdrop-filter: blur(10px);
             animation: slideDown 0.3s ease-out;
-            min-width: 300px;
-            max-width: 350px;
+            min-width: 280px;
+            max-width: 320px;
             min-height: 350px;
         }
         
@@ -1430,9 +1430,19 @@
         /* Responsive adjustments for datetime selector */
         @media (max-width: 768px) {
             .datetime-dropdown {
-                min-width: 300px;
+                min-width: 280px;
                 left: -50% !important;
                 right: auto !important;
+            }
+            
+            .datetime-selector-daily .datetime-dropdown {
+                min-width: 300px !important;
+                max-width: 350px !important;
+            }
+            
+            #global-checkin-dropdown-daily {
+                min-width: 260px !important;
+                max-width: 300px !important;
             }
             
             .time-grid-compact, .duration-grid-compact {
@@ -3291,7 +3301,7 @@
             function updateDisplay() {
                 if (selectedCheckinDate) {
                     const checkinDate = new Date(selectedCheckinDate);
-                    const checkinDayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][checkinDate.getDay()];
+                    const checkinDayName = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'][checkinDate.getDay()];
                     const checkinDisplayText = `${checkinDayName} - ${checkinDate.getDate()} tháng ${checkinDate.getMonth() + 1}`;
                     display.value = checkinDisplayText;
                 } else {
@@ -3300,7 +3310,7 @@
                 
                 if (selectedCheckoutDate) {
                     const checkoutDate = new Date(selectedCheckoutDate);
-                    const checkoutDayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][checkoutDate.getDay()];
+                    const checkoutDayName = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'][checkoutDate.getDay()];
                     const checkoutDisplayText = `${checkoutDayName} - ${checkoutDate.getDate()} tháng ${checkoutDate.getMonth() + 1}`;
                     checkoutDisplay.value = checkoutDisplayText;
                 } else {

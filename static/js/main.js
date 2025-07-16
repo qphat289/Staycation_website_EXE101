@@ -643,10 +643,11 @@ function setupDailyDateTimeSelector() {
     
     // Format date for display
     function formatDate(date) {
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
+        const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+        const dayName = dayNames[date.getDay()];
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        return `${dayName} - ${day} tháng ${month}`;
     }
     
     // Format date for input (YYYY-MM-DD)
@@ -904,10 +905,11 @@ function setupGlobalDailyDateTimeSelector() {
     
     // Format date for display
     function formatDate(date) {
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
+        const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+        const dayName = dayNames[date.getDay()];
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        return `${dayName} - ${day} tháng ${month}`;
     }
     
     // Format date for input (YYYY-MM-DD)

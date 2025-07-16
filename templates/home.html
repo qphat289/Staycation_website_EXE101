@@ -363,6 +363,11 @@
         padding: 0 8px;
         margin-bottom: 16px;
     }
+    
+    .datetime-selector-daily .datetime-dropdown {
+        min-width: 320px !important;
+        max-width: 380px !important;
+    }
 }
 
 @media (max-width: 576px) {
@@ -373,6 +378,11 @@
     .search-form .col-md-2 {
         flex: 0 0 100%;
         max-width: 100%;
+    }
+    
+    .datetime-selector-daily .datetime-dropdown {
+        min-width: 280px !important;
+        max-width: 320px !important;
     }
 }
 
@@ -1057,8 +1067,8 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
     padding: 4px 8px;
     border-radius: 4px;
     transition: all 0.2s ease;
-    min-width: 30px;
-    height: 30px;
+    min-width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3372,7 +3382,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function updateDisplay() {
             if (selectedCheckinDate) {
                 const checkinDate = new Date(selectedCheckinDate);
-                const checkinDayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][checkinDate.getDay()];
+                const checkinDayName = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'][checkinDate.getDay()];
                 const checkinDisplayText = `${checkinDayName} - ${checkinDate.getDate()} tháng ${checkinDate.getMonth() + 1}`;
                 display.value = checkinDisplayText;
             } else {
@@ -3381,7 +3391,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (selectedCheckoutDate) {
                 const checkoutDate = new Date(selectedCheckoutDate);
-                const checkoutDayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][checkoutDate.getDay()];
+                const checkoutDayName = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'][checkoutDate.getDay()];
                 const checkoutDisplayText = `${checkoutDayName} - ${checkoutDate.getDate()} tháng ${checkoutDate.getMonth() + 1}`;
                 checkoutDisplay.value = checkoutDisplayText;
             } else {

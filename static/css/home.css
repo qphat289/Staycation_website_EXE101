@@ -483,7 +483,7 @@ main.container {
     z-index: 1000;
     padding: 12px;
     display: none;
-    min-width: 380px;
+    min-width: 300px;
     max-height: 500px;
     overflow-y: auto;
 }
@@ -678,7 +678,7 @@ main.container {
 /* Compact Grids for Steps */
 .time-grid-compact {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
     margin-bottom: 20px;
 }
@@ -853,7 +853,7 @@ main.container {
     }
     
     .datetime-dropdown {
-        min-width: 320px !important;
+        min-width: 280px !important;
         max-height: 450px !important;
         padding: 12px !important;
     }
@@ -1239,7 +1239,7 @@ main.container {
     
     /* DateTime Dropdown Mobile Styles */
     .datetime-dropdown {
-        min-width: 280px !important;
+        min-width: 260px !important;
         max-height: 400px !important;
         padding: 10px !important;
     }
@@ -1331,7 +1331,7 @@ main.container {
     
     /* DateTime Dropdown Extra Small Mobile Styles */
     .datetime-dropdown {
-        min-width: 260px !important;
+        min-width: 240px !important;
         max-height: 350px !important;
         padding: 8px !important;
     }
@@ -1661,7 +1661,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .auth-link.re
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
   padding: 12px;
-  min-width: 320px;
+  min-width: 280px;
   display: none;
 }
 .time-dropdown.show {
@@ -1669,7 +1669,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .auth-link.re
 }
 .time-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 8px;
 }
 .time-slot {
@@ -1695,7 +1695,7 @@ html body .navbar.navbar-expand-lg.navbar-dark.bg-primary.scrolled .auth-link.re
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
   padding: 12px;
-  min-width: 220px;
+  min-width: 200px;
   display: none;
 }
 .duration-dropdown.show {
