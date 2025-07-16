@@ -1,6 +1,185 @@
 {% extends 'base.html' %}
 {% block title %}Search Homestays - Horin{% endblock %}
 
+{% block navbar_search %}
+<!-- Compact Search Bar -->
+<div class="navbar-search-container">
+    <!-- Compact Search Display -->
+    <div class="navbar-search-compact" id="compact-search" onclick="expandSearch()">
+        <div class="search-content">
+            <div class="search-tabs-inline">
+                <span class="tab-inline {% if search_params.booking_type == 'hourly' or not search_params.booking_type %}active{% endif %}">
+                    <i class="fas fa-clock"></i> Theo giờ
+                </span>
+                <span class="tab-inline {% if search_params.booking_type == 'daily' %}active{% endif %}">
+                    <i class="fas fa-calendar-day"></i> Theo ngày
+                </span>
+            </div>
+            
+            <div class="search-info">
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>{{ search_params.location or 'Hồ Chí Minh' }}</span>
+                </div>
+                <div class="info-divider">•</div>
+                <div class="info-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>
+                        {% if search_params.checkin_date %}
+                            {% set date_parts = search_params.checkin_date.split('-') %}
+                            {{ date_parts[2] }} tháng {{ date_parts[1] }}, {{ date_parts[0] }}
+                        {% else %}
+                            16 tháng 7, 2025
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-divider">•</div>
+                {% if search_params.booking_type == 'hourly' or not search_params.booking_type %}
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <span>
+                        {% set checkin_time = search_params.checkin_time or '14:00' %}
+                        {% set duration = search_params.hours_duration or search_params.duration or '3' %}
+                        {% set checkin_hour = checkin_time.split(':')[0] | int %}
+                        {% set checkout_hour = checkin_hour + (duration | int) %}
+                        {% if checkout_hour > 24 %}
+                            {% set checkout_hour = checkout_hour - 24 %}
+                        {% endif %}
+                        {{ checkin_time }} - {{ '%02d:00'|format(checkout_hour) }}
+                    </span>
+                </div>
+                <div class="info-divider">•</div>
+                <div class="info-item">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span>
+                        {% if search_params.hours_duration %}
+                            {{ search_params.hours_duration }} giờ
+                        {% elif search_params.duration %}
+                            {{ search_params.duration }} giờ
+                        {% else %}
+                            3 giờ
+                        {% endif %}
+                    </span>
+                </div>
+                {% else %}
+                <div class="info-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>
+                        {% if search_params.checkout_date %}
+                            {% set checkout_parts = search_params.checkout_date.split('-') %}
+                            {{ checkout_parts[2] }} tháng {{ checkout_parts[1] }}, {{ checkout_parts[0] }}
+                        {% else %}
+                            26 tháng 7, 2025
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                <div class="info-divider">•</div>
+                <div class="info-item">
+                    <i class="fas fa-users"></i>
+                    <span>{{ search_params.adults or 1 }} người lớn</span>
+                </div>
+            </div>
+        </div>
+        
+        <button class="search-btn-compact">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+    
+    <!-- Expanded Search Form -->
+    <div class="navbar-search-expanded" id="expanded-search" style="display: none;">
+        <div class="search-header">
+            <div class="navbar-search-tabs">
+                <button type="button" class="search-tab {% if search_params.booking_type == 'hourly' or not search_params.booking_type %}active{% endif %}" onclick="switchSearchTab('hourly')">
+                    <i class="fas fa-clock"></i> Theo giờ
+                </button>
+                <button type="button" class="search-tab {% if search_params.booking_type == 'daily' %}active{% endif %}" onclick="switchSearchTab('daily')">
+                    <i class="fas fa-calendar-day"></i> Theo ngày
+                </button>
+            </div>
+            <button type="button" class="close-btn" onclick="collapseSearch()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Hourly Search Form -->
+        <form id="hourly-search-form" class="search-form-content {% if search_params.booking_type == 'hourly' or not search_params.booking_type %}active{% endif %}" action="{{ url_for('renter.search') }}" method="GET" style="{% if search_params.booking_type == 'daily' %}display: none;{% endif %}">
+            <input type="hidden" name="booking_type" value="hourly">
+            <div class="row g-2">
+                <div class="col-md-2">
+                    <label for="location-hourly" class="form-label">Địa điểm</label>
+                    <input type="text" class="form-control" id="location-hourly" name="location" value="{{ search_params.location or '' }}" placeholder="Nhập địa điểm">
+                </div>
+                <div class="col-md-2">
+                    <label for="checkin-date-hourly" class="form-label">Ngày</label>
+                    <input type="date" class="form-control" id="checkin-date-hourly" name="checkin_date" value="{{ search_params.checkin_date or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="checkin-time-hourly" class="form-label">Giờ nhận</label>
+                    <select class="form-control" id="checkin-time-hourly" name="checkin_time">
+                        {% for hour in range(1, 25) %}
+                            {% set time_str = '%02d:00'|format(hour if hour <= 24 else hour-24) %}
+                            <option value="{{ time_str }}" {% if search_params.checkin_time == time_str %}selected{% endif %}>
+                                {{ time_str }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="duration-hourly" class="form-label">Thời gian thuê</label>
+                    <select class="form-control" id="duration-hourly" name="hours_duration">
+                        <option value="">Chọn thời gian</option>
+                        {% for i in range(1, 13) %}
+                            <option value="{{ i }}" {% if search_params.hours_duration == i|string or search_params.duration == i|string %}selected{% endif %}>{{ i }} giờ</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="guests-hourly" class="form-label">Khách</label>
+                    <input type="text" class="form-control" id="guests-hourly" placeholder="1 người lớn" readonly>
+                    <input type="hidden" name="adults" value="{{ search_params.adults or '1' }}">
+                    <input type="hidden" name="children" value="{{ search_params.children or '0' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+        
+        <!-- Daily Search Form -->
+        <form id="daily-search-form" class="search-form-content {% if search_params.booking_type == 'daily' %}active{% endif %}" action="{{ url_for('renter.search') }}" method="GET" style="{% if search_params.booking_type != 'daily' %}display: none;{% endif %}">
+            <input type="hidden" name="booking_type" value="daily">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label for="location-daily" class="form-label">Địa điểm</label>
+                    <input type="text" class="form-control" id="location-daily" name="location" value="{{ search_params.location or '' }}" placeholder="Nhập địa điểm">
+                </div>
+                <div class="col-md-2">
+                    <label for="checkin-daily" class="form-label">Nhận phòng</label>
+                    <input type="date" class="form-control" id="checkin-daily" name="checkin_date" value="{{ search_params.checkin_date or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="checkout-daily" class="form-label">Trả phòng</label>
+                    <input type="date" class="form-control" id="checkout-daily" name="checkout_date" value="{{ search_params.checkout_date or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="guests-daily" class="form-label">Khách</label>
+                    <input type="text" class="form-control" id="guests-daily" placeholder="1 người lớn" readonly>
+                    <input type="hidden" name="adults" value="{{ search_params.adults or '1' }}">
+                    <input type="hidden" name="children" value="{{ search_params.children or '0' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn search-btn w-100">Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
 {% block head_scripts %}
 <!-- noUiSlider for range sliders -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css">
@@ -9,6 +188,379 @@
 
 {% block extra_css %}
 <style>
+    /* Hide global search container on search page */
+    .global-search-container {
+        display: none !important;
+    }
+    
+    /* Navbar search container */
+    .navbar-search-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        max-width: 600px;
+        width: auto;
+    }
+    
+    /* Compact search bar styling */
+    .navbar-search-compact {
+        background: white;
+        border-radius: 25px;
+        padding: 8px 16px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        border: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        max-width: 550px;
+        min-width: 500px;
+        height: 48px;
+    }
+    
+    .navbar-search-compact:hover {
+        box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+    
+    .search-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+    }
+    
+    .search-tabs-inline {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 2px;
+    }
+    
+    .tab-inline {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 10px;
+        font-weight: 600;
+        color: #999;
+        transition: all 0.3s ease;
+    }
+    
+    .tab-inline.active {
+        color: #8bc34a;
+    }
+    
+    .search-info {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        width: 100%;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 12px;
+        color: #333;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .info-item i {
+        color: #8bc34a;
+        font-size: 11px;
+        flex-shrink: 0;
+    }
+    
+    .info-divider {
+        color: #ddd;
+        font-size: 11px;
+        margin: 0 1px;
+        flex-shrink: 0;
+    }
+    
+    .search-btn-compact {
+        background: #8bc34a;
+        border: none;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .search-btn-compact:hover {
+        background: #689f38;
+        transform: scale(1.05);
+    }
+    
+    /* Expanded search form styling */
+    .navbar-search-expanded {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        border: 1px solid #dee2e6;
+        z-index: 1000;
+        margin-top: 10px;
+        min-width: 700px;
+    }
+    
+    .search-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .close-btn {
+        background: #f8f9fa;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .close-btn:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .navbar-search-tabs {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #dee2e6;
+    }
+    
+    .navbar-search-expanded .search-tab {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: 10px 15px;
+        font-weight: 500;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        justify-content: center;
+    }
+    
+    .navbar-search-expanded .search-tab:hover {
+        background: rgba(139, 195, 74, 0.1);
+        color: #8bc34a;
+    }
+    
+    .navbar-search-expanded .search-tab.active {
+        background: #8bc34a;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .navbar-search-expanded .form-control {
+        height: 40px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0 12px;
+        font-size: 13px;
+        transition: all 0.3s ease;
+    }
+    
+    .navbar-search-expanded .form-control:focus {
+        border-color: #8bc34a;
+        box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.1);
+    }
+    
+    .navbar-search-expanded .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 6px;
+        font-size: 12px;
+    }
+    
+    .navbar-search-expanded .search-btn {
+        background: linear-gradient(135deg, #8bc34a, #689f38);
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        color: white;
+        height: 40px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(139, 195, 74, 0.3);
+        font-size: 13px;
+    }
+    
+    .navbar-search-expanded .search-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(139, 195, 74, 0.4);
+        background: linear-gradient(135deg, #689f38, #558b2f);
+    }
+    
+    .navbar-search-expanded .row {
+        align-items: end;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .navbar-search-compact {
+            min-width: 500px;
+            height: 45px;
+            padding: 8px 15px;
+            gap: 12px;
+        }
+        
+        .tab-inline {
+            font-size: 10px;
+        }
+        
+        .info-item {
+            font-size: 12px;
+        }
+        
+        .search-btn-compact {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .navbar-search-expanded {
+            min-width: 600px;
+            padding: 15px;
+        }
+        
+        .navbar-search-expanded .form-control {
+            height: 35px;
+            font-size: 12px;
+        }
+        
+        .navbar-search-expanded .search-btn {
+            height: 35px;
+            font-size: 12px;
+        }
+        
+        .navbar-search-expanded .form-label {
+            font-size: 11px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .navbar-search-compact {
+            min-width: 400px;
+            height: 40px;
+            padding: 6px 12px;
+            gap: 10px;
+        }
+        
+        .tab-inline {
+            font-size: 9px;
+        }
+        
+        .info-item {
+            font-size: 11px;
+        }
+        
+        .search-btn-compact {
+            width: 25px;
+            height: 25px;
+        }
+        
+        .navbar-search-expanded {
+            min-width: 500px;
+            padding: 12px;
+        }
+        
+        .navbar-search-expanded .form-control {
+            height: 32px;
+            font-size: 11px;
+        }
+        
+        .navbar-search-expanded .search-btn {
+            height: 32px;
+            font-size: 11px;
+        }
+        
+        .navbar-search-expanded .form-label {
+            font-size: 10px;
+        }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .search-navbar {
+            padding: 10px 0;
+        }
+        
+        .search-navbar .search-form {
+            padding: 15px;
+        }
+        
+        .search-navbar .search-tab {
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+        
+        .search-navbar .form-control {
+            height: 40px;
+            font-size: 13px;
+        }
+        
+        .search-navbar .search-btn {
+            height: 40px;
+            font-size: 13px;
+            padding: 8px 16px;
+        }
+        
+        .search-navbar .form-label {
+            font-size: 12px;
+        }
+        
+        .search-navbar .row {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .search-navbar .row > div {
+            width: 100% !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .search-navbar .search-form {
+            padding: 10px;
+        }
+        
+        .search-navbar .search-tabs {
+            margin-bottom: 15px;
+        }
+        
+        .search-navbar .search-tab {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+    }
+    
     .filter-section {
         border-bottom: 1px solid #e9ecef;
         padding-bottom: 20px;
@@ -138,6 +690,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4>
@@ -530,6 +1083,85 @@
         });
         
         // The filter modal is now automatically centered using CSS
+    });
+    
+    // Search Tab Switching
+    function switchSearchTab(tabType) {
+        // Update tab buttons
+        document.querySelectorAll('.search-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`[onclick="switchSearchTab('${tabType}')"]`).classList.add('active');
+        
+        // Update form visibility
+        document.querySelectorAll('.search-form-content').forEach(form => {
+            form.style.display = 'none';
+        });
+        document.getElementById(`${tabType}-search-form`).style.display = 'block';
+    }
+    
+    // DEBUG: Log when script loads
+    console.log('DEBUG: Search page script loaded');
+    
+    // Expand/Collapse search functions
+    function expandSearch() {
+        document.getElementById('compact-search').style.display = 'none';
+        document.getElementById('expanded-search').style.display = 'block';
+    }
+    
+    function collapseSearch() {
+        document.getElementById('expanded-search').style.display = 'none';
+        document.getElementById('compact-search').style.display = 'flex';
+    }
+    
+    // Close expanded search when clicking outside
+    document.addEventListener('click', function(event) {
+        const expandedSearch = document.getElementById('expanded-search');
+        const compactSearch = document.getElementById('compact-search');
+        
+        if (expandedSearch && expandedSearch.style.display === 'block') {
+            if (!expandedSearch.contains(event.target) && !compactSearch.contains(event.target)) {
+                collapseSearch();
+            }
+        }
+    });
+    
+    // Initialize search form with current values
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DEBUG: DOMContentLoaded fired');
+        console.log('DEBUG: Search navbar element:', document.querySelector('.search-navbar'));
+        console.log('DEBUG: Search form element:', document.querySelector('.search-form'));
+        // Set current values for hourly form
+        {% if search_params.booking_type == 'hourly' or not search_params.booking_type %}
+            {% if search_params.adults or search_params.children %}
+                const adultsHourly = {{ search_params.adults or 1 }};
+                const childrenHourly = {{ search_params.children or 0 }};
+                let guestTextHourly = `${adultsHourly} người lớn`;
+                if (childrenHourly > 0) {
+                    guestTextHourly += `, ${childrenHourly} trẻ em`;
+                }
+                const guestHourlyEl = document.getElementById('guests-hourly');
+                if (guestHourlyEl) {
+                    guestHourlyEl.value = guestTextHourly;
+                }
+            {% endif %}
+        {% endif %}
+        
+        // Set current values for daily form
+        {% if search_params.booking_type == 'daily' %}
+            {% if search_params.adults or search_params.children %}
+                const adultsDaily = {{ search_params.adults or 1 }};
+                const childrenDaily = {{ search_params.children or 0 }};
+                let guestTextDaily = `${adultsDaily} người lớn`;
+                if (childrenDaily > 0) {
+                    guestTextDaily += `, ${childrenDaily} trẻ em`;
+                }
+                const guestDailyEl = document.getElementById('guests-daily');
+                if (guestDailyEl) {
+                    guestDailyEl.value = guestTextDaily;
+                }
+            {% endif %}
+        {% endif %}
     });
 </script>
 {% endblock %}

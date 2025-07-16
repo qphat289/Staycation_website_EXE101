@@ -59,6 +59,14 @@
             transform: translateX(-50%) !important;
             flex-direction: row !important;
         }
+        
+        /* Search bar center positioning */
+        .navbar-search-container {
+            position: absolute !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 100 !important;
+        }
 
         .navbar .nav-link {
             border: 1px solid rgba(51, 51, 51, 0.3);
@@ -1501,7 +1509,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto justify-content-center">
+                <!-- Left side nav items -->
+                <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_owner() %}
                             <li class="nav-item">
@@ -1513,6 +1522,10 @@
                         {% endif %}
                     {% endif %}
                 </ul>
+                
+                <!-- Search form block for specific pages (centered) -->
+                {% block navbar_search %}{% endblock %}
+                
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if current_user.is_authenticated %}
                         {% if current_user.role == 'admin' %}
