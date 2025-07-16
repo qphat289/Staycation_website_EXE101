@@ -640,7 +640,7 @@ class Booking(db.Model):
         
         now = datetime.utcnow()
         
-        # Trạng thái hủy
+        # 1. Trạng thái hủy - màu đỏ
         if self.status == 'cancelled':
             return {
                 'text': 'Hủy đặt phòng',
@@ -648,7 +648,7 @@ class Booking(db.Model):
                 'icon': 'x-circle-fill'
             }
         
-        # Chờ thanh toán - chưa thanh toán
+        # 2. Chờ thanh toán - màu xám
         if self.payment_status != 'paid':
             return {
                 'text': 'Chờ thanh toán',
@@ -656,8 +656,7 @@ class Booking(db.Model):
                 'icon': 'clock-fill'
             }
         
-        # Kiểm tra thời gian thực tế trước khi xử lý trạng thái
-        # Nếu đã qua thời gian kết thúc -> Hoàn thành
+        # 3. Hoàn thành - màu xanh lá (đã kết thúc thời gian thuê)
         if now >= self.end_time:
             return {
                 'text': 'Hoàn thành',
@@ -665,30 +664,31 @@ class Booking(db.Model):
                 'icon': 'check-circle-fill'
             }
         
-        # Nếu đã đến thời gian bắt đầu -> Đang tận hưởng
-        if now >= self.start_time:
+        # 4. Đang tận hưởng - màu xanh dương (đang trong thời gian thuê)
+        if self.start_time <= now < self.end_time:
             return {
                 'text': 'Đang tận hưởng',
                 'color': 'info',  # xanh dương
                 'icon': 'heart-fill'
             }
         
-        # Đã thanh toán, chưa đến thời gian thuê
+        # 5. Check-in - màu vàng (trước giờ thuê 15 phút)
         if self.status == 'confirmed' and self.payment_status == 'paid':
-            # Kiểm tra nếu còn 15 phút nữa là check-in
             checkin_time = self.start_time - timedelta(minutes=15)
-            if now >= checkin_time:
+            if checkin_time <= now < self.start_time:
                 return {
                     'text': 'Check-in',
                     'color': 'warning',  # màu vàng
                     'icon': 'door-open-fill'
                 }
-            else:
-                return {
-                    'text': 'Chờ nhận phòng',
-                    'color': 'primary',  # màu cam (sử dụng primary cho orange)
-                    'icon': 'house-check-fill'
-                }
+        
+        # 6. Chờ nhận phòng - màu cam (đã thanh toán, chưa đến thời gian thuê)
+        if self.status == 'confirmed' and self.payment_status == 'paid' and now < self.start_time:
+            return {
+                'text': 'Chờ nhận phòng',
+                'color': 'orange',  # màu cam
+                'icon': 'house-check-fill'
+            }
         
         # Mặc định
         return {

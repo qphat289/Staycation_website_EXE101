@@ -1447,3 +1447,49 @@ body.homepage html body .navbar .nav-link.user-dropdown-container:hover span {
     flex: 1 1 auto;
     max-height: 70vh;
 }
+
+/* ========================================
+   BOOKING STATUS BADGE COLORS
+   ======================================== */
+
+/* Màu cam cho trạng thái "Chờ nhận phòng" */
+.badge.bg-orange {
+    background-color: #ff9800 !important;
+    color: #fff !important;
+}
+
+.badge-orange {
+    background-color: #ff9800 !important;
+    color: #fff !important;
+}
+
+/* Đảm bảo các màu badge khác hiển thị đúng */
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--accent-color) !important;
+    color: var(--text-light) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--warning-color) !important;
+    color: var(--text-light) !important;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+.badge.bg-info {
+    background-color: #17a2b8 !important;
+    color: #fff !important;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+    color: #fff !important;
+}
