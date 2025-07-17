@@ -193,6 +193,178 @@
         display: none !important;
     }
     
+    /* Custom 5-column layout for homestay cards */
+    .col-5cols {
+        flex: 0 0 auto;
+        width: 20%; /* 20% width for 5 columns (100% / 5 = 20%) */
+    }
+
+    /* Responsive behavior for 5-column layout */
+    @media (min-width: 1200px) {
+        .col-xl-5cols {
+            flex: 0 0 auto;
+            width: 20%; /* 5 cards per row on extra large screens */
+        }
+    }
+
+    @media (min-width: 992px) and (max-width: 1199.98px) {
+        .col-lg-5cols {
+            flex: 0 0 auto;
+            width: 20%; /* 5 cards per row on large screens */
+        }
+    }
+
+    /* Fallback for smaller screens - keep existing responsive behavior */
+    @media (max-width: 991.98px) {
+        .col-lg-5cols,
+        .col-xl-5cols {
+            flex: 0 0 auto;
+            width: 50%; /* 2 cards per row on medium screens (same as col-md-6) */
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .col-lg-5cols,
+        .col-xl-5cols {
+            flex: 0 0 auto;
+            width: 100%; /* 1 card per row on small screens */
+        }
+    }
+    
+    /* Homestay Card Styles - matching homepage exactly */
+    .homestay-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        background: white;
+        min-height: 300px; /* Ensure consistent height for 5-column layout */
+    }
+
+    .homestay-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .homestay-card .card-img-container {
+        position: relative;
+        overflow: hidden;
+        height: 160px; /* Reduced height for 5-column layout */
+    }
+
+    .homestay-card .card-img-container img {
+        transition: transform 0.3s ease;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .homestay-card:hover .card-img-container img {
+        transform: scale(1.05);
+    }
+
+    .homestay-card .card-body {
+        padding: 0.875rem; /* Reduced padding for 5-column layout */
+    }
+
+    .homestay-card .card-title {
+        font-size: 0.9rem; /* Reduced for 5-column layout */
+        color: #333;
+        font-weight: 600;
+        flex: 1;
+        margin-right: 0.5rem;
+        line-height: 1.2; /* Tighter line height */
+        margin-bottom: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .homestay-card .location-info {
+        font-size: 0.8rem; /* Smaller for 5-column layout */
+        display: flex;
+        align-items: center;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .homestay-card .location-info i {
+        color: #9ed649;
+        font-size: 0.8rem;
+    }
+
+    .homestay-card .price-info {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .homestay-card .btn-outline-primary {
+        border-color: #9ed649;
+        color: #9ed649;
+        border-radius: 6px;
+        font-size: 0.8rem; /* Smaller for 5-column layout */
+        padding: 0.35rem 0.7rem; /* Reduced padding */
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .homestay-card .btn-outline-primary:hover {
+        background-color: #9ed649;
+        border-color: #9ed649;
+        color: white;
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .homestay-card:nth-child(1) { animation-delay: 0.1s; }
+    .homestay-card:nth-child(2) { animation-delay: 0.2s; }
+    .homestay-card:nth-child(3) { animation-delay: 0.3s; }
+    .homestay-card:nth-child(4) { animation-delay: 0.4s; }
+    .homestay-card:nth-child(5) { animation-delay: 0.5s; }
+    
+    /* Section Header Styles - matching homepage */
+    .section-header {
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+    
+    .section-subtitle {
+        font-size: 1rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .section-title {
+            font-size: 1.5rem;
+        }
+        
+        .section-subtitle {
+            font-size: 0.9rem;
+        }
+    }
+    
     /* Navbar search container */
     .navbar-search-container {
         display: flex;
@@ -923,72 +1095,94 @@
     <!-- This section was duplicated - removed -->
 
     <!-- Home Results -->
-    <div class="row">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="section-header d-flex flex-column flex-md-row justify-content-between align-items-center">
+                <div class="section-title-wrapper text-center text-md-start mb-3 mb-md-0">
+                    <h2 class="section-title mb-0">
+                        {% if homes %}
+                            Tìm thấy {{ homes|length }} kết quả phù hợp
+                        {% else %}
+                            Kết quả tìm kiếm
+                        {% endif %}
+                    </h2>
+                    <p class="section-subtitle text-muted mb-0">
+                        {% if search_params.location %}
+                            Homestay tại {{ search_params.location }}
+                        {% else %}
+                            Khám phá những homestay tuyệt vời
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
         {% if homes %}
             {% for home in homes %}
-            <div class="col-md-4 col-lg-3 mb-4">
-                <div class="card h-100">
-                    {% if home.images and home.images|length > 0 %}
-                        {% set featured_image = None %}
-                        {% for img in home.images %}
-                            {% if img.is_featured %}
-                                {% set featured_image = img %}
-                            {% endif %}
-                        {% endfor %}
-                        
-                        {% if featured_image %}
-                            <img src="{{ url_for('static', filename=featured_image.image_path) }}" 
-                                 class="card-img-top" alt="{{ home.title }}" 
-                                 style="height: 200px; object-fit: cover;">
-                        {% else %}
-                            <img src="{{ url_for('static', filename=home.images[0].image_path) }}" 
-                                 class="card-img-top" alt="{{ home.title }}" 
-                                 style="height: 200px; object-fit: cover;">
-                        {% endif %}
-                    {% else %}
-                        <img src="{{ url_for('static', filename='images/default-home.jpg') }}" 
-                             class="card-img-top" alt="Default Image" 
-                             style="height: 200px; object-fit: cover;">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ home.title }}</h5>
-                        <p class="card-text">{{ home.description|truncate(100) }}</p>
-                        <p class="card-text">
-                            <small class="text-muted">
-                                <i class="bi bi-geo-alt"></i> {{ home.city | format_city }}, {{ home.district | format_district }}
-                            </small>
-                        </p>
-                        <p class="card-text fw-bold">
-                            {% if search_params.booking_type == 'daily' %}
-                                {% if home.price_per_night %}
-                                    {{ "{:,.0f}".format(home.price_per_night) }} VND /ngày
-                                {% elif home.price_per_day %}
-                                    {{ "{:,.0f}".format(home.price_per_day) }} VND /ngày
-                                {% elif home.price_overnight %}
-                                    {{ "{:,.0f}".format(home.price_overnight) }} VND /qua đêm
-                                {% elif home.price_daytime %}
-                                    {{ "{:,.0f}".format(home.price_daytime) }} VND /ban ngày
-                                {% else %}
-                                    Liên hệ để biết giá
-                                {% endif %}
+            <div class="col-xl-5cols col-lg-5cols col-md-6">
+                <div class="card homestay-card h-100">
+                    <div class="card-img-container">
+                        {% if home.images and home.images|length > 0 %}
+                            {% set featured_image = home.images|selectattr('is_featured', 'equalto', True)|list|first %}
+                            {% if featured_image %}
+                                <img src="{{ url_for('static', filename=featured_image.image_path) }}" class="card-img-top" alt="{{ home.title }}">
                             {% else %}
-                                {% if home.price_per_hour %}
-                                    {{ "{:,.0f}".format(home.price_per_hour) }} VND /giờ
-                                {% elif home.price_first_2_hours %}
-                                    {{ "{:,.0f}".format(home.price_first_2_hours) }} VND /2 giờ đầu
-                                {% elif home.price_per_additional_hour %}
-                                    {{ "{:,.0f}".format(home.price_per_additional_hour) }} VND /giờ thêm
-                                {% else %}
-                                    Liên hệ để biết giá
-                                {% endif %}
+                                <img src="{{ url_for('static', filename=home.images[0].image_path) }}" class="card-img-top" alt="{{ home.title }}">
                             {% endif %}
-                        </p>
-                    </div>
-                    <div class="card-footer d-flex justify-content-between">
-                        <a href="{{ url_for('renter.view_home', id=home.id) }}" class="btn btn-sm btn-primary">Chi tiết</a>
-                        {% if current_user.is_authenticated and current_user.is_renter() %}
-                            <a href="{{ url_for('renter.book_home', home_id=home.id) }}" class="btn btn-sm btn-outline-primary">Đặt ngay</a>
+                        {% else %}
+                            <img src="{{ url_for('static', filename='data/system/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
                         {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <!-- Title and detail button -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0">{{ home.title }}</h5>
+                            <a href="{{ url_for('renter.view_home', id=home.id) }}" class="btn btn-outline-primary btn-sm">
+                                Chi tiết
+                            </a>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="location-info mb-3">
+                            <i class="bi bi-geo-alt me-1 text-muted"></i>
+                            <span class="text-muted">{{ home.district | format_district }}, {{ home.city | format_city }}</span>
+                        </div>
+                        
+                        <!-- Price -->
+                        <div class="price-info">
+                            <span class="text-muted">từ </span>
+                            <span class="fw-bold text-dark">
+                                {% if search_params.booking_type == 'daily' %}
+                                    {% if home.display_price_per_night %}
+                                        {{ "{:,.0f}".format(home.display_price_per_night) }} VND/ngày
+                                    {% elif home.price_per_night %}
+                                        {{ "{:,.0f}".format(home.price_per_night) }} VND/ngày
+                                    {% elif home.price_per_day %}
+                                        {{ "{:,.0f}".format(home.price_per_day) }} VND/ngày
+                                    {% elif home.price_overnight %}
+                                        {{ "{:,.0f}".format(home.price_overnight) }} VND/qua đêm
+                                    {% elif home.price_daytime %}
+                                        {{ "{:,.0f}".format(home.price_daytime) }} VND/ban ngày
+                                    {% else %}
+                                        Liên hệ để biết giá
+                                    {% endif %}
+                                {% else %}
+                                    {% if home.display_price %}
+                                        {{ "{:,}".format(home.display_price) }} VND/h
+                                    {% elif home.price_per_hour %}
+                                        {{ "{:,.0f}".format(home.price_per_hour) }} VND/giờ
+                                    {% elif home.price_first_2_hours %}
+                                        {{ "{:,.0f}".format(home.price_first_2_hours) }} VND/2 giờ đầu
+                                    {% elif home.price_per_additional_hour %}
+                                        {{ "{:,.0f}".format(home.price_per_additional_hour) }} VND/giờ thêm
+                                    {% else %}
+                                        Liên hệ để biết giá
+                                    {% endif %}
+                                {% endif %}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
