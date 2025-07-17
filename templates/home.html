@@ -1947,7 +1947,11 @@ document.addEventListener('DOMContentLoaded', function() {
     analyzeImageBrightness();
     
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    // Create date string without timezone issues
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
     
     // Set default date for check-in
     const checkinInput = document.getElementById('checkin');
@@ -2149,10 +2153,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set initial default dates
     function setInitialDates() {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = (today.getMonth() + 1).toString().padStart(2, '0');
+        const day = today.getDate().toString().padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+        
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        const tomorrowYear = tomorrow.getFullYear();
+        const tomorrowMonth = (tomorrow.getMonth() + 1).toString().padStart(2, '0');
+        const tomorrowDay = tomorrow.getDate().toString().padStart(2, '0');
+        const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
         
         // Hourly form is handled by setupDateTimeSelector function
         
@@ -2160,7 +2172,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkinDaily = document.getElementById('checkin-daily');
         const checkoutDaily = document.getElementById('checkout-daily');
         
-        if (checkinDaily) checkinDaily.value = today;
+        if (checkinDaily) checkinDaily.value = todayStr;
         if (checkoutDaily) checkoutDaily.value = tomorrowStr;
     }
     
@@ -3035,7 +3047,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Initialize with default values
         const today = new Date();
-        selectedDate = today.toISOString().split('T')[0];
+        // Create date string without timezone issues
+        const year = today.getFullYear();
+        const month = (today.getMonth() + 1).toString().padStart(2, '0');
+        const day = today.getDate().toString().padStart(2, '0');
+        selectedDate = `${year}-${month}-${day}`;
         selectedTime = '14:00'; // Default time
         selectedDuration = '3'; // Default duration
         
