@@ -1334,7 +1334,7 @@
         margin-bottom: 0;
     }
 
-    .btn-back, .btn-next {
+    .btn-back, .btn-apply {
         padding: 8px 16px;
         border: none;
         border-radius: 6px;
@@ -1352,12 +1352,12 @@
         background: #e9ecef;
     }
 
-    .btn-next {
+    .btn-apply {
         background: #8bc34a;
         color: white;
     }
 
-    .btn-next:hover {
+    .btn-apply:hover {
         background: #7cb342;
     }
 
@@ -1480,6 +1480,233 @@
         background: #e9ecef;
         z-index: 0;
     }
+
+    /* Period Info Styling */
+    .period-info {
+        margin-bottom: 15px;
+    }
+
+    .period-info .alert {
+        background: #e8f5e8;
+        border: 1px solid #8bc34a;
+        color: #2e7d32;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .period-info .alert i {
+        color: #8bc34a;
+        font-size: 16px;
+    }
+
+    .period-info .alert span {
+        flex: 1;
+        font-weight: 500;
+    }
+
+    .period-info .alert small {
+        display: block;
+        margin-top: 4px;
+        opacity: 0.8;
+        font-size: 11px;
+    }
+
+    /* Daily Calendar Styling - Match homepage exactly */
+    .datetime-selector-daily .datetime-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        display: none;
+        padding: 25px;
+        min-width: 950px;
+        max-width: 1100px;
+        min-height: 550px;
+        max-height: 650px;
+    }
+
+    .datetime-selector-daily .datetime-dropdown.show {
+        display: block !important;
+    }
+
+    .datetime-selector-daily .calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .datetime-selector-daily .calendar-months {
+        display: flex;
+        gap: 80px;
+        justify-content: center;
+        flex: 1;
+    }
+
+    .datetime-selector-daily .month-container {
+        text-align: center;
+    }
+
+    .datetime-selector-daily .calendar-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .datetime-selector-daily .calendar-nav {
+        background: none;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        color: #666;
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .datetime-selector-daily .calendar-nav:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .datetime-selector-daily .month-nav {
+        background: none;
+        border: none;
+        font-size: 16px;
+        font-weight: bold;
+        color: #666;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        min-width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .datetime-selector-daily .month-nav:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .datetime-selector-daily .month-nav-placeholder {
+        min-width: 30px;
+        height: 30px;
+    }
+
+    /* Daily Calendar Grid Styling */
+    .datetime-selector-daily .calendar-grid {
+        min-width: 380px;
+        max-width: 450px;
+        margin: 0 auto;
+    }
+
+    .datetime-selector-daily .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        margin-bottom: 12px;
+    }
+
+    .datetime-selector-daily .calendar-weekdays span {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 500;
+        color: #666;
+        padding: 10px 4px;
+    }
+
+    .datetime-selector-daily .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+        gap: 4px;
+        min-height: 240px;
+    }
+
+    .datetime-selector-daily .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-size: 15px;
+        position: relative;
+        min-height: 40px;
+    }
+
+    .datetime-selector-daily .calendar-day:hover {
+        background: #f0f8ff;
+    }
+
+    .datetime-selector-daily .calendar-day.selected {
+        background: #b2e254;
+        color: white;
+    }
+
+    .datetime-selector-daily .calendar-day.in-range {
+        background: rgba(178, 226, 84, 0.2);
+        color: #333;
+    }
+
+    .datetime-selector-daily .calendar-day.disabled {
+        color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .datetime-selector-daily .calendar-day.other-month {
+        color: #ccc;
+    }
+
+    .datetime-selector-daily .calendar-time-info {
+        padding: 12px 16px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .datetime-selector-daily .calendar-time-info small {
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+    .datetime-selector-daily .calendar-time-info i {
+        margin-right: 6px;
+        color: #28a745;
+    }
+
+    .datetime-selector-daily .calendar-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        gap: 12px;
+    }
+
+    .datetime-selector-daily .calendar-footer .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
 </style>
 {% endblock %}
 
@@ -1509,7 +1736,7 @@
                             <input type="hidden" name="checkout_date" id="checkout-date-search" value="{{ search_params.checkout_date or '' }}">
                             <input type="hidden" name="checkout_time" id="checkout-time-search" value="{{ search_params.checkout_time or '' }}">
                             
-                            <!-- Custom Dropdown -->
+                            <!-- Custom Dropdown - Updated to match homepage exactly -->
                             <div class="datetime-dropdown" id="datetime-dropdown-search">
                                 <!-- Step Progress -->
                                 <div class="step-progress">
@@ -1544,10 +1771,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="step-actions">
-                                        <span></span>
-                                        <button type="button" class="btn-next" onclick="nextStepSearch()" disabled>Tiếp tục</button>
-                                    </div>
                                 </div>
 
                                 <!-- Step 2: Time Selection -->
@@ -1574,26 +1797,64 @@
                                             </div>
                                         </div>
                                         
-                                        <div class="time-grid-compact" id="time-grid-search">
-                                            <!-- Time slots will be generated by JavaScript -->
+                                        <div class="time-grid-compact">
+                                            <button type="button" class="time-slot" data-time="01:00">01:00</button>
+                                            <button type="button" class="time-slot" data-time="02:00">02:00</button>
+                                            <button type="button" class="time-slot" data-time="03:00">03:00</button>
+                                            <button type="button" class="time-slot" data-time="04:00">04:00</button>
+                                            <button type="button" class="time-slot" data-time="05:00">05:00</button>
+                                            <button type="button" class="time-slot" data-time="06:00">06:00</button>
+                                            <button type="button" class="time-slot" data-time="07:00">07:00</button>
+                                            <button type="button" class="time-slot" data-time="08:00">08:00</button>
+                                            <button type="button" class="time-slot" data-time="09:00">09:00</button>
+                                            <button type="button" class="time-slot" data-time="10:00">10:00</button>
+                                            <button type="button" class="time-slot" data-time="11:00">11:00</button>
+                                            <button type="button" class="time-slot" data-time="12:00">12:00</button>
+                                            <button type="button" class="time-slot" data-time="13:00">13:00</button>
+                                            <button type="button" class="time-slot active" data-time="14:00">14:00</button>
+                                            <button type="button" class="time-slot" data-time="15:00">15:00</button>
+                                            <button type="button" class="time-slot" data-time="16:00">16:00</button>
+                                            <button type="button" class="time-slot" data-time="17:00">17:00</button>
+                                            <button type="button" class="time-slot" data-time="18:00">18:00</button>
+                                            <button type="button" class="time-slot" data-time="19:00">19:00</button>
+                                            <button type="button" class="time-slot" data-time="20:00">20:00</button>
+                                            <button type="button" class="time-slot" data-time="21:00">21:00</button>
+                                            <button type="button" class="time-slot" data-time="22:00">22:00</button>
+                                            <button type="button" class="time-slot" data-time="23:00">23:00</button>
+                                            <button type="button" class="time-slot" data-time="24:00">24:00</button>
                                         </div>
                                     </div>
                                     <div class="step-actions">
-                                        <button type="button" class="btn-back" onclick="prevStepSearch()">Quay lại</button>
+                                        <button type="button" class="btn btn-back" id="back-step-2-search">Quay lại</button>
                                     </div>
                                 </div>
 
                                 <!-- Step 3: Duration Selection -->
                                 <div class="step-content" id="step-3-search">
                                     <div class="duration-section">
-                                        <h4>Chọn thời gian thuê</h4>
-                                        <div class="duration-grid-compact" id="duration-grid-search">
-                                            <!-- Duration slots will be generated by JavaScript -->
+                                        <h4>Chọn số giờ sử dụng</h4>
+                                        <div class="period-info" id="period-info-search" style="display: none;">
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle"></i>
+                                                <span id="period-text-search"></span>
+                                                <small>Đề xuất: 8 giờ để tận hưởng trọn vẹn</small>
+                                            </div>
+                                        </div>
+                                        <div class="duration-grid-compact">
+                                            <button type="button" class="duration-slot" data-duration="2">2 giờ</button>
+                                            <button type="button" class="duration-slot active" data-duration="3">3 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="4">4 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="5">5 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="6">6 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="7">7 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="8">8 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="9">9 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="10">10 giờ</button>
                                         </div>
                                     </div>
                                     <div class="step-actions">
-                                        <button type="button" class="btn-back" onclick="prevStepSearch()">Quay lại</button>
-                                        <button type="button" class="btn-next" onclick="applyDateTimeSearch()" disabled>Áp dụng</button>
+                                        <button type="button" class="btn btn-back" id="back-step-3-search">Quay lại</button>
+                                        <button type="button" class="btn btn-apply" id="apply-datetime-search">Hoàn tất</button>
                                     </div>
                                 </div>
                             </div>
@@ -1651,25 +1912,117 @@
             <form id="daily-search-form" class="search-form-content {% if search_params.booking_type == 'daily' %}active{% endif %}" action="{{ url_for('renter.search') }}" method="GET" style="{% if search_params.booking_type != 'daily' %}display: none;{% endif %}">
                 <input type="hidden" name="booking_type" value="daily">
                 <div class="row g-3">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="location-daily" class="form-label">Địa điểm</label>
-                        <input type="text" class="form-control" id="location-daily" name="location" value="{{ search_params.location or '' }}" placeholder="Nhập địa điểm">
-                    </div>
-                    <div class="col-md-2">
-                        <label for="checkin-daily" class="form-label">Nhận phòng</label>
-                        <input type="date" class="form-control" id="checkin-daily" name="checkin_date" value="{{ search_params.checkin_date or '' }}">
+                        <div class="location-selector">
+                            <input type="text" class="form-control location-input" id="location-daily" name="location" 
+                                   placeholder="Nhập địa điểm" autocomplete="off" value="{{ search_params.location or '' }}">
+                            <div class="location-dropdown" id="location-dropdown-daily">
+                                <!-- Options will be loaded dynamically from API -->
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-3">
-                        <label for="checkout-daily" class="form-label">Trả phòng</label>
-                        <input type="date" class="form-control" id="checkout-daily" name="checkout_date" value="{{ search_params.checkout_date or '' }}">
+                        <label for="datetime-daily" class="form-label">Nhận phòng</label>
+                        <div class="datetime-selector-daily">
+                            <input type="text" class="form-control datetime-display" id="datetime-daily" 
+                                   value="Chọn ngày" readonly>
+                            <input type="hidden" name="checkin_date" id="checkin-date-daily" value="{{ search_params.checkin_date or '' }}">
+                            <input type="hidden" name="checkout_date" id="checkout-date-daily" value="{{ search_params.checkout_date or '' }}">
+                            
+                            <!-- Custom Calendar Dropdown -->
+                            <div class="datetime-dropdown" id="datetime-dropdown-daily">
+                                <!-- Calendar Navigation -->
+                                <div class="calendar-header">
+                                    <div class="calendar-months">
+                                        <div class="month-container">
+                                            <div class="month-header">
+                                                <button type="button" class="month-nav" id="prev-month-daily">‹</button>
+                                                <span class="calendar-title" id="calendar-title-daily-1">Tháng 7</span>
+                                                <span class="month-nav-placeholder"></span>
+                                            </div>
+                                            <div class="calendar-grid">
+                                                <div class="calendar-weekdays">
+                                                    <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                                                </div>
+                                                <div class="calendar-days" id="calendar-days-daily-1">
+                                                    <!-- Days will be generated by JavaScript -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="month-container">
+                                            <div class="month-header">
+                                                <span class="month-nav-placeholder"></span>
+                                                <span class="calendar-title" id="calendar-title-daily-2">Tháng 8</span>
+                                                <button type="button" class="month-nav" id="next-month-daily">›</button>
+                                            </div>
+                                            <div class="calendar-grid">
+                                                <div class="calendar-weekdays">
+                                                    <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                                                </div>
+                                                <div class="calendar-days" id="calendar-days-daily-2">
+                                                    <!-- Days will be generated by JavaScript -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Time Info and Buttons -->
+                                <div class="calendar-footer">
+                                    <button type="button" class="btn btn-outline-secondary" id="clear-dates-daily">Đặt lại</button>
+                                    <div class="calendar-time-info">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i>
+                                            Nhận phòng: 14:00 • Trả phòng: 12:00 (ngày hôm sau)
+                                        </small>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="apply-dates-daily">Áp dụng</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
+                        <label for="checkout-display-daily" class="form-label">Trả phòng</label>
+                        <div class="datetime-selector-daily">
+                            <input type="text" class="form-control datetime-display" id="checkout-display-daily" 
+                                   value="Chọn ngày" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <label for="guests-daily" class="form-label">Khách</label>
-                        <input type="text" class="form-control" id="guests-daily" placeholder="1 người lớn" readonly>
-                        <input type="hidden" name="adults" value="{{ search_params.adults or '1' }}">
-                        <input type="hidden" name="children" value="{{ search_params.children or '0' }}">
+                        <div class="guest-selector">
+                            <input type="text" class="form-control guest-display" id="guests-daily" 
+                                   value="{% if search_params.adults or search_params.children %}{{ search_params.adults or '1' }} người lớn, {{ search_params.children or '0' }} Trẻ em{% else %}1 người lớn, 0 Trẻ em{% endif %}" readonly>
+                            <div class="guest-dropdown" id="guest-dropdown-daily">
+                                <div class="guest-row">
+                                    <div class="guest-info">
+                                        <i class="bi bi-person-fill text-success"></i>
+                                        <span>Người lớn</span>
+                                    </div>
+                                    <div class="guest-controls">
+                                        <button type="button" class="btn-decrease" data-target="adults">−</button>
+                                        <span class="guest-count" id="adults-count-daily">{{ search_params.adults or '1' }}</span>
+                                        <button type="button" class="btn-increase" data-target="adults">+</button>
+                                    </div>
+                                </div>
+                                <div class="guest-row">
+                                    <div class="guest-info">
+                                        <i class="bi bi-person text-success"></i>
+                                        <span>Trẻ em</span>
+                                    </div>
+                                    <div class="guest-controls">
+                                        <button type="button" class="btn-decrease" data-target="children">−</button>
+                                        <span class="guest-count" id="children-count-daily">{{ search_params.children or '0' }}</span>
+                                        <button type="button" class="btn-increase" data-target="children">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="adults" id="adults-input-daily" value="{{ search_params.adults or '1' }}">
+                            <input type="hidden" name="children" id="children-input-daily" value="{{ search_params.children or '0' }}">
+                        </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <label class="form-label">&nbsp;</label>
                         <button type="submit" class="btn search-btn-compact w-100">Tìm</button>
                     </div>
@@ -2213,11 +2566,17 @@
         console.log('DEBUG: Search navbar element:', document.querySelector('.search-navbar'));
         console.log('DEBUG: Search form element:', document.querySelector('.search-form'));
         
-        // Setup datetime selector
+        // Setup datetime selector - using new homepage-style function
         setupDateTimeSelectorSearch();
+        
+        // Setup daily datetime selector - using homepage-style function  
+        setupDailyDateTimeSelector();
         
         // Setup guest selector
         setupGuestSelector();
+        
+        // Setup guest selector for daily form
+        setupGuestSelectorDaily();
         
         // Set current values for hourly form
         {% if search_params.booking_type == 'hourly' or not search_params.booking_type %}
@@ -2253,310 +2612,302 @@
         
     });
     
-    // DateTime Selector Functions for Search
+    // DateTime Selector Functions for Search - Updated to match homepage exactly
     let isDateTimeSelectorSetup = false;
     function setupDateTimeSelectorSearch() {
         if (isDateTimeSelectorSetup) return; // Prevent multiple setup
         
         const display = document.getElementById('datetime-search');
         const dropdown = document.getElementById('datetime-dropdown-search');
+        const prevMonth = document.getElementById('prev-month-search');
+        const nextMonth = document.getElementById('next-month-search');
+        const calendarTitle = document.getElementById('calendar-title-search');
+        const calendarDays = document.getElementById('calendar-days-search');
+        const applyBtn = document.getElementById('apply-datetime-search');
         
-        if (!display || !dropdown) return;
+        // Check if required elements exist
+        if (!display || !dropdown || !calendarTitle || !calendarDays) {
+            console.log('DateTime selector elements not found');
+            return;
+        }
         
         isDateTimeSelectorSetup = true;
         
+        let currentDate = new Date();
         let selectedDate = null;
-        let selectedTime = null;
-        let selectedDuration = null;
+        let selectedTime = '14:00';
+        let selectedDuration = '3';
         let currentStep = 1;
         
-        // Format initial display if data exists
-        formatInitialDisplay();
+        // Month names in Vietnamese
+        const monthNames = [
+            'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+            'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+        ];
         
-        // Format time from 24h to 12h AM/PM
-        function formatTime12Hour(time24) {
-            const timeParts = time24.split(':');
-            let hours = parseInt(timeParts[0]);
-            const minutes = timeParts[1] || '00';
-            
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // 0 should be 12
-            
-            return `${hours}:${minutes} ${ampm}`;
-        }
+        // Initialize from server data
+        initializeFromServerData();
         
-        // Format initial display from server data
-        function formatInitialDisplay() {
-            const checkinDateInput = document.getElementById('checkin-date-search');
-            const checkinTimeInput = document.getElementById('checkin-time-search');
-            const durationInput = document.getElementById('hours-duration-search');
-            
-            if (checkinDateInput.value && checkinTimeInput.value) {
-                console.log('Server checkin date:', checkinDateInput.value);
-                console.log('Server checkin time:', checkinTimeInput.value);
-                
-                // Parse date properly to avoid timezone issues
-                const dateParts = checkinDateInput.value.split('-');
-                const date = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
-                console.log('Parsed date for display:', date);
-                
-                const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-                const dayName = dayNames[date.getDay()];
-                
-                // Format time to 12h AM/PM
-                const timeDisplay = formatTime12Hour(checkinTimeInput.value);
-                
-                const displayText = `${dayName} - ${date.getDate()} tháng ${date.getMonth() + 1} - ${timeDisplay}`;
-                display.value = displayText;
-                
-                // Set selected values for dropdown
-                selectedDate = checkinDateInput.value;
-                selectedTime = checkinTimeInput.value;
-                selectedDuration = durationInput.value || '3'; // Default duration
-                
-                // Also format checkout display
-                updateCheckoutDisplay();
-            } else {
-                // If no server data, set default to today
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = (today.getMonth() + 1).toString().padStart(2, '0');
-                const day = today.getDate().toString().padStart(2, '0');
-                const todayStr = `${year}-${month}-${day}`;
-                
-                console.log('No server data, setting today:', todayStr);
-                
-                // Set hidden inputs
-                checkinDateInput.value = todayStr;
-                checkinTimeInput.value = '14:00'; // Default 2:00 PM
-                
-                // Set selected values
-                selectedDate = todayStr;
-                selectedTime = '14:00';
-                selectedDuration = '3';
-                
-                // Update display
-                const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-                const dayName = dayNames[today.getDay()];
-                const displayText = `${dayName} - ${today.getDate()} tháng ${today.getMonth() + 1} - 2:00 PM`;
-                display.value = displayText;
-            }
-        }
-        
-        // Update checkout display from server data
-        function updateCheckoutDisplay() {
-            const checkoutEl = document.getElementById('checkout-hourly');
-            const checkoutDateInput = document.getElementById('checkout-date-search');
-            const checkoutTimeInput = document.getElementById('checkout-time-search');
-            
-            if (checkoutDateInput && checkoutTimeInput && checkoutDateInput.value && checkoutTimeInput.value) {
-                const checkoutDate = new Date(checkoutDateInput.value + 'T' + checkoutTimeInput.value);
-                const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-                const checkoutDayName = dayNames[checkoutDate.getDay()];
-                
-                // Format checkout time to 12h AM/PM
-                const checkoutHours = checkoutDate.getHours();
-                const checkoutMinutes = checkoutDate.getMinutes();
-                const checkoutAmpm = checkoutHours >= 12 ? 'PM' : 'AM';
-                const checkout12Hour = checkoutHours % 12 || 12;
-                const checkoutTimeDisplay = `${checkout12Hour}:${checkoutMinutes.toString().padStart(2, '0')}${checkoutAmpm}`;
-                
-                const checkoutDisplayText = `${checkoutDayName} - ${checkoutDate.getDate()} tháng ${checkoutDate.getMonth() + 1} - ${checkoutTimeDisplay}`;
-                
-                if (checkoutEl) {
-                    checkoutEl.value = checkoutDisplayText;
+        // Toggle dropdown
+        if (display && dropdown) {
+            display.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent event bubbling to avoid closing expanded search
+                dropdown.classList.toggle('show');
+                if (dropdown.classList.contains('show')) {
+                    renderCalendar();
+                    setupTimeSlots();
+                    setupDurationSlots();
                 }
-            }
+            });
         }
         
-        // Show/hide dropdown
-        display.addEventListener('click', function(e) {
-            console.log('DateTime display clicked');
-            e.stopPropagation(); // Prevent event bubbling to avoid closing expanded search
-            dropdown.classList.toggle('show');
-            if (dropdown.classList.contains('show')) {
-                console.log('Dropdown opened, generating calendar');
-                generateCalendar();
-                setupCalendarNavigation();
-                updateButtonStates();
-            }
-        });
+        // Close dropdown when clicking outside
+        if (display && dropdown) {
+            document.addEventListener('click', function(e) {
+                if (!display.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
         
         // Prevent dropdown from closing expanded search
         dropdown.addEventListener('click', function(e) {
             e.stopPropagation();
         });
         
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!display.contains(e.target) && !dropdown.contains(e.target)) {
+        // Calendar navigation
+        if (prevMonth) {
+            prevMonth.addEventListener('click', function(e) {
+                e.stopPropagation();
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+        }
+        
+        if (nextMonth) {
+            nextMonth.addEventListener('click', function(e) {
+                e.stopPropagation();
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+        }
+        
+        // Apply button
+        if (applyBtn) {
+            applyBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                updateDisplay();
+                updateHiddenInputs();
+                updateCheckoutDisplay();
                 dropdown.classList.remove('show');
+                
+                // Reset to step 1 for next time
+                currentStep = 1;
+                showStep(1);
+            });
+        }
+        
+        // Back buttons
+        const backStep2 = document.getElementById('back-step-2-search');
+        const backStep3 = document.getElementById('back-step-3-search');
+        
+        if (backStep2) {
+            backStep2.addEventListener('click', function(e) {
+                e.stopPropagation();
+                currentStep = 1;
+                showStep(1);
+            });
+        }
+        
+        if (backStep3) {
+            backStep3.addEventListener('click', function(e) {
+                e.stopPropagation();
+                currentStep = 2;
+                showStep(2);
+            });
+        }
+        
+        // Initialize from server data
+        function initializeFromServerData() {
+            const checkinDateInput = document.getElementById('checkin-date-search');
+            const checkinTimeInput = document.getElementById('checkin-time-search');
+            const durationInput = document.getElementById('hours-duration-search');
+            
+            if (checkinDateInput.value && checkinTimeInput.value) {
+                selectedDate = checkinDateInput.value;
+                selectedTime = checkinTimeInput.value;
+                selectedDuration = durationInput.value || '3';
+                
+                updateDisplay();
+                updateCheckoutDisplay();
+            } else {
+                // Set default to today
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = (today.getMonth() + 1).toString().padStart(2, '0');
+                const day = today.getDate().toString().padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
+                
+                selectedDate = todayStr;
+                selectedTime = '14:00';
+                selectedDuration = '3';
+                
+                updateDisplay();
+                updateHiddenInputs();
+                updateCheckoutDisplay();
             }
-        });
+        }
         
-        // Calendar state
-        let currentCalendarDate = new Date();
-        
-        // Generate calendar
-        function generateCalendar() {
+        // Render calendar
+        function renderCalendar() {
+            if (!calendarTitle || !calendarDays) return;
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            calendarTitle.textContent = monthNames[month] + ', ' + year;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
             const today = new Date();
-            const currentMonth = currentCalendarDate.getMonth();
-            const currentYear = currentCalendarDate.getFullYear();
-            
-            const titleEl = document.getElementById('calendar-title-search');
-            const daysEl = document.getElementById('calendar-days-search');
-            
-            if (!titleEl || !daysEl) return;
-            
-            const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-                              'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-            
-            titleEl.textContent = `${monthNames[currentMonth]}, ${currentYear}`;
-            
-            const firstDay = new Date(currentYear, currentMonth, 1);
-            const lastDay = new Date(currentYear, currentMonth + 1, 0);
-            const startDate = new Date(firstDay);
-            startDate.setDate(startDate.getDate() - (firstDay.getDay() + 6) % 7);
             
             let calendarHTML = '';
-            const currentDate = new Date(startDate);
             
-            for (let i = 0; i < 42; i++) {
-                // Create date string without timezone issues
-                const year = currentDate.getFullYear();
-                const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-                const day = currentDate.getDate().toString().padStart(2, '0');
-                const dayStr = `${year}-${month}-${day}`;
+            // Add empty cells for days before first day of month (Monday-based week)
+            const firstDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0 system
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const prevDate = new Date(year, month, 1 - (firstDayOfWeek - i));
+                const prevDateStr = prevDate.getFullYear() + '-' + 
+                                  (prevDate.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                  prevDate.getDate().toString().padStart(2, '0');
+                calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${prevDateStr}">${prevDate.getDate()}</button>`;
+            }
+            
+            // Check if current viewing month is past, current, or future
+            const currentViewingMonth = new Date(year, month, 1);
+            const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const isPastMonth = currentViewingMonth < currentMonth;
+            const isCurrentMonth = currentViewingMonth.getTime() === currentMonth.getTime();
+            
+            // Add days of current month
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const date = new Date(year, month, day);
+                const dateStr = year + '-' + (month + 1).toString().padStart(2, '0') + '-' + day.toString().padStart(2, '0');
                 
-                const isToday = currentDate.toDateString() === today.toDateString();
-                const isCurrentMonth = currentDate.getMonth() === currentMonth;
-                const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-                const isPast = currentDateOnly < todayDateOnly;
-                const isSelected = selectedDate === dayStr;
+                // Compare dates without time to avoid timezone issues
+                const todayStr = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + today.getDate().toString().padStart(2, '0');
+                const isToday = dateStr === todayStr;
+                const isPastDay = dateStr < todayStr;
+                const isSelected = selectedDate === dateStr;
                 
                 let classes = 'calendar-day';
-                if (!isCurrentMonth) classes += ' other-month';
-                if (isPast) classes += ' disabled';
+                let isDisabled = false;
+                
+                if (isPastMonth) {
+                    // Past month: disable all days
+                    classes += ' disabled';
+                    isDisabled = true;
+                } else if (isCurrentMonth && isPastDay) {
+                    // Current month: only disable past days
+                    classes += ' disabled';
+                    isDisabled = true;
+                }
+                // Future month: enable all days (no additional logic needed)
+                
                 if (isSelected) classes += ' selected';
                 
-                calendarHTML += `<button type="button" class="${classes}" data-date="${dayStr}" ${isPast ? 'disabled' : ''}>${currentDate.getDate()}</button>`;
-                currentDate.setDate(currentDate.getDate() + 1);
+                calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" ${isDisabled ? 'disabled' : ''}>${day}</button>`;
             }
             
-            daysEl.innerHTML = calendarHTML;
+            // Add empty cells for days after last day of month to ensure exactly 6 rows (42 cells total)
+            const cellsUsed = firstDayOfWeek + lastDay.getDate();
+            const totalCells = 42; // Always 6 rows × 7 days = 42 cells
+            for (let i = cellsUsed; i < totalCells; i++) {
+                const nextDate = new Date(year, month + 1, i - cellsUsed + 1);
+                const nextDateStr = nextDate.getFullYear() + '-' + 
+                                  (nextDate.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                  nextDate.getDate().toString().padStart(2, '0');
+                calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${nextDateStr}">${nextDate.getDate()}</button>`;
+            }
             
-            // Add click handlers
-            daysEl.querySelectorAll('.calendar-day').forEach(day => {
-                day.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Prevent event bubbling
-                    if (this.disabled) return;
+            calendarDays.innerHTML = calendarHTML;
+            
+            // Add click handlers for calendar days
+            calendarDays.addEventListener('click', function(e) {
+                if (e.target && e.target.classList && e.target.classList.contains('calendar-day') && !e.target.disabled) {
+                    e.stopPropagation();
                     
-                    selectedDate = this.dataset.date;
-                    generateCalendar(); // Refresh to show selection
+                    // Remove selected class from all days
+                    const allDays = calendarDays.querySelectorAll('.calendar-day');
+                    allDays.forEach(day => {
+                        if (day && day.classList) {
+                            day.classList.remove('selected');
+                        }
+                    });
                     
-                    // Enable next button
-                    const nextBtn = document.querySelector('#step-1-search .btn-next');
-                    if (nextBtn) {
-                        nextBtn.disabled = false;
-                        nextBtn.style.opacity = '1';
+                    // Add selected class to clicked day
+                    if (e.target.classList) {
+                        e.target.classList.add('selected');
                     }
                     
-                    // Auto-proceed to next step after selecting date (like homepage)
+                    selectedDate = e.target.dataset.date;
+                    console.log('Date selected:', selectedDate);
+                    
+                    // Update display immediately when date is selected
+                    updateDisplay();
+                    updateHiddenInputs();
+                    updateCheckoutDisplay();
+                    
+                    // Auto-proceed to next step after selecting date
                     setTimeout(() => {
                         console.log('Auto-proceeding to step 2 after date selection');
-                        if (window.nextStepSearch) {
-                            window.nextStepSearch();
-                        }
+                        currentStep = 2;
+                        showStep(2);
                     }, 300);
-                });
+                }
             });
         }
         
-        // Setup calendar navigation
-        function setupCalendarNavigation() {
-            const prevBtn = document.getElementById('prev-month-search');
-            const nextBtn = document.getElementById('next-month-search');
+        // Setup time slots
+        function setupTimeSlots() {
+            const timeSlots = document.querySelectorAll('.time-slot');
+            const periodBtns = document.querySelectorAll('.period-btn');
             
-            if (prevBtn) {
-                prevBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
-                    generateCalendar();
-                });
-            }
-            
-            if (nextBtn) {
-                nextBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
-                    generateCalendar();
-                });
-            }
-        }
-        
-        // Generate time slots
-        function generateTimeSlots() {
-            const timeGrid = document.getElementById('time-grid-search');
-            if (!timeGrid) return;
-            
-            // Generate time slots from 1:00 to 24:00 (like homepage)
-            const times = [];
-            for (let hour = 1; hour <= 24; hour++) {
-                times.push(`${hour.toString().padStart(2, '0')}:00`);
-            }
-            
-            let timeHTML = '';
-            times.forEach(time => {
-                const isSelected = selectedTime === time;
-                timeHTML += `<button type="button" class="time-slot ${isSelected ? 'active' : ''}" data-time="${time}">${time}</button>`;
-            });
-            
-            timeGrid.innerHTML = timeHTML;
-            
-            // Setup special period buttons
-            setupSpecialPeriods();
-            
-            // Add click handlers for time slots
-            timeGrid.querySelectorAll('.time-slot').forEach(slot => {
+            // Handle time slot clicks
+            timeSlots.forEach(slot => {
                 slot.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Prevent event bubbling
+                    e.stopPropagation();
                     
                     // Remove active from all time slots and period buttons
-                    timeGrid.querySelectorAll('.time-slot').forEach(s => s.classList.remove('active'));
-                    document.querySelectorAll('.period-btn').forEach(p => p.classList.remove('active'));
+                    timeSlots.forEach(s => s.classList.remove('active'));
+                    periodBtns.forEach(p => p.classList.remove('active'));
                     
                     // Add active to clicked time slot
                     this.classList.add('active');
                     selectedTime = this.dataset.time;
                     
                     // Clear selected period
-                    window.selectedPeriod = null;
+                    window.selectedPeriodSearch = null;
                     
                     console.log('Time selected:', selectedTime);
                     
-                    // Auto-proceed to next step after selecting time (like homepage)
+                    // Auto-proceed to next step after selecting time
                     setTimeout(() => {
                         console.log('Auto-proceeding to step 3 after time selection');
-                        if (window.nextStepSearch) {
-                            window.nextStepSearch();
-                        }
+                        currentStep = 3;
+                        showStep(3);
                     }, 300);
                 });
             });
-        }
-        
-        // Setup special period buttons
-        function setupSpecialPeriods() {
-            const periodBtns = document.querySelectorAll('.period-btn');
+            
+            // Handle special period buttons
             periodBtns.forEach(btn => {
                 btn.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Prevent event bubbling
+                    e.stopPropagation();
                     
                     // Remove active from all period buttons and time slots
                     periodBtns.forEach(p => p.classList.remove('active'));
-                    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('active'));
+                    timeSlots.forEach(s => s.classList.remove('active'));
                     
                     // Add active to clicked period button
                     this.classList.add('active');
@@ -2567,13 +2918,13 @@
                     selectedTime = startTime;
                     
                     // Store the selected period for later use
-                    window.selectedPeriod = period;
+                    window.selectedPeriodSearch = period;
                     
-                    // Auto-set duration for special periods and skip step 3
+                    // Auto-set duration for special periods and apply immediately
                     if (period === 'overnight') {
-                        selectedDuration = '10'; // 10 hours for overnight
+                        selectedDuration = '8'; // 8 hours for overnight
                     } else if (period === 'daytime') {
-                        selectedDuration = '11'; // 11 hours for daytime (9h-20h)
+                        selectedDuration = '8'; // 8 hours for daytime
                     }
                     
                     console.log('Period selected:', period, 'Start time:', startTime, 'Duration:', selectedDuration);
@@ -2581,7 +2932,7 @@
                     // Update display and apply immediately for special periods
                     updateDisplay();
                     updateHiddenInputs();
-                    updateCheckoutTime();
+                    updateCheckoutDisplay();
                     
                     // Skip step 3 and close dropdown directly for special periods
                     setTimeout(() => {
@@ -2596,94 +2947,43 @@
             });
         }
         
-        // Generate duration slots
-        function generateDurationSlots() {
-            const durationGrid = document.getElementById('duration-grid-search');
-            if (!durationGrid) return;
+        // Setup duration slots
+        function setupDurationSlots() {
+            const durationSlots = document.querySelectorAll('.duration-slot');
             
-            const durations = [
-                { value: '2', label: '2 giờ' },
-                { value: '3', label: '3 giờ' },
-                { value: '4', label: '4 giờ' },
-                { value: '5', label: '5 giờ' },
-                { value: '6', label: '6 giờ' },
-                { value: '7', label: '7 giờ' },
-                { value: '8', label: '8 giờ' },
-                { value: '9', label: '9 giờ' },
-                { value: '10', label: '10 giờ' }
-            ];
-            
-            let durationHTML = '';
-            durations.forEach(duration => {
-                const isSelected = selectedDuration === duration.value;
-                durationHTML += `<button type="button" class="duration-slot ${isSelected ? 'active' : ''}" data-duration="${duration.value}">${duration.label}</button>`;
-            });
-            
-            durationGrid.innerHTML = durationHTML;
-            
-            // Add click handlers
-            durationGrid.querySelectorAll('.duration-slot').forEach(slot => {
+            durationSlots.forEach(slot => {
                 slot.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Prevent event bubbling
+                    e.stopPropagation();
+                    
+                    // Remove active from all duration slots
+                    durationSlots.forEach(s => s.classList.remove('active'));
+                    
+                    // Add active to clicked duration slot
+                    this.classList.add('active');
                     selectedDuration = this.dataset.duration;
-                    generateDurationSlots(); // Refresh to show selection
                     
-                    // Enable apply button
-                    const applyBtn = document.querySelector('#step-3-search .btn-next');
-                    if (applyBtn) {
-                        applyBtn.disabled = false;
-                        applyBtn.style.opacity = '1';
-                    }
+                    console.log('Duration selected:', selectedDuration);
                     
-                    // Auto-apply after selecting duration (like homepage)
+                    // Auto-apply after selecting duration
                     setTimeout(() => {
                         console.log('Auto-applying after duration selection');
-                        if (window.applyDateTimeSearch) {
-                            window.applyDateTimeSearch();
-                        }
+                        updateDisplay();
+                        updateHiddenInputs();
+                        updateCheckoutDisplay();
+                        dropdown.classList.remove('show');
+                        
+                        // Reset to step 1 for next time
+                        currentStep = 1;
+                        showStep(1);
                     }, 300);
                 });
             });
         }
         
-        // Step navigation functions
-        window.nextStepSearch = function() {
-            if (currentStep === 1 && selectedDate) {
-                currentStep = 2;
-                showStep(2);
-                generateTimeSlots();
-            } else if (currentStep === 2 && selectedTime) {
-                currentStep = 3;
-                showStep(3);
-                generateDurationSlots();
-            }
-        };
-        
-        window.prevStepSearch = function() {
-            if (currentStep > 1) {
-                currentStep--;
-                showStep(currentStep);
-                
-                // Update button states
-                updateButtonStates();
-            }
-        };
-        
-        window.applyDateTimeSearch = function() {
-            if (selectedDate && selectedTime && selectedDuration) {
-                updateDisplay();
-                updateHiddenInputs();
-                updateCheckoutTime();
-                dropdown.classList.remove('show');
-                
-                // Reset to step 1 for next time
-                currentStep = 1;
-                showStep(1);
-            }
-        };
-        
         // Show specific step
         function showStep(step) {
+            currentStep = step;
+            
             // Update step progress
             document.querySelectorAll('#datetime-dropdown-search .step').forEach((el, index) => {
                 el.classList.toggle('active', index + 1 === step);
@@ -2693,51 +2993,29 @@
             document.querySelectorAll('#datetime-dropdown-search .step-content').forEach((el, index) => {
                 el.classList.toggle('active', index + 1 === step);
             });
-            
-            // Update button states
-            updateButtonStates();
-        }
-        
-        // Update button states based on current step and selections
-        function updateButtonStates() {
-            const step1NextBtn = document.querySelector('#step-1-search .btn-next');
-            const step2NextBtn = document.querySelector('#step-2-search .btn-next');
-            const step3ApplyBtn = document.querySelector('#step-3-search .btn-next');
-            
-            if (step1NextBtn) {
-                step1NextBtn.disabled = !selectedDate;
-                step1NextBtn.style.opacity = selectedDate ? '1' : '0.5';
-            }
-            
-            if (step2NextBtn) {
-                step2NextBtn.disabled = !selectedTime;
-                step2NextBtn.style.opacity = selectedTime ? '1' : '0.5';
-            }
-            
-            if (step3ApplyBtn) {
-                step3ApplyBtn.disabled = !selectedDuration;
-                step3ApplyBtn.style.opacity = selectedDuration ? '1' : '0.5';
-            }
         }
         
         // Update display text
         function updateDisplay() {
+            if (!display) return;
+            
             if (selectedDate && selectedTime && selectedDuration) {
-                console.log('selectedDate:', selectedDate);
-                // Parse date properly to avoid timezone issues
+                // Parse date parts manually to avoid timezone issues
                 const dateParts = selectedDate.split('-');
-                console.log('dateParts:', dateParts);
-                const date = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
-                console.log('parsed date:', date);
+                const year = parseInt(dateParts[0]);
+                const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+                const day = parseInt(dateParts[2]);
+                
+                const date = new Date(year, month, day);
                 const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
                 const dayName = dayNames[date.getDay()];
                 
                 let timeDisplay = '';
-                if (window.selectedPeriod) {
+                if (window.selectedPeriodSearch) {
                     // Display special period info
-                    if (window.selectedPeriod === 'overnight') {
+                    if (window.selectedPeriodSearch === 'overnight') {
                         timeDisplay = '9:00 PM';
-                    } else if (window.selectedPeriod === 'daytime') {
+                    } else if (window.selectedPeriodSearch === 'daytime') {
                         timeDisplay = '9:00 AM';
                     }
                 } else {
@@ -2745,14 +3023,76 @@
                     timeDisplay = formatTime12Hour(selectedTime);
                 }
                 
-                const displayText = `${dayName} - ${date.getDate()} tháng ${date.getMonth() + 1} - ${timeDisplay}`;
-                display.value = displayText;
+                display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeDisplay}`;
             } else {
+                // Reset display if no date selected
                 display.value = 'Hãy chọn ngày và giờ';
             }
         }
         
-
+        // Update checkout display
+        function updateCheckoutDisplay() {
+            if (selectedDate && selectedTime && selectedDuration) {
+                const checkoutEl = document.getElementById('checkout-hourly');
+                
+                if (!checkoutEl) return;
+                
+                // Parse date parts manually to avoid timezone issues
+                const dateParts = selectedDate.split('-');
+                const year = parseInt(dateParts[0]);
+                const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+                const day = parseInt(dateParts[2]);
+                
+                // Parse time parts
+                const timeParts = selectedTime.split(':');
+                const hours = parseInt(timeParts[0]);
+                const minutes = parseInt(timeParts[1]) || 0;
+                
+                const checkinDateTime = new Date(year, month, day, hours, minutes);
+                let checkoutDateTime;
+                
+                // Handle special periods
+                if (window.selectedPeriodSearch === 'overnight') {
+                    // For overnight, checkout is at 8h the next day regardless of duration
+                    checkoutDateTime = new Date(year, month, day + 1, 8, 0);
+                } else if (window.selectedPeriodSearch === 'daytime') {
+                    // For daytime, checkout is at 20h (8PM) the same day regardless of duration
+                    checkoutDateTime = new Date(year, month, day, 20, 0);
+                } else {
+                    // Normal calculation: checkin time + duration
+                    checkoutDateTime = new Date(checkinDateTime.getTime() + (parseInt(selectedDuration) * 60 * 60 * 1000));
+                }
+                
+                const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+                const checkoutDayName = dayNames[checkoutDateTime.getDay()];
+                const checkoutTimeStr = checkoutDateTime.getHours().toString().padStart(2, '0') + ':' + 
+                                       checkoutDateTime.getMinutes().toString().padStart(2, '0');
+                
+                let checkoutDisplayText = '';
+                if (window.selectedPeriodSearch === 'overnight') {
+                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 AM`;
+                } else if (window.selectedPeriodSearch === 'daytime') {
+                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 PM`;
+                } else {
+                    // Format checkout time to AM/PM
+                    const checkoutTimeFormatted = formatTime12Hour(checkoutTimeStr);
+                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeFormatted}`;
+                }
+                
+                checkoutEl.value = checkoutDisplayText;
+                
+                // Update hidden checkout fields - format for backend
+                const checkoutDateFormatted = checkoutDateTime.getFullYear() + '-' + 
+                                            (checkoutDateTime.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                            checkoutDateTime.getDate().toString().padStart(2, '0');
+                
+                const checkoutDateEl = document.getElementById('checkout-date-hourly');
+                const checkoutTimeEl = document.getElementById('checkout-time-hourly');
+                
+                if (checkoutDateEl) checkoutDateEl.value = checkoutDateFormatted;
+                if (checkoutTimeEl) checkoutTimeEl.value = checkoutTimeStr;
+            }
+        }
         
         // Update hidden inputs
         function updateHiddenInputs() {
@@ -2765,51 +3105,17 @@
             if (hoursDurationEl) hoursDurationEl.value = selectedDuration || '';
         }
         
-        // Update checkout time
-        function updateCheckoutTime() {
-            if (selectedDate && selectedTime && selectedDuration) {
-                const checkoutEl = document.getElementById('checkout-hourly');
-                const checkoutDateEl = document.getElementById('checkout-date-hourly');
-                const checkoutTimeEl = document.getElementById('checkout-time-hourly');
-                
-                if (!checkoutEl || !checkoutDateEl || !checkoutTimeEl) return;
-                
-                const dateParts = selectedDate.split('-');
-                const year = parseInt(dateParts[0]);
-                const month = parseInt(dateParts[1]) - 1;
-                const day = parseInt(dateParts[2]);
-                
-                const timeParts = selectedTime.split(':');
-                const hours = parseInt(timeParts[0]);
-                const minutes = parseInt(timeParts[1]) || 0;
-                
-                const checkinDateTime = new Date(year, month, day, hours, minutes);
-                let checkoutDateTime;
-                
-                if (selectedDuration === 'overnight') {
-                    checkoutDateTime = new Date(year, month, day + 1, 8, 0);
-                } else if (selectedDuration === 'daytime') {
-                    checkoutDateTime = new Date(year, month, day, 20, 0);
-                } else {
-                    checkoutDateTime = new Date(checkinDateTime.getTime() + (parseInt(selectedDuration) * 60 * 60 * 1000));
-                }
-                
-                const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-                const checkoutDayName = dayNames[checkoutDateTime.getDay()];
-                
-                // Format checkout time to 12h AM/PM
-                const checkoutHours = checkoutDateTime.getHours();
-                const checkoutMinutes = checkoutDateTime.getMinutes();
-                const checkoutAmpm = checkoutHours >= 12 ? 'PM' : 'AM';
-                const checkout12Hour = checkoutHours % 12 || 12;
-                const checkoutTimeDisplay = `${checkout12Hour}:${checkoutMinutes.toString().padStart(2, '0')} ${checkoutAmpm}`;
-                
-                const checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeDisplay}`;
-                
-                checkoutEl.value = checkoutDisplayText;
-                checkoutDateEl.value = checkoutDateTime.toISOString().split('T')[0];
-                checkoutTimeEl.value = `${checkoutDateTime.getHours().toString().padStart(2, '0')}:${checkoutDateTime.getMinutes().toString().padStart(2, '0')}`;
-            }
+        // Format time from 24h to 12h AM/PM
+        function formatTime12Hour(time24) {
+            const timeParts = time24.split(':');
+            let hours = parseInt(timeParts[0]);
+            const minutes = timeParts[1] || '00';
+            
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 should be 12
+            
+            return `${hours}:${minutes} ${ampm}`;
         }
     }
     
@@ -2889,6 +3195,373 @@
         
         // Initialize button states
         updateGuestButtonStates();
+    }
+    
+    // Daily Date Time Selector for Search page - Copy from homepage
+    function setupDailyDateTimeSelector() {
+        console.log('Setting up daily date time selector for search page...');
+        
+        const checkinInput = document.getElementById('datetime-daily');
+        const checkoutInput = document.getElementById('checkout-display-daily');
+        const calendarDropdown = document.getElementById('datetime-dropdown-daily');
+        
+        if (!checkinInput || !checkoutInput || !calendarDropdown) {
+            console.log('Daily form elements not found:', {
+                checkinInput: !!checkinInput,
+                checkoutInput: !!checkoutInput, 
+                calendarDropdown: !!calendarDropdown
+            });
+            return;
+        }
+        
+        console.log('Daily form elements found successfully');
+        
+        let isDropdownOpen = false;
+        let selectedCheckin = null;
+        let selectedCheckout = null;
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        
+        const monthNames = [
+            'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+            'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+        ];
+        
+        // Initialize from server data if available
+        initializeDailyFromServerData();
+        
+        // Show/hide dropdown
+        function toggleDropdown() {
+            console.log('Toggling dropdown, current state:', isDropdownOpen);
+            isDropdownOpen = !isDropdownOpen;
+            calendarDropdown.style.display = isDropdownOpen ? 'block' : 'none';
+            if (isDropdownOpen) {
+                renderCalendar();
+            }
+        }
+        
+        // Initialize from server data
+        function initializeDailyFromServerData() {
+            const checkinDateInput = document.getElementById('checkin-date-daily');
+            const checkoutDateInput = document.getElementById('checkout-date-daily');
+            
+            if (checkinDateInput.value && checkoutDateInput.value) {
+                selectedCheckin = new Date(checkinDateInput.value + 'T00:00:00');
+                selectedCheckout = new Date(checkoutDateInput.value + 'T00:00:00');
+                
+                checkinInput.value = formatDate(selectedCheckin);
+                checkoutInput.value = formatDate(selectedCheckout);
+            } else {
+                // Set defaults
+                checkinInput.value = 'Chọn ngày';
+                checkoutInput.value = 'Chọn ngày';
+            }
+        }
+        
+        // Render calendar for both months
+        function renderCalendar() {
+            console.log('Rendering calendar...');
+            const calendarDays1 = document.getElementById('calendar-days-daily-1');
+            const calendarDays2 = document.getElementById('calendar-days-daily-2');
+            const calendarTitle1 = document.getElementById('calendar-title-daily-1');
+            const calendarTitle2 = document.getElementById('calendar-title-daily-2');
+            
+            if (!calendarDays1 || !calendarDays2 || !calendarTitle1 || !calendarTitle2) {
+                console.log('Calendar elements not found');
+                return;
+            }
+            
+            // Render first month
+            renderMonth(calendarDays1, calendarTitle1, currentMonth, currentYear);
+            
+            // Render second month
+            let nextMonth = currentMonth + 1;
+            let nextYear = currentYear;
+            if (nextMonth > 11) {
+                nextMonth = 0;
+                nextYear++;
+            }
+            renderMonth(calendarDays2, calendarTitle2, nextMonth, nextYear);
+        }
+        
+        // Render individual month
+        function renderMonth(calendarDays, calendarTitle, month, year) {
+            // Update month title
+            calendarTitle.textContent = `${monthNames[month]} ${year}`;
+            
+            // Clear existing days
+            calendarDays.innerHTML = '';
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Add empty cells for days before first day of month
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-day empty';
+                calendarDays.appendChild(emptyCell);
+            }
+            
+            // Add days of month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+                dayCell.textContent = day;
+                
+                const cellDate = new Date(year, month, day);
+                cellDate.setHours(0, 0, 0, 0);
+                
+                // Disable past dates
+                if (cellDate < today) {
+                    dayCell.classList.add('disabled');
+                } else {
+                    dayCell.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectDate(cellDate);
+                    });
+                    
+                    // Highlight selected dates
+                    if (selectedCheckin && cellDate.getTime() === selectedCheckin.getTime()) {
+                        dayCell.classList.add('selected', 'checkin');
+                    }
+                    if (selectedCheckout && cellDate.getTime() === selectedCheckout.getTime()) {
+                        dayCell.classList.add('selected', 'checkout');
+                    }
+                    
+                    // Highlight dates in range
+                    if (selectedCheckin && selectedCheckout && 
+                        cellDate > selectedCheckin && cellDate < selectedCheckout) {
+                        dayCell.classList.add('in-range');
+                    }
+                }
+                
+                calendarDays.appendChild(dayCell);
+            }
+        }
+        
+        // Select date
+        function selectDate(date) {
+            console.log('Selecting date:', date);
+            
+            if (!selectedCheckin || (selectedCheckin && selectedCheckout)) {
+                // First selection or reset
+                selectedCheckin = date;
+                selectedCheckout = null;
+                checkinInput.value = formatDate(date);
+                checkoutInput.value = 'Chọn ngày';
+                
+                // Update hidden inputs
+                document.getElementById('checkin-date-daily').value = formatDateForInput(date);
+                document.getElementById('checkout-date-daily').value = '';
+                
+                // Re-render calendar to show selection but keep dropdown open
+                renderCalendar();
+            } else if (date > selectedCheckin) {
+                // Second selection (checkout) - keep dropdown open until Apply is clicked
+                selectedCheckout = date;
+                checkoutInput.value = formatDate(date);
+                
+                // Update hidden input
+                document.getElementById('checkout-date-daily').value = formatDateForInput(date);
+                
+                // Re-render calendar to show selection but keep dropdown open
+                renderCalendar();
+            } else {
+                // New checkin date
+                selectedCheckin = date;
+                selectedCheckout = null;
+                checkinInput.value = formatDate(date);
+                checkoutInput.value = 'Chọn ngày';
+                
+                // Update hidden inputs
+                document.getElementById('checkin-date-daily').value = formatDateForInput(date);
+                document.getElementById('checkout-date-daily').value = '';
+                
+                // Re-render calendar to show selection but keep dropdown open
+                renderCalendar();
+            }
+        }
+        
+        // Format date for display
+        function formatDate(date) {
+            const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+            const dayName = dayNames[date.getDay()];
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            return `${dayName} - ${day} tháng ${month}`;
+        }
+        
+        // Format date for input (YYYY-MM-DD)
+        function formatDateForInput(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Navigation
+        const prevBtn = document.getElementById('prev-month-daily');
+        const nextBtn = document.getElementById('next-month-daily');
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentMonth === 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                } else {
+                    currentMonth--;
+                }
+                renderCalendar();
+            });
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentMonth === 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                } else {
+                    currentMonth++;
+                }
+                renderCalendar();
+            });
+        }
+        
+        // Apply button
+        const applyBtn = document.getElementById('apply-dates-daily');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleDropdown();
+            });
+        }
+        
+        // Clear button
+        const clearBtn = document.getElementById('clear-dates-daily');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectedCheckin = null;
+                selectedCheckout = null;
+                checkinInput.value = 'Chọn ngày';
+                checkoutInput.value = 'Chọn ngày';
+                
+                // Update hidden inputs
+                document.getElementById('checkin-date-daily').value = '';
+                document.getElementById('checkout-date-daily').value = '';
+                
+                renderCalendar();
+            });
+        }
+        
+        // Event listeners for inputs
+        checkinInput.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Checkin input clicked');
+            toggleDropdown();
+        });
+        
+        checkoutInput.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Checkout input clicked');
+            toggleDropdown();
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!calendarDropdown.contains(e.target) && 
+                !checkinInput.contains(e.target) && 
+                !checkoutInput.contains(e.target)) {
+                if (isDropdownOpen) {
+                    toggleDropdown();
+                }
+            }
+        });
+    }
+    
+    // Guest Selector Functions for Daily Form
+    function setupGuestSelectorDaily() {
+        const guestDisplay = document.getElementById('guests-daily');
+        const guestDropdown = document.getElementById('guest-dropdown-daily');
+        
+        if (!guestDisplay || !guestDropdown) return;
+        
+        let guestCounts = {
+            adults: parseInt(document.getElementById('adults-count-daily').textContent) || 1,
+            children: parseInt(document.getElementById('children-count-daily').textContent) || 0
+        };
+        
+        // Toggle dropdown
+        guestDisplay.addEventListener('click', function(e) {
+            e.stopPropagation();
+            guestDropdown.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#guest-dropdown-daily') && !e.target.closest('#guests-daily')) {
+                guestDropdown.classList.remove('show');
+            }
+        });
+        
+        // Handle increase/decrease buttons
+        guestDropdown.querySelectorAll('.btn-increase, .btn-decrease').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const target = this.dataset.target;
+                const isIncrease = this.classList.contains('btn-increase');
+                
+                if (isIncrease) {
+                    guestCounts[target]++;
+                } else {
+                    if (target === 'adults' && guestCounts[target] > 1) {
+                        guestCounts[target]--;
+                    } else if (target === 'children' && guestCounts[target] > 0) {
+                        guestCounts[target]--;
+                    }
+                }
+                
+                // Update display
+                document.getElementById(`${target}-count-daily`).textContent = guestCounts[target];
+                
+                // Update button states
+                updateGuestButtonStatesDaily();
+                
+                // Update display text
+                updateGuestDisplayDaily();
+                
+                // Update hidden inputs
+                document.getElementById('adults-input-daily').value = guestCounts.adults;
+                document.getElementById('children-input-daily').value = guestCounts.children;
+            });
+        });
+        
+        // Update button states
+        function updateGuestButtonStatesDaily() {
+            const adultsDecreaseBtn = guestDropdown.querySelector('[data-target="adults"].btn-decrease');
+            const childrenDecreaseBtn = guestDropdown.querySelector('[data-target="children"].btn-decrease');
+            
+            adultsDecreaseBtn.disabled = guestCounts.adults <= 1;
+            childrenDecreaseBtn.disabled = guestCounts.children <= 0;
+        }
+        
+        // Update guest display text
+        function updateGuestDisplayDaily() {
+            const adultsText = guestCounts.adults + ' người lớn';
+            const childrenText = guestCounts.children + ' Trẻ em';
+            
+            guestDisplay.value = `${adultsText}, ${childrenText}`;
+        }
+        
+        // Initialize button states
+        updateGuestButtonStatesDaily();
     }
 </script>
 {% endblock %}
