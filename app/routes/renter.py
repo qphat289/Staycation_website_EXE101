@@ -360,7 +360,8 @@ def view_home(id):
     
     return render_template('renter/view_home_detail.html', 
                           home=home,
-                          reviews=reviews)
+                          reviews=reviews,
+                          search_params=request.args)
 
 @renter_bp.route('/book/<int:home_id>', methods=['GET', 'POST'])
 @require_email_verification_for_booking

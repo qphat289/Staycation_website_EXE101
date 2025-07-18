@@ -77,7 +77,7 @@
                 <div class="info-divider">•</div>
                 <div class="info-item">
                     <i class="fas fa-users"></i>
-                    <span>{{ search_params.adults or 1 }} người lớn</span>
+                    <span>{{ search_params.adults or 1 }} người lớn{% if search_params.children and search_params.children != '0' %}, {{ search_params.children }} trẻ em{% endif %}</span>
                 </div>
             </div>
         </div>
@@ -2293,6 +2293,7 @@
             <div class="col-xl-5cols col-lg-5cols col-md-6">
                 <div class="card homestay-card h-100">
                     <div class="card-img-container">
+                        <a href="{{ url_for('renter.view_home', id=home.id, **search_params) }}" class="text-decoration-none">
                         {% if home.images and home.images|length > 0 %}
                             {% set featured_image = home.images|selectattr('is_featured', 'equalto', True)|list|first %}
                         {% if featured_image %}
@@ -2303,12 +2304,17 @@
                     {% else %}
                             <img src="{{ url_for('static', filename='data/system/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
                     {% endif %}
+                        </a>
                     </div>
                     <div class="card-body">
                         <!-- Title and detail button -->
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="card-title mb-0">{{ home.title }}</h5>
-                            <a href="{{ url_for('renter.view_home', id=home.id) }}" class="btn btn-outline-primary btn-sm">
+                            <h5 class="card-title mb-0">
+                                <a href="{{ url_for('renter.view_home', id=home.id, **search_params) }}" class="text-decoration-none text-dark">
+                                    {{ home.title }}
+                                </a>
+                            </h5>
+                            <a href="{{ url_for('renter.view_home', id=home.id, **search_params) }}" class="btn btn-outline-primary btn-sm">
                                 Chi tiết
                             </a>
                         </div>
@@ -3014,13 +3020,13 @@
                 if (window.selectedPeriodSearch) {
                     // Display special period info
                     if (window.selectedPeriodSearch === 'overnight') {
-                        timeDisplay = '9:00 PM';
+                        timeDisplay = '21:00';
                     } else if (window.selectedPeriodSearch === 'daytime') {
-                        timeDisplay = '9:00 AM';
+                        timeDisplay = '09:00';
                     }
                 } else {
-                    // Format time to AM/PM
-                    timeDisplay = formatTime12Hour(selectedTime);
+                    // Format time to 24h
+                    timeDisplay = formatTime24Hour(selectedTime);
                 }
                 
                 display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeDisplay}`;
@@ -3070,12 +3076,12 @@
                 
                 let checkoutDisplayText = '';
                 if (window.selectedPeriodSearch === 'overnight') {
-                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 AM`;
+                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 08:00`;
                 } else if (window.selectedPeriodSearch === 'daytime') {
-                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 PM`;
+                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 20:00`;
                 } else {
-                    // Format checkout time to AM/PM
-                    const checkoutTimeFormatted = formatTime12Hour(checkoutTimeStr);
+                    // Format checkout time to 24h
+                    const checkoutTimeFormatted = formatTime24Hour(checkoutTimeStr);
                     checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeFormatted}`;
                 }
                 
@@ -3105,17 +3111,13 @@
             if (hoursDurationEl) hoursDurationEl.value = selectedDuration || '';
         }
         
-        // Format time from 24h to 12h AM/PM
-        function formatTime12Hour(time24) {
+        // Format time to 24h format
+        function formatTime24Hour(time24) {
             const timeParts = time24.split(':');
-            let hours = parseInt(timeParts[0]);
+            const hours = parseInt(timeParts[0]);
             const minutes = timeParts[1] || '00';
             
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // 0 should be 12
-            
-            return `${hours}:${minutes} ${ampm}`;
+            return `${hours.toString().padStart(2, '0')}:${minutes}`;
         }
     }
     

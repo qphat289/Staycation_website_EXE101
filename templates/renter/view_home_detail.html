@@ -8,10 +8,10 @@
     <div class="navbar-search-compact" id="compact-search" onclick="expandSearch()">
         <div class="search-content">
             <div class="search-tabs-inline">
-                <span class="tab-inline active">
+                <span class="tab-inline {% if search_params.booking_type == 'hourly' or not search_params.booking_type %}active{% endif %}">
                     <i class="fas fa-clock"></i> Theo giờ
                 </span>
-                <span class="tab-inline">
+                <span class="tab-inline {% if search_params.booking_type == 'daily' %}active{% endif %}">
                     <i class="fas fa-calendar-day"></i> Theo ngày
                 </span>
             </div>
@@ -19,27 +19,65 @@
             <div class="search-info">
                 <div class="info-item">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span>Hồ Chí Minh</span>
+                    <span>{{ search_params.location or 'Hồ Chí Minh' }}</span>
                 </div>
                 <div class="info-divider">•</div>
                 <div class="info-item">
                     <i class="fas fa-calendar"></i>
-                    <span>16 tháng 7, 2025</span>
+                    <span>
+                        {% if search_params.checkin_date %}
+                            {% set date_parts = search_params.checkin_date.split('-') %}
+                            {{ date_parts[2] }} tháng {{ date_parts[1] }}, {{ date_parts[0] }}
+                        {% else %}
+                            16 tháng 7, 2025
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="info-divider">•</div>
+                {% if search_params.booking_type == 'hourly' or not search_params.booking_type %}
                 <div class="info-item">
                     <i class="fas fa-clock"></i>
-                    <span>14:00 - 17:00</span>
+                    <span>
+                        {% set checkin_time = search_params.checkin_time or '14:00' %}
+                        {% set duration = search_params.hours_duration or search_params.duration or '3' %}
+                        {% set checkin_hour = checkin_time.split(':')[0] | int %}
+                        {% set checkout_hour = checkin_hour + (duration | int) %}
+                        {% if checkout_hour > 24 %}
+                            {% set checkout_hour = checkout_hour - 24 %}
+                        {% endif %}
+                        {{ checkin_time }} - {{ '%02d:00'|format(checkout_hour) }}
+                    </span>
                 </div>
                 <div class="info-divider">•</div>
                 <div class="info-item">
                     <i class="fas fa-hourglass-half"></i>
-                    <span>3 giờ</span>
+                    <span>
+                        {% if search_params.hours_duration %}
+                            {{ search_params.hours_duration }} giờ
+                        {% elif search_params.duration %}
+                            {{ search_params.duration }} giờ
+                        {% else %}
+                            3 giờ
+                        {% endif %}
+                    </span>
                 </div>
+                {% else %}
+                <div class="info-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>
+                        {% if search_params.checkout_date %}
+                            {% set checkout_parts = search_params.checkout_date.split('-') %}
+                            {{ checkout_parts[2] }} tháng {{ checkout_parts[1] }}, {{ checkout_parts[0] }}
+                        {% else %}
+                            26 tháng 7, 2025
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
                 <div class="info-divider">•</div>
                 <div class="info-item">
                     <i class="fas fa-users"></i>
-                    <span>1 người lớn</span>
+                    <span>{{ search_params.adults or 1 }} người lớn{% if search_params.children and search_params.children != '0' %}, {{ search_params.children }} trẻ em{% endif %}</span>
                 </div>
             </div>
         </div>
@@ -48,10 +86,10 @@
     <!-- Expanded Search Tabs in Navbar -->
     <div class="navbar-expanded-tabs" id="navbar-expanded-tabs" style="display: none;">
             <div class="navbar-search-tabs">
-                <button type="button" class="search-tab active" onclick="switchSearchTab('hourly')">
+                <button type="button" class="search-tab {% if search_params.booking_type == 'hourly' or not search_params.booking_type %}active{% endif %}" onclick="switchSearchTab('hourly')">
                     <i class="fas fa-clock"></i> Theo giờ
                 </button>
-                <button type="button" class="search-tab" onclick="switchSearchTab('daily')">
+                <button type="button" class="search-tab {% if search_params.booking_type == 'daily' %}active{% endif %}" onclick="switchSearchTab('daily')">
                     <i class="fas fa-calendar-day"></i> Theo ngày
                 </button>
             </div>
@@ -1765,7 +1803,7 @@
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label for="location-hourly" class="form-label">Địa điểm hoặc tên homestay</label>
-                        <input type="text" class="form-control" id="location-hourly" name="location" value="" placeholder="Nhập hoặc chọn địa điểm">
+                        <input type="text" class="form-control" id="location-hourly" name="location" value="{{ search_params.location or '' }}" placeholder="Nhập hoặc chọn địa điểm">
                     </div>
                     <div class="col-md-3">
                         <label for="datetime-search" class="form-label">Nhận phòng</label>
@@ -1773,11 +1811,11 @@
                             <input type="text" class="form-control datetime-display" id="datetime-search" 
                                    value="Hãy chọn ngày và giờ" readonly 
                                    onclick="toggleDateTimeDropdown()">
-                            <input type="hidden" name="checkin_date" id="checkin-date-search" value="">
-                            <input type="hidden" name="checkin_time" id="checkin-time-search" value="">
-                            <input type="hidden" name="hours_duration" id="hours-duration-search" value="">
-                            <input type="hidden" name="checkout_date" id="checkout-date-search" value="">
-                            <input type="hidden" name="checkout_time" id="checkout-time-search" value="">
+                            <input type="hidden" name="checkin_date" id="checkin-date-search" value="{{ search_params.checkin_date or '' }}">
+                            <input type="hidden" name="checkin_time" id="checkin-time-search" value="{{ search_params.checkin_time or '' }}">
+                            <input type="hidden" name="hours_duration" id="hours-duration-search" value="{{ search_params.hours_duration or '' }}">
+                            <input type="hidden" name="checkout_date" id="checkout-date-search" value="{{ search_params.checkout_date or '' }}">
+                            <input type="hidden" name="checkout_time" id="checkout-time-search" value="{{ search_params.checkout_time or '' }}">
                             
                             <!-- Custom Dropdown - Updated to match homepage exactly -->
                             <div class="datetime-dropdown" id="datetime-dropdown-search">
@@ -1910,7 +1948,7 @@
                     <div class="col-md-2">
                         <label for="guests-hourly" class="form-label">Khách</label>
                         <div class="guest-selector">
-                            <input type="text" class="form-control guest-display" id="guests-hourly" value="1 người lớn, 0 Trẻ em" readonly>
+                            <input type="text" class="form-control guest-display" id="guests-hourly" value="{{ (search_params.adults or '1') + ' người lớn, ' + (search_params.children or '0') + ' Trẻ em' }}" readonly>
                             <div class="guest-dropdown" id="guest-dropdown-hourly">
                                 <div class="guest-row">
                                     <div class="guest-info">
@@ -1919,7 +1957,7 @@
                                     </div>
                                     <div class="guest-controls">
                                         <button type="button" class="btn-decrease" data-target="adults">−</button>
-                                        <span class="guest-count" id="adults-count-hourly">1</span>
+                                        <span class="guest-count" id="adults-count-hourly">{{ search_params.adults or '1' }}</span>
                                         <button type="button" class="btn-increase" data-target="adults">+</button>
                                     </div>
                                 </div>
@@ -1930,13 +1968,13 @@
                                     </div>
                                     <div class="guest-controls">
                                         <button type="button" class="btn-decrease" data-target="children">−</button>
-                                        <span class="guest-count" id="children-count-hourly">0</span>
+                                        <span class="guest-count" id="children-count-hourly">{{ search_params.children or '0' }}</span>
                                         <button type="button" class="btn-increase" data-target="children">+</button>
                                     </div>
                                 </div>
                             </div>
-                            <input type="hidden" name="adults" id="adults-input-hourly" value="1">
-                            <input type="hidden" name="children" id="children-input-hourly" value="0">
+                            <input type="hidden" name="adults" id="adults-input-hourly" value="{{ search_params.adults or '1' }}">
+                            <input type="hidden" name="children" id="children-input-hourly" value="{{ search_params.children or '0' }}">
                         </div>
                     </div>
                     <div class="col-md-1">
@@ -1952,14 +1990,14 @@
                 <div class="row g-3">
                     <div class="col-md-2">
                         <label for="location-daily" class="form-label">Địa điểm</label>
-                        <input type="text" class="form-control" id="location-daily" name="location" placeholder="Nhập địa điểm" value="">
+                        <input type="text" class="form-control" id="location-daily" name="location" placeholder="Nhập địa điểm" value="{{ search_params.location or '' }}">
                     </div>
                     <div class="col-md-3">
                         <label for="datetime-daily" class="form-label">Nhận phòng</label>
                         <div class="datetime-selector-daily" style="position: relative;">
                             <input type="text" class="form-control datetime-display" id="datetime-daily" value="Chọn ngày" readonly>
-                            <input type="hidden" name="checkin_date" id="checkin-date-daily" value="">
-                            <input type="hidden" name="checkout_date" id="checkout-date-daily" value="">
+                                                         <input type="hidden" name="checkin_date" id="checkin-date-daily" value="{{ search_params.checkin_date or '' }}">
+                             <input type="hidden" name="checkout_date" id="checkout-date-daily" value="{{ search_params.checkout_date or '' }}">
                             
                             <!-- Custom Calendar Dropdown -->
                             <div class="datetime-dropdown" id="datetime-dropdown-daily">
@@ -2020,7 +2058,7 @@
                     <div class="col-md-3">
                         <label for="guests-daily" class="form-label">Khách</label>
                         <div class="guest-selector">
-                            <input type="text" class="form-control guest-display" id="guests-daily" value="1 người lớn, 0 Trẻ em" readonly>
+                            <input type="text" class="form-control guest-display" id="guests-daily" value="{{ (search_params.adults or '1') + ' người lớn, ' + (search_params.children or '0') + ' Trẻ em' }}" readonly>
                             <div class="guest-dropdown" id="guest-dropdown-daily">
                                 <div class="guest-row">
                                     <div class="guest-info">
@@ -2029,7 +2067,7 @@
                                     </div>
                                     <div class="guest-controls">
                                         <button type="button" class="btn-decrease" data-target="adults">−</button>
-                                        <span class="guest-count" id="adults-count-daily">1</span>
+                                        <span class="guest-count" id="adults-count-daily">{{ search_params.adults or '1' }}</span>
                                         <button type="button" class="btn-increase" data-target="adults">+</button>
                                     </div>
                                 </div>
@@ -2040,13 +2078,13 @@
                                     </div>
                                     <div class="guest-controls">
                                         <button type="button" class="btn-decrease" data-target="children">−</button>
-                                        <span class="guest-count" id="children-count-daily">0</span>
+                                        <span class="guest-count" id="children-count-daily">{{ search_params.children or '0' }}</span>
                                         <button type="button" class="btn-increase" data-target="children">+</button>
                                     </div>
                                 </div>
                             </div>
-                            <input type="hidden" name="adults" id="adults-input-daily" value="1">
-                            <input type="hidden" name="children" id="children-input-daily" value="0">
+                            <input type="hidden" name="adults" id="adults-input-daily" value="{{ search_params.adults or '1' }}">
+                            <input type="hidden" name="children" id="children-input-daily" value="{{ search_params.children or '0' }}">
                         </div>
                     </div>
                     <div class="col-md-1">
@@ -2129,7 +2167,7 @@
                                 </div>
                             {% else %}
                                 <div class="bg-secondary w-100 h-100 rounded-2" style="background-color: #C8C8C8 !important;"></div>
-        {% endif %}
+                            {% endif %}
                         </div>
                         <div class="col-12 position-relative" style="height: 195px;">
                             {% if home.images and home.images|length > 2 %}
@@ -3356,6 +3394,26 @@ function testDailyDropdown() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Initializing search functionality...');
     
+    // Initialize location from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const location = urlParams.get('location');
+    const bookingType = urlParams.get('booking_type');
+    
+    if (location) {
+        const locationInputHourly = document.getElementById('location-hourly');
+        const locationInputDaily = document.getElementById('location-daily');
+        
+        if (locationInputHourly) locationInputHourly.value = location;
+        if (locationInputDaily) locationInputDaily.value = location;
+    }
+    
+    // Switch to correct booking type tab
+    if (bookingType === 'daily') {
+        switchSearchTab('daily');
+    } else {
+        switchSearchTab('hourly');
+    }
+    
     // Setup datetime selector
     setupDateTimeSelectorSearch();
     
@@ -3483,6 +3541,7 @@ function setupDateTimeSelectorSearch() {
         const checkinTimeInput = document.getElementById('checkin-time-search');
         const durationInput = document.getElementById('hours-duration-search');
         
+        // Try to get from server data first
         if (checkinDateInput.value && checkinTimeInput.value) {
             selectedDate = checkinDateInput.value;
             selectedTime = checkinTimeInput.value;
@@ -3491,19 +3550,40 @@ function setupDateTimeSelectorSearch() {
             updateDisplay();
             updateCheckoutDisplay();
         } else {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = (today.getMonth() + 1).toString().padStart(2, '0');
-            const day = today.getDate().toString().padStart(2, '0');
-            const todayStr = `${year}-${month}-${day}`;
+            // Try to get from URL params (from search page)
+            const urlParams = new URLSearchParams(window.location.search);
+            const checkinDate = urlParams.get('checkin_date');
+            const checkinTime = urlParams.get('checkin_time');
+            const duration = urlParams.get('hours_duration');
             
-            selectedDate = todayStr;
-            selectedTime = '14:00';
-            selectedDuration = '3';
-            
-            updateDisplay();
-            updateHiddenInputs();
-            updateCheckoutDisplay();
+            if (checkinDate && checkinTime) {
+                selectedDate = checkinDate;
+                selectedTime = checkinTime;
+                selectedDuration = duration || '3';
+                
+                // Update hidden inputs
+                checkinDateInput.value = checkinDate;
+                checkinTimeInput.value = checkinTime;
+                durationInput.value = selectedDuration;
+                
+                updateDisplay();
+                updateHiddenInputs();
+                updateCheckoutDisplay();
+            } else {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = (today.getMonth() + 1).toString().padStart(2, '0');
+                const day = today.getDate().toString().padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
+                
+                selectedDate = todayStr;
+                selectedTime = '14:00';
+                selectedDuration = '3';
+                
+                updateDisplay();
+                updateHiddenInputs();
+                updateCheckoutDisplay();
+            }
         }
     }
     
@@ -3723,12 +3803,12 @@ function setupDateTimeSelectorSearch() {
             let timeDisplay = '';
             if (window.selectedPeriodSearch) {
                 if (window.selectedPeriodSearch === 'overnight') {
-                    timeDisplay = '9:00 PM';
+                    timeDisplay = '21:00';
                 } else if (window.selectedPeriodSearch === 'daytime') {
-                    timeDisplay = '9:00 AM';
+                    timeDisplay = '09:00';
                 }
             } else {
-                timeDisplay = formatTime12Hour(selectedTime);
+                timeDisplay = formatTime24Hour(selectedTime);
             }
             
             display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeDisplay}`;
@@ -3770,11 +3850,11 @@ function setupDateTimeSelectorSearch() {
             
             let checkoutDisplayText = '';
             if (window.selectedPeriodSearch === 'overnight') {
-                checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 AM`;
+                checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 08:00`;
             } else if (window.selectedPeriodSearch === 'daytime') {
-                checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 PM`;
+                checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 20:00`;
             } else {
-                const checkoutTimeFormatted = formatTime12Hour(checkoutTimeStr);
+                const checkoutTimeFormatted = formatTime24Hour(checkoutTimeStr);
                 checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeFormatted}`;
             }
             
@@ -3802,16 +3882,12 @@ function setupDateTimeSelectorSearch() {
         if (hoursDurationEl) hoursDurationEl.value = selectedDuration || '';
     }
     
-    function formatTime12Hour(time24) {
+    function formatTime24Hour(time24) {
         const timeParts = time24.split(':');
-        let hours = parseInt(timeParts[0]);
+        const hours = parseInt(timeParts[0]);
         const minutes = timeParts[1] || '00';
         
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12;
-        
-        return `${hours}:${minutes} ${ampm}`;
+        return `${hours.toString().padStart(2, '0')}:${minutes}`;
     }
 }
 
@@ -3822,10 +3898,18 @@ function setupGuestSelector() {
     
     if (!guestDisplay || !guestDropdown) return;
     
+    // Initialize guest counts from URL params or default
+    const urlParams = new URLSearchParams(window.location.search);
     let guestCounts = {
-        adults: parseInt(document.getElementById('adults-count-hourly').textContent) || 1,
-        children: parseInt(document.getElementById('children-count-hourly').textContent) || 0
+        adults: parseInt(urlParams.get('adults')) || parseInt(document.getElementById('adults-count-hourly').textContent) || 1,
+        children: parseInt(urlParams.get('children')) || parseInt(document.getElementById('children-count-hourly').textContent) || 0
     };
+    
+    // Update display and hidden inputs with URL params
+    document.getElementById('adults-count-hourly').textContent = guestCounts.adults;
+    document.getElementById('children-count-hourly').textContent = guestCounts.children;
+    document.getElementById('adults-input-hourly').value = guestCounts.adults;
+    document.getElementById('children-input-hourly').value = guestCounts.children;
     
     guestDisplay.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -3880,6 +3964,7 @@ function setupGuestSelector() {
     }
     
     updateGuestButtonStates();
+    updateGuestDisplay();
 }
 
 // Daily Date Time Selector - Copied from search page
@@ -3936,6 +4021,7 @@ function setupDailyDateTimeSelector() {
         const checkinDateInput = document.getElementById('checkin-date-daily');
         const checkoutDateInput = document.getElementById('checkout-date-daily');
         
+        // Try to get from server data first
         if (checkinDateInput.value && checkoutDateInput.value) {
             selectedCheckin = new Date(checkinDateInput.value + 'T00:00:00');
             selectedCheckout = new Date(checkoutDateInput.value + 'T00:00:00');
@@ -3943,9 +4029,26 @@ function setupDailyDateTimeSelector() {
             checkinInput.value = formatDate(selectedCheckin);
             checkoutInput.value = formatDate(selectedCheckout);
         } else {
-            // Set defaults
-            checkinInput.value = 'Chọn ngày';
-            checkoutInput.value = 'Chọn ngày';
+            // Try to get from URL params (from search page)
+            const urlParams = new URLSearchParams(window.location.search);
+            const checkinDate = urlParams.get('checkin_date');
+            const checkoutDate = urlParams.get('checkout_date');
+            
+            if (checkinDate && checkoutDate) {
+                selectedCheckin = new Date(checkinDate + 'T00:00:00');
+                selectedCheckout = new Date(checkoutDate + 'T00:00:00');
+                
+                checkinInput.value = formatDate(selectedCheckin);
+                checkoutInput.value = formatDate(selectedCheckout);
+                
+                // Update hidden inputs
+                checkinDateInput.value = checkinDate;
+                checkoutDateInput.value = checkoutDate;
+            } else {
+                // Set defaults
+                checkinInput.value = 'Chọn ngày';
+                checkoutInput.value = 'Chọn ngày';
+            }
         }
     }
     
@@ -4184,10 +4287,18 @@ function setupGuestSelectorDaily() {
     
     if (!guestDisplay || !guestDropdown) return;
     
+    // Initialize guest counts from URL params or default
+    const urlParams = new URLSearchParams(window.location.search);
     let guestCounts = {
-        adults: parseInt(document.getElementById('adults-count-daily').textContent) || 1,
-        children: parseInt(document.getElementById('children-count-daily').textContent) || 0
+        adults: parseInt(urlParams.get('adults')) || parseInt(document.getElementById('adults-count-daily').textContent) || 1,
+        children: parseInt(urlParams.get('children')) || parseInt(document.getElementById('children-count-daily').textContent) || 0
     };
+    
+    // Update display and hidden inputs with URL params
+    document.getElementById('adults-count-daily').textContent = guestCounts.adults;
+    document.getElementById('children-count-daily').textContent = guestCounts.children;
+    document.getElementById('adults-input-daily').value = guestCounts.adults;
+    document.getElementById('children-input-daily').value = guestCounts.children;
     
     guestDisplay.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -4242,6 +4353,7 @@ function setupGuestSelectorDaily() {
     }
     
     updateGuestButtonStatesDaily();
+    updateGuestDisplayDaily();
 }
 </script>
 {% endblock %}

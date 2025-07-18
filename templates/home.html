@@ -1471,6 +1471,9 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
         <!-- Daily Search Form -->
         <form class="search-form daily-form" id="daily-form" action="{{ url_for('renter.search') }}" method="GET">
             <input type="hidden" name="booking_type" value="daily">
+            <!-- Hidden inputs for guest counts -->
+            <input type="hidden" name="adults" id="adults-input-daily" value="1">
+            <input type="hidden" name="children" id="children-input-daily" value="0">
             <div class="row g-2 align-items-end">
                 <div class="col-xxl-3 col-xl-3 col-lg-4 col-md-6">
                     <label for="location-daily" class="form-label">Địa điểm hoặc tên homestay</label>
@@ -2077,6 +2080,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             updateGuestDisplay();
+            updateHiddenInputs();
         });
     });
 
@@ -2086,6 +2090,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const childrenText = guestCounts.children + ' Trẻ em';
         
         guestDisplay.value = `${adultsText}, ${childrenText}`;
+    }
+    
+    // Update hidden inputs for form submission
+    function updateHiddenInputs() {
+        const adultsInput = document.getElementById('adults-input-hourly');
+        const childrenInput = document.getElementById('children-input-hourly');
+        
+        if (adultsInput) adultsInput.value = guestCounts.adults;
+        if (childrenInput) childrenInput.value = guestCounts.children;
+        
+        console.log('Updated hidden inputs:', {
+            adults: guestCounts.adults,
+            children: guestCounts.children
+        });
     }
     
     // SIMPLE TAB SWITCHING - DIRECT APPROACH
@@ -2301,12 +2319,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 updateGuestDisplayForForm(formType, guestCounts, guestDisplay);
                 updateButtonStates(formType, guestCounts);
+                updateHiddenInputsForForm(formType, guestCounts);
             });
         });
 
         // Initialize display
         updateGuestDisplayForForm(formType, guestCounts, guestDisplay);
         updateButtonStates(formType, guestCounts);
+        updateHiddenInputsForForm(formType, guestCounts);
     }
     
     function updateGuestDisplayForForm(formType, guestCounts, guestDisplay) {
@@ -2329,6 +2349,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (childrenDecreaseBtn) {
             childrenDecreaseBtn.disabled = guestCounts.children <= 0;
         }
+    }
+    
+    function updateHiddenInputsForForm(formType, guestCounts) {
+        const adultsInput = document.getElementById(`adults-input-${formType}`);
+        const childrenInput = document.getElementById(`children-input-${formType}`);
+        
+        if (adultsInput) adultsInput.value = guestCounts.adults;
+        if (childrenInput) childrenInput.value = guestCounts.children;
+        
+        console.log(`Updated hidden inputs for ${formType}:`, {
+            adults: guestCounts.adults,
+            children: guestCounts.children
+        });
     }
     
     // Initialize for all forms
@@ -2877,13 +2910,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.selectedPeriod) {
                     // Display special period info
                     if (window.selectedPeriod === 'overnight') {
-                        timeDisplay = '9:00 PM';
+                        timeDisplay = '21:00';
                     } else if (window.selectedPeriod === 'daytime') {
-                        timeDisplay = '9:00 AM';
+                        timeDisplay = '09:00';
                     }
                 } else {
-                    // Format time to AM/PM
-                    timeDisplay = formatTime12Hour(selectedTime);
+                    // Format time to 24h
+                    timeDisplay = formatTime24Hour(selectedTime);
                 }
                 
                 display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeDisplay}`;
@@ -2932,12 +2965,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 let checkoutDisplayText = '';
                 if (window.selectedPeriod === 'overnight') {
-                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 AM`;
+                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 08:00`;
                 } else if (window.selectedPeriod === 'daytime') {
-                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 20:00 PM`;
+                    checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 20:00`;
                 } else {
-                    // Format checkout time to AM/PM
-                    const checkoutTimeFormatted = formatTime12Hour(checkoutTimeStr);
+                    // Format checkout time to 24h
+                    const checkoutTimeFormatted = formatTime24Hour(checkoutTimeStr);
                     checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeFormatted}`;
                 }
                 
@@ -2970,17 +3003,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (hoursDurationEl) hoursDurationEl.value = selectedDuration || '';
         }
         
-        // Format time from 24h to 12h AM/PM
-        function formatTime12Hour(time24) {
+        // Format time to 24h format
+        function formatTime24Hour(time24) {
             const timeParts = time24.split(':');
-            let hours = parseInt(timeParts[0]);
+            const hours = parseInt(timeParts[0]);
             const minutes = timeParts[1] || '00';
             
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // 0 should be 12
-            
-            return `${hours}:${minutes}${ampm}`;
+            return `${hours.toString().padStart(2, '0')}:${minutes}`;
         }
         
         // Step Navigation Functions (inside function scope to access variables)
