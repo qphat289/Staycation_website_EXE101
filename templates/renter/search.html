@@ -1863,8 +1863,8 @@
                     <div class="col-md-3">
                         <label for="checkout-hourly" class="form-label">Trả phòng</label>
                         <input type="text" class="form-control" id="checkout-hourly" 
-                               value="{% if search_params.checkout_date and search_params.checkout_time %}{{ search_params.checkout_date }} {{ search_params.checkout_time }}{% else %}Tự động tính{% endif %}" 
-                               placeholder="Tự động tính" readonly>
+                               value="{% if search_params.checkout_date and search_params.checkout_time %}{{ search_params.checkout_date }} {{ search_params.checkout_time }}{% else %}Chọn ngày{% endif %}" 
+                               placeholder="Chọn ngày" readonly>
                         <input type="hidden" name="checkout_date" id="checkout-date-hourly">
                         <input type="hidden" name="checkout_time" id="checkout-time-hourly">
                     </div>
@@ -2269,11 +2269,11 @@
             <div class="section-header d-flex flex-column flex-md-row justify-content-between align-items-center">
                 <div class="section-title-wrapper text-center text-md-start mb-3 mb-md-0">
                     <h2 class="section-title mb-0">
-                        {% if homes %}
+        {% if homes %}
                             Tìm thấy {{ homes|length }} kết quả phù hợp
                         {% else %}
                             Kết quả tìm kiếm
-                        {% endif %}
+                            {% endif %}
                     </h2>
                     <p class="section-subtitle text-muted mb-0">
                         {% if search_params.location %}
@@ -2295,14 +2295,14 @@
                     <div class="card-img-container">
                         {% if home.images and home.images|length > 0 %}
                             {% set featured_image = home.images|selectattr('is_featured', 'equalto', True)|list|first %}
-                            {% if featured_image %}
+                        {% if featured_image %}
                                 <img src="{{ url_for('static', filename=featured_image.image_path) }}" class="card-img-top" alt="{{ home.title }}">
-                            {% else %}
-                                <img src="{{ url_for('static', filename=home.images[0].image_path) }}" class="card-img-top" alt="{{ home.title }}">
-                            {% endif %}
                         {% else %}
-                            <img src="{{ url_for('static', filename='data/system/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
+                                <img src="{{ url_for('static', filename=home.images[0].image_path) }}" class="card-img-top" alt="{{ home.title }}">
                         {% endif %}
+                    {% else %}
+                            <img src="{{ url_for('static', filename='data/system/default-homestay.jpg') }}" class="card-img-top" alt="Default Image">
+                    {% endif %}
                     </div>
                     <div class="card-body">
                         <!-- Title and detail button -->
@@ -2323,35 +2323,35 @@
                         <div class="price-info">
                             <span class="text-muted">từ </span>
                             <span class="fw-bold text-dark">
-                                {% if search_params.booking_type == 'daily' %}
+                            {% if search_params.booking_type == 'daily' %}
                                     {% if home.display_price_per_night %}
                                         {{ "{:,.0f}".format(home.display_price_per_night) }} VND/ngày
                                     {% elif home.price_per_night %}
                                         {{ "{:,.0f}".format(home.price_per_night) }} VND/ngày
-                                    {% elif home.price_per_day %}
+                                {% elif home.price_per_day %}
                                         {{ "{:,.0f}".format(home.price_per_day) }} VND/ngày
-                                    {% elif home.price_overnight %}
+                                {% elif home.price_overnight %}
                                         {{ "{:,.0f}".format(home.price_overnight) }} VND/qua đêm
-                                    {% elif home.price_daytime %}
+                                {% elif home.price_daytime %}
                                         {{ "{:,.0f}".format(home.price_daytime) }} VND/ban ngày
-                                    {% else %}
-                                        Liên hệ để biết giá
-                                    {% endif %}
                                 {% else %}
+                                    Liên hệ để biết giá
+                                {% endif %}
+                            {% else %}
                                     {% if home.display_price %}
                                         {{ "{:,}".format(home.display_price) }} VND/h
                                     {% elif home.price_per_hour %}
                                         {{ "{:,.0f}".format(home.price_per_hour) }} VND/giờ
-                                    {% elif home.price_first_2_hours %}
+                                {% elif home.price_first_2_hours %}
                                         {{ "{:,.0f}".format(home.price_first_2_hours) }} VND/2 giờ đầu
-                                    {% elif home.price_per_additional_hour %}
+                                {% elif home.price_per_additional_hour %}
                                         {{ "{:,.0f}".format(home.price_per_additional_hour) }} VND/giờ thêm
-                                    {% else %}
-                                        Liên hệ để biết giá
-                                    {% endif %}
+                                {% else %}
+                                    Liên hệ để biết giá
                                 {% endif %}
+                            {% endif %}
                             </span>
-                        </div>
+                    </div>
                     </div>
                 </div>
             </div>

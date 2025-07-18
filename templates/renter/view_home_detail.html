@@ -1,10 +1,348 @@
 {% extends 'base.html' %}
 {% block title %}{{ home.homestay.business_name or home.homestay.full_name }} - Nhà {{ home.home_number }}{% endblock %}
 
+{% block navbar_search %}
+<!-- Compact Search Bar -->
+<div class="navbar-search-container">
+    <!-- Compact Search Display -->
+    <div class="navbar-search-compact" id="compact-search" onclick="expandSearch()">
+        <div class="search-content">
+            <div class="search-tabs-inline">
+                <span class="tab-inline active">
+                    <i class="fas fa-clock"></i> Theo giờ
+                </span>
+                <span class="tab-inline">
+                    <i class="fas fa-calendar-day"></i> Theo ngày
+                </span>
+            </div>
+            
+            <div class="search-info">
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Hồ Chí Minh</span>
+                </div>
+                <div class="info-divider">•</div>
+                <div class="info-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>16 tháng 7, 2025</span>
+                </div>
+                <div class="info-divider">•</div>
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <span>14:00 - 17:00</span>
+                </div>
+                <div class="info-divider">•</div>
+                <div class="info-item">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span>3 giờ</span>
+                </div>
+                <div class="info-divider">•</div>
+                <div class="info-item">
+                    <i class="fas fa-users"></i>
+                    <span>1 người lớn</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expanded Search Tabs in Navbar -->
+    <div class="navbar-expanded-tabs" id="navbar-expanded-tabs" style="display: none;">
+            <div class="navbar-search-tabs">
+                <button type="button" class="search-tab active" onclick="switchSearchTab('hourly')">
+                    <i class="fas fa-clock"></i> Theo giờ
+                </button>
+                <button type="button" class="search-tab" onclick="switchSearchTab('daily')">
+                    <i class="fas fa-calendar-day"></i> Theo ngày
+                </button>
+            </div>
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
 <style>
+    /* Hide global search container on home detail page */
+    .global-search-container {
+        display: none !important;
+    }
+    
+    /* Search Bar Styles - Copy from search page */
+    .navbar-search-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        max-width: 600px;
+        width: auto;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    /* Navbar expanded tabs */
+    .navbar-expanded-tabs {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        animation: slideDown 0.3s ease-out;
+        margin-bottom: -5px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+    }
+    
+    /* Compact search bar styling */
+    .navbar-search-compact {
+        background: white;
+        border-radius: 25px;
+        padding: 8px 16px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        border: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        max-width: 700px;
+        min-width: 600px;
+        height: 48px;
+    }
+    
+    .navbar-search-compact:hover {
+        box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+    
+    .search-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+    }
+    
+    .search-tabs-inline {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 2px;
+        justify-content: center;
+    }
+    
+    .tab-inline {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #999;
+        transition: all 0.3s ease;
+    }
+    
+    .tab-inline.active {
+        color: #8bc34a;
+    }
+    
+    .search-info {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        width: 100%;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .info-item i {
+        color: #8bc34a;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+    
+    .info-divider {
+        color: #ddd;
+        font-size: 13px;
+        margin: 0 1px;
+        flex-shrink: 0;
+    }
+    
+    /* Expanded search section styling */
+    .expanded-search-section {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 0 0 20px 0;
+        margin-top: -120px;
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    .expanded-search-section .container-fluid {
+        max-width: 1400px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .expanded-search-container {
+        background: transparent;
+        border-radius: 0;
+        padding: 5px 20px;
+        box-shadow: none;
+        border: none;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .navbar-search-tabs {
+        display: flex;
+        background: transparent;
+        border-radius: 0;
+        overflow: visible;
+        border: none;
+        backdrop-filter: none;
+        box-shadow: none;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+    }
+    
+    .expanded-search-container .search-tab,
+    .navbar-expanded-tabs .search-tab,
+    .navbar-search-tabs .search-tab {
+        flex: 1;
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-bottom: none !important;
+        padding: 8px 15px;
+        font-weight: 500;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: center;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        text-decoration: none !important;
+    }
+    
+    .expanded-search-container .search-tab:hover,
+    .navbar-expanded-tabs .search-tab:hover,
+    .navbar-search-tabs .search-tab:hover {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #8bc34a !important;
+        transform: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+    
+    .expanded-search-container .search-tab.active,
+    .navbar-expanded-tabs .search-tab.active,
+    .navbar-search-tabs .search-tab.active {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #8bc34a !important;
+        font-weight: 600;
+        border: none !important;
+        border-bottom: none !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-radius: 0 !important;
+        transform: none !important;
+        box-shadow: none !important;
+        text-decoration: none !important;
+    }
+    
+    /* Search form styles */
+    .search-form-content .form-control {
+        height: 45px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0 15px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .search-form-content .form-control:focus {
+        border-color: #8bc34a;
+        box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.1);
+    }
+    
+    .search-form-content .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+    
+    .search-btn-compact {
+        background: #8bc34a;
+        border: none;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 8px 8px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .search-btn-compact:hover {
+        background: #7cb342;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .navbar-search-compact {
+            max-width: 95vw;
+            min-width: 90vw;
+            padding: 6px 12px;
+        }
+        
+        .search-content {
+            gap: 2px;
+        }
+        
+        .search-tabs-inline {
+            gap: 8px;
+        }
+        
+        .info-item {
+            font-size: 12px;
+        }
+        
+        .tab-inline {
+            font-size: 10px;
+        }
+    }
+
     .home-detail-container {
-        margin-top: -40px !important;
+        margin-top: 10px !important;
         background: transparent;
         position: relative;
         z-index: 1;
@@ -616,7 +954,1113 @@
             justify-content: space-between !important;
         }
     }
+
+    /* DateTime Selector Styles */
+    .datetime-selector-hourly {
+        position: relative;
+        z-index: 1000;
+    }
+
+    .datetime-display {
+        cursor: pointer;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .datetime-dropdown {
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 99999 !important;
+        background: white !important;
+        border: 1px solid #ddd !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        margin-top: 5px !important;
+        overflow: hidden !important;
+        display: none;
+        padding: 20px 20px 15px 20px;
+        backdrop-filter: blur(10px);
+        animation: slideDown 0.3s ease-out;
+        min-width: 550px;
+        max-width: 650px;
+        min-height: 450px;
+        max-height: 550px;
+    }
+
+    .datetime-dropdown.show {
+        display: block !important;
+    }
+    
+    #datetime-dropdown-daily {
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+        z-index: 99999 !important;
+        background: white !important;
+        border: 1px solid #ddd !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        margin-top: 5px !important;
+        overflow: hidden !important;
+        display: none;
+        width: 600px;
+        min-height: 400px;
+    }
+    
+    .calendar-container {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .calendar-title-container {
+        display: flex;
+        gap: 40px;
+        align-items: center;
+    }
+    
+    .calendar-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #333;
+    }
+    
+    .calendar-grid-container {
+        display: flex;
+        gap: 30px;
+    }
+    
+    .calendar-grid {
+        flex: 1;
+    }
+    
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        margin-bottom: 8px;
+    }
+    
+    .weekday {
+        text-align: center;
+        font-weight: 600;
+        color: #666;
+        font-size: 12px;
+        padding: 8px 0;
+    }
+    
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+    }
+    
+    .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    
+    .calendar-day:hover:not(.disabled) {
+        background: #f0f8ff;
+        color: #8bc34a;
+    }
+    
+    .calendar-day.disabled {
+        color: #ccc;
+        cursor: not-allowed;
+    }
+    
+    .calendar-day.selected {
+        background: #8bc34a;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .calendar-day.selected.checkin {
+        border-radius: 4px 0 0 4px;
+    }
+    
+    .calendar-day.selected.checkout {
+        border-radius: 0 4px 4px 0;
+    }
+    
+    .calendar-day.in-range {
+        background: rgba(139, 195, 74, 0.2);
+        color: #8bc34a;
+    }
+    
+    .calendar-day.empty {
+        cursor: default;
+    }
+    
+    .calendar-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+    
+    /* Daily Calendar Specific Styling */
+    #datetime-dropdown-daily .calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    #datetime-dropdown-daily .calendar-months {
+        display: flex;
+        gap: 80px;
+        justify-content: center;
+        flex: 1;
+    }
+
+    #datetime-dropdown-daily .month-container {
+        text-align: center;
+    }
+
+    #datetime-dropdown-daily .calendar-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    #datetime-dropdown-daily .month-nav {
+        background: none;
+        border: none;
+        font-size: 16px;
+        font-weight: bold;
+        color: #666;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        min-width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #datetime-dropdown-daily .month-nav:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    #datetime-dropdown-daily .month-nav-placeholder {
+        min-width: 30px;
+        height: 30px;
+    }
+
+    #datetime-dropdown-daily .calendar-grid {
+        min-width: 380px;
+        max-width: 450px;
+        margin: 0 auto;
+    }
+
+    #datetime-dropdown-daily .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        margin-bottom: 12px;
+    }
+
+    #datetime-dropdown-daily .calendar-weekdays span {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 500;
+        color: #666;
+        padding: 10px 4px;
+    }
+
+    #datetime-dropdown-daily .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+        gap: 4px;
+        min-height: 240px;
+    }
+
+    #datetime-dropdown-daily .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-size: 15px;
+        position: relative;
+        min-height: 40px;
+    }
+
+    #datetime-dropdown-daily .calendar-day:hover {
+        background: #f0f8ff;
+    }
+
+    #datetime-dropdown-daily .calendar-day.selected {
+        background: #b2e254;
+        color: white;
+    }
+
+    #datetime-dropdown-daily .calendar-day.in-range {
+        background: rgba(178, 226, 84, 0.2);
+        color: #333;
+    }
+
+    #datetime-dropdown-daily .calendar-day.disabled {
+        color: #ccc;
+        cursor: not-allowed;
+    }
+
+    #datetime-dropdown-daily .calendar-day.other-month {
+        color: #ccc;
+    }
+
+    #datetime-dropdown-daily .calendar-time-info {
+        padding: 12px 16px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        flex: 1;
+        text-align: center;
+    }
+
+    #datetime-dropdown-daily .calendar-time-info small {
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+    #datetime-dropdown-daily .calendar-time-info i {
+        margin-right: 6px;
+        color: #28a745;
+    }
+
+    #datetime-dropdown-daily .calendar-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        gap: 12px;
+    }
+
+    #datetime-dropdown-daily .calendar-footer .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    
+    /* Daily Calendar Styling - Match search page exactly */
+    .datetime-selector-daily .datetime-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        display: none;
+        padding: 25px;
+        min-width: 950px;
+        max-width: 1100px;
+        min-height: 550px;
+        max-height: 650px;
+    }
+
+    .datetime-selector-daily .datetime-dropdown.show {
+        display: block !important;
+    }
+
+    /* Step Progress */
+    .step-progress {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 12px;
+        gap: 12px;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
+
+    .step.active {
+        opacity: 1;
+    }
+
+    .step-number {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+        font-size: 13px;
+    }
+
+    .step.active .step-number {
+        background: #8bc34a;
+        color: white;
+    }
+
+    .step-label {
+        font-size: 11px;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .step.active .step-label {
+        color: #8bc34a;
+    }
+
+    /* Step Content */
+    .step-content {
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .step-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Calendar Section */
+    .calendar-section {
+        margin-bottom: 10px;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .calendar-nav {
+        background: none;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        color: #666;
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .calendar-nav:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .calendar-title {
+        font-weight: 600;
+        color: #333;
+        font-size: 16px;
+    }
+
+    .calendar-grid {
+        min-width: 320px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        margin-bottom: 12px;
+    }
+
+    .calendar-weekdays span {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 500;
+        color: #666;
+        padding: 10px 4px;
+    }
+
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+        gap: 4px;
+        min-height: 240px;
+    }
+
+    .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-size: 15px;
+        position: relative;
+        min-height: 40px;
+    }
+
+    .calendar-day:hover {
+        background: #f0f8ff;
+    }
+
+    .calendar-day.selected {
+        background: #b2e254;
+        color: white;
+    }
+
+    .calendar-day.disabled {
+        color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .calendar-day.other-month {
+        color: #ccc;
+    }
+
+    /* Time and Duration Section */
+    .time-section, .duration-section {
+        min-width: 0;
+    }
+
+    .time-section h4, .duration-section h4 {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    .time-grid-compact, .duration-grid-compact {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    /* Step Actions */
+    .step-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+        margin-bottom: 0;
+    }
+
+    .btn-back, .btn-apply {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back {
+        background: #f8f9fa;
+        color: #6c757d;
+    }
+
+    .btn-back:hover {
+        background: #e9ecef;
+    }
+
+    .btn-apply {
+        background: #8bc34a;
+        color: white;
+    }
+
+    .btn-apply:hover {
+        background: #7cb342;
+    }
+
+    .time-slot, .duration-slot {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        padding: 8px 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 13px;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .time-slot:hover, .duration-slot:hover {
+        border-color: #8bc34a;
+        background: #e8f5e8;
+    }
+
+    .time-slot.active, .duration-slot.active {
+        background: #8bc34a;
+        border-color: #8bc34a;
+        color: white;
+    }
+
+    /* Special Time Periods Styling */
+    .special-time-periods {
+        margin-bottom: 15px;
+    }
+
+    .period-options {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        justify-content: center;
+    }
+
+    .period-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 90px;
+        max-width: 100px;
+        position: relative;
+        text-align: center;
+    }
+
+    .period-btn:hover {
+        border-color: #8bc34a;
+        background: #f8fff0;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(139, 195, 74, 0.2);
+    }
+
+    .period-btn.active {
+        border-color: #8bc34a;
+        background: #8bc34a;
+        color: white;
+    }
+
+    .period-btn i {
+        font-size: 16px;
+        margin-bottom: 4px;
+        color: #666;
+    }
+
+    .period-btn.active i {
+        color: white;
+    }
+
+    .period-title {
+        font-weight: 600;
+        font-size: 12px;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .period-time {
+        font-size: 10px;
+        opacity: 0.8;
+        line-height: 1.1;
+    }
+
+    .period-divider {
+        text-align: center;
+        position: relative;
+        margin: 12px 0;
+    }
+
+    .period-divider span {
+        background: white;
+        padding: 0 15px;
+        color: #6c757d;
+        font-size: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .period-divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e9ecef;
+        z-index: 0;
+    }
+
+    /* Period Info Styling */
+    .period-info {
+        margin-bottom: 15px;
+    }
+
+    .period-info .alert {
+        background: #e8f5e8;
+        border: 1px solid #8bc34a;
+        color: #2e7d32;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .period-info .alert i {
+        color: #8bc34a;
+        font-size: 16px;
+    }
+
+    .period-info .alert span {
+        flex: 1;
+        font-weight: 500;
+    }
+
+    .period-info .alert small {
+        display: block;
+        margin-top: 4px;
+        opacity: 0.8;
+        font-size: 11px;
+    }
+
+    /* Guest selector styling */
+    .guest-selector {
+        position: relative;
+        z-index: 1000;
+    }
+
+    .guest-display {
+        cursor: pointer;
+        background: #fafafa !important;
+    }
+
+    .guest-display:focus {
+        background: white !important;
+    }
+
+    .guest-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        padding: 20px;
+        z-index: 1050;
+        margin-top: 8px;
+        backdrop-filter: blur(10px);
+        animation: slideDown 0.3s ease-out;
+        width: 250px;
+    }
+
+    .guest-dropdown.show {
+        display: block;
+    }
+
+    .guest-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .guest-row:last-of-type {
+        border-bottom: none;
+    }
+
+    .guest-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .guest-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn-decrease, .btn-increase {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-decrease:hover, .btn-increase:hover {
+        background: #f8f9fa;
+        border-color: #8bc34a;
+    }
+
+    .btn-decrease:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .guest-count {
+        font-weight: 500;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .home-detail-container {
 </style>
+
+<!-- Expanded Search Form - Below Navbar -->
+<div class="expanded-search-section" id="expanded-search" style="display: none;">
+    <div class="container-fluid">
+        <div class="expanded-search-container">
+            
+            <!-- Hourly Search Form -->
+            <form id="hourly-search-form" class="search-form-content active" action="{{ url_for('renter.search') }}" method="GET">
+                <input type="hidden" name="booking_type" value="hourly">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="location-hourly" class="form-label">Địa điểm hoặc tên homestay</label>
+                        <input type="text" class="form-control" id="location-hourly" name="location" value="" placeholder="Nhập hoặc chọn địa điểm">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="datetime-search" class="form-label">Nhận phòng</label>
+                        <div class="datetime-selector-hourly">
+                            <input type="text" class="form-control datetime-display" id="datetime-search" 
+                                   value="Hãy chọn ngày và giờ" readonly 
+                                   onclick="toggleDateTimeDropdown()">
+                            <input type="hidden" name="checkin_date" id="checkin-date-search" value="">
+                            <input type="hidden" name="checkin_time" id="checkin-time-search" value="">
+                            <input type="hidden" name="hours_duration" id="hours-duration-search" value="">
+                            <input type="hidden" name="checkout_date" id="checkout-date-search" value="">
+                            <input type="hidden" name="checkout_time" id="checkout-time-search" value="">
+                            
+                            <!-- Custom Dropdown - Updated to match homepage exactly -->
+                            <div class="datetime-dropdown" id="datetime-dropdown-search">
+                                <!-- Step Progress -->
+                                <div class="step-progress">
+                                    <div class="step active" data-step="1">
+                                        <span class="step-number">1</span>
+                                        <span class="step-label">Ngày</span>
+                                    </div>
+                                    <div class="step" data-step="2">
+                                        <span class="step-number">2</span>
+                                        <span class="step-label">Giờ</span>
+                                    </div>
+                                    <div class="step" data-step="3">
+                                        <span class="step-number">3</span>
+                                        <span class="step-label">Thời gian</span>
+                                    </div>
+                                </div>
+
+                                <!-- Step 1: Calendar -->
+                                <div class="step-content active" id="step-1-search">
+                                    <div class="calendar-section">
+                                        <div class="calendar-header">
+                                            <button type="button" class="calendar-nav" id="prev-month-search">&lt;</button>
+                                            <span class="calendar-title" id="calendar-title-search">Tháng 7, 2025</span>
+                                            <button type="button" class="calendar-nav" id="next-month-search">&gt;</button>
+                                        </div>
+                                        <div class="calendar-grid">
+                                            <div class="calendar-weekdays">
+                                                <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                                            </div>
+                                            <div class="calendar-days" id="calendar-days-search">
+                                                <!-- Days will be generated by JavaScript -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Time Selection -->
+                                <div class="step-content" id="step-2-search">
+                                    <div class="time-section">
+                                        <h4>Chọn giờ nhận phòng</h4>
+                                        
+                                        <!-- Special Time Periods -->
+                                        <div class="special-time-periods mb-3">
+                                            <div class="period-options">
+                                                <button type="button" class="period-btn" data-period="overnight" data-start="21:00" data-end="08:00">
+                                                    <i class="fas fa-moon"></i>
+                                                    <span class="period-title">Qua đêm</span>
+                                                    <span class="period-time">21h - 8h</span>
+                                                </button>
+                                                <button type="button" class="period-btn" data-period="daytime" data-start="09:00" data-end="20:00">
+                                                    <i class="fas fa-sun"></i>
+                                                    <span class="period-title">Qua ngày</span>
+                                                    <span class="period-time">9h - 20h</span>
+                                                </button>
+                                            </div>
+                                            <div class="period-divider">
+                                                <span>hoặc chọn giờ cụ thể</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="time-grid-compact">
+                                            <button type="button" class="time-slot" data-time="01:00">01:00</button>
+                                            <button type="button" class="time-slot" data-time="02:00">02:00</button>
+                                            <button type="button" class="time-slot" data-time="03:00">03:00</button>
+                                            <button type="button" class="time-slot" data-time="04:00">04:00</button>
+                                            <button type="button" class="time-slot" data-time="05:00">05:00</button>
+                                            <button type="button" class="time-slot" data-time="06:00">06:00</button>
+                                            <button type="button" class="time-slot" data-time="07:00">07:00</button>
+                                            <button type="button" class="time-slot" data-time="08:00">08:00</button>
+                                            <button type="button" class="time-slot" data-time="09:00">09:00</button>
+                                            <button type="button" class="time-slot" data-time="10:00">10:00</button>
+                                            <button type="button" class="time-slot" data-time="11:00">11:00</button>
+                                            <button type="button" class="time-slot" data-time="12:00">12:00</button>
+                                            <button type="button" class="time-slot" data-time="13:00">13:00</button>
+                                            <button type="button" class="time-slot active" data-time="14:00">14:00</button>
+                                            <button type="button" class="time-slot" data-time="15:00">15:00</button>
+                                            <button type="button" class="time-slot" data-time="16:00">16:00</button>
+                                            <button type="button" class="time-slot" data-time="17:00">17:00</button>
+                                            <button type="button" class="time-slot" data-time="18:00">18:00</button>
+                                            <button type="button" class="time-slot" data-time="19:00">19:00</button>
+                                            <button type="button" class="time-slot" data-time="20:00">20:00</button>
+                                            <button type="button" class="time-slot" data-time="21:00">21:00</button>
+                                            <button type="button" class="time-slot" data-time="22:00">22:00</button>
+                                            <button type="button" class="time-slot" data-time="23:00">23:00</button>
+                                            <button type="button" class="time-slot" data-time="24:00">24:00</button>
+                                        </div>
+                                    </div>
+                                    <div class="step-actions">
+                                        <button type="button" class="btn btn-back" id="back-step-2-search">Quay lại</button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Duration Selection -->
+                                <div class="step-content" id="step-3-search">
+                                    <div class="duration-section">
+                                        <h4>Chọn số giờ sử dụng</h4>
+                                        <div class="period-info" id="period-info-search" style="display: none;">
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle"></i>
+                                                <span id="period-text-search"></span>
+                                                <small>Đề xuất: 8 giờ để tận hưởng trọn vẹn</small>
+                                            </div>
+                                        </div>
+                                        <div class="duration-grid-compact">
+                                            <button type="button" class="duration-slot" data-duration="2">2 giờ</button>
+                                            <button type="button" class="duration-slot active" data-duration="3">3 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="4">4 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="5">5 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="6">6 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="7">7 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="8">8 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="9">9 giờ</button>
+                                            <button type="button" class="duration-slot" data-duration="10">10 giờ</button>
+                                        </div>
+                                    </div>
+                                    <div class="step-actions">
+                                        <button type="button" class="btn btn-back" id="back-step-3-search">Quay lại</button>
+                                        <button type="button" class="btn btn-apply" id="apply-datetime-search">Hoàn tất</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="checkout-hourly" class="form-label">Trả phòng</label>
+                        <input type="text" class="form-control" id="checkout-hourly" value="Chọn ngày và giờ" placeholder="Chọn ngày và giờ" readonly>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="guests-hourly" class="form-label">Khách</label>
+                        <div class="guest-selector">
+                            <input type="text" class="form-control guest-display" id="guests-hourly" value="1 người lớn, 0 Trẻ em" readonly>
+                            <div class="guest-dropdown" id="guest-dropdown-hourly">
+                                <div class="guest-row">
+                                    <div class="guest-info">
+                                        <i class="bi bi-person-fill text-success"></i>
+                                        <span>Người lớn</span>
+                                    </div>
+                                    <div class="guest-controls">
+                                        <button type="button" class="btn-decrease" data-target="adults">−</button>
+                                        <span class="guest-count" id="adults-count-hourly">1</span>
+                                        <button type="button" class="btn-increase" data-target="adults">+</button>
+                                    </div>
+                                </div>
+                                <div class="guest-row">
+                                    <div class="guest-info">
+                                        <i class="bi bi-person text-success"></i>
+                                        <span>Trẻ em</span>
+                                    </div>
+                                    <div class="guest-controls">
+                                        <button type="button" class="btn-decrease" data-target="children">−</button>
+                                        <span class="guest-count" id="children-count-hourly">0</span>
+                                        <button type="button" class="btn-increase" data-target="children">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="adults" id="adults-input-hourly" value="1">
+                            <input type="hidden" name="children" id="children-input-hourly" value="0">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn search-btn-compact w-100">Tìm</button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Daily Search Form -->
+            <form id="daily-search-form" class="search-form-content" action="{{ url_for('renter.search') }}" method="GET" style="display: none;">
+                <input type="hidden" name="booking_type" value="daily">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label for="location-daily" class="form-label">Địa điểm</label>
+                        <input type="text" class="form-control" id="location-daily" name="location" placeholder="Nhập địa điểm" value="">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="datetime-daily" class="form-label">Nhận phòng</label>
+                        <div class="datetime-selector-daily" style="position: relative;">
+                            <input type="text" class="form-control datetime-display" id="datetime-daily" value="Chọn ngày" readonly>
+                            <input type="hidden" name="checkin_date" id="checkin-date-daily" value="">
+                            <input type="hidden" name="checkout_date" id="checkout-date-daily" value="">
+                            
+                            <!-- Custom Calendar Dropdown -->
+                            <div class="datetime-dropdown" id="datetime-dropdown-daily">
+                                <!-- Calendar Navigation -->
+                                <div class="calendar-header">
+                                    <div class="calendar-months">
+                                        <div class="month-container">
+                                            <div class="month-header">
+                                                <button type="button" class="month-nav" id="prev-month-daily">‹</button>
+                                                <span class="calendar-title" id="calendar-title-daily-1">Tháng 7</span>
+                                                <span class="month-nav-placeholder"></span>
+                                            </div>
+                                            <div class="calendar-grid">
+                                                <div class="calendar-weekdays">
+                                                    <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                                                </div>
+                                                <div class="calendar-days" id="calendar-days-daily-1">
+                                                    <!-- Days will be generated by JavaScript -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="month-container">
+                                            <div class="month-header">
+                                                <span class="month-nav-placeholder"></span>
+                                                <span class="calendar-title" id="calendar-title-daily-2">Tháng 8</span>
+                                                <button type="button" class="month-nav" id="next-month-daily">›</button>
+                                            </div>
+                                            <div class="calendar-grid">
+                                                <div class="calendar-weekdays">
+                                                    <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                                                </div>
+                                                <div class="calendar-days" id="calendar-days-daily-2">
+                                                    <!-- Days will be generated by JavaScript -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Time Info and Buttons -->
+                                <div class="calendar-footer">
+                                    <button type="button" class="btn btn-outline-secondary" id="clear-dates-daily">Đặt lại</button>
+                                    <div class="calendar-time-info">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i>
+                                            Nhận phòng: 14:00 • Trả phòng: 12:00 (ngày hôm sau)
+                                        </small>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="apply-dates-daily">Áp dụng</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="checkout-display-daily" class="form-label">Trả phòng</label>
+                        <input type="text" class="form-control" id="checkout-display-daily" value="Chọn ngày" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="guests-daily" class="form-label">Khách</label>
+                        <div class="guest-selector">
+                            <input type="text" class="form-control guest-display" id="guests-daily" value="1 người lớn, 0 Trẻ em" readonly>
+                            <div class="guest-dropdown" id="guest-dropdown-daily">
+                                <div class="guest-row">
+                                    <div class="guest-info">
+                                        <i class="bi bi-person-fill text-success"></i>
+                                        <span>Người lớn</span>
+                                    </div>
+                                    <div class="guest-controls">
+                                        <button type="button" class="btn-decrease" data-target="adults">−</button>
+                                        <span class="guest-count" id="adults-count-daily">1</span>
+                                        <button type="button" class="btn-increase" data-target="adults">+</button>
+                                    </div>
+                                </div>
+                                <div class="guest-row">
+                                    <div class="guest-info">
+                                        <i class="bi bi-person text-success"></i>
+                                        <span>Trẻ em</span>
+                                    </div>
+                                    <div class="guest-controls">
+                                        <button type="button" class="btn-decrease" data-target="children">−</button>
+                                        <span class="guest-count" id="children-count-daily">0</span>
+                                        <button type="button" class="btn-increase" data-target="children">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="adults" id="adults-input-daily" value="1">
+                            <input type="hidden" name="children" id="children-input-daily" value="0">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn search-btn-compact w-100">Tìm</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
 <div class="container-fluid px-4 pt-4 pb-5 home-detail-container">
     <!-- Header -->
     <div class="section-card">
@@ -658,7 +2102,7 @@
                                  class="img-fluid w-100 h-100 rounded-3 main-image" 
                                  style="object-fit: cover; cursor: pointer;" 
                                  alt="Main home image"
-                                 onclick="showSingleImage('{{ url_for('static', filename=(featured_image.image_path if featured_image else home.images[0].image_path)) }}', 'Ảnh chính', 0)">>
+                                 onclick="showSingleImage('{{ url_for('static', filename=(featured_image.image_path if featured_image else home.images[0].image_path)) }}', 'Ảnh chính', 0)">
                             <div class="image-hover-simple">
                                 Click để xem toàn bộ ảnh
                             </div>
@@ -679,7 +2123,7 @@
                                      class="img-fluid w-100 h-100 rounded-2 side-image" 
                                      style="object-fit: cover; cursor: pointer;" 
                                      alt="Home image"
-                                     onclick="showSingleImage('{{ url_for('static', filename=home.images[1].image_path) }}', 'Ảnh phụ 1', 1)">>
+                                     onclick="showSingleImage('{{ url_for('static', filename=home.images[1].image_path) }}', 'Ảnh phụ 1', 1)">
                                 <div class="image-hover-simple">
                                     Click để xem toàn bộ ảnh
                                 </div>
@@ -693,7 +2137,7 @@
                                      class="img-fluid w-100 h-100 rounded-2 side-image" 
                                      style="object-fit: cover; cursor: pointer;" 
                                      alt="Home image"
-                                     onclick="showSingleImage('{{ url_for('static', filename=home.images[2].image_path) }}', 'Ảnh phụ 2', 2)">>
+                                     onclick="showSingleImage('{{ url_for('static', filename=home.images[2].image_path) }}', 'Ảnh phụ 2', 2)">
                                 <div class="image-hover-simple">
                                     Click để xem toàn bộ ảnh
                                 </div>
@@ -1778,6 +3222,1026 @@ function showToast(message, type = 'info') {
     toast.addEventListener('hidden.bs.toast', () => {
         toast.remove();
     });
+}
+
+// Search bar functionality - Copy from search page
+function expandSearch() {
+    const expandedSearch = document.getElementById('expanded-search');
+    const navbarTabs = document.getElementById('navbar-expanded-tabs');
+    const compactSearch = document.getElementById('compact-search');
+    
+    if (expandedSearch && navbarTabs) {
+        expandedSearch.style.display = 'block';
+        navbarTabs.style.display = 'flex';
+        
+        // Hide compact search when expanded
+        if (compactSearch) {
+            compactSearch.style.display = 'none';
+        }
+    }
+}
+
+function collapseSearch() {
+    const expandedSearch = document.getElementById('expanded-search');
+    const navbarTabs = document.getElementById('navbar-expanded-tabs');
+    const compactSearch = document.getElementById('compact-search');
+    
+    if (expandedSearch && navbarTabs) {
+        expandedSearch.style.display = 'none';
+        navbarTabs.style.display = 'none';
+        
+        // Show compact search when collapsed
+        if (compactSearch) {
+            compactSearch.style.display = 'flex';
+        }
+    }
+}
+
+function switchSearchTab(type) {
+    const hourlyForm = document.getElementById('hourly-search-form');
+    const dailyForm = document.getElementById('daily-search-form');
+    const tabs = document.querySelectorAll('.search-tab');
+    const tabsInline = document.querySelectorAll('.tab-inline');
+    
+    // Switch forms
+    if (type === 'hourly') {
+        if (hourlyForm && dailyForm) {
+            hourlyForm.style.display = 'block';
+            dailyForm.style.display = 'none';
+        }
+    } else {
+        if (hourlyForm && dailyForm) {
+            hourlyForm.style.display = 'none';
+            dailyForm.style.display = 'block';
+        }
+    }
+    
+    // Update tab states
+    tabs.forEach(tab => {
+        if (tab.onclick && tab.onclick.toString().includes(type)) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    
+    // Update inline tab states
+    tabsInline.forEach((tab, index) => {
+        if ((type === 'hourly' && index === 0) || (type === 'daily' && index === 1)) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+}
+
+// Close expanded search when clicking outside
+document.addEventListener('click', function(e) {
+    const expandedSearch = document.getElementById('expanded-search');
+    const compactSearch = document.getElementById('compact-search');
+    const navbarTabs = document.getElementById('navbar-expanded-tabs');
+    
+    if (expandedSearch && expandedSearch.style.display === 'block') {
+        const isClickInsideSearch = expandedSearch.contains(e.target) || 
+                                  compactSearch.contains(e.target) ||
+                                  (navbarTabs && navbarTabs.contains(e.target));
+        
+        if (!isClickInsideSearch) {
+            collapseSearch();
+        }
+    }
+});
+
+// Test function for daily dropdown
+function testDailyDropdown() {
+    console.log('Testing daily dropdown...');
+    const dropdown = document.getElementById('datetime-dropdown-daily');
+    const input = document.getElementById('datetime-daily');
+    
+    if (dropdown && input) {
+        console.log('Elements found:', { dropdown, input });
+        
+        // Force show dropdown with red border
+        dropdown.style.cssText = `
+            display: block !important;
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            z-index: 99999 !important;
+            background-color: white !important;
+            border: 3px solid red !important;
+            width: 900px !important;
+            min-height: 400px !important;
+            margin-top: 5px !important;
+            padding: 20px !important;
+        `;
+        
+        // Add test content
+        dropdown.innerHTML = `
+            <div style="color: red; font-size: 20px; text-align: center; padding: 50px;">
+                ✅ DROPDOWN HOẠT ĐỘNG!<br>
+                Calendar sẽ hiển thị ở đây
+            </div>
+        `;
+        
+        console.log('Dropdown should be visible now with red border');
+        console.log('Dropdown position:', dropdown.getBoundingClientRect());
+        console.log('Input position:', input.getBoundingClientRect());
+    } else {
+        console.log('Elements not found!', { dropdown: !!dropdown, input: !!input });
+    }
+}
+
+// Initialize search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing search functionality...');
+    
+    // Setup datetime selector
+    setupDateTimeSelectorSearch();
+    
+    // Setup daily datetime selector
+    setupDailyDateTimeSelector();
+    
+    // Setup guest selectors
+    setupGuestSelector();
+    setupGuestSelectorDaily();
+    
+    // Add test function to window for debugging
+    window.testDailyDropdown = testDailyDropdown;
+});
+
+// DateTime Selector Functions for Search - Copy from search page
+let isDateTimeSelectorSetup = false;
+function setupDateTimeSelectorSearch() {
+    if (isDateTimeSelectorSetup) return;
+    
+    const display = document.getElementById('datetime-search');
+    const dropdown = document.getElementById('datetime-dropdown-search');
+    const prevMonth = document.getElementById('prev-month-search');
+    const nextMonth = document.getElementById('next-month-search');
+    const calendarTitle = document.getElementById('calendar-title-search');
+    const calendarDays = document.getElementById('calendar-days-search');
+    const applyBtn = document.getElementById('apply-datetime-search');
+    
+    if (!display || !dropdown || !calendarTitle || !calendarDays) {
+        console.log('DateTime selector elements not found');
+        return;
+    }
+    
+    isDateTimeSelectorSetup = true;
+    
+    let currentDate = new Date();
+    let selectedDate = null;
+    let selectedTime = '14:00';
+    let selectedDuration = '3';
+    let currentStep = 1;
+    
+    const monthNames = [
+        'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    ];
+    
+    // Initialize from server data
+    initializeFromServerData();
+    
+    // Toggle dropdown
+    display.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdown.classList.toggle('show');
+        if (dropdown.classList.contains('show')) {
+            renderCalendar();
+            setupTimeSlots();
+            setupDurationSlots();
+        }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!display.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+    
+    // Prevent dropdown from closing expanded search
+    dropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+    
+    // Calendar navigation
+    if (prevMonth) {
+        prevMonth.addEventListener('click', function(e) {
+            e.stopPropagation();
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+    }
+    
+    if (nextMonth) {
+        nextMonth.addEventListener('click', function(e) {
+            e.stopPropagation();
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+    }
+    
+    // Apply button
+    if (applyBtn) {
+        applyBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            updateDisplay();
+            updateHiddenInputs();
+            updateCheckoutDisplay();
+            dropdown.classList.remove('show');
+            
+            currentStep = 1;
+            showStep(1);
+        });
+    }
+    
+    // Back buttons
+    const backStep2 = document.getElementById('back-step-2-search');
+    const backStep3 = document.getElementById('back-step-3-search');
+    
+    if (backStep2) {
+        backStep2.addEventListener('click', function(e) {
+            e.stopPropagation();
+            currentStep = 1;
+            showStep(1);
+        });
+    }
+    
+    if (backStep3) {
+        backStep3.addEventListener('click', function(e) {
+            e.stopPropagation();
+            currentStep = 2;
+            showStep(2);
+        });
+    }
+    
+    function initializeFromServerData() {
+        const checkinDateInput = document.getElementById('checkin-date-search');
+        const checkinTimeInput = document.getElementById('checkin-time-search');
+        const durationInput = document.getElementById('hours-duration-search');
+        
+        if (checkinDateInput.value && checkinTimeInput.value) {
+            selectedDate = checkinDateInput.value;
+            selectedTime = checkinTimeInput.value;
+            selectedDuration = durationInput.value || '3';
+            
+            updateDisplay();
+            updateCheckoutDisplay();
+        } else {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0');
+            const day = today.getDate().toString().padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            
+            selectedDate = todayStr;
+            selectedTime = '14:00';
+            selectedDuration = '3';
+            
+            updateDisplay();
+            updateHiddenInputs();
+            updateCheckoutDisplay();
+        }
+    }
+    
+    function renderCalendar() {
+        if (!calendarTitle || !calendarDays) return;
+        
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        calendarTitle.textContent = monthNames[month] + ', ' + year;
+        
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const today = new Date();
+        
+        let calendarHTML = '';
+        
+        const firstDayOfWeek = (firstDay.getDay() + 6) % 7;
+        for (let i = 0; i < firstDayOfWeek; i++) {
+            const prevDate = new Date(year, month, 1 - (firstDayOfWeek - i));
+            const prevDateStr = prevDate.getFullYear() + '-' + 
+                              (prevDate.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                              prevDate.getDate().toString().padStart(2, '0');
+            calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${prevDateStr}">${prevDate.getDate()}</button>`;
+        }
+        
+        const currentViewingMonth = new Date(year, month, 1);
+        const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const isPastMonth = currentViewingMonth < currentMonth;
+        const isCurrentMonth = currentViewingMonth.getTime() === currentMonth.getTime();
+        
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const date = new Date(year, month, day);
+            const dateStr = year + '-' + (month + 1).toString().padStart(2, '0') + '-' + day.toString().padStart(2, '0');
+            
+            const todayStr = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + today.getDate().toString().padStart(2, '0');
+            const isToday = dateStr === todayStr;
+            const isPastDay = dateStr < todayStr;
+            const isSelected = selectedDate === dateStr;
+            
+            let classes = 'calendar-day';
+            let isDisabled = false;
+            
+            if (isPastMonth) {
+                classes += ' disabled';
+                isDisabled = true;
+            } else if (isCurrentMonth && isPastDay) {
+                classes += ' disabled';
+                isDisabled = true;
+            }
+            
+            if (isSelected) classes += ' selected';
+            
+            calendarHTML += `<button type="button" class="${classes}" data-date="${dateStr}" ${isDisabled ? 'disabled' : ''}>${day}</button>`;
+        }
+        
+        const cellsUsed = firstDayOfWeek + lastDay.getDate();
+        const totalCells = 42;
+        for (let i = cellsUsed; i < totalCells; i++) {
+            const nextDate = new Date(year, month + 1, i - cellsUsed + 1);
+            const nextDateStr = nextDate.getFullYear() + '-' + 
+                              (nextDate.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                              nextDate.getDate().toString().padStart(2, '0');
+            calendarHTML += `<button type="button" class="calendar-day other-month" data-date="${nextDateStr}">${nextDate.getDate()}</button>`;
+        }
+        
+        calendarDays.innerHTML = calendarHTML;
+        
+        calendarDays.addEventListener('click', function(e) {
+            if (e.target && e.target.classList && e.target.classList.contains('calendar-day') && !e.target.disabled) {
+                e.stopPropagation();
+                
+                const allDays = calendarDays.querySelectorAll('.calendar-day');
+                allDays.forEach(day => {
+                    if (day && day.classList) {
+                        day.classList.remove('selected');
+                    }
+                });
+                
+                if (e.target.classList) {
+                    e.target.classList.add('selected');
+                }
+                
+                selectedDate = e.target.dataset.date;
+                console.log('Date selected:', selectedDate);
+                
+                updateDisplay();
+                updateHiddenInputs();
+                updateCheckoutDisplay();
+                
+                setTimeout(() => {
+                    console.log('Auto-proceeding to step 2 after date selection');
+                    currentStep = 2;
+                    showStep(2);
+                }, 300);
+            }
+        });
+    }
+    
+    function setupTimeSlots() {
+        const timeSlots = document.querySelectorAll('.time-slot');
+        const periodBtns = document.querySelectorAll('.period-btn');
+        
+        timeSlots.forEach(slot => {
+            slot.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                timeSlots.forEach(s => s.classList.remove('active'));
+                periodBtns.forEach(p => p.classList.remove('active'));
+                
+                this.classList.add('active');
+                selectedTime = this.dataset.time;
+                
+                window.selectedPeriodSearch = null;
+                
+                console.log('Time selected:', selectedTime);
+                
+                setTimeout(() => {
+                    console.log('Auto-proceeding to step 3 after time selection');
+                    currentStep = 3;
+                    showStep(3);
+                }, 300);
+            });
+        });
+        
+        periodBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                periodBtns.forEach(p => p.classList.remove('active'));
+                timeSlots.forEach(s => s.classList.remove('active'));
+                
+                this.classList.add('active');
+                
+                const period = this.dataset.period;
+                const startTime = this.dataset.start;
+                selectedTime = startTime;
+                
+                window.selectedPeriodSearch = period;
+                
+                if (period === 'overnight') {
+                    selectedDuration = '8';
+                } else if (period === 'daytime') {
+                    selectedDuration = '8';
+                }
+                
+                console.log('Period selected:', period, 'Start time:', startTime, 'Duration:', selectedDuration);
+                
+                updateDisplay();
+                updateHiddenInputs();
+                updateCheckoutDisplay();
+                
+                setTimeout(() => {
+                    console.log('Auto-closing dropdown after period selection');
+                    dropdown.classList.remove('show');
+                    
+                    currentStep = 1;
+                    showStep(1);
+                }, 300);
+            });
+        });
+    }
+    
+    function setupDurationSlots() {
+        const durationSlots = document.querySelectorAll('.duration-slot');
+        
+        durationSlots.forEach(slot => {
+            slot.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                durationSlots.forEach(s => s.classList.remove('active'));
+                
+                this.classList.add('active');
+                selectedDuration = this.dataset.duration;
+                
+                console.log('Duration selected:', selectedDuration);
+                
+                setTimeout(() => {
+                    console.log('Auto-applying after duration selection');
+                    updateDisplay();
+                    updateHiddenInputs();
+                    updateCheckoutDisplay();
+                    dropdown.classList.remove('show');
+                    
+                    currentStep = 1;
+                    showStep(1);
+                }, 300);
+            });
+        });
+    }
+    
+    function showStep(step) {
+        currentStep = step;
+        
+        document.querySelectorAll('#datetime-dropdown-search .step').forEach((el, index) => {
+            el.classList.toggle('active', index + 1 === step);
+        });
+        
+        document.querySelectorAll('#datetime-dropdown-search .step-content').forEach((el, index) => {
+            el.classList.toggle('active', index + 1 === step);
+        });
+    }
+    
+    function updateDisplay() {
+        if (!display) return;
+        
+        if (selectedDate && selectedTime && selectedDuration) {
+            const dateParts = selectedDate.split('-');
+            const year = parseInt(dateParts[0]);
+            const month = parseInt(dateParts[1]) - 1;
+            const day = parseInt(dateParts[2]);
+            
+            const date = new Date(year, month, day);
+            const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+            const dayName = dayNames[date.getDay()];
+            
+            let timeDisplay = '';
+            if (window.selectedPeriodSearch) {
+                if (window.selectedPeriodSearch === 'overnight') {
+                    timeDisplay = '9:00 PM';
+                } else if (window.selectedPeriodSearch === 'daytime') {
+                    timeDisplay = '9:00 AM';
+                }
+            } else {
+                timeDisplay = formatTime12Hour(selectedTime);
+            }
+            
+            display.value = `${dayName} - ${day} tháng ${month + 1} - ${timeDisplay}`;
+        } else {
+            display.value = 'Hãy chọn ngày và giờ';
+        }
+    }
+    
+    function updateCheckoutDisplay() {
+        if (selectedDate && selectedTime && selectedDuration) {
+            const checkoutEl = document.getElementById('checkout-hourly');
+            
+            if (!checkoutEl) return;
+            
+            const dateParts = selectedDate.split('-');
+            const year = parseInt(dateParts[0]);
+            const month = parseInt(dateParts[1]) - 1;
+            const day = parseInt(dateParts[2]);
+            
+            const timeParts = selectedTime.split(':');
+            const hours = parseInt(timeParts[0]);
+            const minutes = parseInt(timeParts[1]) || 0;
+            
+            const checkinDateTime = new Date(year, month, day, hours, minutes);
+            let checkoutDateTime;
+            
+            if (window.selectedPeriodSearch === 'overnight') {
+                checkoutDateTime = new Date(year, month, day + 1, 8, 0);
+            } else if (window.selectedPeriodSearch === 'daytime') {
+                checkoutDateTime = new Date(year, month, day, 20, 0);
+            } else {
+                checkoutDateTime = new Date(checkinDateTime.getTime() + (parseInt(selectedDuration) * 60 * 60 * 1000));
+            }
+            
+            const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+            const checkoutDayName = dayNames[checkoutDateTime.getDay()];
+            const checkoutTimeStr = checkoutDateTime.getHours().toString().padStart(2, '0') + ':' + 
+                                   checkoutDateTime.getMinutes().toString().padStart(2, '0');
+            
+            let checkoutDisplayText = '';
+            if (window.selectedPeriodSearch === 'overnight') {
+                checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 AM`;
+            } else if (window.selectedPeriodSearch === 'daytime') {
+                checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - 8:00 PM`;
+            } else {
+                const checkoutTimeFormatted = formatTime12Hour(checkoutTimeStr);
+                checkoutDisplayText = `${checkoutDayName} - ${checkoutDateTime.getDate()} tháng ${checkoutDateTime.getMonth() + 1} - ${checkoutTimeFormatted}`;
+            }
+            
+            checkoutEl.value = checkoutDisplayText;
+            
+            const checkoutDateFormatted = checkoutDateTime.getFullYear() + '-' + 
+                                        (checkoutDateTime.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                        checkoutDateTime.getDate().toString().padStart(2, '0');
+            
+            const checkoutDateEl = document.getElementById('checkout-date-hourly');
+            const checkoutTimeEl = document.getElementById('checkout-time-hourly');
+            
+            if (checkoutDateEl) checkoutDateEl.value = checkoutDateFormatted;
+            if (checkoutTimeEl) checkoutTimeEl.value = checkoutTimeStr;
+        }
+    }
+    
+    function updateHiddenInputs() {
+        const checkinDateEl = document.getElementById('checkin-date-search');
+        const checkinTimeEl = document.getElementById('checkin-time-search');
+        const hoursDurationEl = document.getElementById('hours-duration-search');
+        
+        if (checkinDateEl) checkinDateEl.value = selectedDate || '';
+        if (checkinTimeEl) checkinTimeEl.value = selectedTime || '';
+        if (hoursDurationEl) hoursDurationEl.value = selectedDuration || '';
+    }
+    
+    function formatTime12Hour(time24) {
+        const timeParts = time24.split(':');
+        let hours = parseInt(timeParts[0]);
+        const minutes = timeParts[1] || '00';
+        
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        
+        return `${hours}:${minutes} ${ampm}`;
+    }
+}
+
+// Guest Selector Functions
+function setupGuestSelector() {
+    const guestDisplay = document.getElementById('guests-hourly');
+    const guestDropdown = document.getElementById('guest-dropdown-hourly');
+    
+    if (!guestDisplay || !guestDropdown) return;
+    
+    let guestCounts = {
+        adults: parseInt(document.getElementById('adults-count-hourly').textContent) || 1,
+        children: parseInt(document.getElementById('children-count-hourly').textContent) || 0
+    };
+    
+    guestDisplay.addEventListener('click', function(e) {
+        e.stopPropagation();
+        guestDropdown.classList.toggle('show');
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.guest-selector')) {
+            guestDropdown.classList.remove('show');
+        }
+    });
+    
+    guestDropdown.querySelectorAll('.btn-increase, .btn-decrease').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const target = this.dataset.target;
+            const isIncrease = this.classList.contains('btn-increase');
+            
+            if (isIncrease) {
+                guestCounts[target]++;
+            } else {
+                if (target === 'adults' && guestCounts[target] > 1) {
+                    guestCounts[target]--;
+                } else if (target === 'children' && guestCounts[target] > 0) {
+                    guestCounts[target]--;
+                }
+            }
+            
+            document.getElementById(`${target}-count-hourly`).textContent = guestCounts[target];
+            
+            updateGuestButtonStates();
+            updateGuestDisplay();
+            
+            document.getElementById('adults-input-hourly').value = guestCounts.adults;
+            document.getElementById('children-input-hourly').value = guestCounts.children;
+        });
+    });
+    
+    function updateGuestButtonStates() {
+        const adultsDecreaseBtn = guestDropdown.querySelector('[data-target="adults"].btn-decrease');
+        const childrenDecreaseBtn = guestDropdown.querySelector('[data-target="children"].btn-decrease');
+        
+        adultsDecreaseBtn.disabled = guestCounts.adults <= 1;
+        childrenDecreaseBtn.disabled = guestCounts.children <= 0;
+    }
+    
+    function updateGuestDisplay() {
+        const adultsText = guestCounts.adults + ' người lớn';
+        const childrenText = guestCounts.children + ' Trẻ em';
+        
+        guestDisplay.value = `${adultsText}, ${childrenText}`;
+    }
+    
+    updateGuestButtonStates();
+}
+
+// Daily Date Time Selector - Copied from search page
+function setupDailyDateTimeSelector() {
+    console.log('Setting up daily date time selector for home detail page...');
+    
+    const checkinInput = document.getElementById('datetime-daily');
+    const checkoutInput = document.getElementById('checkout-display-daily');
+    const calendarDropdown = document.getElementById('datetime-dropdown-daily');
+    
+    if (!checkinInput || !checkoutInput || !calendarDropdown) {
+        console.log('Daily form elements not found:', {
+            checkinInput: !!checkinInput,
+            checkoutInput: !!checkoutInput, 
+            calendarDropdown: !!calendarDropdown
+        });
+        return;
+    }
+    
+    console.log('Daily form elements found successfully');
+    
+    let isDropdownOpen = false;
+    let selectedCheckin = null;
+    let selectedCheckout = null;
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    
+    const monthNames = [
+        'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    ];
+    
+    // Initialize from server data if available
+    initializeDailyFromServerData();
+    
+    // Show/hide dropdown
+    function toggleDropdown() {
+        console.log('Toggling dropdown, current state:', isDropdownOpen);
+        isDropdownOpen = !isDropdownOpen;
+        
+        if (isDropdownOpen) {
+            calendarDropdown.style.display = 'block';
+            renderCalendar();
+        } else {
+            calendarDropdown.style.display = 'none';
+        }
+        
+        console.log('Dropdown display:', calendarDropdown.style.display);
+        console.log('Dropdown should be visible at center of screen');
+    }
+    
+    // Initialize from server data
+    function initializeDailyFromServerData() {
+        const checkinDateInput = document.getElementById('checkin-date-daily');
+        const checkoutDateInput = document.getElementById('checkout-date-daily');
+        
+        if (checkinDateInput.value && checkoutDateInput.value) {
+            selectedCheckin = new Date(checkinDateInput.value + 'T00:00:00');
+            selectedCheckout = new Date(checkoutDateInput.value + 'T00:00:00');
+            
+            checkinInput.value = formatDate(selectedCheckin);
+            checkoutInput.value = formatDate(selectedCheckout);
+        } else {
+            // Set defaults
+            checkinInput.value = 'Chọn ngày';
+            checkoutInput.value = 'Chọn ngày';
+        }
+    }
+    
+    // Render calendar for both months
+    function renderCalendar() {
+        console.log('Rendering calendar...');
+        const calendarDays1 = document.getElementById('calendar-days-daily-1');
+        const calendarDays2 = document.getElementById('calendar-days-daily-2');
+        const calendarTitle1 = document.getElementById('calendar-title-daily-1');
+        const calendarTitle2 = document.getElementById('calendar-title-daily-2');
+        
+        if (!calendarDays1 || !calendarDays2 || !calendarTitle1 || !calendarTitle2) {
+            console.log('Calendar elements not found');
+            return;
+        }
+        
+        // Render first month
+        renderMonth(calendarDays1, calendarTitle1, currentMonth, currentYear);
+        
+        // Render second month
+        let nextMonth = currentMonth + 1;
+        let nextYear = currentYear;
+        if (nextMonth > 11) {
+            nextMonth = 0;
+            nextYear++;
+        }
+        renderMonth(calendarDays2, calendarTitle2, nextMonth, nextYear);
+    }
+    
+    // Render individual month
+    function renderMonth(calendarDays, calendarTitle, month, year) {
+        // Update month title
+        calendarTitle.textContent = `${monthNames[month]} ${year}`;
+        
+        // Clear existing days
+        calendarDays.innerHTML = '';
+        
+        // Get first day of month and number of days
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Add empty cells for days before first day of month
+        for (let i = 0; i < firstDay; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'calendar-day empty';
+            calendarDays.appendChild(emptyCell);
+        }
+        
+        // Add days of month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayCell = document.createElement('div');
+            dayCell.className = 'calendar-day';
+            dayCell.textContent = day;
+            
+            const cellDate = new Date(year, month, day);
+            cellDate.setHours(0, 0, 0, 0);
+            
+            // Disable past dates
+            if (cellDate < today) {
+                dayCell.classList.add('disabled');
+            } else {
+                dayCell.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectDate(cellDate);
+                });
+                
+                // Highlight selected dates
+                if (selectedCheckin && cellDate.getTime() === selectedCheckin.getTime()) {
+                    dayCell.classList.add('selected', 'checkin');
+                }
+                if (selectedCheckout && cellDate.getTime() === selectedCheckout.getTime()) {
+                    dayCell.classList.add('selected', 'checkout');
+                }
+                
+                // Highlight dates in range
+                if (selectedCheckin && selectedCheckout && 
+                    cellDate > selectedCheckin && cellDate < selectedCheckout) {
+                    dayCell.classList.add('in-range');
+                }
+            }
+            
+            calendarDays.appendChild(dayCell);
+        }
+    }
+    
+    // Select date
+    function selectDate(date) {
+        console.log('Selecting date:', date);
+        
+        if (!selectedCheckin || (selectedCheckin && selectedCheckout)) {
+            // First selection or reset
+            selectedCheckin = date;
+            selectedCheckout = null;
+            checkinInput.value = formatDate(date);
+            checkoutInput.value = 'Chọn ngày';
+            
+            // Update hidden inputs
+            document.getElementById('checkin-date-daily').value = formatDateForInput(date);
+            document.getElementById('checkout-date-daily').value = '';
+            
+            // Re-render calendar to show selection but keep dropdown open
+            renderCalendar();
+        } else if (date > selectedCheckin) {
+            // Second selection (checkout) - keep dropdown open until Apply is clicked
+            selectedCheckout = date;
+            checkoutInput.value = formatDate(date);
+            
+            // Update hidden input
+            document.getElementById('checkout-date-daily').value = formatDateForInput(date);
+            
+            // Re-render calendar to show selection but keep dropdown open
+            renderCalendar();
+        } else {
+            // New checkin date
+            selectedCheckin = date;
+            selectedCheckout = null;
+            checkinInput.value = formatDate(date);
+            checkoutInput.value = 'Chọn ngày';
+            
+            // Update hidden inputs
+            document.getElementById('checkin-date-daily').value = formatDateForInput(date);
+            document.getElementById('checkout-date-daily').value = '';
+            
+            // Re-render calendar to show selection but keep dropdown open
+            renderCalendar();
+        }
+    }
+    
+    // Format date for display
+    function formatDate(date) {
+        const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+        const dayName = dayNames[date.getDay()];
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        return `${dayName} - ${day} tháng ${month}`;
+    }
+    
+    // Format date for input (YYYY-MM-DD)
+    function formatDateForInput(date) {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Navigation
+    const prevBtn = document.getElementById('prev-month-daily');
+    const nextBtn = document.getElementById('next-month-daily');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentMonth === 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            renderCalendar();
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentMonth === 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            renderCalendar();
+        });
+    }
+    
+    // Apply button
+    const applyBtn = document.getElementById('apply-dates-daily');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDropdown();
+        });
+    }
+    
+    // Clear button
+    const clearBtn = document.getElementById('clear-dates-daily');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedCheckin = null;
+            selectedCheckout = null;
+            checkinInput.value = 'Chọn ngày';
+            checkoutInput.value = 'Chọn ngày';
+            
+            // Update hidden inputs
+            document.getElementById('checkin-date-daily').value = '';
+            document.getElementById('checkout-date-daily').value = '';
+            
+            renderCalendar();
+        });
+    }
+    
+    // Event listeners for inputs
+    checkinInput.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Checkin input clicked');
+        toggleDropdown();
+    });
+    
+    checkoutInput.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Checkout input clicked');
+        toggleDropdown();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!calendarDropdown.contains(e.target) && 
+            !checkinInput.contains(e.target) && 
+            !checkoutInput.contains(e.target)) {
+            if (isDropdownOpen) {
+                toggleDropdown();
+            }
+        }
+    });
+}
+
+// Guest Selector Functions for Daily Form
+function setupGuestSelectorDaily() {
+    const guestDisplay = document.getElementById('guests-daily');
+    const guestDropdown = document.getElementById('guest-dropdown-daily');
+    
+    if (!guestDisplay || !guestDropdown) return;
+    
+    let guestCounts = {
+        adults: parseInt(document.getElementById('adults-count-daily').textContent) || 1,
+        children: parseInt(document.getElementById('children-count-daily').textContent) || 0
+    };
+    
+    guestDisplay.addEventListener('click', function(e) {
+        e.stopPropagation();
+        guestDropdown.classList.toggle('show');
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#guest-dropdown-daily') && !e.target.closest('#guests-daily')) {
+            guestDropdown.classList.remove('show');
+        }
+    });
+    
+    guestDropdown.querySelectorAll('.btn-increase, .btn-decrease').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const target = this.dataset.target;
+            const isIncrease = this.classList.contains('btn-increase');
+            
+            if (isIncrease) {
+                guestCounts[target]++;
+            } else {
+                if (target === 'adults' && guestCounts[target] > 1) {
+                    guestCounts[target]--;
+                } else if (target === 'children' && guestCounts[target] > 0) {
+                    guestCounts[target]--;
+                }
+            }
+            
+            document.getElementById(`${target}-count-daily`).textContent = guestCounts[target];
+            
+            updateGuestButtonStatesDaily();
+            updateGuestDisplayDaily();
+            
+            document.getElementById('adults-input-daily').value = guestCounts.adults;
+            document.getElementById('children-input-daily').value = guestCounts.children;
+        });
+    });
+    
+    function updateGuestButtonStatesDaily() {
+        const adultsDecreaseBtn = guestDropdown.querySelector('[data-target="adults"].btn-decrease');
+        const childrenDecreaseBtn = guestDropdown.querySelector('[data-target="children"].btn-decrease');
+        
+        adultsDecreaseBtn.disabled = guestCounts.adults <= 1;
+        childrenDecreaseBtn.disabled = guestCounts.children <= 0;
+    }
+    
+    function updateGuestDisplayDaily() {
+        const adultsText = guestCounts.adults + ' người lớn';
+        const childrenText = guestCounts.children + ' Trẻ em';
+        
+        guestDisplay.value = `${adultsText}, ${childrenText}`;
+    }
+    
+    updateGuestButtonStatesDaily();
 }
 </script>
 {% endblock %}
