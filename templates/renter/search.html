@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Search Homestays - Horin{% endblock %}
+{% block title %}Search Homestays - Homi{% endblock %}
 
 {% block navbar_search %}
 <!-- Compact Search Bar -->
@@ -518,13 +518,16 @@
     }
     
     .search-form-content .form-label {
-        margin-bottom: 8px;
+        margin-bottom: 0.3rem;
         font-weight: 500;
-        color: #333;
-        font-size: 13px;
+        color: #888;
+        font-size: 0.7rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        opacity: 0.9;
     }
     
     /* Ensure proper spacing between columns */
@@ -535,10 +538,10 @@
     
     /* Make form inputs more compact but readable */
     .search-form-content .form-control {
-        padding: 8px 12px;
-        font-size: 13px;
-        height: auto;
-        min-height: 38px;
+        padding: 0 0.75rem;
+        font-size: 0.85rem;
+        height: 46px;
+        min-height: 46px;
     }
     
     /* Ensure text doesn't overflow in input fields */
@@ -556,33 +559,35 @@
         text-overflow: clip !important;
         word-wrap: break-word;
         line-height: 1.2;
-        height: auto !important;
-        min-height: 38px;
-        padding: 6px 12px;
+        height: 46px !important;
+        min-height: 46px;
+        padding: 0 0.75rem;
     }
     
     /* Remove special styling for guest field - use default form styling */
     
     /* Compact search button */
     .search-btn-compact {
-        background: #8bc34a;
+        background: #b2e254;
         border: none;
-        color: white;
+        color: white !important;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 0.85rem;
         padding: 8px 8px;
-        border-radius: 8px;
+        border-radius: 6px;
         transition: all 0.3s ease;
-        height: 38px;
+        height: 46px;
         display: flex;
         align-items: center;
         justify-content: center;
+        white-space: nowrap;
+        min-width: 80px;
     }
     
     .search-btn-compact:hover {
-        background: #7cb342;
+        background: #9ed649;
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 12px rgba(178, 226, 84, 0.3);
     }
     
     /* Adjust guest dropdown to not overlap button */
@@ -750,29 +755,34 @@
     }
     
     .expanded-search-container .form-label {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 8px;
-        font-size: 13px;
+        font-weight: 500;
+        color: #888;
+        margin-bottom: 0.3rem;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        opacity: 0.9;
     }
     
     .expanded-search-container .search-btn {
-        background: linear-gradient(135deg, #8bc34a, #689f38);
+        height: 46px;
+        width: 100%;
+        background: #b2e254;
+        color: white !important;
         border: none;
-        border-radius: 8px;
-        padding: 12px 24px;
+        border-radius: 6px;
         font-weight: 600;
-        color: white;
-        height: 45px;
+        font-size: 0.85rem;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(139, 195, 74, 0.3);
-        font-size: 14px;
+        white-space: nowrap;
+        box-sizing: border-box;
     }
     
     .expanded-search-container .search-btn:hover {
+        background: #9ed649;
+        color: white !important;
         transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(139, 195, 74, 0.4);
-        background: linear-gradient(135deg, #689f38, #558b2f);
+        box-shadow: 0 4px 12px rgba(178, 226, 84, 0.3);
     }
     
     .expanded-search-container .row {
@@ -802,8 +812,9 @@
         }
         
         .search-btn-compact {
-            width: 30px;
-            height: 30px;
+            width: 80px;
+            height: 46px;
+            font-size: 0.8rem;
         }
         
         .navbar-expanded-tabs {
@@ -820,17 +831,19 @@
         }
         
         .expanded-search-container .form-control {
-            height: 40px;
-            font-size: 13px;
+            height: 46px;
+            font-size: 0.85rem;
+            padding: 0 0.75rem;
         }
         
         .expanded-search-container .search-btn {
-            height: 40px;
-            font-size: 13px;
+            height: 46px;
+            font-size: 0.85rem;
         }
         
         .expanded-search-container .form-label {
-            font-size: 12px;
+            font-size: 0.65rem;
+            margin-bottom: 0.25rem;
         }
         
         .expanded-search-container .search-tab {
@@ -861,8 +874,9 @@
         }
         
         .search-btn-compact {
-            width: 25px;
-            height: 25px;
+            width: 70px;
+            height: 42px;
+            font-size: 0.75rem;
         }
         
         .navbar-expanded-tabs {
@@ -879,17 +893,19 @@
         }
         
         .expanded-search-container .form-control {
-            height: 38px;
-            font-size: 12px;
+            height: 42px;
+            font-size: 0.8rem;
+            padding: 0 0.6rem;
         }
         
         .expanded-search-container .search-btn {
-            height: 38px;
-            font-size: 12px;
+            height: 42px;
+            font-size: 0.8rem;
         }
         
         .expanded-search-container .form-label {
-            font-size: 11px;
+            font-size: 0.6rem;
+            margin-bottom: 0.2rem;
         }
         
         .expanded-search-container .search-tab {
@@ -928,18 +944,39 @@
         }
         
         .search-navbar .form-control {
-            height: 40px;
-            font-size: 13px;
+            height: 46px;
+            font-size: 0.85rem;
+            padding: 0 0.75rem;
         }
         
         .search-navbar .search-btn {
-            height: 40px;
-            font-size: 13px;
-            padding: 8px 16px;
+            height: 46px;
+            font-size: 0.85rem;
+            width: 100%;
+            background: #b2e254;
+            color: white !important;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+        
+        .search-navbar .search-btn:hover {
+            background: #9ed649;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(178, 226, 84, 0.3);
         }
         
         .search-navbar .form-label {
-            font-size: 12px;
+            font-size: 0.7rem;
+            margin-bottom: 0.3rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            opacity: 0.9;
         }
         
         .search-navbar .row {
@@ -1287,6 +1324,8 @@
         font-size: 15px;
         position: relative;
         min-height: 40px;
+        background: none;
+        border: none;
     }
 
     .calendar-day:hover {
@@ -1649,6 +1688,8 @@
         font-size: 15px;
         position: relative;
         min-height: 40px;
+        background: none;
+        border: none;
     }
 
     .datetime-selector-daily .calendar-day:hover {
@@ -1903,7 +1944,7 @@
                     </div>
                     <div class="col-md-1">
                         <label class="form-label">&nbsp;</label>
-                        <button type="submit" class="btn search-btn-compact w-100">Tìm</button>
+                        <button type="submit" class="btn search-btn-compact w-100">Tìm kiếm</button>
                     </div>
                 </div>
             </form>
@@ -2024,7 +2065,7 @@
                     </div>
                     <div class="col-md-1">
                         <label class="form-label">&nbsp;</label>
-                        <button type="submit" class="btn search-btn-compact w-100">Tìm</button>
+                        <button type="submit" class="btn search-btn-compact w-100">Tìm kiếm</button>
                     </div>
                 </div>
             </form>

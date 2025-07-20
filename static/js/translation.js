@@ -10,11 +10,11 @@ const translations = {
         'login': 'Login',
         'register': 'Register',
         'logout': 'Logout',
-        'about-homestay': 'About Horin',
+        'about-homestay': 'About Homi',
         'platform-desc': 'A platform connecting homestay owners with travelers looking for unique accommodations.',
         'links': 'Links',
         'contact': 'Contact',
-        'homestay-booking': 'Horin',
+        'homestay-booking': 'Homi',
         'find-perfect-homestay': 'Find Your Perfect Homestay',
         'book-description': 'Book unique accommodations or list your property to earn extra income.',
         'explore-description': 'Explore our selection of homestays or create an account to get started.',
@@ -26,7 +26,7 @@ const translations = {
         'view-all': 'View All',
         'email': 'Email',
         'phone': 'Phone',
-        'copyright': '© 2025 Horin - School Project',
+        'copyright': '© 2025 Homi - School Project',
         'available-rooms': 'Available Rooms',
         'room': 'Room',
         'address': 'Address',
@@ -156,7 +156,7 @@ const translations = {
         'number-of-floors': 'Number of Floors',
         'upload-image': 'Upload Image',
         'all-bookings': 'All Bookings',
-        'homestay-bookings': 'Horin Bookings',
+        'homestay-bookings': 'Homi Bookings',
         'id': 'ID',
         'booker': 'Booker',
         'homestay': 'Homestay',
@@ -265,7 +265,7 @@ const translations = {
         'bluetooth-speaker': 'Bluetooth Speaker',
         'add-description': 'Add a detailed description by clicking "Edit".',
         'edit-room-info': 'Edit Room Information',
-        'book-homestay': 'Book with Horin'
+        'book-homestay': 'Book with Homi'
     },
     vi: {
         'home': 'Trang chủ',
@@ -278,11 +278,11 @@ const translations = {
         'login': 'Đăng nhập',
         'register': 'Đăng ký',
         'logout': 'Đăng xuất',
-        'about-homestay': 'Về Horin',
+        'about-homestay': 'Về Homi',
         'platform-desc': 'Nền tảng kết nối chủ nhà với khách du lịch tìm kiếm chỗ ở độc đáo.',
         'links': 'Liên kết',
         'contact': 'Liên hệ',
-        'homestay-booking': 'Horin',
+        'homestay-booking': 'Homi',
         'find-perfect-homestay': 'Tìm Homestay Lý Tưởng',
         'book-description': 'Đặt phòng độc đáo hoặc đăng ký cho thuê để tăng thêm thu nhập.',
         'explore-description': 'Khám phá danh sách homestay của chúng tôi hoặc tạo tài khoản để bắt đầu.',
@@ -294,7 +294,7 @@ const translations = {
         'view-all': 'Xem Tất Cả',
         'email': 'Email',
         'phone': 'Điện thoại',
-        'copyright': '© 2025 Horin - Dự Án Học Tập',
+        'copyright': '© 2025 Homi - Dự Án Học Tập',
         'available-rooms': 'Phòng Còn Trống',
         'room': 'Phòng',
         'address': 'Địa chỉ',
@@ -424,7 +424,7 @@ const translations = {
         'number-of-floors': 'Số tầng',
         'upload-image': 'Tải ảnh lên',
         'all-bookings': 'Trạng thái đặt phòng',
-        'homestay-bookings': 'Horin Bookings',
+        'homestay-bookings': 'Homi Bookings',
         'id': 'ID',
         'booker': 'Người đặt',
         'homestay': 'Homestay',
@@ -533,7 +533,7 @@ const translations = {
         'bluetooth-speaker': 'Loa bluetooth',
         'add-description': 'Thêm mô tả chi tiết bằng cách nhấn nút "Chỉnh sửa".',
         'edit-room-info': 'Chỉnh sửa thông tin phòng',
-        'book-homestay': 'Đặt phòng với Horin'
+        'book-homestay': 'Đặt phòng với Homi'
     }
 };
 

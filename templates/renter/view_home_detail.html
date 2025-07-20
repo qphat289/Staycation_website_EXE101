@@ -324,24 +324,26 @@
     }
     
     .search-btn-compact {
-        background: #8bc34a;
+        background: #b2e254;
         border: none;
         color: white;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 0.85rem;
         padding: 8px 8px;
-        border-radius: 8px;
+        border-radius: 6px;
         transition: all 0.3s ease;
-        height: 45px;
+        height: 46px;
         display: flex;
         align-items: center;
         justify-content: center;
+        white-space: nowrap;
+        min-width: 80px;
     }
     
     .search-btn-compact:hover {
-        background: #7cb342;
+        background: #9ed649;
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 12px rgba(178, 226, 84, 0.3);
     }
     
     @keyframes slideDown {
@@ -1116,6 +1118,8 @@
         font-size: 14px;
         transition: all 0.2s ease;
         position: relative;
+        background: none;
+        border: none;
     }
     
     .calendar-day:hover:not(.disabled) {
@@ -1254,6 +1258,8 @@
         font-size: 15px;
         position: relative;
         min-height: 40px;
+        background: none;
+        border: none;
     }
 
     #datetime-dropdown-daily .calendar-day:hover {
@@ -1478,6 +1484,8 @@
         font-size: 15px;
         position: relative;
         min-height: 40px;
+        background: none;
+        border: none;
     }
 
     .calendar-day:hover {
@@ -1979,7 +1987,7 @@
                     </div>
                     <div class="col-md-1">
                         <label class="form-label">&nbsp;</label>
-                        <button type="submit" class="btn search-btn-compact w-100">Tìm</button>
+                        <button type="submit" class="btn search-btn-compact w-100">Tìm kiếm</button>
                     </div>
                 </div>
             </form>
@@ -2089,7 +2097,7 @@
                     </div>
                     <div class="col-md-1">
                         <label class="form-label">&nbsp;</label>
-                        <button type="submit" class="btn search-btn-compact w-100">Tìm</button>
+                        <button type="submit" class="btn search-btn-compact w-100">Tìm kiếm</button>
                     </div>
                 </div>
             </form>
