@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
-from app.models.models import db, Admin, Owner, Renter, Home, Booking, Statistics, Review
+from app.models.models import db, Admin, Owner, Renter, Home, Booking, Statistics, Review, Payment
 from app.utils.utils import allowed_file
 from app.utils.password_validator import PasswordValidator
+from app.utils.address_formatter import format_full_address
 from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
@@ -44,6 +45,12 @@ def dashboard():
                 commission_percent = owner.homes[0].commission_percent if hasattr(owner.homes[0], 'commission_percent') else 10.0
                 # Tính tổng doanh thu các nhà
                 total_revenue = sum([home.revenue or 0 for home in owner.homes])
+            # Lấy tất cả payment liên quan đến các home của owner
+            home_ids = [home.id for home in owner.homes]
+            payments = []
+            if home_ids:
+                payments = Payment.query.join(Booking).filter(Booking.home_id.in_(home_ids)).order_by(Payment.created_at.desc()).all()
+            owner.payments = payments  # Gán payments vào owner để template có thể sử dụng
             users.append({
                 'id': owner.id,
                 'username': owner.username,
@@ -915,6 +922,16 @@ def owner_detail(owner_id):
         return redirect(url_for('auth.login'))
     
     owner = Owner.query.get_or_404(owner_id)
+    
+    # Lấy tất cả payment liên quan đến các home của owner (giống như trong dashboard)
+    home_ids = [home.id for home in owner.homes]
+    payments = []
+    if home_ids:
+        payments = Payment.query.join(Booking).filter(Booking.home_id.in_(home_ids)).order_by(Payment.created_at.desc()).all()
+    
+    # Gán payments vào owner để template có thể sử dụng
+    owner.payments = payments
+    
     return render_template('admin/owner_detail.html', owner=owner)
 
 @admin_bp.route('/owner/<int:owner_id>/delete', methods=['POST'])

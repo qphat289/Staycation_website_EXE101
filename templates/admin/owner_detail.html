@@ -556,7 +556,7 @@ nav.navbar {
                             </tr>
                             <tr>
                                 <td>Số phòng đã đăng:</td>
-                                <td>{{ owner.rooms|length if owner.rooms else '0' }}</td>
+                                <td>{{ owner.homes|length if owner.homes else '0' }}</td>
                             </tr>
                             <tr>
                                 <td>Đánh giá trung bình:</td>
@@ -592,9 +592,9 @@ nav.navbar {
                             </tr>
                         </thead>
                         <tbody>
-                            {% for room in owner.rooms %}
+                            {% for room in owner.homes %}
                             <tr>
-                                <td>{{ room.name }}</td>
+                                <td>{{ room.title }}</td>
                                 <td>{{ format_full_address(room.address, None, room.district, room.city) }}</td>
                                 <td>
                                     {% if room.price_per_night %}
@@ -665,9 +665,9 @@ nav.navbar {
                         <tbody>
                             {% for payment in owner.payments %}
                             <tr>
-                                <td>{{ payment.transaction_id }}</td>
+                                <td>{{ payment.payment_code }}</td>
                                 <td>{{ payment.created_at.strftime('%d/%m/%Y') }}</td>
-                                <td>{{ payment.type }}</td>
+                                <td>{{ payment.payment_method or 'Chưa xác định' }}</td>
                                 <td>{{ '{:,.0f}'.format(payment.amount|float) }} VND</td>
                                 <td>
                                     <span class="badge {% if payment.status == 'success' %}badge-success{% elif payment.status == 'pending' %}badge-warning{% else %}badge-inactive{% endif %}">
