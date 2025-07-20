@@ -2864,7 +2864,7 @@ nav[aria-label="Page navigation"] {
                                                                 </tr>
                                                                 <tr>
                                                                     <td class="text-muted">Số phòng đã đăng:</td>
-                                                                    <td>{{ owner.rooms|length if owner.rooms else '0' }}</td>
+                                                                    <td>{{ owner.homes|length if owner.homes else '0' }}</td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td class="text-muted">Đánh giá trung bình:</td>
@@ -2900,26 +2900,31 @@ nav[aria-label="Page navigation"] {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for room in owner.rooms %}
+                                    {% for room in owner.homes %}
                                     <tr>
-                                        <td>{{ room.name }}</td>
-                                        <td>{{ room.address }}</td>
+                                        <td>{{ room.title }}</td>
+                                        <td>{{ format_full_address(room.address, None, room.district, room.city) }}</td>
                                         <td>
-                                            {% if room.price_per_night %}
-                                                {{ '{:,.0f}'.format(room.price_per_night) }} VND
+                                            {% if room.display_price_per_night %}
+                                                {{ '{:,.0f}'.format(room.display_price_per_night) }} VND
                                             {% else %}
                                                 Chưa cập nhật
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <span class="badge {% if room.is_available %}bg-success{% else %}bg-danger{% endif %}">
+                                            <span class="badge {% if room.is_available %}bg-success{% else %}badge-inactive{% endif %}">
                                                 {{ 'Còn trống' if room.is_available else 'Đã đặt' }}
                                             </span>
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <i class="fas fa-star text-warning me-1"></i>
-                                                <span>{{ room.average_rating|default('Chưa có đánh giá', true) }}</span>
+                                                {% set ratings = room.reviews | map(attribute='rating') | list %}
+                                                {% if ratings and ratings|length > 0 %}
+                                                    <span>{{ (ratings | sum / ratings|length)|round(1) }}/5</span>
+                                                {% else %}
+                                                    <span>Chưa có đánh giá</span>
+                                                {% endif %}
                                             </div>
                                         </td>
                                     </tr>
@@ -2946,10 +2951,10 @@ nav[aria-label="Page navigation"] {
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {% for room in owner.rooms %}
+                                                        {% for room in owner.homes %}
                                                         <tr>
                                                             <td>{{ room.title }}</td>
-                                                            <td>{{ '{:,.0f}'.format(room.revenue|default(0, true) * 1000) }} VND</td>
+                                                            <td>{{ '{:,.0f}'.format(room.revenue|default(0, true)) }} VND</td>
                                                             <td>
                                                                 <input type="number" min="0" max="100" step="0.1"
                                                                        value="{{ room.commission_percent|default(10.0, true) }}"
@@ -2987,10 +2992,10 @@ nav[aria-label="Page navigation"] {
                                                     <tbody>
                                                         {% for payment in owner.payments %}
                                                         <tr>
-                                                            <td>{{ payment.transaction_id }}</td>
+                                                            <td>{{ payment.payment_code }}</td>
                                                             <td>{{ payment.created_at.strftime('%d/%m/%Y') }}</td>
-                                                            <td>{{ payment.type }}</td>
-                                                            <td>{{ '{:,.0f}'.format(payment.amount|float * 1000) }} VND</td>
+                                                            <td>{{ payment.payment_method }}</td>
+                                                            <td>{{ '{:,.0f}'.format(payment.amount|float) }} VND</td>
                                                             <td>
                                                                 <span class="badge {% if payment.status == 'success' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
                                                                     {{ payment.status|title }}
