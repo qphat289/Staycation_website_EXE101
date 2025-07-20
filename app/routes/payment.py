@@ -40,8 +40,153 @@ def checkout(booking_id):
     if booking.payment_status == 'paid':
         flash('Đơn đặt phòng này đã được thanh toán.', 'info')
         return redirect(url_for('renter.booking_details', booking_id=booking_id))
+
+    # Calculate minimum date (30 days before booking start time)
+    min_date = booking.start_time - timedelta(days=30)
+
+    return render_template('payment/checkout.html', booking=booking, min_date=min_date)
+
+@payment_bp.route('/modify-booking/<int:booking_id>', methods=['POST'])
+@login_required
+def modify_booking(booking_id):
+    """Modify booking details before payment"""
+    # Kiểm tra email verification cho Renter
+    if current_user.is_renter() and not current_user.email_verified:
+        flash('Vui lòng xác thực email trước khi thực hiện thanh toán', 'warning')
+        return redirect(url_for('renter.verify_email'))
     
-    return render_template('payment/checkout.html', booking=booking)
+    # Get the booking
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Make sure the current user is the one who made the booking
+    if booking.renter_id != current_user.id:
+        flash('Bạn không có quyền truy cập thanh toán này.', 'danger')
+        return redirect(url_for('renter.dashboard'))
+    
+    # Check if the booking is already paid
+    if booking.payment_status == 'paid':
+        flash('Đơn đặt phòng này đã được thanh toán.', 'info')
+        return redirect(url_for('renter.booking_details', booking_id=booking_id))
+    
+    try:
+        booking_type = request.form.get('booking_type', 'daily')
+        home = booking.home
+        
+        if booking_type == 'hourly':
+            start_date = request.form.get('start_date_hourly')
+            start_time = request.form.get('start_time')
+            duration_str = request.form.get('duration_hourly')
+            
+            if not start_date or not start_time or not duration_str:
+                flash("Bạn phải chọn ngày, giờ bắt đầu và số giờ thuê.", "warning")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+            try:
+                duration = int(duration_str)
+            except ValueError:
+                flash("Số giờ thuê không hợp lệ.", "danger")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+            if duration < 2:
+                flash("Số giờ thuê tối thiểu là 2.", "warning")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+            # Calculate start and end time
+            try:
+                start_datetime = datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M")
+            except ValueError:
+                flash("Định dạng ngày/giờ không hợp lệ.", "danger")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+            end_datetime = start_datetime + timedelta(hours=duration)
+            
+            # Calculate total price
+            total_price = 0
+            start_hour = start_datetime.hour
+            end_hour = end_datetime.hour
+            
+            # Check for overnight/daytime pricing
+            is_overnight = (start_hour >= 21 or start_hour <= 8) and home.price_overnight
+            is_daytime = (start_hour >= 9 and start_hour <= 20) and home.price_daytime
+            
+            if is_overnight and duration >= 8:
+                total_price = home.price_overnight
+            elif is_daytime and duration >= 8:
+                total_price = home.price_daytime
+            elif duration <= 2 and home.price_first_2_hours:
+                total_price = home.price_first_2_hours
+            elif duration > 2 and home.price_first_2_hours and home.price_per_additional_hour:
+                total_price = home.price_first_2_hours + (duration - 2) * home.price_per_additional_hour
+            elif home.price_per_hour:
+                total_price = duration * home.price_per_hour
+            else:
+                flash("Nhà này chưa có giá phù hợp với thời gian bạn chọn.", "warning")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+        else:  # daily booking
+            start_date = request.form.get('start_date')
+            duration_str = request.form.get('duration_daily')
+            
+            if not start_date or not duration_str:
+                flash("You must select date and duration.", "warning")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+            try:
+                duration = int(duration_str)
+            except ValueError:
+                flash("Invalid duration.", "danger")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+            if duration < 1:
+                flash("Minimum duration is 1 night.", "warning")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+            # Check if home has price_per_night or price_per_day
+            price = home.price_per_day if home.price_per_day and home.price_per_day > 0 else home.price_per_night
+            if not price or price <= 0:
+                flash("Nhà này chưa có thông tin giá. Vui lòng liên hệ chủ nhà để cập nhật giá trước khi đặt.", "warning")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+            # For home bookings, check-in is typically at 3 PM
+            start_str = f"{start_date} 15:00"
+            try:
+                start_datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
+            except ValueError:
+                flash("Invalid date format.", "danger")
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+            
+            end_datetime = start_datetime + timedelta(days=duration)
+            total_price = price * duration
+            duration = duration * 24  # Convert to hours for total_hours field
+        
+        # Check for overlapping bookings (excluding current booking)
+        existing_bookings = Booking.query.filter(
+            Booking.home_id == home.id,
+            Booking.status.in_(['pending', 'confirmed', 'active']),
+            Booking.id != booking.id
+        ).all()
+        
+        for existing_booking in existing_bookings:
+            if start_datetime < existing_booking.end_time and end_datetime > existing_booking.start_time:
+                flash('This home is not available during the selected time period.', 'danger')
+                return redirect(url_for('payment.checkout', booking_id=booking_id))
+        
+        # Update booking
+        booking.start_time = start_datetime
+        booking.end_time = end_datetime
+        booking.total_hours = duration if booking_type == 'hourly' else duration
+        booking.total_price = total_price
+        booking.booking_type = booking_type
+        
+        db.session.commit()
+        
+        flash('Thông tin đặt phòng đã được cập nhật thành công!', 'success')
+        return redirect(url_for('payment.checkout', booking_id=booking_id))
+        
+    except Exception as e:
+        current_app.logger.error(f"[PAYMENT] Error modifying booking: {str(e)}")
+        flash(f"Lỗi cập nhật thông tin đặt phòng: {str(e)}", 'danger')
+        return redirect(url_for('payment.checkout', booking_id=booking_id))
 
 @payment_bp.route('/process_payment', methods=['POST'])
 @login_required

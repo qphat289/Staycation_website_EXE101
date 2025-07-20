@@ -50,11 +50,15 @@
         <div class="col-lg-8">
             <!-- Thông tin booking -->
             <div class="card mb-4">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">
                         <i class="fas fa-credit-card me-2"></i>
                         Thông tin đặt phòng
                     </h4>
+                    <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#bookingModifyForm">
+                        <i class="fas fa-edit me-1"></i>
+                        Chỉnh sửa
+                    </button>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -102,6 +106,102 @@
                                         <li>{{ (booking.end_time - booking.start_time).days }} ngày × {{ "{:,.0f}".format(price) }} VND/ngày</li>
                                     </ul>
                                 {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form chỉnh sửa booking -->
+                    <div class="collapse mt-3" id="bookingModifyForm">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-edit me-2"></i>
+                                    Chỉnh sửa thông tin đặt phòng
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="modify-booking-form" method="POST" action="{{ url_for('payment.modify_booking', booking_id=booking.id) }}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="booking_type" class="form-label">Loại đặt phòng</label>
+                                                <select class="form-select" id="booking_type" name="booking_type" onchange="updateBookingForm()">
+                                                    <option value="daily" {% if booking.booking_type == 'daily' %}selected{% endif %}>Theo ngày</option>
+                                                    <option value="hourly" {% if booking.booking_type == 'hourly' %}selected{% endif %}>Theo giờ</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="guests" class="form-label">Số khách</label>
+                                                <input type="number" class="form-control" id="guests" name="guests" min="1" max="{{ booking.home.max_guests }}" value="1">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Daily booking fields -->
+                                    <div id="daily-fields" class="row" {% if booking.booking_type == 'hourly' %}style="display: none;"{% endif %}>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="start_date" class="form-label">Ngày nhận phòng</label>
+                                                <input type="date" class="form-control" id="start_date" name="start_date" 
+                                                       value="{{ booking.start_time.strftime('%Y-%m-%d') }}" 
+                                                       min="{{ min_date.strftime('%Y-%m-%d') }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="duration_daily" class="form-label">Số ngày thuê</label>
+                                                <input type="number" class="form-control" id="duration_daily" name="duration_daily" 
+                                                       min="1" value="{{ (booking.end_time - booking.start_time).days }}" onchange="updatePrice()">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hourly booking fields -->
+                                    <div id="hourly-fields" class="row" {% if booking.booking_type == 'daily' %}style="display: none;"{% endif %}>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="start_date_hourly" class="form-label">Ngày thuê</label>
+                                                <input type="date" class="form-control" id="start_date_hourly" name="start_date_hourly" 
+                                                       value="{{ booking.start_time.strftime('%Y-%m-%d') }}"
+                                                       min="{{ min_date.strftime('%Y-%m-%d') }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="start_time" class="form-label">Giờ bắt đầu</label>
+                                                <input type="time" class="form-control" id="start_time" name="start_time" 
+                                                       value="{{ booking.start_time.strftime('%H:%M') }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="duration_hourly" class="form-label">Số giờ thuê</label>
+                                                <input type="number" class="form-control" id="duration_hourly" name="duration_hourly" 
+                                                       min="2" value="{{ booking.total_hours }}" onchange="updatePrice()">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="alert alert-info">
+                                                <strong>Tổng tiền mới:</strong> <span id="new-total-price">{{ "{:,.0f}".format(booking.total_price) }} VND</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#bookingModifyForm">
+                                            Hủy
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-1"></i>
+                                            Cập nhật
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -212,6 +312,69 @@
 
 {% block scripts %}
 <script>
+// Home pricing data for calculations
+const homePricing = {
+    price_per_day: {{ booking.home.price_per_day or 0 }},
+    price_per_night: {{ booking.home.price_per_night or 0 }},
+    price_per_hour: {{ booking.home.price_per_hour or 0 }},
+    price_first_2_hours: {{ booking.home.price_first_2_hours or 0 }},
+    price_per_additional_hour: {{ booking.home.price_per_additional_hour or 0 }},
+    price_overnight: {{ booking.home.price_overnight or 0 }},
+    price_daytime: {{ booking.home.price_daytime or 0 }}
+};
+
+function updateBookingForm() {
+    const bookingType = document.getElementById('booking_type').value;
+    const dailyFields = document.getElementById('daily-fields');
+    const hourlyFields = document.getElementById('hourly-fields');
+    
+    if (bookingType === 'daily') {
+        dailyFields.style.display = 'block';
+        hourlyFields.style.display = 'none';
+    } else {
+        dailyFields.style.display = 'none';
+        hourlyFields.style.display = 'block';
+    }
+    
+    updatePrice();
+}
+
+function updatePrice() {
+    const bookingType = document.getElementById('booking_type').value;
+    let totalPrice = 0;
+    
+    if (bookingType === 'daily') {
+        const duration = parseInt(document.getElementById('duration_daily').value) || 1;
+        const price = homePricing.price_per_day || homePricing.price_per_night;
+        totalPrice = price * duration;
+    } else {
+        const duration = parseInt(document.getElementById('duration_hourly').value) || 2;
+        
+        // Calculate hourly price based on pricing structure
+        if (duration <= 2 && homePricing.price_first_2_hours) {
+            totalPrice = homePricing.price_first_2_hours;
+        } else if (duration > 2 && homePricing.price_first_2_hours && homePricing.price_per_additional_hour) {
+            totalPrice = homePricing.price_first_2_hours + (duration - 2) * homePricing.price_per_additional_hour;
+        } else if (homePricing.price_per_hour) {
+            totalPrice = duration * homePricing.price_per_hour;
+        } else {
+            totalPrice = homePricing.price_first_2_hours || 0;
+        }
+    }
+    
+    // Update the price display
+    document.getElementById('new-total-price').textContent = totalPrice.toLocaleString('vi-VN') + ' VND';
+}
+
+// Initialize price calculation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updatePrice();
+    
+    // Add event listeners for price updates
+    document.getElementById('duration_daily').addEventListener('change', updatePrice);
+    document.getElementById('duration_hourly').addEventListener('change', updatePrice);
+});
+
 document.getElementById('payment-form').addEventListener('submit', function(e) {
     // Hiển thị loading modal
     var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
