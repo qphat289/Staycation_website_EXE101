@@ -307,7 +307,7 @@ def callback_google():
         # User exists, log them in
         login_user(existing_renter)
         session['user_role'] = 'renter'
-        flash("Successfully logged in with Google!", "success")
+        flash("Đăng nhập Google thành công!", "success")
         return redirect(url_for('home', login_success='google'))
     else:
         # User doesn't exist, store info in session and redirect to complete profile
@@ -337,12 +337,11 @@ def complete_google_signup():
         personal_id = request.form.get('personal_id')
         
         # Validate required fields
-        if not all([full_name, phone, personal_id]):
+        if not all([full_name, phone]):
             flash("All fields are required", "danger")
             form_data = {
                 'full_name': full_name,
                 'phone': phone,
-                'personal_id': personal_id,
                 'email': session.get('google_email', ''),
                 'google_name': session.get('google_name', '')
             }
@@ -353,10 +352,7 @@ def complete_google_signup():
             flash("Phone number already exists", "danger")
             return render_template('auth/complete_google_signup.html', form_data=form_data)
         
-        # Check if personal_id exists
-        if Renter.query.filter_by(personal_id=personal_id).first() or Owner.query.filter_by(personal_id=personal_id).first():
-            flash("Personal ID already exists", "danger")
-            return render_template('auth/complete_google_signup.html', form_data=form_data)
+
         
         # Create new renter with Google data
         # Note: username field can be NULL for Google users
@@ -366,7 +362,6 @@ def complete_google_signup():
             email=session['google_email'],
             full_name=full_name,  # User-provided full name
             phone=phone,
-            personal_id=personal_id,
             google_id=session['google_id'],
             email_verified=True,  # Google accounts are pre-verified
             first_login=False
@@ -388,7 +383,7 @@ def complete_google_signup():
         session.pop('google_email', None)
         session.pop('google_name', None)
         
-        flash(f"Your account has been created successfully!", "success")
+        flash(f"Tài khoản của bạn đã được tạo thành công!", "success")
         return redirect(url_for('home'))
     
     # GET request - render the form
@@ -476,7 +471,7 @@ def facebook_callback():
             # User exists, log them in
             login_user(existing_renter)
             session['user_role'] = 'renter'
-            flash(f"Welcome back, {name}! You've successfully logged in with Facebook.", "success")
+            flash(f"Chào mừng trở lại, {name}! Đăng nhập Facebook thành công.", "success")
             return redirect(url_for('home', login_success='facebook'))
         else:
             # User doesn't exist, store info in session and redirect to complete profile
@@ -512,12 +507,11 @@ def complete_facebook_signup():
         email = request.form.get('email')  # Allow them to provide email if not from Facebook
         
         # Validate required fields
-        if not all([full_name, phone, personal_id]) or (not session.get('facebook_email') and not email):
+        if not all([full_name, phone]) or (not session.get('facebook_email') and not email):
             flash("All fields are required", "danger")
             form_data = {
                 'full_name': full_name,
                 'phone': phone,
-                'personal_id': personal_id,
                 'email': email or session.get('facebook_email', ''),
                 'facebook_name': session.get('facebook_name', '')
             }
@@ -528,10 +522,7 @@ def complete_facebook_signup():
             flash("Phone number already exists", "danger")
             return render_template('auth/complete_facebook_signup.html', form_data=form_data)
         
-        # Check if personal_id exists
-        if Renter.query.filter_by(personal_id=personal_id).first() or Owner.query.filter_by(personal_id=personal_id).first():
-            flash("Personal ID already exists", "danger")
-            return render_template('auth/complete_facebook_signup.html', form_data=form_data)
+
         
         # Use email from form if Facebook didn't provide one
         final_email = session.get('facebook_email') or email
@@ -550,7 +541,6 @@ def complete_facebook_signup():
             email=final_email,
             full_name=full_name,
             phone=phone,
-            personal_id=personal_id,
             facebook_id=session['facebook_id'],
             email_verified=True,  # Facebook accounts are pre-verified
             first_login=False
@@ -572,7 +562,7 @@ def complete_facebook_signup():
         session.pop('facebook_email', None)
         session.pop('facebook_name', None)
         
-        flash(f"Your account has been created successfully!", "success")
+        flash(f"Tài khoản của bạn đã được tạo thành công!", "success")
         return redirect(url_for('home'))
     
     # GET request - render the form

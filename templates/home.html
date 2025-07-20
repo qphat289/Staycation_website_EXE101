@@ -3584,10 +3584,36 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCalendars();
     }
     
-    // Function to show notification (if not already defined)
+        // Function to show notification (if not already defined)
     function showNotification(type, message) {
         // Remove any existing notifications first
         document.querySelectorAll('.custom-notification').forEach(el => el.remove());
+        
+        // Determine notification style based on type
+        let backgroundColor, iconColor, iconClass, shadowColor;
+        
+        if (type === 'success') {
+            backgroundColor = '#28a745';
+            iconColor = '#28a745';
+            iconClass = 'fas fa-check';
+            shadowColor = 'rgba(40, 167, 69, 0.3)';
+        } else if (type === 'warning') {
+            backgroundColor = '#ffc107';
+            iconColor = '#ffc107';
+            iconClass = 'fas fa-exclamation-triangle';
+            shadowColor = 'rgba(255, 193, 7, 0.3)';
+        } else if (type === 'info') {
+            backgroundColor = '#17a2b8';
+            iconColor = '#17a2b8';
+            iconClass = 'fas fa-info-circle';
+            shadowColor = 'rgba(23, 162, 184, 0.3)';
+        } else {
+            // Default error style
+            backgroundColor = '#dc3545';
+            iconColor = '#dc3545';
+            iconClass = 'fas fa-exclamation-circle';
+            shadowColor = 'rgba(220, 53, 69, 0.3)';
+        }
         
         // Create notification element
         const notificationDiv = document.createElement('div');
@@ -3598,11 +3624,11 @@ document.addEventListener('DOMContentLoaded', function() {
             right: 20px;
             z-index: 9999;
             max-width: 400px;
-            background: #dc3545;
+            background: ${backgroundColor};
             color: white;
             padding: 12px 16px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            box-shadow: 0 4px 12px ${shadowColor};
             display: flex;
             align-items: center;
             gap: 12px;
@@ -3614,23 +3640,23 @@ document.addEventListener('DOMContentLoaded', function() {
             animation: slideInNotification 0.3s ease forwards;
         `;
         
-                    notificationDiv.innerHTML = `
-                <div class="notification-icon" style="
-                    width: 20px;
-                    height: 20px;
-                    background: white;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                ">
-                    <i class="fas fa-exclamation-mark" style="color: #dc3545; font-size: 12px;"></i>
-                </div>
-                <div class="notification-message" style="flex-grow: 1;">
-                    ${message}
-                </div>
-            `;
+        notificationDiv.innerHTML = `
+            <div class="notification-icon" style="
+                width: 20px;
+                height: 20px;
+                background: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            ">
+                <i class="${iconClass}" style="color: ${iconColor}; font-size: 12px;"></i>
+            </div>
+            <div class="notification-message" style="flex-grow: 1;">
+                ${message}
+            </div>
+        `;
         
         // Add CSS animation
         if (!document.getElementById('notification-styles')) {
@@ -3656,7 +3682,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add to body
         document.body.appendChild(notificationDiv);
         
-                    // Auto remove after 2 seconds
+                    // Auto remove after 4 seconds for success, 3 seconds for others
+            const autoHideTime = type === 'success' ? 4000 : 3000;
             setTimeout(() => {
                 if (notificationDiv.parentNode) {
                     notificationDiv.style.transform = 'translateX(100%)';
@@ -3667,7 +3694,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }, 300);
                 }
-            }, 2000);
+            }, autoHideTime);
     }
 });
 </script>
