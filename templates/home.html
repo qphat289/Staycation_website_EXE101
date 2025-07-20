@@ -3074,19 +3074,116 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Initialize with default values
-        const today = new Date();
-        // Create date string without timezone issues
-        const year = today.getFullYear();
-        const month = (today.getMonth() + 1).toString().padStart(2, '0');
-        const day = today.getDate().toString().padStart(2, '0');
-        selectedDate = `${year}-${month}-${day}`;
-        selectedTime = '14:00'; // Default time
-        selectedDuration = '3'; // Default duration
+        // Initialize without default values - let user choose
+        selectedDate = null;
+        selectedTime = null;
+        selectedDuration = null;
         
         updateDisplay();
         updateHiddenInputs();
         renderCalendar();
+        
+        // Add form validation for homepage forms
+        const hourlyForm = document.getElementById('hourly-form');
+        const dailyForm = document.getElementById('daily-form');
+        
+        if (hourlyForm) {
+            hourlyForm.addEventListener('submit', function(e) {
+                console.log('Homepage hourly form submit triggered');
+                
+                const checkinDate = document.getElementById('checkin-date-hourly');
+                const checkinTime = document.getElementById('checkin-time-hourly');
+                const hoursDuration = document.getElementById('hours-duration-hourly');
+                
+                console.log('Homepage form values:', {
+                    checkinDate: checkinDate ? checkinDate.value : 'element not found',
+                    checkinTime: checkinTime ? checkinTime.value : 'element not found',
+                    hoursDuration: hoursDuration ? hoursDuration.value : 'element not found'
+                });
+                
+                if (!checkinDate || !checkinTime || !hoursDuration || 
+                    !checkinDate.value || !checkinTime.value || !hoursDuration.value) {
+                    console.log('Homepage validation failed - preventing submit');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showNotification('error', 'Vui lòng chọn ngày giờ');
+                    return false;
+                }
+                
+                console.log('Homepage validation passed - allowing submit');
+            });
+        }
+        
+        if (dailyForm) {
+            dailyForm.addEventListener('submit', function(e) {
+                console.log('Homepage daily form submit triggered');
+                
+                const checkinDate = document.getElementById('checkin-date-daily');
+                const checkoutDate = document.getElementById('checkout-date-daily');
+                
+                console.log('Homepage daily form values:', {
+                    checkinDate: checkinDate ? checkinDate.value : 'element not found',
+                    checkoutDate: checkoutDate ? checkoutDate.value : 'element not found'
+                });
+                
+                if (!checkinDate || !checkoutDate || 
+                    !checkinDate.value || !checkoutDate.value) {
+                    console.log('Homepage daily validation failed - preventing submit');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showNotification('error', 'Vui lòng chọn ngày');
+                    return false;
+                }
+                
+                console.log('Homepage daily validation passed - allowing submit');
+            });
+        }
+        
+        // Add validation to homepage search buttons
+        const homepageSearchButtons = document.querySelectorAll('#hourly-form .search-btn, #daily-form .search-btn');
+        homepageSearchButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                console.log('Homepage search button clicked');
+                
+                const form = this.closest('form');
+                if (!form) {
+                    console.log('No form found for homepage button');
+                    return;
+                }
+                
+                const formId = form.id;
+                console.log('Homepage form ID:', formId);
+                
+                if (formId === 'hourly-form') {
+                    const checkinDate = document.getElementById('checkin-date-hourly');
+                    const checkinTime = document.getElementById('checkin-time-hourly');
+                    const hoursDuration = document.getElementById('hours-duration-hourly');
+                    
+                    if (!checkinDate || !checkinTime || !hoursDuration || 
+                        !checkinDate.value || !checkinTime.value || !hoursDuration.value) {
+                        console.log('Homepage button validation failed - preventing submit');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showNotification('error', 'Vui lòng chọn ngày giờ');
+                        return false;
+                    }
+                } else if (formId === 'daily-form') {
+                    const checkinDate = document.getElementById('checkin-date-daily');
+                    const checkoutDate = document.getElementById('checkout-date-daily');
+                    
+                    if (!checkinDate || !checkoutDate || 
+                        !checkinDate.value || !checkoutDate.value) {
+                        console.log('Homepage daily button validation failed - preventing submit');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showNotification('error', 'Vui lòng chọn ngày');
+                        return false;
+                    }
+                }
+                
+                console.log('Homepage button validation passed - allowing submit');
+            });
+        });
         
         // Add event listeners for back buttons only
         setTimeout(() => {
@@ -3485,6 +3582,92 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Initialize
         renderCalendars();
+    }
+    
+    // Function to show notification (if not already defined)
+    function showNotification(type, message) {
+        // Remove any existing notifications first
+        document.querySelectorAll('.custom-notification').forEach(el => el.remove());
+        
+        // Create notification element
+        const notificationDiv = document.createElement('div');
+        notificationDiv.className = 'custom-notification';
+        notificationDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            background: #dc3545;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            animation: slideInNotification 0.3s ease forwards;
+        `;
+        
+                    notificationDiv.innerHTML = `
+                <div class="notification-icon" style="
+                    width: 20px;
+                    height: 20px;
+                    background: white;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                ">
+                    <i class="fas fa-exclamation-mark" style="color: #dc3545; font-size: 12px;"></i>
+                </div>
+                <div class="notification-message" style="flex-grow: 1;">
+                    ${message}
+                </div>
+            `;
+        
+        // Add CSS animation
+        if (!document.getElementById('notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideInNotification {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                
+
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Add to body
+        document.body.appendChild(notificationDiv);
+        
+                    // Auto remove after 2 seconds
+            setTimeout(() => {
+                if (notificationDiv.parentNode) {
+                    notificationDiv.style.transform = 'translateX(100%)';
+                    notificationDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        if (notificationDiv.parentNode) {
+                            notificationDiv.remove();
+                        }
+                    }, 300);
+                }
+            }, 2000);
     }
 });
 </script>

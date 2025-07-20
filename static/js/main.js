@@ -99,6 +99,9 @@ function initializeGlobalSearch() {
         
         // Initialize location search
         initializeLocationSearch();
+        
+        // Initialize form validation
+        initializeSearchFormValidation();
     }
 }
 
@@ -1008,3 +1011,130 @@ document.addEventListener('DOMContentLoaded', function() {
         setupGlobalDailyDateTimeSelector();
     }, 100);
 });
+
+// Function to initialize search form validation
+function initializeSearchFormValidation() {
+    // Get form elements
+    const hourlyForm = document.getElementById('global-hourly-form');
+    const dailyForm = document.getElementById('global-daily-form');
+    
+    // Add validation for hourly form
+    if (hourlyForm) {
+        hourlyForm.addEventListener('submit', function(e) {
+            const checkinDate = document.getElementById('global-checkin-date-hourly').value;
+            const checkinTime = document.getElementById('global-checkin-time-hourly').value;
+            const hoursDuration = document.getElementById('global-hours-duration-hourly').value;
+            
+            if (!checkinDate || !checkinTime || !hoursDuration) {
+                e.preventDefault();
+                showNotification('error', 'Vui lòng chọn ngày giờ');
+                return false;
+            }
+        });
+    }
+    
+    // Add validation for daily form
+    if (dailyForm) {
+        dailyForm.addEventListener('submit', function(e) {
+            const checkinDate = document.getElementById('global-checkin-date-daily').value;
+            const checkoutDate = document.getElementById('global-checkout-date-daily').value;
+            
+            if (!checkinDate || !checkoutDate) {
+                e.preventDefault();
+                showNotification('error', 'Vui lòng chọn ngày');
+                return false;
+            }
+        });
+    }
+    
+    // Update placeholders based on current values
+    updateSearchPlaceholders();
+}
+
+// Function to update search placeholders
+function updateSearchPlaceholders() {
+    // Update hourly form placeholders
+    const hourlyCheckinDisplay = document.getElementById('global-datetime-hourly');
+    const hourlyCheckoutDisplay = document.getElementById('global-checkout-display-hourly');
+    const hourlyCheckinDate = document.getElementById('global-checkin-date-hourly').value;
+    const hourlyCheckinTime = document.getElementById('global-checkin-time-hourly').value;
+    const hourlyDuration = document.getElementById('global-hours-duration-hourly').value;
+    
+    if (hourlyCheckinDisplay) {
+        if (hourlyCheckinDate && hourlyCheckinTime && hourlyDuration) {
+            // Format the display value
+            const date = new Date(hourlyCheckinDate);
+            const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+            const dayName = dayNames[date.getDay()];
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            
+            hourlyCheckinDisplay.value = `${dayName} - ${day} tháng ${month} - ${hourlyCheckinTime}`;
+            
+            // Calculate checkout time
+            const checkinHour = parseInt(hourlyCheckinTime.split(':')[0]);
+            const duration = parseInt(hourlyDuration);
+            let checkoutHour = checkinHour + duration;
+            let checkoutDate = new Date(date);
+            
+            if (checkoutHour >= 24) {
+                checkoutHour -= 24;
+                checkoutDate.setDate(checkoutDate.getDate() + 1);
+            }
+            
+            const checkoutDayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+            const checkoutDayName = checkoutDayNames[checkoutDate.getDay()];
+            const checkoutDay = checkoutDate.getDate();
+            const checkoutMonth = checkoutDate.getMonth() + 1;
+            
+            hourlyCheckoutDisplay.value = `${checkoutDayName} - ${checkoutDay} tháng ${checkoutMonth} - ${checkoutHour.toString().padStart(2, '0')}:00`;
+        } else {
+            hourlyCheckinDisplay.value = 'Hãy chọn ngày và giờ';
+            hourlyCheckoutDisplay.value = 'Hãy chọn ngày và giờ';
+        }
+    }
+    
+    // Update daily form placeholders
+    const dailyCheckinDisplay = document.getElementById('global-datetime-daily');
+    const dailyCheckoutDisplay = document.getElementById('global-checkout-display-daily');
+    const dailyCheckinDate = document.getElementById('global-checkin-date-daily').value;
+    const dailyCheckoutDate = document.getElementById('global-checkout-date-daily').value;
+    
+    if (dailyCheckinDisplay) {
+        if (dailyCheckinDate) {
+            const date = new Date(dailyCheckinDate);
+            const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+            const dayName = dayNames[date.getDay()];
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            dailyCheckinDisplay.value = `${dayName} - ${day} tháng ${month}`;
+        } else {
+            dailyCheckinDisplay.value = 'Chọn ngày';
+        }
+    }
+    
+    if (dailyCheckoutDisplay) {
+        if (dailyCheckoutDate) {
+            const date = new Date(dailyCheckoutDate);
+            const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+            const dayName = dayNames[date.getDay()];
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            dailyCheckoutDisplay.value = `${dayName} - ${day} tháng ${month}`;
+        } else {
+            dailyCheckoutDisplay.value = 'Chọn ngày';
+        }
+    }
+}
+
+// Function to show notification (if not already defined)
+function showNotification(type, message) {
+    // Check if notification function exists
+    if (typeof window.showNotification === 'function') {
+        window.showNotification(type, message);
+    } else {
+        // Fallback to alert
+        alert(message);
+    }
+}

@@ -2788,16 +2788,10 @@
                 updateDisplay();
                 updateCheckoutDisplay();
             } else {
-                // Set default to today
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = (today.getMonth() + 1).toString().padStart(2, '0');
-                const day = today.getDate().toString().padStart(2, '0');
-                const todayStr = `${year}-${month}-${day}`;
-                
-                selectedDate = todayStr;
-                selectedTime = '14:00';
-                selectedDuration = '3';
+                // Initialize without default values - let user choose
+                selectedDate = null;
+                selectedTime = null;
+                selectedDuration = null;
                 
                 updateDisplay();
                 updateHiddenInputs();
