@@ -5,11 +5,14 @@ from app.utils.utils import allowed_file
 from app.utils.password_validator import PasswordValidator
 from sqlalchemy.exc import IntegrityError
 import os
+import re
+import sys
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from functools import wraps
 import uuid
 import json
+import pytz
 from sqlalchemy import func, distinct
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -210,16 +213,23 @@ def dashboard():
         # Calculate weekly statistics (records added this week)
         from datetime import timedelta
         
-        # Get the start of current week (Monday)
-        days_since_monday = today.weekday()  # Monday is 0, Sunday is 6
-        week_start = today - timedelta(days=days_since_monday)
+        # Get timezone for Vietnam
+        vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+        today_vn = datetime.now(vn_tz).date()
+        
+        # Get the start of current week (Monday) in Vietnam timezone
+        days_since_monday = today_vn.weekday()  # Monday is 0, Sunday is 6
+        week_start = today_vn - timedelta(days=days_since_monday)
         week_start_datetime = datetime.combine(week_start, datetime.min.time())
         
-        # Calculate new records added this week
-        new_owners_this_week = Owner.query.filter(Owner.created_at >= week_start_datetime).count()
-        new_renters_this_week = Renter.query.filter(Renter.created_at >= week_start_datetime).count()
-        new_homes_this_week = Home.query.filter(Home.created_at >= week_start_datetime).count()
-        new_bookings_this_week = Booking.query.filter(Booking.created_at >= week_start_datetime).count()
+        # Convert to UTC for database comparison
+        week_start_utc = vn_tz.localize(week_start_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+        
+        # Calculate new records added this week (using UTC time for database comparison)
+        new_owners_this_week = Owner.query.filter(Owner.created_at >= week_start_utc).count()
+        new_renters_this_week = Renter.query.filter(Renter.created_at >= week_start_utc).count()
+        new_homes_this_week = Home.query.filter(Home.created_at >= week_start_utc).count()
+        new_bookings_this_week = Booking.query.filter(Booking.created_at >= week_start_utc).count()
         
         # Calculate booking growth rate (compared to total)
         booking_growth_rate = 0
@@ -227,14 +237,17 @@ def dashboard():
             booking_growth_rate = round((new_bookings_this_week / stats.total_bookings) * 100, 1)
 
         # Calculate monthly statistics (records added this month)
-        month_start = today.replace(day=1)
+        month_start = today_vn.replace(day=1)
         month_start_datetime = datetime.combine(month_start, datetime.min.time())
         
-        # Calculate new records added this month
-        new_owners_this_month = Owner.query.filter(Owner.created_at >= month_start_datetime).count()
-        new_renters_this_month = Renter.query.filter(Renter.created_at >= month_start_datetime).count()
-        new_homes_this_month = Home.query.filter(Home.created_at >= month_start_datetime).count()
-        new_bookings_this_month = Booking.query.filter(Booking.created_at >= month_start_datetime).count()
+        # Convert to UTC for database comparison
+        month_start_utc = vn_tz.localize(month_start_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+        
+        # Calculate new records added this month (using UTC time for database comparison)
+        new_owners_this_month = Owner.query.filter(Owner.created_at >= month_start_utc).count()
+        new_renters_this_month = Renter.query.filter(Renter.created_at >= month_start_utc).count()
+        new_homes_this_month = Home.query.filter(Home.created_at >= month_start_utc).count()
+        new_bookings_this_month = Booking.query.filter(Booking.created_at >= month_start_utc).count()
 
         # Calculate most popular rental type based on actual booking data
         if completed_bookings:
@@ -253,7 +266,7 @@ def dashboard():
 
         # Calculate admin commission (10% from all completed bookings)
         total_revenue_all_bookings = sum(booking.total_price for booking in completed_bookings)
-        admin_commission = int(total_revenue_all_bookings * 0.1)  # 10% commission
+        admin_commission = int(total_revenue_all_bookings * 0.05)  # 10% commission
 
         if completed_bookings:
             stats.total_hours = int(sum((b.end_time - b.start_time).total_seconds() / 3600 for b in completed_bookings))
@@ -264,33 +277,54 @@ def dashboard():
             stats.total_hours = 0
             stats.hourly_bookings = 0
             stats.overnight_bookings = 0        # Calculate real top homestays by booking count - Group by Owner (homestay)
+        # Use subqueries to avoid JOIN multiplying data due to multiple relationships
+        
+        # Subquery for booking aggregates per owner
+        booking_subquery = db.session.query(
+            Home.owner_id,
+            func.count(Booking.id).label('booking_count'),
+            func.sum(Booking.total_price).label('total_revenue')
+        ).outerjoin(Booking, Home.id == Booking.home_id)\
+         .filter(Home.is_active == True)\
+         .group_by(Home.owner_id).subquery()
+        
+        # Subquery for review aggregates per owner
+        review_subquery = db.session.query(
+            Home.owner_id,
+            func.avg(Review.rating).label('avg_rating')
+        ).outerjoin(Review, Home.id == Review.home_id)\
+         .filter(Home.is_active == True)\
+         .group_by(Home.owner_id).subquery()
+        
+        # Main query joining owner with subqueries
         top_homestays_query = db.session.query(
             Owner.id,
             Owner.full_name,
             func.count(distinct(Home.id)).label('home_count'),
-            func.count(Booking.id).label('booking_count'),
-            func.sum(Booking.total_price).label('total_revenue'),
-            func.avg(Review.rating).label('avg_rating')
-        ).join(Home, Owner.id == Home.owner_id) \
-         .outerjoin(Booking, Home.id == Booking.home_id) \
-         .outerjoin(Review, Home.id == Review.home_id) \
-         .filter(Home.is_active == True) \
-         .group_by(Owner.id, Owner.full_name) \
-         .order_by(func.count(Booking.id).desc()) \
+            booking_subquery.c.booking_count,
+            booking_subquery.c.total_revenue,
+            review_subquery.c.avg_rating
+        ).join(Home, Owner.id == Home.owner_id)\
+         .outerjoin(booking_subquery, Owner.id == booking_subquery.c.owner_id)\
+         .outerjoin(review_subquery, Owner.id == review_subquery.c.owner_id)\
+         .filter(Home.is_active == True)\
+         .group_by(Owner.id, Owner.full_name, booking_subquery.c.booking_count, 
+                   booking_subquery.c.total_revenue, review_subquery.c.avg_rating)\
+         .order_by(booking_subquery.c.total_revenue.desc().nullslast())\
          .limit(5).all()
 
         top_homestays_list = []
         for homestay in top_homestays_query:
             # Calculate admin commission (10%) from this homestay's revenue
             homestay_revenue = int(homestay.total_revenue) if homestay.total_revenue else 0
-            admin_commission_homestay = int(homestay_revenue * 0.1)  # 10% commission
+            admin_commission_homestay = int(homestay_revenue * 0.05)  # 10% commission
             
             homestay_data = {
                 'name': homestay.full_name or f'Homestay {homestay.id}',
                 'home_count': homestay.home_count,  # Number of homes instead of rental type
                 'revenue': homestay_revenue,
                 'admin_commission': admin_commission_homestay,  # Add admin commission for this homestay
-                'bookings': homestay.booking_count,
+                'bookings': homestay.booking_count or 0,
                 'rating': round(homestay.avg_rating, 1) if homestay.avg_rating else 0.0
             }
             top_homestays_list.append(homestay_data)
@@ -1067,17 +1101,23 @@ def weekly_statistics():
         # Calculate weekly statistics (records added this week)
         from datetime import timedelta
         
-        # Get the start of current week (Monday)
-        today = datetime.now().date()
-        days_since_monday = today.weekday()  # Monday is 0, Sunday is 6
-        week_start = today - timedelta(days=days_since_monday)
+        # Get timezone for Vietnam
+        vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+        today_vn = datetime.now(vn_tz).date()
+        
+        # Get the start of current week (Monday) in Vietnam timezone
+        days_since_monday = today_vn.weekday()  # Monday is 0, Sunday is 6
+        week_start = today_vn - timedelta(days=days_since_monday)
         week_start_datetime = datetime.combine(week_start, datetime.min.time())
         
-        # Calculate new records added this week
-        new_owners_this_week = Owner.query.filter(Owner.created_at >= week_start_datetime).count()
-        new_renters_this_week = Renter.query.filter(Renter.created_at >= week_start_datetime).count()
-        new_homes_this_week = Home.query.filter(Home.created_at >= week_start_datetime).count()
-        new_bookings_this_week = Booking.query.filter(Booking.created_at >= week_start_datetime).count()
+        # Convert to UTC for database comparison
+        week_start_utc = vn_tz.localize(week_start_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+        
+        # Calculate new records added this week (using UTC time for database comparison)
+        new_owners_this_week = Owner.query.filter(Owner.created_at >= week_start_utc).count()
+        new_renters_this_week = Renter.query.filter(Renter.created_at >= week_start_utc).count()
+        new_homes_this_week = Home.query.filter(Home.created_at >= week_start_utc).count()
+        new_bookings_this_week = Booking.query.filter(Booking.created_at >= week_start_utc).count()
         
         # Get total counts for growth rate calculation
         total_bookings = Booking.query.count()
@@ -1111,7 +1151,9 @@ def get_user_growth_data(period):
     try:
         from datetime import timedelta
         
-        today = datetime.now().date()
+        # Get timezone for Vietnam
+        vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+        today = datetime.now(vn_tz).date()
         
         # Determine date range based on period
         if period == 'week':
@@ -1139,14 +1181,18 @@ def get_user_growth_data(period):
                 start_datetime = datetime.combine(current_date, datetime.min.time())
                 end_datetime = datetime.combine(current_date, datetime.max.time())
                 
+                # Convert to UTC for database comparison
+                start_utc = vn_tz.localize(start_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                end_utc = vn_tz.localize(end_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                
                 owners_count = Owner.query.filter(
-                    Owner.created_at >= start_datetime,
-                    Owner.created_at <= end_datetime
+                    Owner.created_at >= start_utc,
+                    Owner.created_at <= end_utc
                 ).count()
                 
                 renters_count = Renter.query.filter(
-                    Renter.created_at >= start_datetime,
-                    Renter.created_at <= end_datetime
+                    Renter.created_at >= start_utc,
+                    Renter.created_at <= end_utc
                 ).count()
                 
                 # Format label for week view
@@ -1157,14 +1203,18 @@ def get_user_growth_data(period):
                 start_datetime = datetime.combine(current_date, datetime.min.time())
                 end_datetime = datetime.combine(current_date, datetime.max.time())
                 
+                # Convert to UTC for database comparison
+                start_utc = vn_tz.localize(start_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                end_utc = vn_tz.localize(end_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                
                 owners_count = Owner.query.filter(
-                    Owner.created_at >= start_datetime,
-                    Owner.created_at <= end_datetime
+                    Owner.created_at >= start_utc,
+                    Owner.created_at <= end_utc
                 ).count()
                 
                 renters_count = Renter.query.filter(
-                    Renter.created_at >= start_datetime,
-                    Renter.created_at <= end_datetime
+                    Renter.created_at >= start_utc,
+                    Renter.created_at <= end_utc
                 ).count()
                 
                 # Format label for month view (show every 3rd day to avoid crowding)
@@ -1181,14 +1231,18 @@ def get_user_growth_data(period):
                 start_datetime = datetime.combine(week_start, datetime.min.time())
                 end_datetime = datetime.combine(week_end, datetime.max.time())
                 
+                # Convert to UTC for database comparison
+                start_utc = vn_tz.localize(start_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                end_utc = vn_tz.localize(end_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                
                 owners_count = Owner.query.filter(
-                    Owner.created_at >= start_datetime,
-                    Owner.created_at <= end_datetime
+                    Owner.created_at >= start_utc,
+                    Owner.created_at <= end_utc
                 ).count()
                 
                 renters_count = Renter.query.filter(
-                    Renter.created_at >= start_datetime,
-                    Renter.created_at <= end_datetime
+                    Renter.created_at >= start_utc,
+                    Renter.created_at <= end_utc
                 ).count()
                 
                 # Format label for year view (show every 30th day)
@@ -1245,7 +1299,9 @@ def get_booking_stats_data(period):
     try:
         from datetime import timedelta
         
-        today = datetime.now().date()
+        # Get timezone for Vietnam
+        vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+        today = datetime.now(vn_tz).date()
         
         # Determine date range based on period
         if period == 'week':
@@ -1273,18 +1329,22 @@ def get_booking_stats_data(period):
                 start_datetime = datetime.combine(current_date, datetime.min.time())
                 end_datetime = datetime.combine(current_date, datetime.max.time())
                 
+                # Convert to UTC for database comparison
+                start_utc = vn_tz.localize(start_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                end_utc = vn_tz.localize(end_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                
                 # Count hourly bookings using booking_type field
                 hourly_bookings = Booking.query.filter(
-                    Booking.created_at >= start_datetime,
-                    Booking.created_at <= end_datetime,
+                    Booking.created_at >= start_utc,
+                    Booking.created_at <= end_utc,
                     Booking.booking_type == 'hourly',
                     Booking.status.in_(['completed', 'confirmed'])
                 ).count()
                 
                 # Count daily bookings using booking_type field
                 nightly_bookings = Booking.query.filter(
-                    Booking.created_at >= start_datetime,
-                    Booking.created_at <= end_datetime,
+                    Booking.created_at >= start_utc,
+                    Booking.created_at <= end_utc,
                     Booking.booking_type == 'daily',
                     Booking.status.in_(['completed', 'confirmed'])
                 ).count()
@@ -1297,18 +1357,22 @@ def get_booking_stats_data(period):
                 start_datetime = datetime.combine(current_date, datetime.min.time())
                 end_datetime = datetime.combine(current_date, datetime.max.time())
                 
+                # Convert to UTC for database comparison
+                start_utc = vn_tz.localize(start_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                end_utc = vn_tz.localize(end_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                
                 # Count hourly bookings using booking_type field
                 hourly_bookings = Booking.query.filter(
-                    Booking.created_at >= start_datetime,
-                    Booking.created_at <= end_datetime,
+                    Booking.created_at >= start_utc,
+                    Booking.created_at <= end_utc,
                     Booking.booking_type == 'hourly',
                     Booking.status.in_(['completed', 'confirmed'])
                 ).count()
                 
                 # Count daily bookings using booking_type field
                 nightly_bookings = Booking.query.filter(
-                    Booking.created_at >= start_datetime,
-                    Booking.created_at <= end_datetime,
+                    Booking.created_at >= start_utc,
+                    Booking.created_at <= end_utc,
                     Booking.booking_type == 'daily',
                     Booking.status.in_(['completed', 'confirmed'])
                 ).count()
@@ -1327,18 +1391,22 @@ def get_booking_stats_data(period):
                 start_datetime = datetime.combine(week_start, datetime.min.time())
                 end_datetime = datetime.combine(week_end, datetime.max.time())
                 
+                # Convert to UTC for database comparison
+                start_utc = vn_tz.localize(start_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                end_utc = vn_tz.localize(end_datetime).astimezone(pytz.UTC).replace(tzinfo=None)
+                
                 # Count hourly bookings for the week using booking_type field
                 hourly_bookings = Booking.query.filter(
-                    Booking.created_at >= start_datetime,
-                    Booking.created_at <= end_datetime,
+                    Booking.created_at >= start_utc,
+                    Booking.created_at <= end_utc,
                     Booking.booking_type == 'hourly',
                     Booking.status.in_(['completed', 'confirmed'])
                 ).count()
                 
                 # Count daily bookings for the week using booking_type field
                 nightly_bookings = Booking.query.filter(
-                    Booking.created_at >= start_datetime,
-                    Booking.created_at <= end_datetime,
+                    Booking.created_at >= start_utc,
+                    Booking.created_at <= end_utc,
                     Booking.booking_type == 'daily',
                     Booking.status.in_(['completed', 'confirmed'])
                 ).count()
@@ -1620,27 +1688,49 @@ def api_owner_revenue():
         return jsonify({'error': 'Unauthorized'}), 401
     from sqlalchemy import func, distinct
     from app.models.models import Owner, Home, Booking, Review
+    
+    # Use subqueries to avoid JOIN multiplying data due to multiple relationships
+    # Subquery for booking aggregates per owner
+    booking_subquery = db.session.query(
+        Home.owner_id,
+        func.count(Booking.id).label('booking_count'),
+        func.sum(Booking.total_price).label('total_revenue')
+    ).outerjoin(Booking, Home.id == Booking.home_id)\
+     .filter(Home.is_active == True)\
+     .group_by(Home.owner_id).subquery()
+    
+    # Subquery for review aggregates per owner
+    review_subquery = db.session.query(
+        Home.owner_id,
+        func.avg(Review.rating).label('avg_rating')
+    ).outerjoin(Review, Home.id == Review.home_id)\
+     .filter(Home.is_active == True)\
+     .group_by(Home.owner_id).subquery()
+    
+    # Main query joining owner with subqueries
     owners = db.session.query(
         Owner.id,
         Owner.full_name,
         func.count(distinct(Home.id)).label('home_count'),
-        func.count(Booking.id).label('booking_count'),
-        func.sum(Booking.total_price).label('total_revenue'),
-        func.avg(Review.rating).label('avg_rating')
-    ).join(Home, Owner.id == Home.owner_id) \
-     .outerjoin(Booking, Home.id == Booking.home_id) \
-     .outerjoin(Review, Home.id == Review.home_id) \
-     .filter(Home.is_active == True) \
-     .group_by(Owner.id, Owner.full_name) \
-     .order_by(func.sum(Booking.total_price).desc()) \
+        booking_subquery.c.booking_count,
+        booking_subquery.c.total_revenue,
+        review_subquery.c.avg_rating
+    ).join(Home, Owner.id == Home.owner_id)\
+     .outerjoin(booking_subquery, Owner.id == booking_subquery.c.owner_id)\
+     .outerjoin(review_subquery, Owner.id == review_subquery.c.owner_id)\
+     .filter(Home.is_active == True)\
+     .group_by(Owner.id, Owner.full_name, booking_subquery.c.booking_count, 
+               booking_subquery.c.total_revenue, review_subquery.c.avg_rating)\
+     .order_by(booking_subquery.c.total_revenue.desc().nullslast())\
      .all()
+     
     result = []
     for o in owners:
         result.append({
             'id': o.id,
             'full_name': o.full_name or f'Chủ nhà {o.id}',
             'home_count': o.home_count,
-            'booking_count': o.booking_count,
+            'booking_count': o.booking_count or 0,
             'total_revenue': int(o.total_revenue) if o.total_revenue else 0,
             'avg_rating': round(o.avg_rating, 1) if o.avg_rating else 0.0
         })
