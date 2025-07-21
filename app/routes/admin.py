@@ -53,7 +53,7 @@ def dashboard():
             payments = []
             if home_ids:
                 payments = Payment.query.join(Booking).filter(Booking.home_id.in_(home_ids)).order_by(Payment.created_at.desc()).all()
-            owner.payments = payments  # Gán payments vào owner để template có thể sử dụng
+            # Don't assign to owner object to avoid SQLAlchemy autoflush issues
             users.append({
                 'id': owner.id,
                 'username': owner.username,
@@ -65,7 +65,8 @@ def dashboard():
                 'role_type': 'owner',
                 'created_at': getattr(owner, 'created_at', None),
                 'commission_percent': commission_percent,
-                'total_revenue': total_revenue
+                'total_revenue': total_revenue,
+                'payments': payments  # Include payments in the user data
             })
         
         # Get renters
@@ -963,10 +964,8 @@ def owner_detail(owner_id):
     if home_ids:
         payments = Payment.query.join(Booking).filter(Booking.home_id.in_(home_ids)).order_by(Payment.created_at.desc()).all()
     
-    # Gán payments vào owner để template có thể sử dụng
-    owner.payments = payments
-    
-    return render_template('admin/owner_detail.html', owner=owner)
+    # Pass payments separately to avoid modifying the owner object
+    return render_template('admin/owner_detail.html', owner=owner, payments=payments)
 
 @admin_bp.route('/owner/<int:owner_id>/delete', methods=['POST'])
 @login_required
