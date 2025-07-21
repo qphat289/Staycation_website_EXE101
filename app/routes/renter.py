@@ -347,6 +347,7 @@ def search():
 @require_email_verification_for_booking
 def book_home(home_id):
     """Create a booking with default values and redirect to payment"""
+    from datetime import datetime, timedelta
     home = Home.query.get_or_404(home_id)
     
     # Check if home is active
@@ -354,53 +355,72 @@ def book_home(home_id):
         flash("This home is currently not available for booking.", "danger")
         return redirect(url_for('renter.view_home_detail', home_id=home.id))
 
-    # Determine booking type and pricing
-    booking_type = 'daily'  # Default to daily booking
-    total_price = 0
-    total_hours = 24  # Default 1 day
-    
-    # Check if home has daily pricing
-    price = home.price_per_day if home.price_per_day and home.price_per_day > 0 else home.price_per_night
-    if price and price > 0:
-        booking_type = 'daily'
-        total_price = price
-        total_hours = 24
-    # If no daily pricing, check for hourly pricing
-    elif home.price_per_hour and home.price_per_hour > 0:
-        booking_type = 'hourly'
-        total_price = home.price_per_hour * 2  # Default 2 hours
-        total_hours = 2
-    elif home.price_first_2_hours and home.price_first_2_hours > 0:
-        booking_type = 'hourly'
-        total_price = home.price_first_2_hours
-        total_hours = 2
+    # --- Lấy tham số đặt phòng từ request (ưu tiên nếu có) ---
+    booking_type = request.args.get('type') or 'daily'
+    date = request.args.get('date')
+    time = request.args.get('time')
+    duration = request.args.get('duration')
+    guests = request.args.get('guests')
+
+    # Nếu là hourly và có đủ tham số thì dùng, nếu không thì fallback như cũ
+    if booking_type == 'hourly' and date and time and duration:
+        try:
+            total_hours = int(duration)
+            start_datetime = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+            end_datetime = start_datetime + timedelta(hours=total_hours)
+            # Tính giá
+            if total_hours <= 2 and home.price_first_2_hours:
+                total_price = home.price_first_2_hours
+            elif total_hours > 2 and home.price_first_2_hours and home.price_per_additional_hour:
+                total_price = home.price_first_2_hours + (total_hours - 2) * home.price_per_additional_hour
+            elif home.price_per_hour:
+                total_price = total_hours * home.price_per_hour
+            else:
+                flash("Nhà này chưa có thông tin giá theo giờ.", "warning")
+                return redirect(url_for('renter.view_home_detail', home_id=home.id))
+        except Exception as e:
+            flash("Thông tin đặt phòng không hợp lệ.", "danger")
+            return redirect(url_for('renter.view_home_detail', home_id=home.id))
     else:
-        flash("Nhà này chưa có thông tin giá. Vui lòng liên hệ chủ nhà để cập nhật giá trước khi đặt.", "warning")
-        return redirect(url_for('renter.view_home_detail', home_id=home.id))
-    
-    # Set default start time (tomorrow at 3 PM for daily, next hour for hourly)
-    now = datetime.utcnow()
-    if booking_type == 'daily':
-        # Start tomorrow at 3 PM
-        start_datetime = now.replace(hour=15, minute=0, second=0, microsecond=0) + timedelta(days=1)
-        end_datetime = start_datetime + timedelta(days=1)
-    else:
-        # Start in the next hour
-        start_datetime = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
-        end_datetime = start_datetime + timedelta(hours=total_hours)
-    
-    # Check for overlapping bookings
+        # --- Logic cũ fallback ---
+        booking_type = 'daily'  # Default to daily booking
+        total_price = 0
+        total_hours = 24  # Default 1 day
+        price = home.price_per_day if home.price_per_day and home.price_per_day > 0 else home.price_per_night
+        if price and price > 0:
+            booking_type = 'daily'
+            total_price = price
+            total_hours = 24
+        elif home.price_per_hour and home.price_per_hour > 0:
+            booking_type = 'hourly'
+            total_price = home.price_per_hour * 2  # Default 2 hours
+            total_hours = 2
+        elif home.price_first_2_hours and home.price_first_2_hours > 0:
+            booking_type = 'hourly'
+            total_price = home.price_first_2_hours
+            total_hours = 2
+        else:
+            flash("Nhà này chưa có thông tin giá. Vui lòng liên hệ chủ nhà để cập nhật giá trước khi đặt.", "warning")
+            return redirect(url_for('renter.view_home_detail', home_id=home.id))
+        now = datetime.utcnow()
+        if booking_type == 'daily':
+            start_datetime = now.replace(hour=15, minute=0, second=0, microsecond=0) + timedelta(days=1)
+            end_datetime = start_datetime + timedelta(days=1)
+        else:
+            start_datetime = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+            end_datetime = start_datetime + timedelta(hours=total_hours)
+
+    # --- Kiểm tra trùng booking ---
     existing_bookings = Booking.query.filter(
         Booking.home_id == home.id,
         Booking.status.in_(['pending', 'confirmed', 'active'])
     ).all()
-    
     for booking in existing_bookings:
         if start_datetime < booking.end_time and end_datetime > booking.start_time:
             flash('This home is not available during the selected time period. Please try a different time.', 'danger')
             return redirect(url_for('renter.view_home_detail', home_id=home.id))
-    
-    # Create the booking
+
+    # --- Tạo booking ---
     new_booking = Booking(
         home_id=home.id,
         renter_id=current_user.id,
@@ -412,10 +432,8 @@ def book_home(home_id):
         payment_status='pending',
         booking_type=booking_type
     )
-    
     db.session.add(new_booking)
     db.session.commit()
-    
     flash('Booking created successfully! Please proceed with payment.', 'success')
     return redirect(url_for('payment.checkout', booking_id=new_booking.id))
 

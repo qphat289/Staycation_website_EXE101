@@ -1138,3 +1138,17 @@ function showNotification(type, message) {
         alert(message);
     }
 }
+
+// --- FIX: Giữ giá trị ngày thuê cho input compact (hourly) ---
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('hourlyDateCompact') && typeof flatpickr !== 'undefined') {
+        flatpickr('#hourlyDateCompact', {
+            dateFormat: 'Y-m-d',
+            locale: 'vn',
+            allowInput: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                document.getElementById('hourlyDateCompact').value = dateStr;
+            }
+        });
+    }
+});
