@@ -342,27 +342,7 @@ def search():
                           selected_rule_ids=valid_rule_ids,
                           search_params=request.args)
 
-@renter_bp.route('/view-home/<int:id>')
-def view_home(id):
-    # Load home với amenities và category relationships
-    home = Home.query.options(
-        joinedload(Home.amenities).joinedload(Amenity.amenity_category),
-        joinedload(Home.images)
-    ).get_or_404(id)
-    
-    # Kiểm tra nếu nhà đã bị khóa
-    if not home.is_active:
-        flash("Nhà này hiện tại đã ngừng hoạt động và không khả dụng để đặt.", "warning")
-        return redirect(url_for('home'))
-    
-    # Load reviews for this home
-    reviews = Review.query.filter_by(home_id=id).order_by(Review.created_at.desc()).all()
-    
-    return render_template('renter/view_home_detail.html', 
-                          home=home,
-                          reviews=reviews,
-                          search_params=request.args)
-
+# --- Thay thế hàm book_home ---
 @renter_bp.route('/book/<int:home_id>', methods=['GET', 'POST'])
 @require_email_verification_for_booking
 def book_home(home_id):
@@ -373,7 +353,7 @@ def book_home(home_id):
     if not home.is_active:
         flash("This home is currently not available for booking.", "danger")
         return redirect(url_for('renter.view_home_detail', home_id=home.id))
-    
+
     # Determine booking type and pricing
     booking_type = 'daily'  # Default to daily booking
     total_price = 0
@@ -438,9 +418,6 @@ def book_home(home_id):
     
     flash('Booking created successfully! Please proceed with payment.', 'success')
     return redirect(url_for('payment.checkout', booking_id=new_booking.id))
-  
-
-
 
 
 @renter_bp.route('/cancel-booking/<int:id>')
@@ -759,7 +736,8 @@ def view_reviews(home_id):
         write_mode=write_mode
     )
 
-@renter_bp.route('/home/<int:home_id>/detail')
+# --- Sửa view_home_detail: load home với joinedload, truyền reviews, search_params ---
+@renter_bp.route('/view-home/<int:home_id>')
 def view_home_detail(home_id):
     # Load home với amenities và category relationships
     home = Home.query.options(
@@ -775,7 +753,6 @@ def view_home_detail(home_id):
     # Load reviews for this home
     reviews = Review.query.filter_by(home_id=home_id).order_by(Review.created_at.desc()).all()
     
-    # This page shows all images for the home
     return render_template('renter/view_home_detail.html', 
                           home=home,
                           reviews=reviews,
@@ -1375,3 +1352,73 @@ def cancel_password_change():
     except Exception as e:
         logger.error(f"Error in cancel_password_change: {e}")
         return jsonify({'success': False, 'message': f'Lỗi hệ thống: {str(e)}'}), 500
+
+@renter_bp.route('/room/<int:room_id>/detail')
+def view_room_detail(room_id):
+    """View room detail page"""
+    room = Home.query.get_or_404(room_id)
+    
+    # Check if room is active
+    if not room.is_active:
+        flash("Phòng này hiện tại đã ngừng hoạt động và không khả dụng để đặt.", "warning")
+        return redirect(url_for('home'))
+    
+    # Load reviews for this room
+    reviews = Review.query.filter_by(home_id=room_id).order_by(Review.created_at.desc()).all()
+    
+    # For rooms, we want to default to hourly booking
+    search_params = request.args.copy()
+    if 'booking_type' not in search_params:
+        search_params['booking_type'] = 'hourly'
+    
+    return render_template('renter/view_home_detail.html', 
+                          home=room,
+                          reviews=reviews,
+                          search_params=search_params)
+
+@renter_bp.route('/book-homestay/<int:homestay_id>/<int:room_id>')
+@require_email_verification_for_booking
+def book_homestay(homestay_id, room_id):
+    """Book a specific room in a homestay"""
+    room = Home.query.get_or_404(room_id)
+    
+    # Check if room is active
+    if not room.is_active:
+        flash("Phòng này hiện tại đã ngừng hoạt động và không khả dụng để đặt.", "warning")
+        return redirect(url_for('renter.view_room_detail', room_id=room.id))
+    
+    # Get query parameters for pre-filling form
+    booking_type = request.args.get('type', 'hourly')  # Default to hourly for rooms
+    checkin_date = request.args.get('checkin')
+    checkout_date = request.args.get('checkout')
+    hourly_date = request.args.get('date')
+    start_time = request.args.get('time')
+    duration = request.args.get('duration')
+    guests = request.args.get('guests', '1 khách')
+    
+    print(f"DEBUG: Received query params for homestay booking - type: {booking_type}, checkin: {checkin_date}, checkout: {checkout_date}, date: {hourly_date}, time: {start_time}, duration: {duration}, guests: {guests}")
+    
+    # Build redirect URL to book_home with all parameters
+    redirect_url = url_for('renter.book_home', home_id=room.id)
+    params = []
+    
+    if booking_type:
+        params.append(f'type={booking_type}')
+    if checkin_date:
+        params.append(f'checkin={checkin_date}')
+    if checkout_date:
+        params.append(f'checkout={checkout_date}')
+    if hourly_date:
+        params.append(f'date={hourly_date}')
+    if start_time:
+        params.append(f'time={start_time}')
+    if duration:
+        params.append(f'duration={duration}')
+    if guests:
+        params.append(f'guests={guests}')
+    
+    if params:
+        redirect_url += '?' + '&'.join(params)
+    
+    print(f"DEBUG: Redirecting to: {redirect_url}")
+    return redirect(redirect_url)

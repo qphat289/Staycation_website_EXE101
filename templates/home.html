@@ -1638,7 +1638,7 @@ input[type="time"][data-has-value="true"]::-webkit-datetime-edit-ampm-field {
                         <!-- Title and detail button -->
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 class="card-title mb-0">{{ homestay.title }}</h5>
-                            <a href="{{ url_for('renter.view_home', id=homestay.id) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ url_for('renter.view_home_detail', home_id=homestay.id) }}" class="btn btn-outline-primary btn-sm">
                                 Chi tiết
                             </a>
                         </div>

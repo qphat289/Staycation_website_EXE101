@@ -1496,13 +1496,13 @@
         <div class="container">
             {% if current_user.is_authenticated and current_user.is_owner() %}
                 <span class="navbar-brand fw-bold" style="color: #333333;">
-                    <img src="{{ url_for('static', filename='data/system/Logo.png') }}" alt="Homi Logo" height="40" class="me-2">
-                    <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Homi</span>
+                    <img src="{{ url_for('static', filename='data/system/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
+                    <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Horin</span>
                 </span>
             {% else %}
                 <a class="navbar-brand fw-bold" href="{{ url_for('home') }}" style="color: #333333;">
-                    <img src="{{ url_for('static', filename='data/system/Logo.png') }}" alt="Homi Logo" height="40" class="me-2">
-                    <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Homi</span>
+                    <img src="{{ url_for('static', filename='data/system/Logo.png') }}" alt="Horin Logo" height="40" class="me-2">
+                    <span class="brand-text" data-translate="homestay-booking" style="font-size: 24px;">Horin</span>
                 </a>
             {% endif %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -1630,7 +1630,7 @@
     </div>
     
     <!-- Global search bar (displays only on search results and home detail pages) -->
-    {% if request.endpoint in ['renter.search', 'renter.view_home', 'renter.view_home_detail'] and (not current_user.is_authenticated or (current_user.is_authenticated and current_user.is_renter())) %}
+    {% if request.endpoint in ['renter.search', 'renter.view_home'] and (not current_user.is_authenticated or (current_user.is_authenticated and current_user.is_renter())) %}
     <div class="container global-search-container">
         <div class="search-tabs-container">
             <!-- Search Tabs -->
@@ -2459,8 +2459,6 @@
                     updateGlobalDisplay();
                     updateGlobalHiddenInputs();
                     dropdown.classList.remove('show');
-                    // Update placeholders after applying
-                    setTimeout(updateSearchPlaceholders, 100);
                 });
             }
             
@@ -2725,10 +2723,11 @@
                 }
             }
             
-            // Initialize without default values - let user choose
-            selectedDate = null;
-            selectedTime = null;
-            selectedDuration = null;
+            // Initialize with default values
+            const today = new Date();
+            selectedDate = today.toISOString().split('T')[0];
+            selectedTime = '14:00';
+            selectedDuration = '3';
             
             updateGlobalDisplay();
             updateGlobalHiddenInputs();
@@ -3215,8 +3214,6 @@
                     updateDisplay();
                     updateHiddenInputs();
                     dropdown.classList.remove('show');
-                    // Update placeholders after applying
-                    setTimeout(updateSearchPlaceholders, 100);
                 });
             }
             
@@ -3347,314 +3344,6 @@
             
             // Initialize
             renderCalendars();
-        }
-        
-        // Add form validation for search forms
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Setting up form validation...');
-            
-            // Get form elements
-            const hourlyForm = document.getElementById('global-hourly-form');
-            const dailyForm = document.getElementById('global-daily-form');
-            
-            console.log('Found forms:', { hourlyForm: !!hourlyForm, dailyForm: !!dailyForm });
-            
-            // Add validation for hourly form
-            if (hourlyForm) {
-                hourlyForm.addEventListener('submit', function(e) {
-                    console.log('Hourly form submit triggered');
-                    
-                    const checkinDate = document.getElementById('global-checkin-date-hourly');
-                    const checkinTime = document.getElementById('global-checkin-time-hourly');
-                    const hoursDuration = document.getElementById('global-hours-duration-hourly');
-                    
-                    console.log('Form values:', {
-                        checkinDate: checkinDate ? checkinDate.value : 'element not found',
-                        checkinTime: checkinTime ? checkinTime.value : 'element not found',
-                        hoursDuration: hoursDuration ? hoursDuration.value : 'element not found'
-                    });
-                    
-                    if (!checkinDate || !checkinTime || !hoursDuration || 
-                        !checkinDate.value || !checkinTime.value || !hoursDuration.value) {
-                        console.log('Validation failed - preventing submit');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        showNotification('error', 'Vui lòng chọn ngày giờ');
-                        return false;
-                    }
-                    
-                    console.log('Validation passed - allowing submit');
-                });
-            }
-            
-            // Add validation for daily form
-            if (dailyForm) {
-                dailyForm.addEventListener('submit', function(e) {
-                    console.log('Daily form submit triggered');
-                    
-                    const checkinDate = document.getElementById('global-checkin-date-daily');
-                    const checkoutDate = document.getElementById('global-checkout-date-daily');
-                    
-                    console.log('Form values:', {
-                        checkinDate: checkinDate ? checkinDate.value : 'element not found',
-                        checkoutDate: checkoutDate ? checkoutDate.value : 'element not found'
-                    });
-                    
-                    if (!checkinDate || !checkoutDate || 
-                        !checkinDate.value || !checkoutDate.value) {
-                        console.log('Validation failed - preventing submit');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        showNotification('error', 'Vui lòng chọn ngày');
-                        return false;
-                    }
-                    
-                    console.log('Validation passed - allowing submit');
-                });
-            }
-            
-            // Also add validation to search buttons directly
-            const searchButtons = document.querySelectorAll('.search-btn');
-            searchButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    console.log('Search button clicked');
-                    
-                    // Find the form this button belongs to
-                    const form = this.closest('form');
-                    if (!form) {
-                        console.log('No form found for button');
-                        return;
-                    }
-                    
-                    const formId = form.id;
-                    console.log('Form ID:', formId);
-                    
-                    if (formId === 'global-hourly-form') {
-                        const checkinDate = document.getElementById('global-checkin-date-hourly');
-                        const checkinTime = document.getElementById('global-checkin-time-hourly');
-                        const hoursDuration = document.getElementById('global-hours-duration-hourly');
-                        
-                        if (!checkinDate || !checkinTime || !hoursDuration || 
-                            !checkinDate.value || !checkinTime.value || !hoursDuration.value) {
-                            console.log('Button validation failed - preventing submit');
-                            e.preventDefault();
-                            e.stopPropagation();
-                            showNotification('error', 'Vui lòng chọn ngày giờ');
-                            return false;
-                        }
-                    } else if (formId === 'global-daily-form') {
-                        const checkinDate = document.getElementById('global-checkin-date-daily');
-                        const checkoutDate = document.getElementById('global-checkout-date-daily');
-                        
-                        if (!checkinDate || !checkoutDate || 
-                            !checkinDate.value || !checkoutDate.value) {
-                            console.log('Button validation failed - preventing submit');
-                            e.preventDefault();
-                            e.stopPropagation();
-                            showNotification('error', 'Vui lòng chọn ngày');
-                            return false;
-                        }
-                    }
-                    
-                    console.log('Button validation passed - allowing submit');
-                });
-            });
-            
-            // Update placeholders on page load
-            updateSearchPlaceholders();
-        });
-        
-        // Function to update search placeholders
-        function updateSearchPlaceholders() {
-            // Update hourly form placeholders
-            const hourlyCheckinDisplay = document.getElementById('global-datetime-hourly');
-            const hourlyCheckoutDisplay = document.getElementById('global-checkout-display-hourly');
-            const hourlyCheckinDate = document.getElementById('global-checkin-date-hourly');
-            const hourlyCheckinTime = document.getElementById('global-checkin-time-hourly');
-            const hourlyDuration = document.getElementById('global-hours-duration-hourly');
-            
-            if (hourlyCheckinDisplay && hourlyCheckinDate && hourlyCheckinTime && hourlyDuration) {
-                if (hourlyCheckinDate.value && hourlyCheckinTime.value && hourlyDuration.value) {
-                    // Format the display value
-                    const date = new Date(hourlyCheckinDate.value);
-                    const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-                    const dayName = dayNames[date.getDay()];
-                    const day = date.getDate();
-                    const month = date.getMonth() + 1;
-                    
-                    hourlyCheckinDisplay.value = `${dayName} - ${day} tháng ${month} - ${hourlyCheckinTime.value}`;
-                    
-                    // Calculate checkout time
-                    const checkinHour = parseInt(hourlyCheckinTime.value.split(':')[0]);
-                    const duration = parseInt(hourlyDuration.value);
-                    let checkoutHour = checkinHour + duration;
-                    let checkoutDate = new Date(date);
-                    
-                    if (checkoutHour >= 24) {
-                        checkoutHour -= 24;
-                        checkoutDate.setDate(checkoutDate.getDate() + 1);
-                    }
-                    
-                    const checkoutDayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-                    const checkoutDayName = checkoutDayNames[checkoutDate.getDay()];
-                    const checkoutDay = checkoutDate.getDate();
-                    const checkoutMonth = checkoutDate.getMonth() + 1;
-                    
-                    if (hourlyCheckoutDisplay) {
-                        hourlyCheckoutDisplay.value = `${checkoutDayName} - ${checkoutDay} tháng ${checkoutMonth} - ${checkoutHour.toString().padStart(2, '0')}:00`;
-                    }
-                } else {
-                    hourlyCheckinDisplay.value = 'Hãy chọn ngày và giờ';
-                    if (hourlyCheckoutDisplay) {
-                        hourlyCheckoutDisplay.value = 'Hãy chọn ngày và giờ';
-                    }
-                }
-            }
-            
-            // Update daily form placeholders
-            const dailyCheckinDisplay = document.getElementById('global-datetime-daily');
-            const dailyCheckoutDisplay = document.getElementById('global-checkout-display-daily');
-            const dailyCheckinDate = document.getElementById('global-checkin-date-daily');
-            const dailyCheckoutDate = document.getElementById('global-checkout-date-daily');
-            
-            if (dailyCheckinDisplay && dailyCheckinDate) {
-                if (dailyCheckinDate.value) {
-                    const date = new Date(dailyCheckinDate.value);
-                    const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-                    const dayName = dayNames[date.getDay()];
-                    const day = date.getDate();
-                    const month = date.getMonth() + 1;
-                    dailyCheckinDisplay.value = `${dayName} - ${day} tháng ${month}`;
-                } else {
-                    dailyCheckinDisplay.value = 'Chọn ngày';
-                }
-            }
-            
-            if (dailyCheckoutDisplay && dailyCheckoutDate) {
-                if (dailyCheckoutDate.value) {
-                    const date = new Date(dailyCheckoutDate.value);
-                    const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-                    const dayName = dayNames[date.getDay()];
-                    const day = date.getDate();
-                    const month = date.getMonth() + 1;
-                    dailyCheckoutDisplay.value = `${dayName} - ${day} tháng ${month}`;
-                } else {
-                    dailyCheckoutDisplay.value = 'Chọn ngày';
-                }
-            }
-        }
-        
-        // Function to show notification (if not already defined)
-        function showNotification(type, message) {
-            // Remove any existing notifications first
-            document.querySelectorAll('.custom-notification').forEach(el => el.remove());
-            
-            // Determine notification style based on type
-            let backgroundColor, iconColor, iconClass, shadowColor;
-            
-            if (type === 'success') {
-                backgroundColor = '#28a745';
-                iconColor = '#28a745';
-                iconClass = 'fas fa-check';
-                shadowColor = 'rgba(40, 167, 69, 0.3)';
-            } else if (type === 'warning') {
-                backgroundColor = '#ffc107';
-                iconColor = '#ffc107';
-                iconClass = 'fas fa-exclamation-triangle';
-                shadowColor = 'rgba(255, 193, 7, 0.3)';
-            } else if (type === 'info') {
-                backgroundColor = '#17a2b8';
-                iconColor = '#17a2b8';
-                iconClass = 'fas fa-info-circle';
-                shadowColor = 'rgba(23, 162, 184, 0.3)';
-            } else {
-                // Default error style
-                backgroundColor = '#dc3545';
-                iconColor = '#dc3545';
-                iconClass = 'fas fa-exclamation-circle';
-                shadowColor = 'rgba(220, 53, 69, 0.3)';
-            }
-            
-            // Create notification element
-            const notificationDiv = document.createElement('div');
-            notificationDiv.className = 'custom-notification';
-            notificationDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 9999;
-                max-width: 400px;
-                background: ${backgroundColor};
-                color: white;
-                padding: 12px 16px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px ${shadowColor};
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                font-size: 14px;
-                font-weight: 500;
-                transform: translateX(100%);
-                opacity: 0;
-                transition: all 0.3s ease;
-                animation: slideInNotification 0.3s ease forwards;
-            `;
-            
-            notificationDiv.innerHTML = `
-                <div class="notification-icon" style="
-                    width: 20px;
-                    height: 20px;
-                    background: white;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                ">
-                    <i class="${iconClass}" style="color: ${iconColor}; font-size: 12px;"></i>
-                </div>
-                <div class="notification-message" style="flex-grow: 1;">
-                    ${message}
-                </div>
-            `;
-            
-            // Add CSS animation
-            if (!document.getElementById('notification-styles')) {
-                const style = document.createElement('style');
-                style.id = 'notification-styles';
-                style.textContent = `
-                    @keyframes slideInNotification {
-                        from {
-                            transform: translateX(100%);
-                            opacity: 0;
-                        }
-                        to {
-                            transform: translateX(0);
-                            opacity: 1;
-                        }
-                    }
-                    
-                    
-                `;
-                document.head.appendChild(style);
-            }
-            
-            // Add to body
-            document.body.appendChild(notificationDiv);
-            
-            // Auto remove after 4 seconds for success, 3 seconds for others
-            const autoHideTime = type === 'success' ? 4000 : 3000;
-            setTimeout(() => {
-                if (notificationDiv.parentNode) {
-                    notificationDiv.style.transform = 'translateX(100%)';
-                    notificationDiv.style.opacity = '0';
-                    setTimeout(() => {
-                        if (notificationDiv.parentNode) {
-                            notificationDiv.remove();
-                        }
-                    }, 300);
-                }
-            }, autoHideTime);
         }
     </script>
     

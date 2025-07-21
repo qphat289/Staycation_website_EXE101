@@ -1,5 +1,18 @@
+view home
+
+
 {% extends 'base.html' %}
 {% block title %}{{ home.homestay.business_name or home.homestay.full_name }} - Nhà {{ home.home_number }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/booking-card.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/vi.js"></script>
+{% endblock %}
 
 {% block navbar_search %}
 <!-- Compact Search Bar -->
@@ -766,6 +779,8 @@
         background: rgba(139, 195, 74, 0.1) !important;
     }
 
+
+
     /* Icon styles */
     .modal-body i {
         color: #8bc34a;
@@ -1125,6 +1140,11 @@
     .calendar-day:hover:not(.disabled) {
         background: #f0f8ff;
         color: #8bc34a;
+        font-size: 15px;
+        position: relative;
+        min-height: 40px;
+        background: none;
+        border: none;
     }
     
     .calendar-day.disabled {
@@ -1258,8 +1278,7 @@
         font-size: 15px;
         position: relative;
         min-height: 40px;
-        background: none;
-        border: none;
+        
     }
 
     #datetime-dropdown-daily .calendar-day:hover {
@@ -1956,7 +1975,7 @@
                     <div class="col-md-2">
                         <label for="guests-hourly" class="form-label">Khách</label>
                         <div class="guest-selector">
-                            <input type="text" class="form-control guest-display" id="guests-hourly" value="{{ (search_params.adults or '1') + ' người lớn, ' + (search_params.children or '0') + ' Trẻ em' }}" readonly>
+                            <input type="text" class="form-control guest-display" id="guests-hourly" value="{{ (search_params.adults or '1') + ' người lớn, ' + (search_params.children or '0') + ' Trẻ em' }}" readonly onclick="showGuestSelector(this)">
                             <div class="guest-dropdown" id="guest-dropdown-hourly">
                                 <div class="guest-row">
                                     <div class="guest-info">
@@ -2128,42 +2147,41 @@
                         <i class="bi bi-heart"></i>
                         <span class="d-none d-lg-inline ms-1">Lưu</span>
                     </button>
-                    <a href="{{ url_for('renter.book_home', home_id=home.id) }}" class="btn btn-outline-success btn-sm" title="Đặt ngay">
-                        <i class="bi bi-calendar-check"></i>
-                        <span class="ms-1">Đặt ngay</span>
-                    </a>
                 </div>
             </div>
         </div>
     </div>
                 
-    <!-- Gallery -->
+    <!-- Hình ảnh và Bảng giá -->
     <div class="section-card">
-            <div class="row g-2">
-                <div class="col-md-8">
-                    <div class="position-relative" style="height: 400px;">
-                        {% if home.images %}
-                            {% set featured_image = home.images|selectattr('is_featured', 'equalto', True)|list|first %}
-                            <img src="{{ url_for('static', filename=(featured_image.image_path if featured_image else home.images[0].image_path)) }}" 
-                                 class="img-fluid w-100 h-100 rounded-3 main-image" 
-                                 style="object-fit: cover; cursor: pointer;" 
-                                 alt="Main home image"
-                                 onclick="showSingleImage('{{ url_for('static', filename=(featured_image.image_path if featured_image else home.images[0].image_path)) }}', 'Ảnh chính', 0)">
-                            <div class="image-hover-simple">
-                                Click để xem toàn bộ ảnh
-                            </div>
-                        {% else %}
-                            <div class="bg-secondary w-100 h-100 rounded-3 d-flex align-items-center justify-content-center" style="background-color: #C8C8C8 !important;">
-                                <span class="text-muted">Không có hình ảnh</span>
-                            </div>
-                        {% endif %}
-                </div>
-            </div>
-            
-                <div class="col-md-4">
+        <div class="row">
+            <!-- Gallery bên trái -->
+            <div class="col-md-8">
+                <div class="row g-2">
+                    <!-- Main Image -->
+                    <div class="col-12">
+                        <div class="position-relative" style="height: 400px;">
+                            {% if home.images %}
+                                {% set featured_image = home.images|selectattr('is_featured', 'equalto', True)|list|first %}
+                                <img src="{{ url_for('static', filename=(featured_image.image_path if featured_image else home.images[0].image_path)) }}" 
+                                     class="img-fluid w-100 h-100 rounded-3 main-image" 
+                                     style="object-fit: cover; cursor: pointer;" 
+                                     alt="Main home image"
+                                     onclick="showSingleImage('{{ url_for('static', filename=(featured_image.image_path if featured_image else home.images[0].image_path)) }}', 'Ảnh chính', 0)">
+                                <div class="image-hover-simple">
+                                    Click để xem toàn bộ ảnh
+                                </div>
+                            {% else %}
+                                <div class="bg-secondary w-100 h-100 rounded-3 d-flex align-items-center justify-content-center" style="background-color: #C8C8C8 !important;">
+                                    <span class="text-muted">Không có hình ảnh</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
                     <!-- Side Images -->
-                    <div class="row g-2">
-                        <div class="col-12 position-relative" style="height: 195px;">
+                    <div class="row g-2 mt-2">
+                        <div class="col-4 position-relative" style="height: 120px;">
                             {% if home.images and home.images|length > 1 %}
                                 <img src="{{ url_for('static', filename=home.images[1].image_path) }}" 
                                      class="img-fluid w-100 h-100 rounded-2 side-image" 
@@ -2177,7 +2195,7 @@
                                 <div class="bg-secondary w-100 h-100 rounded-2" style="background-color: #C8C8C8 !important;"></div>
                             {% endif %}
                         </div>
-                        <div class="col-12 position-relative" style="height: 195px;">
+                        <div class="col-4 position-relative" style="height: 120px;">
                             {% if home.images and home.images|length > 2 %}
                                 <img src="{{ url_for('static', filename=home.images[2].image_path) }}" 
                                      class="img-fluid w-100 h-100 rounded-2 side-image" 
@@ -2187,69 +2205,243 @@
                                 <div class="image-hover-simple">
                                     Click để xem toàn bộ ảnh
                                 </div>
-                                <div class="position-absolute bottom-0 end-0 p-2">
-                                    <button class="btn btn-light btn-sm fw-bold" onclick="showAllImages()" style="font-size: 12px; padding: 4px 8px;">
+                            {% else %}
+                                <div class="bg-secondary w-100 h-100 rounded-2" style="background-color: #C8C8C8 !important;"></div>
+                            {% endif %}
+                        </div>
+                        <div class="col-4 position-relative" style="height: 120px;">
+                            {% if home.images and home.images|length > 3 %}
+                                <img src="{{ url_for('static', filename=home.images[3].image_path) }}" 
+                                     class="img-fluid w-100 h-100 rounded-2 side-image" 
+                                     style="object-fit: cover; cursor: pointer;" 
+                                     alt="Home image"
+                                     onclick="showSingleImage('{{ url_for('static', filename=home.images[3].image_path) }}', 'Ảnh phụ 3', 3)">
+                                <div class="image-hover-simple">
+                                    Click để xem toàn bộ ảnh
+                                </div>
+                                <div class="position-absolute bottom-0 end-0 p-1">
+                                    <button class="btn btn-light btn-sm fw-bold" onclick="showAllImages()" style="font-size: 10px; padding: 2px 6px;">
                                         <i class="bi bi-grid-3x3-gap me-1"></i>
-                                        Toàn bộ ảnh
-                            </button>
+                                        Tất cả
+                                    </button>
                                 </div>
                             {% else %}
-                            <div class="bg-secondary w-100 h-100 rounded-2" style="background-color: #C8C8C8 !important;"></div>
+                                <div class="bg-secondary w-100 h-100 rounded-2" style="background-color: #C8C8C8 !important;"></div>
                             {% endif %}
-                    </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-    <!-- Mô tả -->
-    <div class="section-card">
-        <div class="row">
-            <!-- Mô tả bên trái -->
-            <div class="col-md-8">
-                <h2 class="section-title">
-                    <i class="bi bi-info-circle"></i>
-                    Mô tả
-                </h2>
-                <p class="description-text mb-0">
-                    {{ home.description or 'Chưa có mô tả cho nhà này.' }}
-                </p>
             </div>
             
             <!-- Giá nhà bên phải -->
             <div class="col-md-4">
-                <h2 class="section-title">
-                    <i class="bi bi-currency-dollar"></i>
-                    Giá nhà
-                </h2>
-                <div class="description-text">
-                    {% if home.price_first_2_hours %}
-                        <div><span style="font-weight:600;">2 giờ đầu:</span> {{ "{:,.0f}".format(home.price_first_2_hours) }} VND</div>
-                    {% endif %}
-                    {% if home.price_per_additional_hour %}
-                        <div><span style="font-weight:600;">Giờ tiếp theo:</span> {{ "{:,.0f}".format(home.price_per_additional_hour) }} VND/giờ</div>
-                    {% endif %}
-                    {% if home.price_overnight %}
-                        <div><span style="font-weight:600;">Qua đêm (21h-8h):</span> {{ "{:,.0f}".format(home.price_overnight) }} VND</div>
-                    {% endif %}
-                    {% if home.price_daytime %}
-                        <div><span style="font-weight:600;">Ban ngày (9h-20h):</span> {{ "{:,.0f}".format(home.price_daytime) }} VND</div>
-                    {% endif %}
-                    {% if home.price_per_hour %}
-                        <div><span style="font-weight:600;">Giá theo giờ:</span> {{ "{:,.0f}".format(home.price_per_hour) }} VND/giờ</div>
-                    {% endif %}
-                    {% if home.price_per_day %}
-                        <div><span style="font-weight:600;">Giá theo ngày:</span> {{ "{:,.0f}".format(home.price_per_day) }} VND/ngày</div>
-                    {% endif %}
-                    {% if home.price_per_night %}
-                        <div><span style="font-weight:600;">Giá theo đêm:</span> {{ "{:,.0f}".format(home.price_per_night) }} VND/ngày</div>
-                    {% endif %}
-                    {% if not (home.price_first_2_hours or home.price_per_additional_hour or home.price_overnight or home.price_daytime or home.price_per_hour or home.price_per_day or home.price_per_night) %}
-                        <span style="color: #dc3545; font-weight: 600;">Giá chưa được cập nhật</span>
+                <div class="compact-booking-card">
+                    {% set has_hourly = home.price_first_2_hours or home.price_per_hour or home.price_per_additional_hour or home.price_overnight or home.price_daytime %}
+                    {% set has_daily = home.price_per_day or home.price_per_night %}
+
+                    {# Nếu có cả hai loại thì hiển thị tab chuyển #}
+                    {% if has_hourly and has_daily %}
+                        <div class="booking-type-tabs">
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="bookingTypeCompact" id="hourlyTypeCompact" checked>
+                                <label class="btn btn-outline-primary btn-sm" for="hourlyTypeCompact">Theo giờ</label>
+                                <input type="radio" class="btn-check" name="bookingTypeCompact" id="dailyTypeCompact">
+                                <label class="btn btn-outline-primary btn-sm" for="dailyTypeCompact">Theo ngày</label>
+                            </div>
+                        </div>
+                        <!-- Bảng giá theo ngày -->
+                        <div id="dailyPricingCompact" class="pricing-section-compact active">
+                            {% if has_daily %}
+                                <div class="price-display-compact">
+                                    {% set daily_price = home.price_per_day if home.price_per_day and home.price_per_day > 0 else home.price_per_night %}
+                                    {% if daily_price %}
+                                    <div class="price-main-compact">
+                                        <span class="price-amount-compact">₫{{ "{:,.0f}".format(daily_price) }}</span>
+                                        <span class="price-unit-compact">cho 1 đêm</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <!-- Form đặt phòng theo ngày -->
+                                <div class="booking-form-compact">
+                                    <div class="form-group-compact">
+                                        <label class="form-label-compact">NHẬN PHÒNG</label>
+                                        <input type="text" class="form-control form-control-sm" id="checkinDateCompact" placeholder="Chọn ngày" readonly>
+                                    </div>
+                                    <div class="form-group-compact">
+                                        <label class="form-label-compact">TRẢ PHÒNG</label>
+                                        <input type="text" class="form-control form-control-sm" id="checkoutDateCompact" placeholder="Chọn ngày" readonly>
+                                    </div>
+                                    <div class="form-group-compact">
+                                        <label class="form-label-compact">KHÁCH</label>
+                                        <div class="guest-selector-compact">
+                                            <input type="text" class="form-control form-control-sm" id="guestCountCompact" value="1 khách" readonly onclick="showGuestSelector(this)">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-book-compact w-100" onclick="bookDailyCompact()">
+                                        Đặt phòng
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div class="no-pricing-compact">
+                                    <p class="text-muted small">Chưa có giá theo ngày</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <!-- Bảng giá theo giờ -->
+                        <div id="hourlyPricingCompact" class="pricing-section-compact" style="display: none;">
+                            {% if has_hourly %}
+                                <div class="price-display-compact">
+                                    {% if home.price_first_2_hours %}
+                                    <div class="price-main-compact">
+                                        <span class="price-amount-compact">{{ "{:,.0f}".format(home.price_first_2_hours) }}đ</span>
+                                        <span class="price-unit-compact">cho 2 giờ đầu</span>
+                                    </div>
+                                    {% if home.price_per_additional_hour %}
+                                    <div class="price-additional-compact">
+                                        <span class="price-amount-compact">{{ "{:,.0f}".format(home.price_per_additional_hour) }}đ</span>
+                                        <span class="price-unit-compact">giờ tiếp theo</span>
+                                    </div>
+                                    {% endif %}
+                                    {% elif home.price_per_hour %}
+                                    <div class="price-main-compact">
+                                        <span class="price-amount-compact">₫{{ "{:,.0f}".format(home.price_per_hour) }}</span>
+                                        <span class="price-unit-compact">/giờ</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <!-- Form đặt phòng theo giờ -->
+                                <div class="booking-form-compact">
+                                    <div class="form-group-compact">
+                                        <label class="form-label-compact">NGÀY THUÊ</label>
+                                        <input type="text" class="form-control form-control-sm" id="hourlyDateCompact" placeholder="Chọn ngày" readonly>
+                                    </div>
+                                    <div class="form-group-compact">
+                                        <label class="form-label-compact">GIỜ BẮT ĐẦU</label>
+                                        <input type="text" class="form-control form-control-sm" id="startTimeCompact" placeholder="Chọn giờ" readonly onclick="showTimeSelector(this)">
+                                    </div>
+                                    <div class="form-group-compact">
+                                        <label class="form-label-compact">SỐ GIỜ THUÊ</label>
+                                        <div class="duration-selector-compact">
+                                            <input type="text" class="form-control form-control-sm" id="durationHoursCompact" placeholder="Chọn giờ" readonly onclick="showDurationSelector(this)">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                    <div class="form-group-compact">
+                                        <label class="form-label-compact">KHÁCH</label>
+                                        <div class="guest-selector-compact">
+                                            <input type="text" class="form-control form-control-sm" id="guestCountHourlyCompact" value="1 khách" readonly onclick="showGuestSelector(this)">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-book-compact w-100" onclick="bookHourlyCompact(); return false;">
+                                        Đặt phòng
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div class="no-pricing-compact">
+                                    <p class="text-muted small">Chưa có giá theo giờ</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% elif has_daily %}
+                        <!-- Chỉ có theo ngày -->
+                        <div id="dailyPricingCompact" class="pricing-section-compact active">
+                            <div class="price-display-compact">
+                                {% set daily_price = home.price_per_day if home.price_per_day and home.price_per_day > 0 else home.price_per_night %}
+                                {% if daily_price %}
+                                <div class="price-main-compact">
+                                    <span class="price-amount-compact">₫{{ "{:,.0f}".format(daily_price) }}</span>
+                                    <span class="price-unit-compact">cho 1 đêm</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="booking-form-compact">
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">NHẬN PHÒNG</label>
+                                    <input type="text" class="form-control form-control-sm" id="checkinDateCompact" placeholder="Chọn ngày" readonly>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">TRẢ PHÒNG</label>
+                                    <input type="text" class="form-control form-control-sm" id="checkoutDateCompact" placeholder="Chọn ngày" readonly>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">KHÁCH</label>
+                                    <div class="guest-selector-compact">
+                                        <input type="text" class="form-control form-control-sm" id="guestCountCompact" value="1 khách" readonly onclick="showGuestSelector(this)">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary btn-book-compact w-100" onclick="bookDailyCompact()">
+                                    Đặt phòng
+                                </button>
+                            </div>
+                        </div>
+                    {% elif has_hourly %}
+                        <!-- Chỉ có theo giờ -->
+                        <div id="hourlyPricingCompact" class="pricing-section-compact active">
+                            <div class="price-display-compact">
+                                {% if home.price_first_2_hours %}
+                                <div class="price-main-compact">
+                                    <span class="price-amount-compact">{{ "{:,.0f}".format(home.price_first_2_hours) }}đ</span>
+                                    <span class="price-unit-compact">cho 2 giờ đầu</span>
+                                </div>
+                                {% if home.price_per_additional_hour %}
+                                <div class="price-additional-compact">
+                                    <span class="price-amount-compact">{{ "{:,.0f}".format(home.price_per_additional_hour) }}đ</span>
+                                    <span class="price-unit-compact">giờ tiếp theo</span>
+                                </div>
+                                {% endif %}
+                                {% elif home.price_per_hour %}
+                                <div class="price-main-compact">
+                                    <span class="price-amount-compact">₫{{ "{:,.0f}".format(home.price_per_hour) }}</span>
+                                    <span class="price-unit-compact">/giờ</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="booking-form-compact">
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">NGÀY THUÊ</label>
+                                    <input type="text" class="form-control form-control-sm" id="hourlyDateCompact" placeholder="Chọn ngày" readonly>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">GIỜ BẮT ĐẦU</label>
+                                    <input type="text" class="form-control form-control-sm" id="startTimeCompact" placeholder="Chọn giờ" readonly onclick="showTimeSelector(this)">
+                                </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">SỐ GIỜ THUÊ</label>
+                                    <div class="duration-selector-compact">
+                                        <input type="text" class="form-control form-control-sm" id="durationHoursCompact" placeholder="Chọn giờ" readonly onclick="showDurationSelector(this)">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </div>
+                                </div>
+                                <div class="form-group-compact">
+                                    <label class="form-label-compact">KHÁCH</label>
+                                    <div class="guest-selector-compact">
+                                        <input type="text" class="form-control form-control-sm" id="guestCountHourlyCompact" value="1 khách" readonly onclick="showGuestSelector(this)">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary btn-book-compact w-100" onclick="bookHourlyCompact(); return false;">
+                                    Đặt phòng
+                                </button>
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Mô tả -->
+    <div class="section-card">
+        <h2 class="section-title">
+            <i class="bi bi-info-circle"></i>
+            Mô tả
+        </h2>
+        <p class="description-text mb-0">
+            {{ home.description or 'Chưa có mô tả cho nhà này.' }}
+        </p>
     </div>
 
     <!-- Tiện nghi & Nội quy -->
@@ -3270,6 +3462,685 @@ function showToast(message, type = 'info') {
     });
 }
 
+// Booking functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Booking type switching
+    const dailyType = document.getElementById('dailyType');
+    const hourlyType = document.getElementById('hourlyType');
+    const dailyPricing = document.getElementById('dailyPricing');
+    const hourlyPricing = document.getElementById('hourlyPricing');
+    
+    if (dailyType && hourlyType) {
+        dailyType.addEventListener('change', function() {
+            if (this.checked) {
+                dailyPricing.classList.add('active');
+                hourlyPricing.classList.remove('active');
+                hourlyPricing.style.display = 'none';
+                dailyPricing.style.display = 'block';
+            }
+        });
+        
+        hourlyType.addEventListener('change', function() {
+            if (this.checked) {
+                hourlyPricing.classList.add('active');
+                dailyPricing.classList.remove('active');
+                dailyPricing.style.display = 'none';
+                hourlyPricing.style.display = 'block';
+            }
+        });
+    }
+    
+    // Initialize date pickers
+    initializeDatePickers();
+    initializeTimePickers();
+    initializeGuestSelectors();
+    initializeDurationSelector();
+});
+
+function initializeDatePickers() {
+    // Daily booking date pickers
+    const checkinDate = document.getElementById('checkinDate');
+    const checkoutDate = document.getElementById('checkoutDate');
+    const hourlyDate = document.getElementById('hourlyDate');
+    
+    if (checkinDate) {
+        checkinDate.addEventListener('click', function() {
+            showDatePicker(this, 'checkin');
+        });
+    }
+    
+    if (checkoutDate) {
+        checkoutDate.addEventListener('click', function() {
+            showDatePicker(this, 'checkout');
+        });
+    }
+    
+    if (hourlyDate) {
+        hourlyDate.addEventListener('click', function() {
+            showDatePicker(this, 'hourly');
+        });
+    }
+}
+
+function initializeTimePickers() {
+    const startTime = document.getElementById('startTime');
+    if (startTime) {
+        startTime.addEventListener('click', function() {
+            showTimePicker(this);
+        });
+    }
+}
+
+function initializeGuestSelectors() {
+    const guestCount = document.getElementById('guestCount');
+    const guestCountHourly = document.getElementById('guestCountHourly');
+    
+    // Remove existing event listeners to avoid duplicates
+    if (guestCount) {
+        guestCount.removeEventListener('click', guestCount._clickHandler);
+        guestCount._clickHandler = function() {
+            showGuestSelector(this);
+        };
+        guestCount.addEventListener('click', guestCount._clickHandler);
+    }
+    
+    if (guestCountHourly) {
+        guestCountHourly.removeEventListener('click', guestCountHourly._clickHandler);
+        guestCountHourly._clickHandler = function() {
+            showGuestSelector(this);
+        };
+        guestCountHourly.addEventListener('click', guestCountHourly._clickHandler);
+    }
+}
+
+function initializeDurationSelector() {
+    const durationHours = document.getElementById('durationHours');
+    if (durationHours) {
+        durationHours.addEventListener('click', function() {
+            showDurationSelector(this);
+        });
+    }
+}
+
+function showDatePicker(input, type) {
+    // Initialize flatpickr for date selection
+    if (input._flatpickr) {
+        input._flatpickr.destroy();
+    }
+    
+    const config = {
+        minDate: "today",
+        dateFormat: "Y-m-d",
+        locale: "vi",
+        onChange: function(selectedDates, dateStr, instance) {
+            input.value = dateStr;
+            
+            // Auto-fill checkout date for daily booking
+            if (type === 'checkin') {
+                const checkoutDate = document.getElementById('checkoutDate');
+                if (checkoutDate) {
+                    const nextDay = new Date(selectedDates[0]);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    checkoutDate.value = nextDay.toISOString().split('T')[0];
+                }
+            }
+        }
+    };
+    
+    flatpickr(input, config);
+    input._flatpickr.open();
+}
+
+function showTimePicker(input) {
+    // Create time picker dropdown
+    const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+    
+    // Remove existing dropdown
+    const existingDropdown = document.getElementById('time-dropdown-booking');
+    if (existingDropdown) {
+        existingDropdown.remove();
+    }
+    
+    // Create dropdown
+    const dropdown = document.createElement('div');
+    dropdown.id = 'time-dropdown-booking';
+    dropdown.style.cssText = `
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        margin-top: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    `;
+    
+    times.forEach(time => {
+        const timeOption = document.createElement('div');
+        timeOption.style.cssText = `
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        `;
+        timeOption.textContent = time;
+        timeOption.onmouseover = () => timeOption.style.backgroundColor = '#f8f9fa';
+        timeOption.onmouseout = () => timeOption.style.backgroundColor = 'white';
+        timeOption.onclick = () => {
+            input.value = time;
+            dropdown.remove();
+        };
+        dropdown.appendChild(timeOption);
+    });
+    
+    // Position dropdown
+    input.parentNode.style.position = 'relative';
+    input.parentNode.appendChild(dropdown);
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function closeDropdown(e) {
+        if (!input.parentNode.contains(e.target)) {
+            dropdown.remove();
+            document.removeEventListener('click', closeDropdown);
+        }
+    });
+}
+
+function showGuestSelector(input) {
+    console.log('showGuestSelector called with input:', input);
+    const guests = [1, 2, 3, 4, 5, 6, 7, 8];
+    
+    // Remove existing dropdown
+    const existingDropdown = document.getElementById('guest-dropdown-booking');
+    if (existingDropdown) {
+        existingDropdown.remove();
+    }
+    
+    // Create dropdown
+    const dropdown = document.createElement('div');
+    dropdown.id = 'guest-dropdown-booking';
+    dropdown.style.cssText = `
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        margin-top: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    `;
+    
+    guests.forEach(guest => {
+        const guestOption = document.createElement('div');
+        guestOption.style.cssText = `
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        `;
+        guestOption.textContent = guest + ' khách';
+        guestOption.onmouseover = () => guestOption.style.backgroundColor = '#f8f9fa';
+        guestOption.onmouseout = () => guestOption.style.backgroundColor = 'white';
+        guestOption.onclick = () => {
+            input.value = guest + ' khách';
+            dropdown.remove();
+        };
+        dropdown.appendChild(guestOption);
+    });
+    
+    // Position dropdown
+    input.parentNode.style.position = 'relative';
+    input.parentNode.appendChild(dropdown);
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function closeDropdown(e) {
+        if (!input.parentNode.contains(e.target)) {
+            dropdown.remove();
+            document.removeEventListener('click', closeDropdown);
+        }
+    });
+}
+
+function showDurationSelector(input) {
+    console.log('showDurationSelector called with input:', input);
+    const durations = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+    
+    // Remove existing dropdown
+    const existingDropdown = document.getElementById('duration-dropdown-booking');
+    if (existingDropdown) {
+        existingDropdown.remove();
+    }
+    
+    // Create dropdown
+    const dropdown = document.createElement('div');
+    dropdown.id = 'duration-dropdown-booking';
+    dropdown.style.cssText = `
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        margin-top: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    `;
+    
+    durations.forEach(duration => {
+        const durationOption = document.createElement('div');
+        durationOption.style.cssText = `
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        `;
+        durationOption.textContent = duration + ' giờ';
+        durationOption.onmouseover = () => durationOption.style.backgroundColor = '#f8f9fa';
+        durationOption.onmouseout = () => durationOption.style.backgroundColor = 'white';
+        durationOption.onclick = () => {
+            input.value = duration + ' giờ';
+            dropdown.remove();
+        };
+        dropdown.appendChild(durationOption);
+    });
+    
+    // Position dropdown
+    input.parentNode.style.position = 'relative';
+    input.parentNode.appendChild(dropdown);
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function closeDropdown(e) {
+        if (!input.parentNode.contains(e.target)) {
+            dropdown.remove();
+            document.removeEventListener('click', closeDropdown);
+        }
+    });
+}
+
+function showTimeSelector(input) {
+    console.log('showTimeSelector called with input:', input);
+    const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
+    
+    // Remove existing dropdown
+    const existingDropdown = document.getElementById('time-dropdown-booking');
+    if (existingDropdown) {
+        existingDropdown.remove();
+    }
+    
+    // Create dropdown
+    const dropdown = document.createElement('div');
+    dropdown.id = 'time-dropdown-booking';
+    dropdown.style.cssText = `
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        margin-top: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    `;
+    
+    times.forEach(time => {
+        const timeOption = document.createElement('div');
+        timeOption.style.cssText = `
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        `;
+        timeOption.textContent = time;
+        timeOption.onmouseover = () => timeOption.style.backgroundColor = '#f8f9fa';
+        timeOption.onmouseout = () => timeOption.style.backgroundColor = 'white';
+        timeOption.onclick = () => {
+            input.value = time;
+            dropdown.remove();
+        };
+        dropdown.appendChild(timeOption);
+    });
+    
+    // Position dropdown
+    input.parentNode.style.position = 'relative';
+    input.parentNode.appendChild(dropdown);
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function closeDropdown(e) {
+        if (!input.parentNode.contains(e.target)) {
+            dropdown.remove();
+            document.removeEventListener('click', closeDropdown);
+        }
+    });
+}
+
+function bookDaily() {
+    const checkinDate = document.getElementById('checkinDate').value;
+    const checkoutDate = document.getElementById('checkoutDate').value;
+    const guestCount = document.getElementById('guestCount').value;
+    
+    if (!checkinDate || !checkoutDate) {
+        showToast('Vui lòng chọn ngày nhận và trả phòng', 'warning');
+        return;
+    }
+    
+    // Calculate number of days
+    let checkin, checkout;
+    
+    // Parse dates
+    if (checkinDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // YYYY-MM-DD format
+        checkin = new Date(checkinDate);
+    } else if (checkinDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        // DD/MM/YYYY format
+        const [day, month, year] = checkinDate.split('/');
+        checkin = new Date(year, month - 1, day);
+    }
+    
+    if (checkoutDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // YYYY-MM-DD format
+        checkout = new Date(checkoutDate);
+    } else if (checkoutDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        // DD/MM/YYYY format
+        const [day, month, year] = checkoutDate.split('/');
+        checkout = new Date(year, month - 1, day);
+    }
+    
+    // Calculate duration in days
+    const timeDiff = checkout.getTime() - checkin.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    if (daysDiff <= 0) {
+        showToast('Ngày trả phòng phải sau ngày nhận phòng', 'warning');
+        return;
+    }
+    
+    // Convert date format for display
+    let formattedCheckin = checkinDate;
+    let formattedCheckout = checkoutDate;
+    
+    // If date is in YYYY-MM-DD format, convert to DD/MM/YYYY for display
+    if (checkinDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = checkinDate.split('-');
+        formattedCheckin = `${day}/${month}/${year}`;
+    }
+    if (checkoutDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = checkoutDate.split('-');
+        formattedCheckout = `${day}/${month}/${year}`;
+    }
+    
+    // Extract guest number (remove "khách" if present)
+    let guestNumber = guestCount;
+    if (guestCount.includes(' ')) {
+        guestNumber = guestCount.split(' ')[0];
+    }
+    
+    console.log('Redirecting with data:', { formattedCheckin, formattedCheckout, daysDiff, guestNumber });
+    
+    // Redirect to booking page with daily parameters including duration
+    const homeId = {{ home.id }};
+    const url = `{{ url_for('renter.book_home', home_id=home.id) }}?type=daily&checkin=${formattedCheckin}&checkout=${formattedCheckout}&duration=${daysDiff}&guests=${guestNumber}`;
+    console.log('Redirecting to:', url);
+    window.location.href = url;
+}
+
+function bookHourly() {
+    const hourlyDate = document.getElementById('hourlyDate').value;
+    const startTime = document.getElementById('startTime').value;
+    const durationHours = document.getElementById('durationHours').value;
+    const guestCountHourly = document.getElementById('guestCountHourly').value;
+    
+    if (!hourlyDate || !startTime || !durationHours) {
+        showToast('Vui lòng chọn đầy đủ thông tin đặt phòng', 'warning');
+        return;
+    }
+    
+    // Keep date format as YYYY-MM-DD for consistency
+    let formattedDate = hourlyDate;
+    if (hourlyDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const [day, month, year] = hourlyDate.split('/');
+        formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    
+    // Extract duration number
+    const durationNumber = durationHours.replace(' giờ', '');
+    
+    // Extract guest number (remove "khách" if present)
+    let guestNumber = guestCountHourly;
+    if (guestCountHourly.includes(' ')) {
+        guestNumber = guestCountHourly.split(' ')[0];
+    }
+    
+    console.log('Redirecting with data:', { formattedDate, startTime, durationNumber, guestNumber });
+    
+    // Redirect to booking page with hourly parameters
+    const homeId = {{ home.id }};
+    const url = `{{ url_for('renter.book_home', home_id=home.id) }}?type=hourly&date=${formattedDate}&time=${startTime}&duration=${durationNumber}&guests=${guestNumber}`;
+    console.log('Redirecting to:', url);
+    window.location.href = url;
+}
+
+// Compact booking functions
+function bookDailyCompact() {
+    const checkinDate = document.getElementById('checkinDateCompact').value;
+    const checkoutDate = document.getElementById('checkoutDateCompact').value;
+    const guestCount = document.getElementById('guestCountCompact').value;
+    
+    if (!checkinDate || !checkoutDate) {
+        showToast('Vui lòng chọn ngày nhận và trả phòng', 'warning');
+        return;
+    }
+    
+    // Calculate number of days
+    let checkin, checkout;
+    
+    // Parse dates
+    if (checkinDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        checkin = new Date(checkinDate);
+    } else if (checkinDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const [day, month, year] = checkinDate.split('/');
+        checkin = new Date(year, month - 1, day);
+    }
+    
+    if (checkoutDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        checkout = new Date(checkoutDate);
+    } else if (checkoutDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const [day, month, year] = checkoutDate.split('/');
+        checkout = new Date(year, month - 1, day);
+    }
+    
+    // Calculate duration in days
+    const timeDiff = checkout.getTime() - checkin.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    if (daysDiff <= 0) {
+        showToast('Ngày trả phòng phải sau ngày nhận phòng', 'warning');
+        return;
+    }
+    
+    // Keep date format as YYYY-MM-DD for consistency
+    let formattedCheckin = checkinDate;
+    let formattedCheckout = checkoutDate;
+    
+    // Convert DD/MM/YYYY to YYYY-MM-DD if needed
+    if (checkinDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const [day, month, year] = checkinDate.split('/');
+        formattedCheckin = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    if (checkoutDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const [day, month, year] = checkoutDate.split('/');
+        formattedCheckout = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    
+    // Extract guest number (remove "khách" if present)
+    let guestNumber = guestCount;
+    if (guestCount.includes(' ')) {
+        guestNumber = guestCount.split(' ')[0];
+    }
+    
+    console.log('Redirecting with data:', { formattedCheckin, formattedCheckout, daysDiff, guestNumber });
+    
+    // Redirect to booking page with daily parameters
+    const homeId = {{ home.id }};
+    const url = `{{ url_for('renter.book_home', home_id=home.id) }}?type=daily&checkin=${formattedCheckin}&checkout=${formattedCheckout}&duration=${daysDiff}&guests=${guestNumber}`;
+    console.log('Redirecting to:', url); // Debug log
+    window.location.href = url;
+}
+
+function bookHourlyCompact() {
+    const hourlyDate = document.getElementById('hourlyDateCompact').value;
+    const startTime = document.getElementById('startTimeCompact').value;
+    const durationHours = document.getElementById('durationHoursCompact').value;
+    const guestCountHourly = document.getElementById('guestCountHourlyCompact').value;
+    
+    console.log('bookHourlyCompact called with:', { hourlyDate, startTime, durationHours, guestCountHourly });
+    console.log('Element values:', {
+        hourlyDateElement: document.getElementById('hourlyDateCompact'),
+        startTimeElement: document.getElementById('startTimeCompact'),
+        durationHoursElement: document.getElementById('durationHoursCompact'),
+        guestCountHourlyElement: document.getElementById('guestCountHourlyCompact')
+    });
+    
+    if (!hourlyDate || !startTime || !durationHours) {
+        showToast('Vui lòng chọn đầy đủ thông tin đặt phòng', 'warning');
+        return;
+    }
+    
+    // Keep date format as YYYY-MM-DD for consistency
+    let formattedDate = hourlyDate;
+    if (hourlyDate.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const [day, month, year] = hourlyDate.split('/');
+        formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    
+    // Extract duration number
+    const durationNumber = durationHours.replace(' giờ', '');
+    
+    // Extract guest number (remove "khách" if present)
+    let guestNumber = guestCountHourly;
+    if (guestCountHourly.includes(' ')) {
+        guestNumber = guestCountHourly.split(' ')[0];
+    }
+    
+    console.log('Redirecting with data:', { formattedDate, startTime, durationNumber, guestNumber });
+    
+    // Redirect to booking page with hourly parameters
+    const homeId = {{ home.id }};
+    const url = `{{ url_for('renter.book_home', home_id=home.id) }}?type=hourly&date=${formattedDate}&time=${startTime}&duration=${durationNumber}&guests=${guestNumber}`;
+    console.log('Redirecting to:', url);
+    window.location.href = url;
+}
+
+function initializeCompactDatePickers() {
+    console.log('initializeCompactDatePickers called');
+    // Initialize compact daily date pickers
+    const checkinDateCompact = document.getElementById('checkinDateCompact');
+    const checkoutDateCompact = document.getElementById('checkoutDateCompact');
+    const hourlyDateCompact = document.getElementById('hourlyDateCompact');
+    
+    console.log('Date picker elements:', { checkinDateCompact, checkoutDateCompact, hourlyDateCompact });
+    
+    if (checkinDateCompact) {
+        flatpickr(checkinDateCompact, {
+            locale: 'vi',
+            dateFormat: 'Y-m-d',
+            minDate: 'today',
+            onChange: function(selectedDates, dateStr) {
+                if (checkoutDateCompact) {
+                    flatpickr(checkoutDateCompact, {
+                        locale: 'vi',
+                        dateFormat: 'Y-m-d',
+                        minDate: dateStr,
+                        defaultDate: dateStr
+                    });
+                }
+            }
+        });
+        console.log('Initialized checkinDateCompact flatpickr');
+    }
+    
+    if (checkoutDateCompact) {
+        flatpickr(checkoutDateCompact, {
+            locale: 'vi',
+            dateFormat: 'Y-m-d',
+            minDate: 'today'
+        });
+        console.log('Initialized checkoutDateCompact flatpickr');
+    }
+    
+    // Initialize compact hourly date picker
+    if (hourlyDateCompact) {
+        flatpickr(hourlyDateCompact, {
+            locale: 'vi',
+            dateFormat: 'Y-m-d',
+            minDate: 'today'
+        });
+        console.log('Initialized hourlyDateCompact flatpickr');
+    }
+}
+
+function initializeCompactTimePickers() {
+    // Initialize compact time picker with custom dropdown
+    const startTimeCompact = document.getElementById('startTimeCompact');
+    console.log('initializeCompactTimePickers - startTimeCompact element:', startTimeCompact);
+    if (startTimeCompact) {
+        console.log('Initializing compact time picker');
+        // Remove flatpickr and use custom dropdown
+        startTimeCompact.addEventListener('click', function() {
+            console.log('startTimeCompact clicked');
+            showTimeSelector(this);
+        });
+        console.log('Added click event listener to startTimeCompact');
+    } else {
+        console.log('startTimeCompact element not found');
+    }
+}
+
+function initializeCompactDurationSelectors() {
+    // Initialize compact duration selector
+    const durationHoursCompact = document.getElementById('durationHoursCompact');
+    console.log('initializeCompactDurationSelectors - durationHoursCompact element:', durationHoursCompact);
+    if (durationHoursCompact) {
+        console.log('Initializing compact duration selector');
+        durationHoursCompact.addEventListener('click', function() {
+            console.log('durationHoursCompact clicked');
+            showDurationSelector(this);
+        });
+        console.log('Added click event listener to durationHoursCompact');
+    } else {
+        console.log('durationHoursCompact element not found');
+    }
+}
+
+function initializeCompactGuestSelectors() {
+    // Initialize compact guest selector
+    const guestCountHourlyCompact = document.getElementById('guestCountHourlyCompact');
+    console.log('initializeCompactGuestSelectors - guestCountHourlyCompact element:', guestCountHourlyCompact);
+    if (guestCountHourlyCompact) {
+        console.log('Initializing compact guest selector');
+        guestCountHourlyCompact.addEventListener('click', function() {
+            console.log('guestCountHourlyCompact clicked');
+            showGuestSelector(this);
+        });
+        console.log('Added click event listener to guestCountHourlyCompact');
+    } else {
+        console.log('guestCountHourlyCompact element not found');
+    }
+}
+
 // Search bar functionality - Copy from search page
 function expandSearch() {
     const expandedSearch = document.getElementById('expanded-search');
@@ -3434,6 +4305,69 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add test function to window for debugging
     window.testDailyDropdown = testDailyDropdown;
+    
+    // Initialize compact booking type toggles
+    const dailyTypeCompact = document.getElementById('dailyTypeCompact');
+    const hourlyTypeCompact = document.getElementById('hourlyTypeCompact');
+    const dailyPricingCompact = document.getElementById('dailyPricingCompact');
+    const hourlyPricingCompact = document.getElementById('hourlyPricingCompact');
+    
+    if (dailyTypeCompact && hourlyTypeCompact && dailyPricingCompact && hourlyPricingCompact) {
+        console.log('Initializing compact booking type toggles');
+        
+        dailyTypeCompact.addEventListener('change', function() {
+            if (this.checked) {
+                console.log('Switching to daily booking');
+                dailyPricingCompact.classList.add('active');
+                hourlyPricingCompact.classList.remove('active');
+                hourlyPricingCompact.style.display = 'none';
+                dailyPricingCompact.style.display = 'block';
+            }
+        });
+        
+        hourlyTypeCompact.addEventListener('change', function() {
+            if (this.checked) {
+                console.log('Switching to hourly booking');
+                hourlyPricingCompact.classList.add('active');
+                dailyPricingCompact.classList.remove('active');
+                dailyPricingCompact.style.display = 'none';
+                hourlyPricingCompact.style.display = 'block';
+            }
+        });
+        
+        // Set initial state
+        if (hourlyTypeCompact.checked) {
+            hourlyPricingCompact.style.display = 'block';
+            dailyPricingCompact.style.display = 'none';
+        } else if (dailyTypeCompact.checked) {
+            dailyPricingCompact.style.display = 'block';
+            hourlyPricingCompact.style.display = 'none';
+        }
+    } else {
+        console.log('Compact booking type elements not found:', { 
+            dailyTypeCompact, hourlyTypeCompact, dailyPricingCompact, hourlyPricingCompact 
+        });
+    }
+    
+    // Debug: Check if elements exist
+    console.log('Checking elements exist:', {
+        hourlyDateCompact: document.getElementById('hourlyDateCompact'),
+        startTimeCompact: document.getElementById('startTimeCompact'),
+        durationHoursCompact: document.getElementById('durationHoursCompact'),
+        guestCountHourlyCompact: document.getElementById('guestCountHourlyCompact')
+    });
+    
+    // Initialize compact date pickers
+    initializeCompactDatePickers();
+    
+    // Initialize compact time pickers
+    initializeCompactTimePickers();
+    
+    // Initialize compact duration selectors
+    initializeCompactDurationSelectors();
+    
+    // Initialize compact guest selectors
+    initializeCompactGuestSelectors();
 });
 
 // DateTime Selector Functions for Search - Copy from search page

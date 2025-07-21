@@ -1,0 +1,502 @@
+/* ==== BOOKING CARD BASE STYLES ==== */
+.booking-price-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+    position: sticky;
+    top: 20px;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.compact-booking-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 10px;
+    min-height: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==== TAB BUTTONS ==== */
+.booking-type-tabs {
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.booking-type-tabs .btn-group {
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    display: flex;
+}
+
+.booking-type-tabs .btn {
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 10px 16px;
+    font-size: 14px;
+    height: 40px;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.booking-type-tabs .btn-check:checked + .btn {
+    background: #8bc34a;
+    border-color: #8bc34a;
+    color: white;
+}
+
+/* ==== PRICE DISPLAY ==== */
+.price-display {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.price-display-compact {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 18px 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    flex-shrink: 0;
+}
+
+.price-main,
+.price-main-compact {
+    margin-bottom: 8px;
+}
+
+.price-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: #8bc34a;
+    display: block;
+    line-height: 1.2;
+}
+
+.price-amount-compact {
+    font-size: 18px;
+    font-weight: 700;
+    color: #8bc34a;
+    display: block;
+    line-height: 1.2;
+}
+
+.price-unit {
+    font-size: 14px;
+    color: #6c757d;
+    display: block;
+    margin-top: 5px;
+}
+
+.price-unit-compact {
+    font-size: 12px;
+    color: #6c757d;
+    display: block;
+    margin-top: 4px;
+}
+
+.price-additional {
+    text-align: center;
+    padding-top: 12px;
+    border-top: 1px solid #dee2e6;
+    margin-top: 12px;
+}
+
+.price-additional-compact {
+    text-align: center;
+    padding-top: 8px;
+    border-top: 1px solid #dee2e6;
+    margin-top: 8px;
+}
+
+.price-additional .price-amount {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.price-additional-compact .price-amount-compact {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ==== PRICING SECTIONS ==== */
+.pricing-section {
+    display: none;
+    flex: 1;
+    min-height: 380px;
+}
+
+.pricing-section.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.pricing-section-compact {
+    display: none;
+    flex: 1;
+    min-height: 380px;
+}
+
+.pricing-section-compact.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==== THEO NGÀY FORM (LARGE STYLE) ==== */
+.booking-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 300px;
+}
+
+.booking-form .form-group {
+    margin-bottom: 25px;
+}
+
+.booking-form .form-group:last-of-type {
+    margin-bottom: 30px;
+}
+
+.booking-form .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    display: block;
+}
+
+.booking-form .form-control {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 15px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 56px;
+    width: 100%;
+}
+
+.booking-form .form-control:focus {
+    border-color: #8bc34a;
+    box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.1);
+}
+
+.booking-form .guest-selector,
+.booking-form .duration-selector {
+    position: relative;
+}
+
+.booking-form .guest-selector i,
+.booking-form .duration-selector i {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    font-size: 14px;
+}
+
+.btn-book {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    border: none;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 18px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    height: 56px;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-book:hover {
+    background: linear-gradient(135deg, #ee5a52, #ff6b6b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(238, 90, 82, 0.3);
+    color: white;
+}
+
+/* ==== THEO GIỜ FORM (COMPACT STYLE) ==== */
+.booking-form-compact {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 300px;
+}
+
+.form-group-compact {
+    margin-bottom: 14px;
+}
+
+.form-group-compact:last-of-type {
+    margin-bottom: 16px;
+}
+
+.form-label-compact {
+    font-size: 11px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    display: block;
+}
+
+.form-control-compact {
+    height: 36px;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-control-compact:focus {
+    border-color: #8bc34a;
+    box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.1);
+}
+
+.guest-selector-compact,
+.duration-selector-compact {
+    position: relative;
+}
+
+.guest-selector-compact i,
+.duration-selector-compact i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: #6c757d;
+    pointer-events: none;
+}
+
+.btn-book-compact {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    border: none;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    height: 40px;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-book-compact:hover {
+    background: linear-gradient(135deg, #ee5a52, #ff6b6b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    color: white;
+}
+
+/* ==== NO PRICING STATES ==== */
+.no-pricing {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    font-size: 14px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-pricing-compact {
+    text-align: center;
+    padding: 40px 16px;
+    color: #6c757d;
+    font-size: 12px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.booking-note {
+    font-size: 12px;
+    color: #6c757d;
+    text-align: center;
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+/* ==== DROPDOWN STYLES ==== */
+#guest-dropdown-booking,
+#duration-dropdown-booking {
+    font-size: 12px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#guest-dropdown-booking div,
+#duration-dropdown-booking div {
+    padding: 10px 14px;
+    transition: background-color 0.2s ease;
+}
+
+#guest-dropdown-booking div:hover,
+#duration-dropdown-booking div:hover {
+    background-color: #f8f9fa;
+}
+
+/* ==== FLATPICKR CUSTOMIZATION ==== */
+.flatpickr-calendar {
+    z-index: 99999 !important;
+}
+
+.flatpickr-day.selected {
+    background: #8bc34a !important;
+    border-color: #8bc34a !important;
+}
+
+.flatpickr-day:hover {
+    background: #7cb342 !important;
+    border-color: #7cb342 !important;
+}
+
+/* ==== RESPONSIVE DESIGN ==== */
+@media (max-width: 768px) {
+    .booking-price-card,
+    .compact-booking-card {
+        position: static;
+        margin-top: 20px;
+        min-height: 450px;
+        padding: 16px;
+    }
+    
+    .booking-type-tabs .btn {
+        font-size: 12px;
+        padding: 8px 12px;
+        height: 36px;
+    }
+    
+    .price-amount {
+        font-size: 20px;
+    }
+    
+    .price-amount-compact {
+        font-size: 16px;
+    }
+    
+    .booking-form .form-control {
+        height: 48px;
+        font-size: 14px;
+        padding: 12px;
+    }
+    
+    .form-control-compact {
+        height: 32px;
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+    
+    .btn-book {
+        height: 48px;
+        font-size: 15px;
+        padding: 14px;
+    }
+    
+    .btn-book-compact {
+        height: 36px;
+        font-size: 11px;
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .booking-price-card,
+    .compact-booking-card {
+        padding: 14px;
+        min-height: 420px;
+    }
+    
+    .booking-type-tabs .btn {
+        font-size: 11px;
+        padding: 6px 10px;
+        height: 32px;
+    }
+    
+    .price-amount {
+        font-size: 18px;
+    }
+    
+    .price-amount-compact {
+        font-size: 15px;
+    }
+    
+    .booking-form .form-label {
+        font-size: 12px;
+    }
+    
+    .form-label-compact {
+        font-size: 10px;
+    }
+    
+    .booking-form .form-control {
+        height: 44px;
+        font-size: 13px;
+        padding: 10px;
+    }
+    
+    .form-control-compact {
+        height: 30px;
+        font-size: 10px;
+        padding: 5px 8px;
+    }
+    
+    .btn-book {
+        height: 44px;
+        font-size: 14px;
+        padding: 12px;
+    }
+    
+    .btn-book-compact {
+        height: 32px;
+        font-size: 10px;
+        padding: 6px 10px;
+    }
+}
+
+/* ==== DESKTOP STICKY POSITIONING ==== */
+@media (min-width: 769px) {
+    .booking-price-card,
+    .compact-booking-card {
+        position: sticky;
+        top: 20px;
+    }
+}
