@@ -1,0 +1,11 @@
+# PostgreSQL dependencies - chỉ các package chưa có trong requirements.txt hiện tại
+psycopg2-binary==2.9.9
+pg8000==1.30.5  # Pure Python PostgreSQL driver (backup option)
+SQLAlchemy-Utils==0.41.1
+
+# Hướng dẫn sử dụng:
+# 1. Cài đặt các dependencies cho PostgreSQL bằng lệnh:
+# pip install -r requirements_postgres_updated.txt
+#
+# 2. Tiếp theo làm theo hướng dẫn trong file docs/MIGRATE_TO_POSTGRES.md
+# để hoàn tất việc chuyển đổi từ SQLite sang PostgreSQL
