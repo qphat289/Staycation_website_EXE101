@@ -4,8 +4,13 @@ class Config:
     # Secret key for session management
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-for-development-only'
     
-    # SQLite database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance", "homestay.db")}'
+    # PostgreSQL database configuration
+    # Luôn sử dụng PostgreSQL
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'postgresql://postgres:timnolun2004@localhost:5432/homestay')
+    
+    # Cấu hình cũ (SQLite fallback)
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance", "homestay.db")}'
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Google OAuth config
