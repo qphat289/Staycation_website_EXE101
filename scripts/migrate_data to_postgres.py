@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 sqlite_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance", "homestay.db")
 
 # Lấy thông tin kết nối PostgreSQL từ biến môi trường
-pg_conn_string = os.environ.get('DATABASE_URL', 'postgresql://postgres:timnolun2004@localhost:5432/homestay')
+pg_conn_string = os.environ.get('DATABASE_URL', 'postgresql://postgres:123@localhost:5432/homestay')
 pg_user = pg_conn_string.split('://')[1].split(':')[0]
 pg_password = pg_conn_string.split('://')[1].split(':')[1].split('@')[0]
 pg_host = pg_conn_string.split('@')[1].split(':')[0]

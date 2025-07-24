@@ -5,7 +5,7 @@ SQLAlchemy-Utils==0.41.1
 
 # Hướng dẫn sử dụng:
 # 1. Cài đặt các dependencies cho PostgreSQL bằng lệnh:
-# pip install -r requirements_postgres_updated.txt
+# pip install -r requirements_postgres.txt
 #
 # 2. Tiếp theo làm theo hướng dẫn trong file docs/MIGRATE_TO_POSTGRES.md
 # để hoàn tất việc chuyển đổi từ SQLite sang PostgreSQL

@@ -97,3 +97,23 @@ coverage.xml
 # Payment specific
 payment_logs/
 webhook_logs/
+config/config.py
+scripts/fix_postgres_migration.py
+scripts/migrate_data to_postgres.py
+static/data/owner/2/10/home_1_20250720_153709_abc15170.jpg
+static/data/owner/2/10/home_2_20250720_153709_9454cfde.jpg
+static/data/owner/2/10/home_3_20250720_153709_087a86f3.jpg
+static/data/owner/2/10/home_4_20250720_153709_8d7e4825.jpg
+static/data/owner/2/10/main_20250720_153709_07f75b4d.jpg
+static/data/owner/2/8/home_1_20250720_153544_d62421c6.jpg
+static/data/owner/2/8/home_2_20250720_153544_6ea2e4a9.jpg
+static/data/owner/2/8/home_3_20250720_153544_3e941113.jpg
+static/data/owner/2/8/home_4_20250720_153544_726ff0af.jpg
+static/data/owner/2/8/main_20250720_153544_3e9aff8f.jpg
+static/data/owner/2/9/home_1_20250720_153633_0ce3e8a4.jpg
+static/data/owner/2/9/home_2_20250720_153633_2cda7434.jpg
+static/data/owner/2/9/home_3_20250720_153633_6a1f95cd.jpg
+static/data/owner/2/9/home_4_20250720_153633_c132c6ec.jpg
+static/data/owner/2/9/home_5_20250720_153633_163df795.jpg
+static/data/owner/2/9/main_20250720_153633_494aaca5.jpg
+test_booking_status.py
